@@ -66,12 +66,18 @@ router.get('/blogs/:id', async (req, res) => {
     try {
         const { id } = req.params;
 
-        // Fetch single article
-        const { data: article, error } = await supabase
-            .from('articles')
-            .select('*')
-            .eq('id', id)
-            .single();
+        // Check if id is a valid UUID
+        const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
+
+        let query = supabase.from('articles').select('*');
+
+        if (isUUID) {
+            query = query.eq('id', id);
+        } else {
+            query = query.eq('slug', id);
+        }
+
+        const { data: article, error } = await query.single();
 
         if (error) {
             console.error('Error fetching article:', error);

@@ -4,6 +4,20 @@ import { supabase } from '../config/supabaseClient.js';
 import { createClient } from '@supabase/supabase-js';
 import axios from 'axios';
 
+const generateSlug = (text) => {
+    return text
+        .toString()
+        .toLowerCase()
+        .trim()
+        .replace(/[\s\W-]+/g, '-')
+        .replace(/^-+|-+$/g, '');
+};
+
+const calculateReadTime = (wordCount) => {
+    const WORDS_PER_MINUTE = 200;
+    return Math.ceil(wordCount / WORDS_PER_MINUTE);
+};
+
 export const generateArticle = async (req, res) => {
     try {
         const {
@@ -14,6 +28,15 @@ export const generateArticle = async (req, res) => {
             length = "Medium (500-1000 words)",
             audience = "general public",
             variants = 1,
+            // New fields overrides (optional)
+            custom_slug,
+            category,
+            tags = [],
+            author_name,
+            author_bio,
+            is_published = false,
+            image_option = 'auto', // 'auto', 'custom', 'none'
+            custom_image_url
         } = req.body;
 
         const userId = req.user.id; // From Auth Middleware
@@ -40,7 +63,7 @@ export const generateArticle = async (req, res) => {
             .eq('user_id', userId)
             .single();
 
-        if (creditError && creditError.code !== 'PGRST116') { // Ignore row missing if handled elsewhere, but rigorous check is better
+        if (creditError && creditError.code !== 'PGRST116') {
             console.error('Credit check error:', creditError);
             return res.status(500).json({ success: false, error: 'Failed to check credits' });
         }
@@ -91,23 +114,30 @@ export const generateArticle = async (req, res) => {
         const plagiarismCheck = await PerplexityService.checkPlagiarism(blogText);
 
         // 6. Generate Image
-        console.log('Generating Image...');
-        const imageText = await PerplexityService.generateImageText(blogText, topic);
-        let imageUrl = await OpenAIService.generateImage(topic, imageText);
-        console.log('Image generated:', imageUrl);
+        console.log('Handling Image option:', image_option);
+        let imageUrl = null;
+
+        if (image_option === 'auto') {
+            console.log('Generating AI Image...');
+            const imageText = await PerplexityService.generateImageText(blogText, topic);
+            imageUrl = await OpenAIService.generateImage(topic, imageText);
+            console.log('AI Image generated:', imageUrl);
+        } else if (image_option === 'custom') {
+            console.log('Using Custom Image URL');
+            imageUrl = custom_image_url;
+        } else {
+            console.log('No image requested (None)');
+        }
 
         // 6.1 Persist Image to Supabase Storage
         if (imageUrl && !imageUrl.startsWith('http')) {
-            // Handle potential placeholder or error case from OpenAIService if it didn't return a proper URL
+            // Handle potential placeholder
         } else if (imageUrl) {
             try {
-                // Download image
                 const response = await axios.get(imageUrl, { responseType: 'arraybuffer' });
                 const buffer = Buffer.from(response.data, 'binary');
-
                 const fileName = `blog-${Date.now()}-${Math.floor(Math.random() * 1000)}.png`;
 
-                // Upload to Supabase
                 const { data: uploadData, error: uploadError } = await scopedSupabase
                     .storage
                     .from('blog-images')
@@ -118,10 +148,7 @@ export const generateArticle = async (req, res) => {
 
                 if (uploadError) {
                     console.error('Supabase Storage Upload Error:', uploadError);
-                    // Fallback to OpenAI URL (temporary) if upload fails
                 } else {
-                    console.log('Image uploaded successfully:', uploadData);
-                    // Get Public URL
                     const { data: publicUrlData } = scopedSupabase
                         .storage
                         .from('blog-images')
@@ -133,13 +160,10 @@ export const generateArticle = async (req, res) => {
                 }
             } catch (storageError) {
                 console.error('Image persistence failed:', storageError);
-                // Fallback to OpenAI URL
             }
         }
 
-
-        // 7. Format Content (Simple HTML wrapping for now, client can handle markdown too or we format here)
-        // User requested formatting function:
+        // 7. Format Content
         const formatBlogToHTML = (text) => {
             return text
                 .replace(/^## (.+)$/gm, '<h2>$1</h2>')
@@ -163,45 +187,60 @@ export const generateArticle = async (req, res) => {
 
         if (deductError) {
             console.error('Failed to deduct credits after generation:', deductError);
-            // We don't fail the request, but log critical error
-        } else {
-            console.log('Credits deducted.');
         }
 
-        // 9. Save Article
+        // 9. Prepare New Fields
+        const slug = custom_slug ? generateSlug(custom_slug) : generateSlug(seoTitle || topic) + '-' + Math.floor(Math.random() * 1000);
+        const estimatedReadTime = calculateReadTime(wordCount);
+        const finalAuthorName = author_name || 'AI Agent';
+
+        // 10. Save Article
         console.log('Saving article...');
         const { data: savedArticle, error: saveError } = await scopedSupabase
-            .from('articles') // Ensure this table exists in Supabase
+            .from('articles')
             .insert({
                 user_id: userId,
                 topic,
                 keywords: generatedKeywords,
-                content: blogHTML, // or blogText if we want raw markdown
+                content: blogHTML,
                 seo_title: seoTitle,
                 image_url: imageUrl,
                 word_count: wordCount,
                 plagiarism_check: plagiarismCheck,
                 language,
                 audience,
-                style
+                style,
+                // New Fields
+                slug: slug,
+                featured_image: imageUrl, // Reuse the generated image as featured
+                category: category || 'Technology', // Default or passed
+                tags: tags,
+                author_name: finalAuthorName,
+                author_bio: author_bio || 'Generated by AI',
+                publish_date: is_published ? new Date().toISOString() : null,
+                is_published: is_published,
+                estimated_read_time: estimatedReadTime,
+                seo_description: `Read about ${topic}. ${wordCount} words.`, // Simple auto-desc
+                social_share_enabled: true,
+                comments_enabled: true
             })
             .select()
             .single();
 
         if (saveError) {
             console.error('Save article error:', saveError);
-            // Return success with data but warn about save? Or just return success.
-            // We can return the generated data even if save fails.
         }
 
         res.json({
             success: true,
-            article: blogHTML, // Frontend expects 'article' key for content? check frontend.
+            article: blogHTML,
             seoTitle,
             imageUrl,
             wordCount,
             plagiarismCheck,
-            id: savedArticle?.id
+            id: savedArticle?.id,
+            slug: savedArticle?.slug,
+            newFieldsPopulated: true
         });
 
     } catch (error) {

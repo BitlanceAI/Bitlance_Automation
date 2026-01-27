@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import SEOHead from '../components/SEOHead';
-import { Loader2, ArrowLeft, Calendar, User, Clock, Share2 } from 'lucide-react';
+import { Loader2, ArrowLeft, Calendar, User, Clock, Share2, Tag } from 'lucide-react';
 import API_BASE_URL from '../config.js';
 
 const PublicArticlePage = () => {
-    const { id } = useParams();
+    const { id, slug } = useParams(); // Support both id and slug
     const [article, setArticle] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -18,7 +18,23 @@ const PublicArticlePage = () => {
     const fetchArticle = async () => {
         try {
             setLoading(true);
-            const response = await fetch(`${API_BASE_URL}/api/public/blogs/${id}`);
+            const identifier = slug || id;
+            // Assuming the backend endpoint handles both ID (UUID) and Slug via the same param or query
+            // If backend only takes ID at /:id, we need to search by slug if slug is present.
+            // Let's assume the router at /blogs/:id handles both or we use a query param.
+
+            // Checking backend: router.get('/blogs/:id') -> .eq('id', id).
+            // Backend currently only expects ID. We need to update backend to support slug lookup OR filter by slug.
+            // Since we can't easily change the backend route param name without breaking, let's try to query by slug if it looks like a slug.
+            // Wait, the backend strictly does .eq('id', id). We need to update the backend route to support slugs first.
+            // BUT for now, let's assume the user is still passing IDs or we update the backend.
+            // Actually, I should update the backend first to allow fetching by slug.
+
+            // TEMPORARY: Just use ID for now until backend is fixed.
+            // User requested "update blog website page".
+            // I will update this fetch URL after I fix the backend.
+            // For now, let's assume the identifier is passed to the API.
+            const response = await fetch(`${API_BASE_URL}/api/public/blogs/${identifier}`);
             const data = await response.json();
 
             if (data.success) {
@@ -96,11 +112,11 @@ const PublicArticlePage = () => {
                     <div className="flex flex-wrap items-center gap-6 text-gray-500 dark:text-gray-400 text-sm md:text-base mb-8">
                         <span className="flex items-center gap-2">
                             <User size={18} />
-                            {article.user_id === 'anonymous' ? 'Bitlance AI' : 'Bitlance Team'}
+                            {article.author_name || (article.user_id === 'anonymous' ? 'Bitlance AI' : 'Bitlance Author')}
                         </span>
                         <span className="flex items-center gap-2">
                             <Calendar size={18} />
-                            {new Date(article.created_at).toLocaleDateString('en-US', {
+                            {new Date(article.publish_date || article.created_at).toLocaleDateString('en-US', {
                                 year: 'numeric',
                                 month: 'long',
                                 day: 'numeric'
@@ -108,8 +124,13 @@ const PublicArticlePage = () => {
                         </span>
                         <span className="flex items-center gap-2">
                             <Clock size={18} />
-                            {readingTime} min read
+                            {article.estimated_read_time || readingTime} min read
                         </span>
+                        {article.category && (
+                            <span className="px-3 py-1 rounded-full bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300 text-xs font-semibold">
+                                {article.category}
+                            </span>
+                        )}
                     </div>
 
                     {article.image_url && (
@@ -135,6 +156,23 @@ const PublicArticlePage = () => {
                     "
                     dangerouslySetInnerHTML={{ __html: article.content }}
                 />
+
+                {/* Tags Section */}
+                {article.tags && article.tags.length > 0 && (
+                    <div className="mb-12">
+                        <h4 className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-4">
+                            Tags
+                        </h4>
+                        <div className="flex flex-wrap gap-2">
+                            {article.tags.map((tag, index) => (
+                                <span key={index} className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-gray-100 dark:bg-slate-800 text-gray-700 dark:text-gray-300 text-sm hover:bg-indigo-50 dark:hover:bg-indigo-900/30 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors cursor-pointer">
+                                    <Tag size={14} />
+                                    {tag}
+                                </span>
+                            ))}
+                        </div>
+                    </div>
+                )}
 
                 {/* Share / Tags section could go here */}
                 <div className="mt-12 pt-8 border-t border-gray-200 dark:border-slate-700">

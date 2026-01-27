@@ -35,6 +35,15 @@ const SeoAgentPage = () => {
     const [targetAudience, setTargetAudience] = useState('General Public');
     const [variants, setVariants] = useState('Max 3 for demo');
 
+    // New Fields State
+    const [authorName, setAuthorName] = useState('');
+    const [category, setCategory] = useState('');
+    const [tags, setTags] = useState('');
+
+    // Image Options State
+    const [imageOption, setImageOption] = useState('auto'); // 'auto', 'custom', 'none'
+    const [customImageUrl, setCustomImageUrl] = useState('');
+
     // Source Type State
     const [sourceType, setSourceType] = useState('manual'); // 'manual' or 'wordpress'
 
@@ -107,7 +116,16 @@ const SeoAgentPage = () => {
                 writingStyle,
                 articleLength,
                 targetAudience,
-                variants
+                variants,
+                // New Fields
+                author_name: authorName,
+                category: category,
+                // New Fields
+                author_name: authorName,
+                category: category,
+                tags: tags ? tags.split(',').map(t => t.trim()) : [],
+                image_option: imageOption,
+                custom_image_url: customImageUrl
             };
 
             // 1. Generate article via backend API
@@ -188,24 +206,33 @@ const SeoAgentPage = () => {
                     }
                 }
 
-                // 2. Save to Firebase
-                const savedArticle = await blogService.saveArticle({
-                    topic,
+                // 2. Save to Firebase (SKIPPED - Backend already saves to Supabase)
+                // Construct article object for local state update
+                const newArticle = {
+                    id: data.id,
+                    topic: topic,
                     seoTitle: data.seoTitle || topic,
                     content: data.article,
                     imageUrl: data.imageUrl || null,
-                    keywords,
-                    language,
+                    keywords: keywords,
+                    language: language,
                     style: writingStyle,
                     length: articleLength,
-                    audience: targetAudience
-                });
+                    audience: targetAudience,
+                    userId: user.id,
+                    slug: data.slug,
+                    createdAt: new Date().toISOString(),
+                    // New fields
+                    authorName: authorName,
+                    category: category,
+                    tags: tags ? tags.split(',').map(t => t.trim()) : []
+                };
 
                 // 3. Update UI
-                setCurrentArticle(savedArticle.article.content);
-                setCurrentSeoTitle(savedArticle.article.seoTitle);
-                setCurrentImageUrl(savedArticle.article.imageUrl);
-                setArticles([savedArticle.article, ...articles]);
+                setCurrentArticle(newArticle.content);
+                setCurrentSeoTitle(newArticle.seoTitle);
+                setCurrentImageUrl(newArticle.imageUrl);
+                setArticles([newArticle, ...articles]);
 
                 // Reset WordPress fields
                 setWpUrl('');
@@ -214,7 +241,7 @@ const SeoAgentPage = () => {
 
                 const message = sourceType === 'wordpress'
                     ? '✅ Article Generated, Uploaded to WordPress & Tracked in Google Sheets!'
-                    : '✅ Article Generated & Saved to Firebase!';
+                    : '✅ Article Generated & Saved!';
                 alert(message);
             } else {
                 alert("Error: " + data.error);
@@ -509,6 +536,88 @@ const SeoAgentPage = () => {
                                             </select>
                                             <Layers className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" size={16} />
                                         </div>
+                                    </div>
+
+                                    {/* Image Settings */}
+                                    <div className="space-y-2 md:col-span-2">
+                                        <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Featured Image Source</label>
+                                        <div className="grid grid-cols-3 gap-3">
+                                            <button
+                                                type="button"
+                                                onClick={() => setImageOption('auto')}
+                                                className={`px-3 py-2 rounded-lg border text-sm font-medium transition-all ${imageOption === 'auto'
+                                                    ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-700 dark:text-indigo-300'
+                                                    : 'border-gray-200 dark:border-slate-700 hover:border-indigo-300 text-gray-700 dark:text-gray-300'
+                                                    }`}
+                                            >
+                                                ✨ AI Auto
+                                            </button>
+                                            <button
+                                                type="button"
+                                                onClick={() => setImageOption('custom')}
+                                                className={`px-3 py-2 rounded-lg border text-sm font-medium transition-all ${imageOption === 'custom'
+                                                    ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-700 dark:text-indigo-300'
+                                                    : 'border-gray-200 dark:border-slate-700 hover:border-indigo-300 text-gray-700 dark:text-gray-300'
+                                                    }`}
+                                            >
+                                                🔗 Custom URL
+                                            </button>
+                                            <button
+                                                type="button"
+                                                onClick={() => setImageOption('none')}
+                                                className={`px-3 py-2 rounded-lg border text-sm font-medium transition-all ${imageOption === 'none'
+                                                    ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-700 dark:text-indigo-300'
+                                                    : 'border-gray-200 dark:border-slate-700 hover:border-indigo-300 text-gray-700 dark:text-gray-300'
+                                                    }`}
+                                            >
+                                                🚫 None
+                                            </button>
+                                        </div>
+                                        {imageOption === 'custom' && (
+                                            <div className="mt-2">
+                                                <input
+                                                    type="url"
+                                                    value={customImageUrl}
+                                                    onChange={(e) => setCustomImageUrl(e.target.value)}
+                                                    placeholder="https://example.com/image.jpg"
+                                                    className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-slate-900/50 border border-gray-200 dark:border-slate-700 focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 focus:border-transparent outline-none transition-all text-gray-900 dark:text-gray-100 placeholder-gray-400"
+                                                />
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    {/* New Fields: Author & Category */}
+                                    <div className="space-y-2">
+                                        <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Author Name</label>
+                                        <input
+                                            type="text"
+                                            value={authorName}
+                                            onChange={(e) => setAuthorName(e.target.value)}
+                                            placeholder="e.g. John Doe (Optional)"
+                                            className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-slate-900/50 border border-gray-200 dark:border-slate-700 focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 focus:border-transparent outline-none transition-all text-gray-900 dark:text-gray-100 placeholder-gray-400"
+                                        />
+                                    </div>
+
+                                    <div className="space-y-2">
+                                        <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Category</label>
+                                        <input
+                                            type="text"
+                                            value={category}
+                                            onChange={(e) => setCategory(e.target.value)}
+                                            placeholder="e.g. Technology"
+                                            className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-slate-900/50 border border-gray-200 dark:border-slate-700 focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 focus:border-transparent outline-none transition-all text-gray-900 dark:text-gray-100 placeholder-gray-400"
+                                        />
+                                    </div>
+
+                                    <div className="space-y-2 md:col-span-2">
+                                        <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Tags (Comma Separated)</label>
+                                        <input
+                                            type="text"
+                                            value={tags}
+                                            onChange={(e) => setTags(e.target.value)}
+                                            placeholder="e.g. AI, Tech, Future"
+                                            className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-slate-900/50 border border-gray-200 dark:border-slate-700 focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 focus:border-transparent outline-none transition-all text-gray-900 dark:text-gray-100 placeholder-gray-400"
+                                        />
                                     </div>
                                 </div>
 
