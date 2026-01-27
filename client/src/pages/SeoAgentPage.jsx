@@ -120,9 +120,6 @@ const SeoAgentPage = () => {
                 // New Fields
                 author_name: authorName,
                 category: category,
-                // New Fields
-                author_name: authorName,
-                category: category,
                 tags: tags ? tags.split(',').map(t => t.trim()) : [],
                 image_option: imageOption,
                 custom_image_url: customImageUrl
