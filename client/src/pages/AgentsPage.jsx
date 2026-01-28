@@ -1,8 +1,10 @@
 import React from 'react';
+import { useAuth } from '../context/AuthContext';
 import AgentGrid from '../components/AgentGrid';
 import { agents } from '../data/agentsData';
 
 const AgentsPage = ({ onAgentSelect }) => {
+    const { user } = useAuth();
     const handleCardClick = (agent) => {
         console.log('Agent clicked:', agent);
         if (onAgentSelect) {
@@ -65,24 +67,26 @@ const AgentsPage = ({ onAgentSelect }) => {
                 <AgentGrid agents={agents} onCardClick={handleCardClick} />
 
                 {/* CTA Section */}
-                <div className="mt-20 text-center">
-                    <div className="bg-gradient-to-r from-indigo-600 to-purple-600 rounded-3xl p-12 text-white shadow-2xl">
-                        <h2 className="text-3xl font-bold mb-4">
-                            Ready to automate your workflows?
-                        </h2>
-                        <p className="text-indigo-100 mb-8 text-lg max-w-2xl mx-auto">
-                            Start deploying AI agents today and transform your business operations
-                            with intelligent automation.
-                        </p>
-                        <button className="
-              bg-white text-indigo-600 px-8 py-4 rounded-xl font-semibold
-              hover:bg-indigo-50 transition-colors duration-200
-              shadow-lg hover:shadow-xl transform hover:-translate-y-0.5
-            ">
-                            Get Started Free
-                        </button>
+                {!user && (
+                    <div className="mt-20 text-center">
+                        <div className="bg-gradient-to-r from-indigo-600 to-purple-600 rounded-3xl p-12 text-white shadow-2xl">
+                            <h2 className="text-3xl font-bold mb-4">
+                                Ready to automate your workflows?
+                            </h2>
+                            <p className="text-indigo-100 mb-8 text-lg max-w-2xl mx-auto">
+                                Start deploying AI agents today and transform your business operations
+                                with intelligent automation.
+                            </p>
+                            <button className="
+                  bg-white text-indigo-600 px-8 py-4 rounded-xl font-semibold
+                  hover:bg-indigo-50 transition-colors duration-200
+                  shadow-lg hover:shadow-xl transform hover:-translate-y-0.5
+                ">
+                                Get Started Free
+                            </button>
+                        </div>
                     </div>
-                </div>
+                )}
             </div>
         </div>
     );

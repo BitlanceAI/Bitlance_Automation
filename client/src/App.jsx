@@ -61,11 +61,9 @@ function App() {
   // Add home and other pages to dashboard layout (no public nav/footer)
   const isDashboard = normalizedPath.includes('dashboard') ||
     normalizedPath.includes('seo-agent') ||
-    normalizedPath.includes('seo-agent') ||
     (normalizedPath.includes('blog') && !normalizedPath.startsWith('/blogs')) ||
     normalizedPath.includes('settings') ||
     normalizedPath.includes('broadcast') ||
-    normalizedPath.includes('agents') ||
     normalizedPath.includes('home'); // Add home to dashboard check
 
   return (
