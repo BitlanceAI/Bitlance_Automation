@@ -10,6 +10,48 @@ class PerplexityService {
         }
     }
 
+    async generateTitleAndKeywords(industry) {
+        try {
+            const prompt = `Act as an SEO expert. For the industry "${industry}", suggest a high-potential, trending blog post Topic (Title) and a list of 5 relevant Keywords that would rank well. 
+            Format exactly as JSON:
+            {
+               "topic": "The exact title of the blog post",
+               "keywords": "keyword1, keyword2, keyword3, keyword4, keyword5"
+            }`;
+
+            const response = await axios.post(
+                this.baseUrl,
+                {
+                    model: "sonar-pro",
+                    messages: [
+                        { role: "system", content: "You are an SEO expert." },
+                        { role: "user", content: prompt },
+                    ],
+                    max_tokens: 500,
+                    n: 1,
+                },
+                {
+                    headers: {
+                        Authorization: `Bearer ${this.apiKey}`,
+                        "Content-Type": "application/json",
+                    },
+                }
+            );
+            const content = response.data.choices?.[0]?.message?.content || "";
+            // Clean markdown json blocks if any
+            const cleaned = content.replace(/```json/g, '').replace(/```/g, '').trim();
+            return JSON.parse(cleaned);
+
+        } catch (error) {
+            console.error('Perplexity Industry Idea Error:', error.message);
+            // Fallback
+            return {
+                topic: `Top trends in ${industry}`,
+                keywords: `${industry}, trends, news, update, guide`
+            };
+        }
+    }
+
     async generateKeywords(topic) {
         try {
             const prompt = `Generate relevant keywords for "${topic}" as comma-separated list.`;
@@ -38,21 +80,57 @@ class PerplexityService {
         }
     }
 
-    async generateBlogContent(topic, keywords, language, audience, style, lengthNum, attempts, maxAttempts, variants) {
+    async generateBlogContent(topic, keywords, language, audience, style, lengthNum, attempts, maxAttempts, variants, interlinks = []) {
         let blogText = "";
         let wordCount = 0;
         let generatedKeywords = keywords;
-
-        // Simple loop implementation based on user request (though recursive or iterative is fine)
-        // User's code was: while (wordCount < lengthNum && attempts < maxAttempts)
-        // We will do a single robust call first, as Perplexity usually handles length well if prompted correctly.
-        // But let's follow the user's logic of appending if short.
 
         let currentAttempts = 0;
 
         while (wordCount < lengthNum && currentAttempts < maxAttempts) {
             currentAttempts++;
-            const prompt = `Write an engaging blog for ${audience} in ${language} on "${topic}". Include keywords: ${generatedKeywords || "none"}. Use ${style} style. Ensure at least ${lengthNum} words. ⚠️ Important: Do not use [1], [2], or citation numbers. Instead, insert valid external references as clickable HTML links (<a href="..." target="_blank" rel="noopener noreferrer">text</a>). All links must be real websites (Wikipedia, government, research journals, or news sources). ${blogText ? "Continue from previous text: " + blogText.substring(blogText.length - 100) : ""}`;
+
+            // Build Interlinking Instructions
+            let interlinkInstructions = "";
+            if (interlinks && interlinks.length > 0) {
+                interlinkInstructions = `
+                MANDATORY INTERLINKING RULES:
+                1. You MUST include links to the following articles within the content.
+                2. Do NOT list them at the end. Do NOT show the raw URL.
+                3. You MUST use relevant keywords or phrases as the anchor text for the link.
+                4. The link must flow naturally in the sentence.
+                
+                Example:
+                Good: "For more details on [market trends](URL), check our guide."
+                Bad: "Check this link: URL" or "Read more: [Title](URL)"
+                
+                Articles to integrate:
+                ${interlinks.map(link => `- Link to "${link.title}" (${link.link})`).join('\n')}
+                `;
+            }
+
+            // Construct the Advanced Prompt
+            const prompt = `
+            You are a professional human blogger who writes helpful, experience-driven real estate articles in first person.
+            Write an engaging blog for ${audience} in ${language} on "${topic}". 
+            
+            Keywords to include: ${generatedKeywords || "none"}.
+            Style: ${style}. 
+            Minimum Words: ${lengthNum}.
+
+            CONTENT REQUIREMENTS:
+            - Write in first person, sharing real-experience style insights.
+            - Tone: friendly, conversational, easy to understand. Avoid jargon.
+            - Structure: Hooking Introduction, 4–6 main sections, Conclusion with CTA.
+            - Use Markdown format: ## for main sections, ### for subsections, **bold**, *italic*.
+            
+            ${interlinkInstructions}
+
+            ⚠️ Important: 
+            - Do not use [1], [2] citation numbers. 
+            - Insert valid external references as clickable Markdown links if relevant.
+            - ${blogText ? "Continue strictly from previous text: " + blogText.substring(blogText.length - 100) : "Start from the beginning."}
+            `;
 
             try {
                 const n_variants = parseInt(variants, 10);
@@ -65,10 +143,10 @@ class PerplexityService {
                         model: "sonar-pro",
                         messages: [
                             { role: "system", content: "You are an expert content writer." },
-                            { role: "user", content: prompt },
+                            { role: "user", content: prompt + "\n\nOutput valid Markdown." },
                         ],
                         max_tokens: 4000,
-                        n: safe_n,
+                        n: 1, // sonar-pro only supports n=1
                     },
                     {
                         headers: {

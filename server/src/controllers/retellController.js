@@ -1,4 +1,4 @@
-import { supabase } from '../config/supabaseClient.js';
+import { supabase, supabaseAdmin } from '../config/supabaseClient.js';
 import OpenAI from 'openai';
 
 const openai = new OpenAI({
@@ -6,7 +6,7 @@ const openai = new OpenAI({
 });
 
 // Helper: Analyze transcript
-async function analyzeTranscriptForMeetings(transcript, callId) {
+async function analyzeTranscriptForMeetings(transcript, callId, userId) {
     try {
         if (!transcript || transcript.trim().length === 0) return null;
 
@@ -30,6 +30,7 @@ async function analyzeTranscriptForMeetings(transcript, callId) {
                 .from('meetings')
                 .insert({
                     call_id: callId,
+                    user_id: userId,
                     contact_name: result.meeting.contact_name,
                     contact_phone: result.meeting.contact_phone,
                     title: result.meeting.title,
@@ -57,6 +58,38 @@ async function analyzeTranscriptForMeetings(transcript, callId) {
 
 export const createWebCall = async (req, res) => {
     try {
+        // Authenticate User
+        const authHeader = req.headers.authorization;
+        if (!authHeader) return res.status(401).json({ error: 'Unauthorized: Missing token' });
+
+        const token = authHeader.replace('Bearer ', '');
+        const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+
+        if (authError || !user) {
+            console.error('Auth error:', authError);
+            return res.status(401).json({ error: 'Unauthorized: Invalid token' });
+        }
+
+        // 1. Check Credits
+        const CALL_COST = 5;
+        // Use supabaseAdmin to check balance to avoid RLS issues even for reading if policy is strict, though scoped/anon should work for read usually.
+        // Let's use supabaseAdmin for consistency in backend logic where possible for sensitive credit ops.
+        const { data: creditData, error: creditError } = await supabaseAdmin
+            .from('user_credits')
+            .select('balance')
+            .eq('user_id', user.id)
+            .single();
+
+        if (creditError && creditError.code !== 'PGRST116') {
+            console.error('Credit check error:', creditError);
+            return res.status(500).json({ error: 'Failed to check credits' });
+        }
+
+        const currentBalance = creditData?.balance || 0;
+        if (currentBalance < CALL_COST) {
+            return res.status(402).json({ error: 'Insufficient credits', required: CALL_COST, balance: currentBalance });
+        }
+
         const { user_phone } = req.body;
         const API_KEY = process.env.RETELL_API_KEY;
 
@@ -79,14 +112,32 @@ export const createWebCall = async (req, res) => {
             },
             body: JSON.stringify({
                 agent_id: agentId,
-                metadata: { user_phone }
+                metadata: {
+                    user_phone,
+                    user_id: user.id
+                }
             }),
         });
 
         if (!callResponse.ok) throw new Error('Failed to create web call');
         const callData = await callResponse.json();
-        res.json(callData);
 
+        // 2. Deduct Credits
+        const { error: deductError } = await supabaseAdmin
+            .from('user_credits')
+            .update({
+                balance: currentBalance - CALL_COST,
+                updated_at: new Date().toISOString()
+            })
+            .eq('user_id', user.id);
+
+        if (deductError) {
+            console.error('Failed to deduct credits after call creation:', deductError);
+        } else {
+            console.log(`Call created. Credits deducted: ${CALL_COST}. New balance: ${currentBalance - CALL_COST}`);
+        }
+
+        res.json(callData);
     } catch (error) {
         console.error('Error creating web call:', error);
         res.status(500).json({ error: error.message });
@@ -95,6 +146,35 @@ export const createWebCall = async (req, res) => {
 
 export const createPhoneCall = async (req, res) => {
     try {
+        // Authenticate User
+        const authHeader = req.headers.authorization;
+        if (!authHeader) return res.status(401).json({ error: 'Unauthorized: Missing token' });
+
+        const token = authHeader.replace('Bearer ', '');
+        const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+
+        if (authError || !user) {
+            return res.status(401).json({ error: 'Unauthorized: Invalid token' });
+        }
+
+        // 1. Check Credits
+        const CALL_COST = 5;
+        const { data: creditData, error: creditError } = await supabaseAdmin
+            .from('user_credits')
+            .select('balance')
+            .eq('user_id', user.id)
+            .single();
+
+        if (creditError && creditError.code !== 'PGRST116') {
+            console.error('Credit check error:', creditError);
+            return res.status(500).json({ error: 'Failed to check credits' });
+        }
+
+        const currentBalance = creditData?.balance || 0;
+        if (currentBalance < CALL_COST) {
+            return res.status(402).json({ error: 'Insufficient credits', required: CALL_COST, balance: currentBalance });
+        }
+
         const { to_number } = req.body;
         const API_KEY = process.env.RETELL_API_KEY;
 
@@ -153,6 +233,9 @@ export const createPhoneCall = async (req, res) => {
                 from_number: fromNumber,
                 to_number: to_number,
                 agent_id: agent.agent_id,
+                metadata: {
+                    user_id: user.id
+                }
             }),
         });
 
@@ -163,6 +246,21 @@ export const createPhoneCall = async (req, res) => {
 
         const callData = await callResponse.json();
         console.log('Phone call created successfully:', callData.call_id);
+
+        // 2. Deduct Credits (Phone Call)
+        const { error: deductError } = await supabaseAdmin
+            .from('user_credits')
+            .update({
+                balance: currentBalance - CALL_COST,
+                updated_at: new Date().toISOString()
+            })
+            .eq('user_id', user.id);
+
+        if (deductError) {
+            console.error('Failed to deduct credits after phone call creation:', deductError);
+        } else {
+            console.log(`Phone Call created. Credits deducted: ${CALL_COST}. New balance: ${currentBalance - CALL_COST}`);
+        }
 
         res.json(callData);
 
@@ -233,7 +331,7 @@ export const syncCalls = async (req, res) => {
                     }
                 }
 
-                const { error } = await supabase
+                const { error } = await supabaseAdmin
                     .from('sales_calls')
                     .upsert({
                         call_id: call.call_id,
@@ -251,6 +349,7 @@ export const syncCalls = async (req, res) => {
                         call_type: call.call_type || null,
                         from_number: call.from_number || null,
                         to_number: call.to_number || null,
+                        user_id: call.metadata?.user_id || null,
                         created_at: new Date(call.start_timestamp).toISOString()
                     }, { onConflict: 'call_id' });
 
@@ -259,6 +358,13 @@ export const syncCalls = async (req, res) => {
                     errors++;
                 } else {
                     syncedCount++;
+
+                    // Trigger meeting analysis if call is completed and has a transcript
+                    if (call.call_status === 'ended' && call.transcript) {
+                        // Pass userId to the analysis function
+                        const userId = call.metadata?.user_id || null;
+                        await analyzeTranscriptForMeetings(call.transcript, call.call_id, userId);
+                    }
                 }
 
             } catch (err) {

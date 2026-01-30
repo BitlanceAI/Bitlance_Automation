@@ -114,8 +114,13 @@ const SalesDashboard = () => {
     const fetchMeetings = async () => {
         try {
             setLoadingMeetings(true);
-            const meetingsData = await meetingsService.fetchMeetings();
-            setMeetings(meetingsData);
+            const { data, error } = await supabase
+                .from('meetings')
+                .select('*')
+                .order('scheduled_date', { ascending: true });
+
+            if (error) throw error;
+            setMeetings(data);
             setLoadingMeetings(false);
         } catch (error) {
             console.error('Error fetching meetings:', error);
@@ -239,16 +244,22 @@ const SalesDashboard = () => {
             const url = `${API_BASE_URL}/api/create-phone-call`;
             console.log('Making call to:', url);
 
+            const { data: { session } } = await supabase.auth.getSession();
+            const token = session?.access_token;
+
             const response = await fetch(url, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
                 body: JSON.stringify({ to_number: phoneNumber })
             });
 
             if (!response.ok) {
                 const contentType = response.headers.get('content-type');
                 let errorMessage = `Server returned ${response.status} ${response.statusText}`;
-                
+
                 if (contentType && contentType.includes('application/json')) {
                     const errorData = await response.json();
                     errorMessage = errorData.error || errorMessage;

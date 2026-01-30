@@ -22,9 +22,15 @@ import {
 import ThemeToggle from '../components/ThemeToggle';
 import blogService from '../services/blogService';
 import API_BASE_URL from '../config.js';
+import ProfileSelection from '../components/ProfileSelection';
 
 const SeoAgentPage = () => {
     const navigate = useNavigate();
+    const { user, credits, refreshCredits } = useAuth();
+
+    // Mode State
+    const [generationMode, setGenerationMode] = useState('topic'); // 'topic' or 'industry'
+    const [industry, setIndustry] = useState('');
 
     // Form State
     const [topic, setTopic] = useState('');
@@ -39,6 +45,17 @@ const SeoAgentPage = () => {
     const [authorName, setAuthorName] = useState('');
     const [category, setCategory] = useState('');
     const [tags, setTags] = useState('');
+
+    // Profile State
+    const [selectedProfile, setSelectedProfile] = useState(null);
+
+    const handleProfileSelect = (selection) => {
+        setSelectedProfile(selection);
+        // Optional: Sync simple name field if needed for UI feedback elsewhere
+        if (selection.profileData?.name) {
+            setAuthorName(selection.profileData.name);
+        }
+    };
 
     // Image Options State
     const [imageOption, setImageOption] = useState('auto'); // 'auto', 'custom', 'none'
@@ -65,27 +82,34 @@ const SeoAgentPage = () => {
 
     // Load articles from Firebase on mount
     useEffect(() => {
-        loadArticles();
-    }, []);
+        if (user) {
+            loadArticles();
+        }
+    }, [user]);
 
     const loadArticles = async () => {
+        if (!user) return;
         try {
             setLoadingArticles(true);
-            const fetchedArticles = await blogService.getArticles();
+            const fetchedArticles = await blogService.getArticles(user.id);
             setArticles(fetchedArticles);
         } catch (error) {
             console.error('Error loading articles:', error);
-            alert('Failed to load articles from Firebase');
+            // alert('Failed to load articles from Firebase');
         } finally {
             setLoadingArticles(false);
         }
     };
 
-    const { user, credits, refreshCredits } = useAuth();
+
 
     const handleGenerate = async () => {
-        if (!topic.trim()) {
+        if (generationMode === 'topic' && !topic.trim()) {
             alert('Please enter a topic');
+            return;
+        }
+        if (generationMode === 'industry' && !industry.trim()) {
+            alert('Please enter an industry');
             return;
         }
 
@@ -110,22 +134,69 @@ const SeoAgentPage = () => {
         setIsGenerating(true);
         try {
             const payload = {
-                topic,
-                keywords,
+                topic: generationMode === 'topic' ? topic : null,
+                industry: generationMode === 'industry' ? industry : null,
+                keywords: generationMode === 'topic' ? keywords : null, // Keywords auto-generated in industry mode
                 language,
-                writingStyle,
-                articleLength,
-                targetAudience,
-                variants,
-                // New Fields
+                style: writingStyle,
+                length: articleLength,
+                audience: targetAudience,
+                variants: variants === 'Max 3 for demo' ? 3 : 1,
+                // New fields
                 author_name: authorName,
-                category: category,
-                tags: tags ? tags.split(',').map(t => t.trim()) : [],
+                category,
+                tags: tags.split(',').map(t => t.trim()).filter(Boolean),
+                source_type: sourceType,
+                // WordPress
+                wp_url: wpUrl,
+                wp_username: wpUsername,
+                wp_password: wpPassword,
+                // Image
                 image_option: imageOption,
                 custom_image_url: customImageUrl
             };
 
-            // 1. Generate article via backend API
+            // Handle Profile Logic (Insert into payload)
+            let authorProfileId = null;
+            let authorDetails = null;
+
+            if (selectedProfile) {
+                if (selectedProfile.type === 'existing') {
+                    authorProfileId = selectedProfile.profileId;
+                    // Override author_name with the profile's name to ensure consistency
+                    payload.author_name = selectedProfile.profileData?.name;
+                    payload.author_bio = selectedProfile.profileData?.bio; // Add bio if supported by API
+                } else if (selectedProfile.type === 'manual') {
+                    authorDetails = selectedProfile.profileData;
+                    payload.author_name = authorDetails.name;
+                    payload.author_bio = authorDetails.bio;
+
+                    if (selectedProfile.saveAsNew) {
+                        const { data: { session } } = await supabase.auth.getSession();
+                        const token = session?.access_token;
+                        try {
+                            const profileRes = await fetch(`${API_BASE_URL}/api/profiles`, {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'Authorization': `Bearer ${token}`
+                                },
+                                body: JSON.stringify(authorDetails)
+                            });
+                            const profileData = await profileRes.json();
+                            if (profileData.success) {
+                                authorProfileId = profileData.profile.id;
+                            }
+                        } catch (err) {
+                            console.error('Failed to create profile:', err);
+                        }
+                    }
+                }
+            }
+
+            payload.author_profile_id = authorProfileId;
+            payload.author_details = authorDetails;
+
             const { data: { session } } = await supabase.auth.getSession();
             const token = session?.access_token;
 
@@ -141,21 +212,8 @@ const SeoAgentPage = () => {
             const data = await response.json();
 
             if (data.success) {
-                // Deduct credits
-                try {
-                    await fetch(`${API_BASE_URL}/api/credits/deduct`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            userId: user.id,
-                            amount: CREDIT_COST,
-                            action: 'generate_article_seo_agent'
-                        })
-                    });
-                    refreshCredits(); // Update local credit state
-                } catch (creditError) {
-                    console.error('Error deducting credits:', creditError);
-                }
+                // Deduct credits - handled by backend now
+                refreshCredits(); // Update local credit state via context
 
                 // If WordPress source, upload to WordPress and send to Google Sheets
                 if (sourceType === 'wordpress') {
@@ -370,19 +428,6 @@ const SeoAgentPage = () => {
                                             <h3 className="text-lg font-semibold text-blue-900 dark:text-blue-300">WordPress Auto-Upload Settings</h3>
                                         </div>
 
-                                        <div>
-                                            <label className="block text-sm font-semibold mb-2 text-blue-900 dark:text-blue-300">
-                                                WordPress Website URL *
-                                            </label>
-                                            <input
-                                                type="url"
-                                                value={wpUrl}
-                                                onChange={(e) => setWpUrl(e.target.value)}
-                                                placeholder="https://yourwebsite.com"
-                                                className="w-full px-4 py-3 text-base rounded-lg bg-white dark:bg-slate-900/50 border border-blue-300 dark:border-blue-600 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
-                                            />
-                                        </div>
-
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                                             <div>
                                                 <label className="block text-sm font-semibold mb-2 text-blue-900 dark:text-blue-300">
@@ -424,33 +469,106 @@ const SeoAgentPage = () => {
                                     </div>
                                 )}
 
-                                {/* Topic */}
-                                <div className="space-y-2">
-                                    <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Topic</label>
-                                    <div className="relative">
-                                        <textarea
-                                            value={topic}
-                                            onChange={(e) => setTopic(e.target.value)}
-                                            placeholder="Enter your article topic or provide a brief description..."
-                                            className="w-full h-32 px-4 py-3 rounded-xl bg-gray-50 dark:bg-slate-900/50 border border-gray-200 dark:border-slate-700 focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 focus:border-transparent outline-none transition-all resize-none text-gray-900 dark:text-gray-100 placeholder-gray-400"
-                                        />
-                                        <Edit3 className="absolute bottom-3 right-3 text-gray-400" size={16} />
-                                    </div>
-                                    <p className="text-xs text-gray-500 dark:text-gray-400">Provide a clear topic or description for your article</p>
+                                {/* Interlinking Section (Available for all modes) */}
+                                <div className="space-y-2 mt-4">
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                                        Website URL for Interlinking (Optional)
+                                    </label>
+                                    <input
+                                        type="url"
+                                        value={wpUrl}
+                                        onChange={(e) => setWpUrl(e.target.value)}
+                                        placeholder="https://yourwebsite.com (Auto-fetches posts for interlinking)"
+                                        className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-slate-900/50 border border-gray-200 dark:border-slate-700 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all text-gray-900 dark:text-white"
+                                    />
+                                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                                        Providing this URL allows the AI to read your recent posts and intelligently link to them in the article.
+                                    </p>
                                 </div>
 
-                                {/* Keywords */}
-                                <div className="space-y-2">
-                                    <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Keywords (Comma Separated)</label>
-                                    <input
-                                        type="text"
-                                        value={keywords}
-                                        onChange={(e) => setKeywords(e.target.value)}
-                                        placeholder="e.g. Reactjs, Hook, Context"
-                                        className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-slate-900/50 border border-gray-200 dark:border-slate-700 focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 focus:border-transparent outline-none transition-all text-gray-900 dark:text-gray-100 placeholder-gray-400"
-                                    />
-                                    <p className="text-xs text-gray-500 dark:text-gray-400">Add relevant keywords to optimize your content</p>
+                                {/* Mode Selection */}
+                                <div className="mb-6 grid grid-cols-2 gap-4 p-1 bg-gray-100 dark:bg-slate-700/50 rounded-lg">
+                                    <button
+                                        type="button"
+                                        onClick={() => setGenerationMode('topic')}
+                                        className={`py-2 px-4 rounded-md text-sm font-medium transition-all ${generationMode === 'topic'
+                                            ? 'bg-white dark:bg-slate-600 shadow-sm text-indigo-600 dark:text-indigo-400'
+                                            : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
+                                            }`}
+                                    >
+                                        <div className="flex items-center justify-center gap-2">
+                                            <Edit3 className="w-4 h-4" />
+                                            <span>Manual Entry</span>
+                                        </div>
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => setGenerationMode('industry')}
+                                        className={`py-2 px-4 rounded-md text-sm font-medium transition-all ${generationMode === 'industry'
+                                            ? 'bg-white dark:bg-slate-600 shadow-sm text-indigo-600 dark:text-indigo-400'
+                                            : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
+                                            }`}
+                                    >
+                                        <div className="flex items-center justify-center gap-2">
+                                            <Bot className="w-4 h-4" />
+                                            <span>Auto-Generate from Industry</span>
+                                        </div>
+                                    </button>
                                 </div>
+
+                                {generationMode === 'topic' ? (
+                                    <>
+                                        {/* Topic */}
+                                        <div className="space-y-2">
+                                            <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Topic</label>
+                                            <div className="relative">
+                                                <textarea
+                                                    value={topic}
+                                                    onChange={(e) => setTopic(e.target.value)}
+                                                    placeholder="Enter your article topic or provide a brief description..."
+                                                    className="w-full h-32 px-4 py-3 rounded-xl bg-gray-50 dark:bg-slate-900/50 border border-gray-200 dark:border-slate-700 focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 focus:border-transparent outline-none transition-all resize-none text-gray-900 dark:text-gray-100 placeholder-gray-400"
+                                                />
+                                                <Edit3 className="absolute bottom-3 right-3 text-gray-400" size={16} />
+                                            </div>
+                                            <p className="text-xs text-gray-500 dark:text-gray-400">Provide a clear topic or description for your article</p>
+                                        </div>
+
+                                        {/* Keywords */}
+                                        <div className="space-y-2">
+                                            <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Keywords (Comma Separated)</label>
+                                            <input
+                                                type="text"
+                                                value={keywords}
+                                                onChange={(e) => setKeywords(e.target.value)}
+                                                placeholder="e.g. Reactjs, Hook, Context"
+                                                className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-slate-900/50 border border-gray-200 dark:border-slate-700 focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 focus:border-transparent outline-none transition-all text-gray-900 dark:text-gray-100 placeholder-gray-400"
+                                            />
+                                            <p className="text-xs text-gray-500 dark:text-gray-400">Add relevant keywords to optimize your content</p>
+                                        </div>
+                                    </>
+                                ) : (
+                                    /* Industry Input */
+                                    <div className="mb-6 space-y-2">
+                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                                            Industry / Niche
+                                        </label>
+                                        <input
+                                            type="text"
+                                            value={industry}
+                                            onChange={(e) => setIndustry(e.target.value)}
+                                            placeholder="E.g., Real Estate, Digital Marketing, SaaS, Crypto"
+                                            className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-slate-900/50 border border-gray-200 dark:border-slate-700 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all text-gray-900 dark:text-white"
+                                        />
+                                        <div className="mt-2 bg-indigo-50 dark:bg-indigo-900/20 p-3 rounded-lg border border-indigo-100 dark:border-indigo-900/50">
+                                            <p className="text-sm text-indigo-700 dark:text-indigo-400 flex items-start gap-2">
+                                                <Bot className="w-4 h-4 mt-0.5 shrink-0" />
+                                                <span>
+                                                    AI will analyze this industry to find a high-ranking, trending topic and the best keywords automatically.
+                                                </span>
+                                            </p>
+                                        </div>
+                                    </div>
+                                )}
 
                                 {/* Dropdowns Grid */}
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -585,14 +703,7 @@ const SeoAgentPage = () => {
 
                                     {/* New Fields: Author & Category */}
                                     <div className="space-y-2">
-                                        <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Author Name</label>
-                                        <input
-                                            type="text"
-                                            value={authorName}
-                                            onChange={(e) => setAuthorName(e.target.value)}
-                                            placeholder="e.g. John Doe (Optional)"
-                                            className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-slate-900/50 border border-gray-200 dark:border-slate-700 focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 focus:border-transparent outline-none transition-all text-gray-900 dark:text-gray-100 placeholder-gray-400"
-                                        />
+                                        <ProfileSelection onProfileSelect={handleProfileSelect} />
                                     </div>
 
                                     <div className="space-y-2">

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import SEOHead from '../components/SEOHead';
-import { Loader2, ArrowLeft, Calendar, User, Clock, Share2, Tag } from 'lucide-react';
+import { Loader2, ArrowLeft, Calendar, User, Clock, Share2, Tag, Facebook, Twitter, Linkedin, Globe, Mail, Phone } from 'lucide-react';
 import API_BASE_URL from '../config.js';
 
 const PublicArticlePage = () => {
@@ -175,7 +175,89 @@ const PublicArticlePage = () => {
                 )}
 
                 {/* Share / Tags section could go here */}
-                <div className="mt-12 pt-8 border-t border-gray-200 dark:border-slate-700">
+                {/* Author Profile Section */}
+                <div className="mt-16 mb-12 pt-8 border-t border-gray-200 dark:border-slate-700">
+                    <h3 className="text-xl font-bold mb-6 text-gray-900 dark:text-white uppercase tracking-wider text-sm">About the Author</h3>
+
+                    <div className="flex flex-col md:flex-row gap-6 items-start bg-gray-50 dark:bg-slate-800/50 p-6 rounded-2xl">
+                        {/* Avatar */}
+                        <div className="flex-shrink-0">
+                            {(article.author?.profile_image || article.author_details?.profile_image) ? (
+                                <img
+                                    src={article.author?.profile_image || article.author_details?.profile_image}
+                                    alt={article.author_name}
+                                    className="w-24 h-24 md:w-32 md:h-32 rounded-xl object-cover shadow-sm border-2 border-white dark:border-slate-700"
+                                />
+                            ) : (
+                                <div className="w-24 h-24 md:w-32 md:h-32 rounded-xl bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center text-indigo-600 dark:text-indigo-400">
+                                    <User size={40} />
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Details */}
+                        <div className="flex-1">
+                            <h4 className="text-xl md:text-2xl font-bold text-gray-900 dark:text-gray-100 mb-1">
+                                {article.author?.name || article.author_details?.name || article.author_name || 'Bitlance Author'}
+                            </h4>
+
+                            {(article.author?.role || article.author_details?.role) && (
+                                <p className="text-indigo-600 dark:text-indigo-400 font-medium mb-3 text-sm md:text-base">
+                                    {article.author?.role || article.author_details?.role}
+                                </p>
+                            )}
+
+                            <div className="prose prose-sm dark:prose-invert mb-4 text-gray-600 dark:text-gray-300">
+                                <p>{article.author?.bio || article.author_details?.bio || article.author_bio || 'Content Creator at Bitlance Tech Hub'}</p>
+                            </div>
+
+                            {/* Social Links */}
+                            {(() => {
+                                const socials = article.author?.social_links || article.author_details?.social_links || {};
+                                const hasSocials = Object.keys(socials).length > 0;
+
+                                if (!hasSocials) return null;
+
+                                return (
+                                    <div className="flex flex-wrap gap-3">
+                                        {socials.facebook && (
+                                            <a href={socials.facebook} target="_blank" rel="noopener noreferrer" className="p-2 bg-white dark:bg-slate-700 text-blue-600 rounded-lg hover:shadow-md transition-all" title="Facebook">
+                                                <Facebook size={18} />
+                                            </a>
+                                        )}
+                                        {socials.twitter && (
+                                            <a href={socials.twitter} target="_blank" rel="noopener noreferrer" className="p-2 bg-white dark:bg-slate-700 text-sky-500 rounded-lg hover:shadow-md transition-all" title="Twitter/X">
+                                                <Twitter size={18} />
+                                            </a>
+                                        )}
+                                        {socials.linkedin && (
+                                            <a href={socials.linkedin} target="_blank" rel="noopener noreferrer" className="p-2 bg-white dark:bg-slate-700 text-blue-700 rounded-lg hover:shadow-md transition-all" title="LinkedIn">
+                                                <Linkedin size={18} />
+                                            </a>
+                                        )}
+                                        {socials.website && (
+                                            <a href={socials.website} target="_blank" rel="noopener noreferrer" className="p-2 bg-white dark:bg-slate-700 text-gray-700 dark:text-gray-300 rounded-lg hover:shadow-md transition-all" title="Website">
+                                                <Globe size={18} />
+                                            </a>
+                                        )}
+                                        {socials.email && (
+                                            <a href={`mailto:${socials.email}`} className="p-2 bg-white dark:bg-slate-700 text-red-500 rounded-lg hover:shadow-md transition-all" title="Email">
+                                                <Mail size={18} />
+                                            </a>
+                                        )}
+                                        {socials.phone && (
+                                            <a href={`tel:${socials.phone}`} className="p-2 bg-white dark:bg-slate-700 text-green-600 rounded-lg hover:shadow-md transition-all" title="Phone">
+                                                <Phone size={18} />
+                                            </a>
+                                        )}
+                                    </div>
+                                );
+                            })()}
+                        </div>
+                    </div>
+                </div>
+
+                <div className="mt-8 pt-8 border-t border-gray-200 dark:border-slate-700">
                     <h3 className="text-lg font-bold mb-4 text-gray-900 dark:text-white">Share this article</h3>
                     <div className="flex gap-4">
                         <button

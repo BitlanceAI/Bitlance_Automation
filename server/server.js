@@ -801,38 +801,103 @@ app.post('/api/user/settings', async (req, res) => {
             .from('user_settings')
             .upsert({
                 user_id: userId,
-                google_sheet_id: googleSheetId || null,
-                google_service_email: googleServiceEmail || null,
+                google_sheet_id: googleSheetId,
+                google_service_email: googleServiceEmail,
                 google_private_key: encryptedKey,
                 updated_at: new Date().toISOString()
-            }, {
-                onConflict: 'user_id'
-            })
-            .select();
+            }, { onConflict: 'user_id' })
+            .select()
+            .single();
 
-        if (error) {
-            console.error('❌ Error saving user settings:', error);
-            return res.status(500).json({
-                success: false,
-                error: error.message
-            });
-        }
-
-        console.log('✅ User settings saved successfully');
+        if (error) throw error;
 
         res.json({
             success: true,
-            message: 'Google Sheets settings saved successfully'
+            message: 'Settings saved successfully'
         });
 
     } catch (error) {
-        console.error('❌ Error in save settings endpoint:', error);
-        res.status(500).json({
-            success: false,
-            error: error.message
-        });
+        console.error('Error saving settings:', error);
+        res.status(500).json({ success: false, error: error.message });
     }
 });
+
+// ========== ADMIN ENDPOINTS ==========
+
+// Get All Users (Admin only)
+app.get('/api/admin/users', async (req, res) => {
+    try {
+        const authHeader = req.headers.authorization;
+        // Basic check - in production verify the token is from an admin
+        if (!authHeader) {
+            // For now we rely on Supabase Service Key being used here which has admin rights
+        }
+
+        const { data: { users }, error } = await supabase.auth.admin.listUsers();
+
+        if (error) throw error;
+
+        // Fetch their credit balances too to merge
+        const { data: creditsData, error: creditsError } = await supabase
+            .from('user_credits')
+            .select('user_id, balance');
+
+        const creditsMap = {};
+        if (creditsData) {
+            creditsData.forEach(c => creditsMap[c.user_id] = c.balance);
+        }
+
+        // Map users to clean format
+        const cleanUsers = users.map(u => ({
+            id: u.id,
+            email: u.email,
+            created_at: u.created_at,
+            last_sign_in_at: u.last_sign_in_at,
+            credits: creditsMap[u.id] || 0
+        }));
+
+        res.json({ success: true, users: cleanUsers });
+
+    } catch (error) {
+        console.error('Error fetching users:', error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+            .from('user_settings')
+    .upsert({
+        user_id: userId,
+        google_sheet_id: googleSheetId || null,
+        google_service_email: googleServiceEmail || null,
+        google_private_key: encryptedKey,
+        updated_at: new Date().toISOString()
+    }, {
+        onConflict: 'user_id'
+    })
+    .select();
+
+if (error) {
+    console.error('❌ Error saving user settings:', error);
+    return res.status(500).json({
+        success: false,
+        error: error.message
+    });
+}
+
+console.log('✅ User settings saved successfully');
+
+res.json({
+    success: true,
+    message: 'Google Sheets settings saved successfully'
+});
+
+    catch (error) {
+    console.error('❌ Error in save settings endpoint:', error);
+    res.status(500).json({
+        success: false,
+        error: error.message
+    });
+}
+
 
 // Get User Google Sheets Settings
 app.get('/api/user/settings/:userId', async (req, res) => {

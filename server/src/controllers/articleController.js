@@ -1,6 +1,6 @@
 import PerplexityService from '../services/perplexityService.js';
 import OpenAIService from '../services/openAIService.js';
-import { supabase } from '../config/supabaseClient.js';
+import { supabase, supabaseAdmin } from '../config/supabaseClient.js';
 import { createClient } from '@supabase/supabase-js';
 import axios from 'axios';
 
@@ -35,8 +35,11 @@ export const generateArticle = async (req, res) => {
             author_name,
             author_bio,
             is_published = false,
-            image_option = 'auto', // 'auto', 'custom', 'none'
-            custom_image_url
+            image_option: reqImageOption = 'auto', // Rename to avoid conflict
+            custom_image_url,
+            author_profile_id,
+            author_details,
+            wp_url
         } = req.body;
 
         const userId = req.user.id; // From Auth Middleware
@@ -51,8 +54,8 @@ export const generateArticle = async (req, res) => {
             }
         });
 
-        if (!topic) {
-            return res.status(400).json({ success: false, error: 'Topic is required' });
+        if (!topic && !req.body.industry) {
+            return res.status(400).json({ success: false, error: 'Topic or Industry is required' });
         }
 
         // 1. Check Credits
@@ -75,11 +78,26 @@ export const generateArticle = async (req, res) => {
 
         console.log('Credits check passed. Balance:', currentBalance);
 
-        // 2. Keyword Research
-        console.log('Starting keyword research...');
+        // 1.5 Handle Industry Mode (Auto-generate Topic/Keywords)
+        let finalTopic = topic;
         let generatedKeywords = keywords;
-        if (!keywords || keywords.trim() === '') {
-            generatedKeywords = await PerplexityService.generateKeywords(topic);
+
+        if (!finalTopic && req.body.industry) {
+            console.log(`Industry mode selected: ${req.body.industry}. Generating topic...`);
+            const idea = await PerplexityService.generateTitleAndKeywords(req.body.industry);
+            finalTopic = idea.topic;
+            generatedKeywords = idea.keywords;
+            console.log(`Auto-generated Topic: ${finalTopic}`);
+        }
+
+        if (!finalTopic) {
+            return res.status(400).json({ success: false, error: 'Topic is required (or provide industry)' });
+        }
+
+        // 2. Keyword Research (if still needed)
+        console.log('Starting keyword research...');
+        if (!generatedKeywords || generatedKeywords.trim() === '') {
+            generatedKeywords = await PerplexityService.generateKeywords(finalTopic);
         }
         console.log('Keywords:', generatedKeywords);
 
@@ -92,8 +110,37 @@ export const generateArticle = async (req, res) => {
         };
         const lengthNum = lengthMapping[length] || 500;
 
+        // 2.5 Fetch Interlinks (if wp_url provided)
+        let interlinks = [];
+        if (wp_url) {
+            try {
+                console.log(`Fetching recent posts from ${wp_url} for interlinking...`);
+                // Ensure URL has protocol
+                let baseUrl = wp_url;
+                if (!baseUrl.startsWith('http')) {
+                    baseUrl = `https://${baseUrl}`;
+                }
+                // Remove trailing slash
+                baseUrl = baseUrl.replace(/\/$/, '');
+
+                const wpApiUrl = `${baseUrl}/wp-json/wp/v2/posts?per_page=10`;
+                const wpRes = await axios.get(wpApiUrl);
+
+                if (wpRes.data && Array.isArray(wpRes.data)) {
+                    interlinks = wpRes.data.map(post => ({
+                        title: post.title.rendered,
+                        link: post.link
+                    }));
+                    console.log(`Found ${interlinks.length} potential interlinks.`);
+                }
+            } catch (wpError) {
+                console.warn('Failed to fetch WordPress posts for interlinking:', wpError.message);
+                // Continue without interlinks
+            }
+        }
+
         const { blogText, wordCount } = await PerplexityService.generateBlogContent(
-            topic,
+            finalTopic,
             generatedKeywords,
             language,
             audience,
@@ -101,28 +148,29 @@ export const generateArticle = async (req, res) => {
             lengthNum,
             0,
             3,
-            variants
+            variants,
+            interlinks // Pass interlinks
         );
         console.log('Blog content generated. Words:', wordCount);
 
         // 4. Generate SEO Title
         console.log('Generating SEO Title...');
-        const seoTitle = await PerplexityService.generateSeoTitle(blogText, topic);
+        const seoTitle = await PerplexityService.generateSeoTitle(blogText, finalTopic);
 
         // 5. Plagiarism Check
         console.log('Checking plagiarism...');
         const plagiarismCheck = await PerplexityService.checkPlagiarism(blogText);
 
         // 6. Generate Image
-        console.log('Handling Image option:', image_option);
+        console.log('Handling Image option:', reqImageOption);
         let imageUrl = null;
 
-        if (image_option === 'auto') {
+        if (reqImageOption === 'auto') {
             console.log('Generating AI Image...');
-            const imageText = await PerplexityService.generateImageText(blogText, topic);
-            imageUrl = await OpenAIService.generateImage(topic, imageText);
+            const imageText = await PerplexityService.generateImageText(blogText, finalTopic);
+            imageUrl = await OpenAIService.generateImage(finalTopic, imageText);
             console.log('AI Image generated:', imageUrl);
-        } else if (image_option === 'custom') {
+        } else if (reqImageOption === 'custom') {
             console.log('Using Custom Image URL');
             imageUrl = custom_image_url;
         } else {
@@ -170,6 +218,7 @@ export const generateArticle = async (req, res) => {
                 .replace(/^### (.+)$/gm, '<h3>$1</h3>')
                 .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
                 .replace(/\*(.+?)\*/g, '<em>$1</em>')
+                .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer" style="color: #2563eb; text-decoration: underline;">$1</a>')
                 .replace(/\n{2,}/g, '</p><p>')
                 .replace(/^/, '<p>')
                 .concat('</p>');
@@ -177,20 +226,27 @@ export const generateArticle = async (req, res) => {
         const blogHTML = formatBlogToHTML(blogText);
 
         // 8. Deduct Credits
-        const { error: deductError } = await scopedSupabase
-            .from('user_credits')
-            .update({
-                balance: currentBalance - CREDIT_COST,
-                updated_at: new Date().toISOString()
-            })
-            .eq('user_id', userId);
+        // 8. Deduct Credits (Use Admin Client to bypass RLS)
+        if (supabaseAdmin) {
+            const { error: deductError } = await supabaseAdmin
+                .from('user_credits')
+                .update({
+                    balance: currentBalance - CREDIT_COST,
+                    updated_at: new Date().toISOString()
+                })
+                .eq('user_id', userId);
 
-        if (deductError) {
-            console.error('Failed to deduct credits after generation:', deductError);
+            if (deductError) {
+                console.error('Failed to deduct credits after generation:', deductError);
+            } else {
+                console.log(`Credits deducted. New balance: ${currentBalance - CREDIT_COST}`);
+            }
+        } else {
+            console.error('CRITICAL: supabaseAdmin not initialized. Cannot deduct credits.');
         }
 
         // 9. Prepare New Fields
-        const slug = custom_slug ? generateSlug(custom_slug) : generateSlug(seoTitle || topic) + '-' + Math.floor(Math.random() * 1000);
+        const slug = custom_slug ? generateSlug(custom_slug) : generateSlug(seoTitle || finalTopic) + '-' + Math.floor(Math.random() * 1000);
         const estimatedReadTime = calculateReadTime(wordCount);
         const finalAuthorName = author_name || 'AI Agent';
 
@@ -200,7 +256,7 @@ export const generateArticle = async (req, res) => {
             .from('articles')
             .insert({
                 user_id: userId,
-                topic,
+                topic: finalTopic,
                 keywords: generatedKeywords,
                 content: blogHTML,
                 seo_title: seoTitle,
@@ -217,6 +273,8 @@ export const generateArticle = async (req, res) => {
                 tags: tags,
                 author_name: finalAuthorName,
                 author_bio: author_bio || 'Generated by AI',
+                author_profile_id: author_profile_id || null, // Link to profile
+                author_details: author_details || null, // Store snapshot or manual details
                 publish_date: is_published ? new Date().toISOString() : null,
                 is_published: is_published,
                 estimated_read_time: estimatedReadTime,
@@ -240,6 +298,7 @@ export const generateArticle = async (req, res) => {
             plagiarismCheck,
             id: savedArticle?.id,
             slug: savedArticle?.slug,
+            topic: finalTopic, // Return generated topic
             newFieldsPopulated: true
         });
 

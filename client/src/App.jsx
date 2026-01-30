@@ -12,12 +12,15 @@ import BlogPage from './pages/BlogPage';
 import SettingsPage from './pages/SettingsPage';
 import LoginPage from './pages/LoginPage';
 import SignupPage from './pages/SignupPage';
+import AdminDashboard from './pages/AdminDashboard';
+import ClientHistoryPage from './pages/ClientHistoryPage';
 
 import HomePage from './pages/HomePage'; // Import HomePage
 import PublicBlogListPage from './pages/PublicBlogListPage';
 import PublicArticlePage from './pages/PublicArticlePage';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import AuthGuard from './components/AuthGuard';
+import AdminGuard from './components/AdminGuard';
 import './index.css';
 
 // Public Route wrapper that redirects to home if already logged in
@@ -63,8 +66,7 @@ function App() {
     normalizedPath.includes('seo-agent') ||
     (normalizedPath.includes('blog') && !normalizedPath.startsWith('/blogs')) ||
     normalizedPath.includes('settings') ||
-    normalizedPath.includes('broadcast') ||
-    normalizedPath.includes('home'); // Add home to dashboard check
+    normalizedPath.includes('broadcast');
 
   return (
     <ThemeProvider>
@@ -126,6 +128,17 @@ function App() {
             <Route path="/settings" element={
               <AuthGuard>
                 <SettingsPage />
+              </AuthGuard>
+            } />
+            <Route path="/admin" element={
+              // TODO: Add AdminGuard
+              <AuthGuard>
+                <AdminDashboard />
+              </AuthGuard>
+            } />
+            <Route path="/admin/client/:id" element={
+              <AuthGuard>
+                <ClientHistoryPage />
               </AuthGuard>
             } />
           </Routes>

@@ -60,6 +60,17 @@ const Navbar = () => {
                             {link.name}
                         </Link>
                     ))}
+                    {user && user.email === 'rahul7697762@gmail.com' && (
+                        <Link
+                            to="/admin"
+                            className={`text-sm font-medium transition-colors duration-200 ${location.pathname.startsWith('/admin')
+                                ? 'text-blue-600 dark:text-blue-400'
+                                : 'text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400'
+                                }`}
+                        >
+                            Admin
+                        </Link>
+                    )}
                     <div className="pl-4 border-l border-gray-200 dark:border-gray-700 flex items-center gap-4">
                         <ThemeToggle />
 

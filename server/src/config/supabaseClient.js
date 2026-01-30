@@ -11,10 +11,19 @@ if (!SUPABASE_URL || !SUPABASE_KEY) {
     console.error('Missing Supabase URL or Key in environment variables');
 }
 
-const supabase = createClient(SUPABASE_URL, SUPABASE_KEY, {
+export const supabase = createClient(SUPABASE_URL, SUPABASE_KEY, {
     auth: {
         persistSession: false
     }
 });
 
-export { supabase };
+const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+export const supabaseAdmin = SUPABASE_SERVICE_ROLE_KEY
+    ? createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
+        auth: {
+            autoRefreshToken: false,
+            persistSession: false
+        }
+    })
+    : null;

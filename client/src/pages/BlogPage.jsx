@@ -6,6 +6,7 @@ import { ArrowLeft, Plus, Upload, Trash2, Eye, RefreshCw, Home, LayoutDashboard,
 import ThemeToggle from '../components/ThemeToggle';
 import blogService from '../services/blogService';
 import API_BASE_URL from '../config.js';
+import ProfileSelection from '../components/ProfileSelection';
 
 const BlogPage = () => {
     const { user, credits } = useAuth();
@@ -38,6 +39,13 @@ const BlogPage = () => {
     const [isGenerating, setIsGenerating] = useState(false);
     const [isUploading, setIsUploading] = useState(false);
     const [showNav, setShowNav] = useState(false);
+
+    // Profile State
+    const [selectedProfile, setSelectedProfile] = useState(null);
+
+    const handleProfileSelect = (selection) => {
+        setSelectedProfile(selection);
+    };
 
     // Load articles on mount
     useEffect(() => {
@@ -85,6 +93,44 @@ const BlogPage = () => {
             const { data: { session } } = await supabase.auth.getSession();
             const token = session?.access_token;
 
+            // Handle Profile Logic
+            let authorProfileId = null;
+            let authorDetails = null;
+            let finalAuthorName = '';
+            let finalAuthorBio = '';
+
+            if (selectedProfile) {
+                if (selectedProfile.type === 'existing') {
+                    authorProfileId = selectedProfile.profileId;
+                    finalAuthorName = selectedProfile.profileData?.name;
+                    finalAuthorBio = selectedProfile.profileData?.bio;
+                } else if (selectedProfile.type === 'manual') {
+                    authorDetails = selectedProfile.profileData;
+                    finalAuthorName = authorDetails.name;
+                    finalAuthorBio = authorDetails.bio;
+
+                    if (selectedProfile.saveAsNew) {
+                        try {
+                            const profileRes = await fetch(`${API_BASE_URL}/api/profiles`, {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'Authorization': `Bearer ${token}`
+                                },
+                                body: JSON.stringify(authorDetails)
+                            });
+                            const profileData = await profileRes.json();
+                            if (profileData.success) {
+                                authorProfileId = profileData.profile.id;
+                            }
+                        } catch (err) {
+                            console.error('Failed to create profile:', err);
+                            // Fallback to manual details
+                        }
+                    }
+                }
+            }
+
             const response = await fetch(`${API_BASE_URL}/api/articles/generate`, {
                 method: 'POST',
                 headers: {
@@ -97,7 +143,11 @@ const BlogPage = () => {
                     language,
                     style: writingStyle,
                     length: articleLength,
-                    audience: targetAudience
+                    audience: targetAudience,
+                    author_name: finalAuthorName, // Legacy fallback
+                    author_bio: finalAuthorBio, // Legacy fallback
+                    author_profile_id: authorProfileId,
+                    author_details: authorDetails
                 })
             });
 
@@ -528,6 +578,10 @@ const BlogPage = () => {
                                     <option>Students</option>
                                     <option>Developers</option>
                                 </select>
+                            </div>
+
+                            <div className="pt-2">
+                                <ProfileSelection onProfileSelect={handleProfileSelect} />
                             </div>
 
                             <div className="flex gap-3 pt-4">
