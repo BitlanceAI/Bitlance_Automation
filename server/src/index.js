@@ -28,17 +28,22 @@ import settingsRoutes from './routes/settingsRoutes.js';
 import googleSheetsRoutes from './routes/googleSheetsRoutes.js';
 import retellRoutes from './routes/retellRoutes.js';
 import meetingRoutes from './routes/meetingRoutes.js';
+import designRoutes from './routes/designRoutes.js';
 
 import publicBlogRoutes from './routes/publicBlogRoutes.js';
 import adminRoutes from './routes/adminRoutes.js';
 import profileRoutes from './routes/profileRoutes.js';
+import authRoutes from './routes/authRoutes.js';
 
+// Mount routes
+app.use('/api/auth', authRoutes);
 app.use('/api/articles', articleRoutes);
 app.use('/api/credits', creditRoutes);
 app.use('/api/user/settings', settingsRoutes);
 app.use('/api/google-sheets', googleSheetsRoutes);
 app.use('/api', retellRoutes); // Mount at root /api to match /api/create-web-call etc.
 app.use('/api/meetings', meetingRoutes);
+app.use('/api/design', designRoutes);
 
 app.use('/api/public', publicBlogRoutes);
 app.use('/api/admin', adminRoutes);

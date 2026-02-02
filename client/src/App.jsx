@@ -14,6 +14,7 @@ import LoginPage from './pages/LoginPage';
 import SignupPage from './pages/SignupPage';
 import AdminDashboard from './pages/AdminDashboard';
 import ClientHistoryPage from './pages/ClientHistoryPage';
+import GraphicDesignerPage from './pages/GraphicDesignerPage';
 
 import HomePage from './pages/HomePage'; // Import HomePage
 import PublicBlogListPage from './pages/PublicBlogListPage';
@@ -21,6 +22,7 @@ import PublicArticlePage from './pages/PublicArticlePage';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import AuthGuard from './components/AuthGuard';
 import AdminGuard from './components/AdminGuard';
+import { Toaster } from 'react-hot-toast';
 import './index.css';
 
 // Public Route wrapper that redirects to home if already logged in
@@ -56,6 +58,8 @@ function App() {
       navigate('/dashboard');
     } else if (agent.title === 'SEO AI Agent') {
       navigate('/seo-agent');
+    } else if (agent.title === 'Graphic Designer AI') {
+      navigate('/design-agent');
     }
   };
 
@@ -64,6 +68,7 @@ function App() {
   // Add home and other pages to dashboard layout (no public nav/footer)
   const isDashboard = normalizedPath.includes('dashboard') ||
     normalizedPath.includes('seo-agent') ||
+    normalizedPath.includes('design-agent') ||
     (normalizedPath.includes('blog') && !normalizedPath.startsWith('/blogs')) ||
     normalizedPath.includes('settings') ||
     normalizedPath.includes('broadcast');
@@ -71,6 +76,7 @@ function App() {
   return (
     <ThemeProvider>
       <AuthProvider>
+        <Toaster position="top-right" reverseOrder={false} />
         <div className={isDashboard ? 'bg-gray-50 dark:bg-slate-900 min-h-screen transition-colors duration-300' : 'bg-gray-50 dark:bg-slate-900 min-h-screen transition-colors duration-300'}>
           {/* Temporary Debug Banner
           <div className="fixed top-0 left-0 bg-red-500 text-white z-[100] text-xs p-1">
@@ -123,6 +129,11 @@ function App() {
             <Route path="/blog" element={
               <AuthGuard>
                 <BlogPage />
+              </AuthGuard>
+            } />
+            <Route path="/design-agent" element={
+              <AuthGuard>
+                <GraphicDesignerPage />
               </AuthGuard>
             } />
             <Route path="/settings" element={

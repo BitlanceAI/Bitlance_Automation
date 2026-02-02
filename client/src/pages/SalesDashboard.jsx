@@ -26,10 +26,12 @@ import VoiceAgentInterface from '../components/VoiceAgentInterface';
 import ThemeToggle from '../components/ThemeToggle';
 import AiAvatar from '../assets/ai_agent_avatar.png';
 import { meetingsService } from '../services/meetingsService';
+import { useAuth } from '../context/AuthContext';
 import API_BASE_URL from '../config.js';
 
 const SalesDashboard = () => {
     const navigate = useNavigate();
+    const { credits } = useAuth();
     const [currentView, setCurrentView] = useState('overview'); // overview, voice_demo
     const [calls, setCalls] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -56,11 +58,16 @@ const SalesDashboard = () => {
     const [filterType, setFilterType] = useState('all');
     const [analyticsDate, setAnalyticsDate] = useState(new Date().toISOString().split('T')[0]);
 
+    // Agent-specific stats
+    const [agentStats, setAgentStats] = useState(null);
+    const [showLowCreditAlert, setShowLowCreditAlert] = useState(false);
+
     useEffect(() => {
         fetchData();
         if (currentView === 'meetings') {
             fetchMeetings();
         }
+        loadAgentStats();
 
         // Subscribe to real-time changes
         const channel = supabase
@@ -143,6 +150,31 @@ const SalesDashboard = () => {
             }
         } catch (error) {
             console.error('Error updating meeting status:', error);
+        }
+    };
+
+    const loadAgentStats = async () => {
+        try {
+            const { data: { session } } = await supabase.auth.getSession();
+            const token = session?.access_token;
+
+            const response = await fetch(`${API_BASE_URL}/api/credits/stats/voice`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+
+            const data = await response.json();
+            if (data.success) {
+                setAgentStats(data.stats);
+
+                // Show low credit alert if balance is less than 100 credits
+                if (data.stats.currentBalance < 100) {
+                    setShowLowCreditAlert(true);
+                }
+            }
+        } catch (error) {
+            console.error('Error loading agent stats:', error);
         }
     };
 
@@ -422,6 +454,34 @@ const SalesDashboard = () => {
                         </p>
                     </div>
                     <div className="flex items-center gap-4">
+                        {/* Credit Display */}
+                        <div className="hidden md:flex flex-col items-end group relative">
+                            <div className="text-2xl font-bold text-green-600 dark:text-green-400">
+                                {credits.toLocaleString()}
+                            </div>
+                            <div className="text-xs text-gray-500 dark:text-gray-400">
+                                Available Credits
+                            </div>
+                            {agentStats && (
+                                <div className="absolute top-full mt-2 right-0 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg p-3 shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 w-56 z-20">
+                                    <div className="text-xs space-y-1">
+                                        <div className="font-semibold text-green-600 dark:text-green-400 mb-2">Voice Agent Stats</div>
+                                        <div className="flex justify-between">
+                                            <span className="text-gray-500 dark:text-gray-400">Total Used:</span>
+                                            <span className="font-medium text-gray-900 dark:text-white">{agentStats.totalCreditsUsed.toLocaleString()}</span>
+                                        </div>
+                                        <div className="flex justify-between">
+                                            <span className="text-gray-500 dark:text-gray-400">Calls:</span>
+                                            <span className="font-medium text-gray-900 dark:text-white">{agentStats.totalUsageCount}</span>
+                                        </div>
+                                        <div className="text-gray-500 dark:text-gray-400 text-xs pt-1 border-t border-gray-200 dark:border-slate-700 mt-2">
+                                            Cost: 1 credit/second
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                        <div className="h-6 w-px bg-gray-200 dark:bg-slate-700 hidden md:block"></div>
                         <ThemeToggle />
                         <div className="flex items-center gap-2 text-green-500 bg-green-500/10 px-3 py-1 rounded-full text-xs font-medium">
                             <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
@@ -429,6 +489,29 @@ const SalesDashboard = () => {
                         </div>
                     </div>
                 </header>
+
+                {/* Low Credit Alert */}
+                {showLowCreditAlert && (
+                    <div className="bg-yellow-50 dark:bg-yellow-900/20 border-b dark:border-yellow-800 px-8 py-3">
+                        <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                                <span className="text-2xl">⚠️</span>
+                                <div>
+                                    <p className="text-sm font-semibold text-yellow-800 dark:text-yellow-300">Low Credit Balance</p>
+                                    <p className="text-xs text-yellow-700 dark:text-yellow-400">
+                                        You have {credits} credits remaining. Consider purchasing more credits to continue using this agent.
+                                    </p>
+                                </div>
+                            </div>
+                            <button
+                                onClick={() => setShowLowCreditAlert(false)}
+                                className="text-yellow-600 dark:text-yellow-400 hover:text-yellow-800 dark:hover:text-yellow-200"
+                            >
+                                ✕
+                            </button>
+                        </div>
+                    </div>
+                )}
 
                 <div className="flex-1 overflow-auto p-8 relative">
                     {currentView === 'voice_demo' ? (

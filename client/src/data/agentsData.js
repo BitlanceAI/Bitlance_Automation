@@ -70,5 +70,17 @@ export const agents = [
       "Security reports"
     ],
     status: "Disabled"
+  },
+  {
+    icon: "🎨",
+    title: "Graphic Designer AI",
+    description: "AI-powered real estate flyer generation with professional templates.",
+    features: [
+      "Flyer generation",
+      "Template customization",
+      "AI copywriting",
+      "Multi-format export"
+    ],
+    status: "Available"
   }
 ];
