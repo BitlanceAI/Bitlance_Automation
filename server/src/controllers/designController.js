@@ -1,4 +1,5 @@
 import { supabaseAdmin } from '../config/supabaseClient.js';
+import axios from 'axios';
 import { createClient } from '@supabase/supabase-js';
 import CreditLedgerService from '../services/creditLedgerService.js';
 import { spawn } from 'child_process';
@@ -137,11 +138,21 @@ export const generateFlyer = async (req, res) => {
             });
         }
 
-        // 4. Execute Python Generation Script
-        try {
-            console.log('🚀 Starting flyer generation...');
 
-            // Define input data for Python script
+
+        // 4. Execute Python Generation Script (via External Microservice)
+        let generatedResult;
+        try {
+            console.log('🚀 Starting business logic generation...');
+
+            const GRAPHIC_API = process.env.GRAPHIC_GENERATOR_URL;
+            if (!GRAPHIC_API) {
+                throw new Error("GRAPHIC_GENERATOR_URL env var not set");
+            }
+
+            console.log(`📡 Calling Graphic Service: ${GRAPHIC_API}/api/generate`);
+
+            // Define input data for External API
             const inputData = {
                 property_type,
                 bhk,
@@ -155,25 +166,23 @@ export const generateFlyer = async (req, res) => {
                 template_id
             };
 
-            // Path to python script
-            const scriptPath = path.resolve(__dirname, '../../../Ai-agents/generate_flyer.py');
+            const response = await axios.post(`${GRAPHIC_API}/api/generate`, inputData);
+            generatedResult = response.data;
 
-            // Run Python script
-            const result = await runPythonGenerator(scriptPath, inputData);
-            console.log('✅ Python execution complete:', result);
+            console.log('✅ Graphic Service response received');
 
-            if (!result.success) {
-                throw new Error(result.error || 'Unknown python error');
+            if (!generatedResult.success) {
+                throw new Error(generatedResult.error || 'External service reported failure');
             }
 
             // 5. Upload Generated Image to Supabase
-            // Python returns 'image_url' which is actually the local file path
-            const imagePath = result.image_url || result.image_path;
-            if (!imagePath || !fs.existsSync(imagePath)) {
-                throw new Error('Generated image file not found');
+            // Service returns base64
+            const base64Data = generatedResult.image_base64;
+            if (!base64Data) {
+                throw new Error('Service did not return image_base64');
             }
 
-            const fileContent = fs.readFileSync(imagePath);
+            const fileContent = Buffer.from(base64Data, 'base64');
             const fileName = `flyer_${designJob.id}_${Date.now()}.png`;
 
             // Create a public URL for the uploaded file
