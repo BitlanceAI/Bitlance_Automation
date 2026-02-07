@@ -29,6 +29,7 @@ import googleSheetsRoutes from './routes/googleSheetsRoutes.js';
 import retellRoutes from './routes/retellRoutes.js';
 import meetingRoutes from './routes/meetingRoutes.js';
 import designRoutes from './routes/designRoutes.js';
+import campaignRoutes from './routes/campaignRoutes.js';
 
 import publicBlogRoutes from './routes/publicBlogRoutes.js';
 import adminRoutes from './routes/adminRoutes.js';
@@ -45,6 +46,7 @@ app.use('/api/google-sheets', googleSheetsRoutes);
 app.use('/api', retellRoutes); // Mount at root /api to match /api/create-web-call etc.
 app.use('/api/meetings', meetingRoutes);
 app.use('/api/design', designRoutes);
+app.use('/api/campaigns', campaignRoutes);
 
 app.use('/api/public', publicBlogRoutes);
 app.use('/api/admin', adminRoutes);
@@ -71,8 +73,15 @@ app.get('*', (req, res) => {
 });
 
 // Start server
+import { startPostScheduler } from './services/scheduler.js';
+
+// ... existing code ...
+
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
+
+    // Start the background scheduler
+    startPostScheduler();
 });
 
 export default app;

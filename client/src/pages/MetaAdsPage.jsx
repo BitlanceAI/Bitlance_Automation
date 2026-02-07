@@ -463,11 +463,20 @@ const MetaAdsPage = () => {
                 finalMediaUrls = uploadData.urls;
             }
 
+            // Convert local scheduled time to UTC for storage
+            // The input `scheduleFormData.scheduledTime` is in local time (e.g. "2026-02-07T15:35")
+            // We create a Date object which defaults to browser's timezone (IST)
+            // Then toISOString() converts it to UTC (e.g. "2026-02-07T10:05:00.000Z")
+            const localDate = new Date(scheduleFormData.scheduledTime);
+            const utcScheduledTime = localDate.toISOString();
+
             const response = await fetch(`${API_BASE}/api/meta/posts/schedule`, {
                 method: 'POST',
                 headers: getAuthHeaders(),
                 body: JSON.stringify({
                     ...scheduleFormData,
+                    scheduledTime: utcScheduledTime, // Send UTC
+                    originalLocalTime: scheduleFormData.scheduledTime, // Optional: keep ref
                     mediaUrls: finalMediaUrls
                 })
             });
@@ -761,8 +770,8 @@ const MetaAdsPage = () => {
                                             <p className="font-medium text-gray-900 dark:text-white line-clamp-1">{post.content}</p>
                                             <div className="flex items-center gap-3 mt-1 text-sm text-gray-500 dark:text-gray-400">
                                                 <span>{post.page_name}</span>
-                                                <span>â€¢</span>
-                                                <span>{new Date(post.scheduled_time).toLocaleString()}</span>
+                                                <span>•</span>
+                                                <span>{new Date(post.scheduled_time).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', dateStyle: 'medium', timeStyle: 'short' })}</span>
                                             </div>
                                         </div>
                                         <div className="flex items-center gap-3">

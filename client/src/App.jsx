@@ -16,6 +16,7 @@ import AdminDashboard from './pages/AdminDashboard';
 import ClientHistoryPage from './pages/ClientHistoryPage';
 import GraphicDesignerPage from './pages/GraphicDesignerPage';
 import MetaAdsPage from './pages/MetaAdsPage';
+import CampaignManagerPage from './pages/CampaignManagerPage';
 
 import HomePage from './pages/HomePage'; // Import HomePage
 import PublicBlogListPage from './pages/PublicBlogListPage';
@@ -159,6 +160,11 @@ function App() {
             <Route path="/admin/client/:id" element={
               <AuthGuard>
                 <ClientHistoryPage />
+              </AuthGuard>
+            } />
+            <Route path="/admin/campaigns" element={
+              <AuthGuard>
+                <CampaignManagerPage />
               </AuthGuard>
             } />
           </Routes>

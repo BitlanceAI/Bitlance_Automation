@@ -6,10 +6,10 @@ import { CalendarClock } from 'lucide-react';
  * Select date and time for the post
  */
 const StepSchedule = ({ scheduledTime, onScheduleChange }) => {
-    // Get minimum datetime (now + 10 minutes)
+    // Get minimum datetime (now + 2 minutes)
     const getMinDateTime = () => {
         const now = new Date();
-        now.setMinutes(now.getMinutes() + 10);
+        now.setMinutes(now.getMinutes() + 2);
         return now.toISOString().slice(0, 16);
     };
 
@@ -31,14 +31,15 @@ const StepSchedule = ({ scheduledTime, onScheduleChange }) => {
                     className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-slate-600 bg-gray-50 dark:bg-slate-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:outline-none"
                 />
                 <p className="text-xs text-gray-500 mt-2">
-                    Posts must be scheduled at least 10 minutes in advance. Time is in your local timezone.
+                    Posts must be scheduled at least 2 minutes in advance. <br />
+                    <span className="font-semibold text-blue-600">Times are in India Standard Time (IST).</span>
                 </p>
             </div>
 
             {/* Quick Schedule Options */}
             <div className="mt-6">
                 <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
-                    Quick Schedule
+                    Quick Schedule (IST)
                 </p>
                 <div className="flex flex-wrap gap-2">
                     {[
@@ -54,7 +55,12 @@ const StepSchedule = ({ scheduledTime, onScheduleChange }) => {
                                 const date = new Date();
                                 date.setDate(date.getDate() + Math.floor(option.hours / 24));
                                 date.setHours(option.setHour, 0, 0, 0);
-                                onScheduleChange(date.toISOString().slice(0, 16));
+                                // The input expects local time format but we want to ensure user thinks in IST
+                                // For now, relying on browser's local time if user is in India is best approach without complex lib
+                                // We just format it for the input
+                                const offset = date.getTimezoneOffset() * 60000;
+                                const localISOTime = (new Date(date.getTime() - offset)).toISOString().slice(0, 16);
+                                onScheduleChange(localISOTime);
                             }}
                             className="px-4 py-2 rounded-lg border border-gray-200 dark:border-slate-600 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors"
                         >
