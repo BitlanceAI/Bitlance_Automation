@@ -9,6 +9,7 @@ import OpenAI from 'openai';
 import { google } from 'googleapis';
 import axios from 'axios';
 import { encryptData, decryptData } from './utils/encryption.js';
+import metaRoutes from './src/routes/metaRoutes.js';
 
 // Load environment variables
 dotenv.config();
@@ -28,6 +29,9 @@ app.use((req, res, next) => {
     }
     next();
 });
+
+// Mount Meta Ads API routes
+app.use('/api/meta', metaRoutes);
 
 const API_KEY = process.env.RETELL_API_KEY;
 
@@ -863,41 +867,6 @@ app.get('/api/admin/users', async (req, res) => {
         res.status(500).json({ success: false, error: error.message });
     }
 });
-            .from('user_settings')
-    .upsert({
-        user_id: userId,
-        google_sheet_id: googleSheetId || null,
-        google_service_email: googleServiceEmail || null,
-        google_private_key: encryptedKey,
-        updated_at: new Date().toISOString()
-    }, {
-        onConflict: 'user_id'
-    })
-    .select();
-
-if (error) {
-    console.error('❌ Error saving user settings:', error);
-    return res.status(500).json({
-        success: false,
-        error: error.message
-    });
-}
-
-console.log('✅ User settings saved successfully');
-
-res.json({
-    success: true,
-    message: 'Google Sheets settings saved successfully'
-});
-
-    catch (error) {
-    console.error('❌ Error in save settings endpoint:', error);
-    res.status(500).json({
-        success: false,
-        error: error.message
-    });
-}
-
 
 // Get User Google Sheets Settings
 app.get('/api/user/settings/:userId', async (req, res) => {
@@ -1437,6 +1406,9 @@ async function handleCallAnalyzed(call) {
         console.error('Error handling call analyzed:', error);
     }
 }
+
+// Meta Ads API routes
+app.use('/api/meta', metaRoutes);
 
 // Serve static files from the React app
 app.use(express.static(path.join(__dirname, '../client/dist')));

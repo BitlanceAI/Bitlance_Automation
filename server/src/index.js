@@ -34,6 +34,7 @@ import publicBlogRoutes from './routes/publicBlogRoutes.js';
 import adminRoutes from './routes/adminRoutes.js';
 import profileRoutes from './routes/profileRoutes.js';
 import authRoutes from './routes/authRoutes.js';
+import metaRoutes from './routes/metaRoutes.js';
 
 // Mount routes
 app.use('/api/auth', authRoutes);
@@ -48,6 +49,7 @@ app.use('/api/design', designRoutes);
 app.use('/api/public', publicBlogRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/profiles', profileRoutes);
+app.use('/api/meta', metaRoutes);
 
 
 // Legacy routes handling

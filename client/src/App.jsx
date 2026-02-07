@@ -15,6 +15,7 @@ import SignupPage from './pages/SignupPage';
 import AdminDashboard from './pages/AdminDashboard';
 import ClientHistoryPage from './pages/ClientHistoryPage';
 import GraphicDesignerPage from './pages/GraphicDesignerPage';
+import MetaAdsPage from './pages/MetaAdsPage';
 
 import HomePage from './pages/HomePage'; // Import HomePage
 import PublicBlogListPage from './pages/PublicBlogListPage';
@@ -60,6 +61,8 @@ function App() {
       navigate('/seo-agent');
     } else if (agent.title === 'Graphic Designer AI') {
       navigate('/design-agent');
+    } else if (agent.title === 'Meta Ads Automation AI') {
+      navigate('/meta-ads-agent');
     }
   };
 
@@ -71,7 +74,8 @@ function App() {
     normalizedPath.includes('design-agent') ||
     (normalizedPath.includes('blog') && !normalizedPath.startsWith('/blogs')) ||
     normalizedPath.includes('settings') ||
-    normalizedPath.includes('broadcast');
+    normalizedPath.includes('broadcast') ||
+    normalizedPath.includes('meta-ads-agent');
 
   return (
     <ThemeProvider>
@@ -134,6 +138,11 @@ function App() {
             <Route path="/design-agent" element={
               <AuthGuard>
                 <GraphicDesignerPage />
+              </AuthGuard>
+            } />
+            <Route path="/meta-ads-agent" element={
+              <AuthGuard>
+                <MetaAdsPage />
               </AuthGuard>
             } />
             <Route path="/settings" element={
