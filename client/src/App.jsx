@@ -17,6 +17,14 @@ import ClientHistoryPage from './pages/ClientHistoryPage';
 import GraphicDesignerPage from './pages/GraphicDesignerPage';
 import MetaAdsPage from './pages/MetaAdsPage';
 import CampaignManagerPage from './pages/CampaignManagerPage';
+// Landing Pages
+import AwarenessLanding from './pages/landing/AwarenessLanding';
+import TrafficLanding from './pages/landing/TrafficLanding';
+import LeadGenLanding from './pages/landing/LeadGenLanding';
+import SalesLanding from './pages/landing/SalesLanding';
+import OfferLanding from './pages/landing/OfferLanding';
+// Campaign Wizard
+import CampaignWizard from './components/campaigns/CampaignWizard';
 
 import HomePage from './pages/HomePage'; // Import HomePage
 import PublicBlogListPage from './pages/PublicBlogListPage';
@@ -76,7 +84,9 @@ function App() {
     (normalizedPath.includes('blog') && !normalizedPath.startsWith('/blogs')) ||
     normalizedPath.includes('settings') ||
     normalizedPath.includes('broadcast') ||
-    normalizedPath.includes('meta-ads-agent');
+    normalizedPath.includes('broadcast') ||
+    normalizedPath.includes('meta-ads-agent') ||
+    normalizedPath.startsWith('/l/'); // Hide Main Nav for Landing Pages
 
   return (
     <ThemeProvider>
@@ -167,6 +177,19 @@ function App() {
                 <CampaignManagerPage />
               </AuthGuard>
             } />
+            <Route path="/admin/campaigns/new" element={
+              <AuthGuard>
+                <CampaignWizard />
+              </AuthGuard>
+            } />
+
+            {/* Landing Page Routes (No Auth Guard) */}
+            <Route path="/l/awareness/:campaignId" element={<AwarenessLanding />} />
+            <Route path="/l/traffic/:campaignId" element={<TrafficLanding />} />
+            <Route path="/l/leadgen/:campaignId" element={<LeadGenLanding />} />
+            <Route path="/l/sales/:campaignId" element={<SalesLanding />} />
+            <Route path="/l/offer/:campaignId" element={<OfferLanding />} />
+
           </Routes>
           {!isDashboard && <Footer />}
         </div>

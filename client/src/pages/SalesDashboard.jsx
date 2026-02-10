@@ -19,7 +19,8 @@ import {
     Volume2,
     AlertTriangle,
     Download,
-    LogOut
+    LogOut,
+    Megaphone
 } from 'lucide-react';
 
 import VoiceAgentInterface from '../components/VoiceAgentInterface';
@@ -433,6 +434,12 @@ const SalesDashboard = () => {
                         label="Meetings"
                         active={currentView === 'meetings'}
                         onClick={() => setCurrentView('meetings')}
+                    />
+                    <NavItem
+                        icon={<Megaphone size={20} />}
+                        label="Ad Campaigns"
+                        active={false}
+                        onClick={() => navigate('/meta-ads-agent')}
                     />
 
 

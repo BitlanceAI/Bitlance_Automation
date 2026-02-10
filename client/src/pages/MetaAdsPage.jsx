@@ -54,10 +54,13 @@ import {
 
 const API_BASE = import.meta.env.VITE_API_URL || '';
 
+import CampaignManagerPage from './CampaignManagerPage';
+
 const MetaAdsPage = () => {
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
     const { credits, user } = useAuth();
+    const [showInternalCampaigns, setShowInternalCampaigns] = useState(false);
 
     // Session state (fetched from Supabase)
     const [session, setSession] = useState(null);
@@ -86,6 +89,10 @@ const MetaAdsPage = () => {
     const [scheduledPosts, setScheduledPosts] = useState([]);
     const [insights, setInsights] = useState({});
     const [filter, setFilter] = useState('all');
+
+    useEffect(() => {
+        if (filter !== 'all') setShowInternalCampaigns(false);
+    }, [filter]);
 
     const [selectedCampaign, setSelectedCampaign] = useState(null);
     const [showDetailsModal, setShowDetailsModal] = useState(false);
@@ -172,10 +179,34 @@ const MetaAdsPage = () => {
             // 1. Check for valid provider token from a fresh Supabase login
             const { data: { session: currentSession } } = await supabase.auth.getSession();
 
-            if (currentSession?.provider_token && currentSession?.user?.app_metadata?.provider === 'facebook') {
-                console.log('Found Facebook provider token, connecting...');
-                // We found a token from a fresh login, use it to connect
-                await handleOAuthComplete(currentSession.provider_token);
+            if (!currentSession) {
+                console.log('[Meta OAuth] No session found');
+                return;
+            }
+
+            // Set session state immediately so getAuthHeaders works
+            setSession(currentSession);
+
+            // Check if we have a Facebook provider token
+            // Note: app_metadata.provider is the ORIGINAL signup provider (e.g. 'email')
+            // We need to check provider_token + identities/providers for Facebook
+            const hasFacebookIdentity =
+                currentSession?.user?.app_metadata?.provider === 'facebook' ||
+                currentSession?.user?.app_metadata?.providers?.includes('facebook') ||
+                currentSession?.user?.identities?.some(id => id.provider === 'facebook');
+
+            console.log('[Meta OAuth] Session check:', {
+                hasProviderToken: !!currentSession?.provider_token,
+                provider: currentSession?.user?.app_metadata?.provider,
+                providers: currentSession?.user?.app_metadata?.providers,
+                hasFacebookIdentity,
+                identities: currentSession?.user?.identities?.map(i => i.provider)
+            });
+
+            if (currentSession?.provider_token && hasFacebookIdentity) {
+                console.log('[Meta OAuth] Found Facebook provider token, connecting...');
+                // Pass the session access_token directly to avoid race condition
+                await handleOAuthComplete(currentSession.provider_token, currentSession.access_token);
                 return;
             }
 
@@ -185,7 +216,7 @@ const MetaAdsPage = () => {
             const error = searchParams.get('error');
 
             if (oauthSuccess && token) {
-                await handleOAuthComplete(token);
+                await handleOAuthComplete(token, currentSession.access_token);
             } else if (error) {
                 toast.error(`Connection failed: ${error}`);
             }
@@ -201,9 +232,9 @@ const MetaAdsPage = () => {
         }
     }, [session]);
 
-    const getAuthHeaders = () => ({
+    const getAuthHeaders = (authToken) => ({
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${session?.access_token}`
+        'Authorization': `Bearer ${authToken || session?.access_token}`
     });
 
     const checkConnection = async () => {
@@ -353,19 +384,21 @@ const MetaAdsPage = () => {
     // Alias for the button click
     const handleOAuthConnect = handleSupabaseOAuthConnect;
 
-    const handleOAuthComplete = async (token) => {
+    const handleOAuthComplete = async (providerToken, authToken) => {
         // Avoid re-processing if already connecting (unless it's a new attempt)
         if (connecting && !searchParams.get('token') && !searchParams.get('code')) return;
 
         setConnecting(true);
         try {
+            console.log('[Meta OAuth] Completing connection with auth token:', authToken ? 'present' : 'missing');
             const response = await fetch(`${API_BASE}/api/meta/connect-api-key`, {
                 method: 'POST',
-                headers: getAuthHeaders(),
-                body: JSON.stringify({ accessToken: token })
+                headers: getAuthHeaders(authToken),
+                body: JSON.stringify({ accessToken: providerToken })
             });
 
             const data = await response.json();
+            console.log('[Meta OAuth] Connect response:', data);
             if (data.success) {
                 toast.success('Meta account connected via Facebook!');
                 await checkConnection();
@@ -794,131 +827,157 @@ const MetaAdsPage = () => {
                     </div>
                 )}
 
-                {/* Campaigns Section */}
-                {isConnected && (
-                    <div className="bg-white dark:bg-slate-800/50 rounded-3xl border border-gray-200/50 dark:border-slate-700/50 shadow-xl shadow-gray-200/20 dark:shadow-slate-900/30 overflow-hidden">
-                        <div className="p-6 border-b border-gray-200/50 dark:border-slate-700/50">
-                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                                <div>
-                                    <h2 className="text-xl font-bold text-gray-900 dark:text-white">Your Campaigns</h2>
-                                    <p className="text-sm text-gray-500 dark:text-gray-400">Manage and monitor your Meta ad campaigns</p>
-                                </div>
-                            </div>
+                {/* Tabs */}
+                <div className="flex space-x-4 mb-6 border-b border-gray-200 dark:border-slate-700">
+                    <button
+                        onClick={() => setFilter('all')}
+                        className={`py-2 px-4 border-b-2 font-medium text-sm transition-colors ${filter === 'all' && !showInternalCampaigns
+                            ? 'border-blue-600 text-blue-600 dark:text-blue-400'
+                            : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
+                            }`}
+                    >
+                        Meta Campaigns
+                    </button>
+                    <button
+                        onClick={() => setShowInternalCampaigns(true)}
+                        className={`py-2 px-4 border-b-2 font-medium text-sm transition-colors ${showInternalCampaigns
+                            ? 'border-blue-600 text-blue-600 dark:text-blue-400'
+                            : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
+                            }`}
+                    >
+                        Internal Campaigns
+                    </button>
+                </div>
 
-                            {/* Filter Pills */}
-                            <div className="flex flex-wrap gap-2 mt-4">
-                                {['all', 'ACTIVE', 'PAUSED', 'SCHEDULED'].map(status => (
-                                    <button
-                                        key={status}
-                                        onClick={() => setFilter(status)}
-                                        className={`px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200 ${filter === status
-                                            ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg shadow-blue-500/25'
-                                            : 'bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-slate-600'
-                                            }`}
-                                    >
-                                        {status === 'all' ? 'All' : status.charAt(0) + status.slice(1).toLowerCase()}
-                                    </button>
-                                ))}
-                            </div>
-                        </div>
-
-                        <div className="p-6">
-                            {filteredCampaigns.length === 0 ? (
-                                <div className="text-center py-16">
-                                    <div className="w-20 h-20 mx-auto mb-6 rounded-3xl bg-gradient-to-br from-gray-100 to-gray-200 dark:from-slate-700 dark:to-slate-800 flex items-center justify-center">
-                                        <Target className="h-10 w-10 text-gray-400 dark:text-gray-500" />
+                {showInternalCampaigns ? (
+                    <div className="bg-white dark:bg-slate-800/50 rounded-3xl border border-gray-200/50 dark:border-slate-700/50 p-6">
+                        <CampaignManagerPage embedded={true} />
+                    </div>
+                ) : (
+                    isConnected && (
+                        <div className="bg-white dark:bg-slate-800/50 rounded-3xl border border-gray-200/50 dark:border-slate-700/50 shadow-xl shadow-gray-200/20 dark:shadow-slate-900/30 overflow-hidden">
+                            <div className="p-6 border-b border-gray-200/50 dark:border-slate-700/50">
+                                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                                    <div>
+                                        <h2 className="text-xl font-bold text-gray-900 dark:text-white">Your Campaigns</h2>
+                                        <p className="text-sm text-gray-500 dark:text-gray-400">Manage and monitor your Meta ad campaigns</p>
                                     </div>
-                                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-                                        No campaigns found
-                                    </h3>
-                                    <p className="text-gray-500 dark:text-gray-400 max-w-sm mx-auto">
-                                        {campaigns.length === 0
-                                            ? 'Create your first Meta ad campaign in Meta Business Suite.'
-                                            : 'No campaigns match the selected filter.'
-                                        }
-                                    </p>
                                 </div>
-                            ) : (
-                                <div className="space-y-4">
-                                    {filteredCampaigns.map(campaign => {
-                                        const statusConfig = getStatusConfig(campaign.status);
-                                        const StatusIcon = statusConfig.icon;
-                                        const spent = parseFloat(campaign.insights?.spend || 0);
-                                        const budget = parseFloat(campaign.daily_budget || campaign.lifetime_budget || 0) / 100;
 
-                                        return (
-                                            <div
-                                                key={campaign.id}
-                                                className="group relative overflow-hidden rounded-2xl border border-gray-200/50 dark:border-slate-700/50 bg-gray-50/50 dark:bg-slate-900/30 p-6 transition-all duration-300 hover:shadow-lg hover:border-blue-200 dark:hover:border-blue-800/50"
-                                            >
-                                                <div className="flex flex-col lg:flex-row lg:items-center gap-6">
-                                                    <div className="flex-1">
-                                                        <div className="flex items-center gap-3 mb-2">
-                                                            <h3 className="font-semibold text-lg text-gray-900 dark:text-white">
-                                                                {campaign.name}
-                                                            </h3>
-                                                            <div className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium ${statusConfig.bg} ${statusConfig.color}`}>
-                                                                <StatusIcon className="h-3.5 w-3.5" />
-                                                                {statusConfig.label}
+                                {/* Filter Pills */}
+                                <div className="flex flex-wrap gap-2 mt-4">
+                                    {['all', 'ACTIVE', 'PAUSED', 'SCHEDULED'].map(status => (
+                                        <button
+                                            key={status}
+                                            onClick={() => setFilter(status)}
+                                            className={`px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200 ${filter === status
+                                                ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg shadow-blue-500/25'
+                                                : 'bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-slate-600'
+                                                }`}
+                                        >
+                                            {status === 'all' ? 'All' : status.charAt(0) + status.slice(1).toLowerCase()}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+
+                            <div className="p-6">
+                                {filteredCampaigns.length === 0 ? (
+                                    <div className="text-center py-16">
+                                        <div className="w-20 h-20 mx-auto mb-6 rounded-3xl bg-gradient-to-br from-gray-100 to-gray-200 dark:from-slate-700 dark:to-slate-800 flex items-center justify-center">
+                                            <Target className="h-10 w-10 text-gray-400 dark:text-gray-500" />
+                                        </div>
+                                        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+                                            No campaigns found
+                                        </h3>
+                                        <p className="text-gray-500 dark:text-gray-400 max-w-sm mx-auto">
+                                            {campaigns.length === 0
+                                                ? 'Create your first Meta ad campaign in Meta Business Suite.'
+                                                : 'No campaigns match the selected filter.'
+                                            }
+                                        </p>
+                                    </div>
+                                ) : (
+                                    <div className="space-y-4">
+                                        {filteredCampaigns.map(campaign => {
+                                            const statusConfig = getStatusConfig(campaign.status);
+                                            const StatusIcon = statusConfig.icon;
+                                            const spent = parseFloat(campaign.insights?.spend || 0);
+                                            const budget = parseFloat(campaign.daily_budget || campaign.lifetime_budget || 0) / 100;
+
+                                            return (
+                                                <div
+                                                    key={campaign.id}
+                                                    className="group relative overflow-hidden rounded-2xl border border-gray-200/50 dark:border-slate-700/50 bg-gray-50/50 dark:bg-slate-900/30 p-6 transition-all duration-300 hover:shadow-lg hover:border-blue-200 dark:hover:border-blue-800/50"
+                                                >
+                                                    <div className="flex flex-col lg:flex-row lg:items-center gap-6">
+                                                        <div className="flex-1">
+                                                            <div className="flex items-center gap-3 mb-2">
+                                                                <h3 className="font-semibold text-lg text-gray-900 dark:text-white">
+                                                                    {campaign.name}
+                                                                </h3>
+                                                                <div className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium ${statusConfig.bg} ${statusConfig.color}`}>
+                                                                    <StatusIcon className="h-3.5 w-3.5" />
+                                                                    {statusConfig.label}
+                                                                </div>
+                                                            </div>
+                                                            <p className="text-sm text-gray-500 dark:text-gray-400">
+                                                                Objective: {campaign.objective || 'N/A'}
+                                                            </p>
+                                                        </div>
+
+                                                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 lg:gap-8">
+                                                            <div>
+                                                                <p className="text-xs text-gray-400 dark:text-gray-500">Spent</p>
+                                                                <p className="text-lg font-semibold text-gray-900 dark:text-white">
+                                                                    ${spent.toFixed(2)}
+                                                                </p>
+                                                            </div>
+                                                            <div>
+                                                                <p className="text-xs text-gray-400 dark:text-gray-500">Impressions</p>
+                                                                <p className="text-lg font-semibold text-gray-900 dark:text-white">
+                                                                    {parseInt(campaign.insights?.impressions || 0).toLocaleString()}
+                                                                </p>
+                                                            </div>
+                                                            <div>
+                                                                <p className="text-xs text-gray-400 dark:text-gray-500">Clicks</p>
+                                                                <p className="text-lg font-semibold text-gray-900 dark:text-white">
+                                                                    {parseInt(campaign.insights?.clicks || 0).toLocaleString()}
+                                                                </p>
+                                                            </div>
+                                                            <div>
+                                                                <p className="text-xs text-gray-400 dark:text-gray-500">CTR</p>
+                                                                <p className="text-lg font-semibold text-emerald-600 dark:text-emerald-400">
+                                                                    {parseFloat(campaign.insights?.ctr || 0).toFixed(2)}%
+                                                                </p>
                                                             </div>
                                                         </div>
-                                                        <p className="text-sm text-gray-500 dark:text-gray-400">
-                                                            Objective: {campaign.objective || 'N/A'}
-                                                        </p>
-                                                    </div>
 
-                                                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 lg:gap-8">
-                                                        <div>
-                                                            <p className="text-xs text-gray-400 dark:text-gray-500">Spent</p>
-                                                            <p className="text-lg font-semibold text-gray-900 dark:text-white">
-                                                                ${spent.toFixed(2)}
-                                                            </p>
+                                                        <div className="flex items-center gap-2">
+                                                            <button
+                                                                onClick={() => handleViewDetails(campaign)}
+                                                                className="p-2 rounded-xl hover:bg-gray-200 dark:hover:bg-slate-700 text-gray-500 dark:text-gray-400 transition-colors"
+                                                                title="View Details"
+                                                            >
+                                                                <Eye className="h-5 w-5" />
+                                                            </button>
+                                                            <button
+                                                                onClick={() => handleViewAnalytics(campaign)}
+                                                                className="p-2 rounded-xl hover:bg-gray-200 dark:hover:bg-slate-700 text-gray-500 dark:text-gray-400 transition-colors"
+                                                                title="Analytics"
+                                                            >
+                                                                <BarChart3 className="h-5 w-5" />
+                                                            </button>
                                                         </div>
-                                                        <div>
-                                                            <p className="text-xs text-gray-400 dark:text-gray-500">Impressions</p>
-                                                            <p className="text-lg font-semibold text-gray-900 dark:text-white">
-                                                                {parseInt(campaign.insights?.impressions || 0).toLocaleString()}
-                                                            </p>
-                                                        </div>
-                                                        <div>
-                                                            <p className="text-xs text-gray-400 dark:text-gray-500">Clicks</p>
-                                                            <p className="text-lg font-semibold text-gray-900 dark:text-white">
-                                                                {parseInt(campaign.insights?.clicks || 0).toLocaleString()}
-                                                            </p>
-                                                        </div>
-                                                        <div>
-                                                            <p className="text-xs text-gray-400 dark:text-gray-500">CTR</p>
-                                                            <p className="text-lg font-semibold text-emerald-600 dark:text-emerald-400">
-                                                                {parseFloat(campaign.insights?.ctr || 0).toFixed(2)}%
-                                                            </p>
-                                                        </div>
-                                                    </div>
-
-                                                    <div className="flex items-center gap-2">
-                                                        <button
-                                                            onClick={() => handleViewDetails(campaign)}
-                                                            className="p-2 rounded-xl hover:bg-gray-200 dark:hover:bg-slate-700 text-gray-500 dark:text-gray-400 transition-colors"
-                                                            title="View Details"
-                                                        >
-                                                            <Eye className="h-5 w-5" />
-                                                        </button>
-                                                        <button
-                                                            onClick={() => handleViewAnalytics(campaign)}
-                                                            className="p-2 rounded-xl hover:bg-gray-200 dark:hover:bg-slate-700 text-gray-500 dark:text-gray-400 transition-colors"
-                                                            title="Analytics"
-                                                        >
-                                                            <BarChart3 className="h-5 w-5" />
-                                                        </button>
                                                     </div>
                                                 </div>
-                                            </div>
-                                        );
-                                    })}
-                                </div>
-                            )}
+                                            );
+                                        })}
+                                    </div>
+                                )}
+                            </div>
                         </div>
-                    </div>
-                )}
+                    ))}
 
                 {/* Not Connected State */}
                 {!isConnected && (

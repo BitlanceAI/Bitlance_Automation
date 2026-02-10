@@ -2,14 +2,23 @@ import { createClient } from '@supabase/supabase-js';
 import MetaService from './metaService.js';
 import { decryptData } from '../../utils/encryption.js';
 
-const supabase = createClient(
-    process.env.SUPABASE_URL,
-    process.env.SUPABASE_SERVICE_ROLE_KEY
-);
+let supabase;
 
 const CHECK_INTERVAL = 60 * 1000; // 1 minute
 
 export const startPostScheduler = () => {
+    if (!supabase) {
+        const supabaseUrl = process.env.SUPABASE_URL;
+        const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+        if (!supabaseUrl || !supabaseKey) {
+            console.error('❌ [Scheduler] Missing Supabase credentials!');
+            return;
+        }
+
+        supabase = createClient(supabaseUrl, supabaseKey);
+    }
+
     console.log('⏰ Starting Post Scheduler (1-minute interval)...');
 
     // Run immediately on start

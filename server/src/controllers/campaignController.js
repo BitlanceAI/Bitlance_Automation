@@ -1,18 +1,24 @@
 import { supabase } from '../config/supabaseClient.js';
 import AnalyticsService from '../services/analyticsService.js';
+import MetaService from '../services/metaService.js';
+import CampaignFactoryService from '../services/campaigns/CampaignFactoryService.js';
 
 export const createCampaign = async (req, res) => {
     try {
         const { type, ...campaignData } = req.body;
-        const userId = req.user.id; // From Auth Middleware
+        const userId = req.user.id;
 
-        let tableName = '';
+        let tableName;
         switch (type) {
             case 'awareness': tableName = 'awareness_campaigns'; break;
             case 'traffic': tableName = 'traffic_campaigns'; break;
             case 'engagement': tableName = 'engagement_campaigns'; break;
             case 'leadgen': tableName = 'leadgen_campaigns'; break;
             case 'conversion': tableName = 'conversion_campaigns'; break;
+            case 'app_promotion': tableName = 'app_promotion_campaigns'; break;
+            case 'local_business': tableName = 'local_business_campaigns'; break;
+            case 'remarketing': tableName = 'remarketing_campaigns'; break;
+            case 'offer_event': tableName = 'offer_event_campaigns'; break;
             default: return res.status(400).json({ error: 'Invalid campaign type' });
         }
 
@@ -41,6 +47,12 @@ export const getCampaigns = async (req, res) => {
         let tableName = 'awareness_campaigns';
         if (type === 'traffic') tableName = 'traffic_campaigns';
         if (type === 'engagement') tableName = 'engagement_campaigns';
+        if (type === 'leadgen') tableName = 'leadgen_campaigns';
+        if (type === 'conversion') tableName = 'conversion_campaigns';
+        if (type === 'app_promotion') tableName = 'app_promotion_campaigns';
+        if (type === 'local_business') tableName = 'local_business_campaigns';
+        if (type === 'remarketing') tableName = 'remarketing_campaigns';
+        if (type === 'offer_event') tableName = 'offer_event_campaigns';
 
         const { data, error } = await supabase
             .from(tableName)

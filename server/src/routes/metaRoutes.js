@@ -30,6 +30,7 @@ const supabase = createClient(
 const META_APP_ID = process.env.META_APP_ID;
 const META_APP_SECRET = process.env.META_APP_SECRET;
 const META_REDIRECT_URI = process.env.META_REDIRECT_URI || 'http://localhost:5000/api/meta/oauth/callback';
+const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:5173';
 
 /**
  * Middleware to verify Supabase auth token
@@ -229,11 +230,11 @@ router.get('/oauth/callback', async (req, res) => {
         const { code, error, error_description } = req.query;
 
         if (error) {
-            return res.redirect(`/meta-ads-agent?error=${encodeURIComponent(error_description || error)}`);
+            return res.redirect(`${FRONTEND_URL}/meta-ads-agent?error=${encodeURIComponent(error_description || error)}`);
         }
 
         if (!code) {
-            return res.redirect('/meta-ads-agent?error=No authorization code received');
+            return res.redirect(`${FRONTEND_URL}/meta-ads-agent?error=No authorization code received`);
         }
 
         // Exchange code for token
@@ -245,7 +246,7 @@ router.get('/oauth/callback', async (req, res) => {
         );
 
         if (!tokenResult.success) {
-            return res.redirect(`/meta-ads-agent?error=${encodeURIComponent(tokenResult.error)}`);
+            return res.redirect(`${FRONTEND_URL}/meta-ads-agent?error=${encodeURIComponent(tokenResult.error)}`);
         }
 
         // Exchange for long-lived token
@@ -260,11 +261,11 @@ router.get('/oauth/callback', async (req, res) => {
 
         // Store token in session/temp storage for frontend to complete connection
         // For now, redirect with token (in production, use secure session)
-        res.redirect(`/meta-ads-agent?oauth_success=true&token=${encodeURIComponent(finalToken)}&expires_in=${expiresIn}`);
+        res.redirect(`${FRONTEND_URL}/meta-ads-agent?oauth_success=true&token=${encodeURIComponent(finalToken)}&expires_in=${expiresIn}`);
 
     } catch (error) {
         console.error('OAuth callback error:', error);
-        res.redirect(`/meta-ads-agent?error=${encodeURIComponent(error.message)}`);
+        res.redirect(`${FRONTEND_URL}/meta-ads-agent?error=${encodeURIComponent(error.message)}`);
     }
 });
 

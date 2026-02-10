@@ -203,11 +203,31 @@ class MetaService {
         return this.request('POST', `/act_${adAccountId}/campaigns`, campaignData);
     }
 
-    /**
-     * Update campaign status
-     */
     async updateCampaignStatus(campaignId, status) {
         return this.request('POST', `/${campaignId}`, { status });
+    }
+
+    // ==================== CONVERSION API METHODS ====================
+
+    /**
+     * Send Event to Meta Conversion API
+     * @param {string} pixelId - The Meta Pixel ID
+     * @param {Array} events - Array of event objects
+     * @param {string|null} testCode - Optional test code for Graph API Test Tool
+     */
+    async sendConversionEvent(pixelId, events, testCode = null) {
+        const payload = {
+            data: events,
+            // partner_agent: 'plbitlance' // Optional: if we were a platform partner
+        };
+
+        if (testCode) {
+            payload.test_event_code = testCode;
+        }
+
+        console.log(`Sending ${events.length} events to CAPI (Pixel: ${pixelId})`, JSON.stringify(payload, null, 2));
+
+        return this.request('POST', `/${pixelId}/events`, payload);
     }
 
     // ==================== UTILITY METHODS ====================
