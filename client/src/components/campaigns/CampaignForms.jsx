@@ -1,6 +1,9 @@
 import React, { useState, useRef } from 'react';
+
 import { Upload, X, Image as ImageIcon, Film, Link, Loader2 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
+
+const API_BASE = import.meta.env.VITE_API_URL || '';
 
 const FileUpload = ({ onUpload, type = 'image', currentUrl, onClear, label }) => {
     const { session, user } = useAuth();
@@ -56,7 +59,7 @@ const FileUpload = ({ onUpload, type = 'image', currentUrl, onClear, label }) =>
 
         try {
             const token = session?.access_token || user?.token;
-            const res = await fetch('/api/campaigns/upload', {
+            const res = await fetch(`${API_BASE}/api/campaigns/upload`, {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${token}`
@@ -102,8 +105,8 @@ const FileUpload = ({ onUpload, type = 'image', currentUrl, onClear, label }) =>
             ) : (
                 <div
                     className={`relative border-2 border-dashed rounded-lg p-6 text-center transition-colors cursor-pointer ${dragActive
-                            ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/10'
-                            : 'border-gray-300 dark:border-gray-600 hover:border-blue-400 dark:hover:border-blue-500 bg-white dark:bg-slate-900'
+                        ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/10'
+                        : 'border-gray-300 dark:border-gray-600 hover:border-blue-400 dark:hover:border-blue-500 bg-white dark:bg-slate-900'
                         }`}
                     onDragEnter={handleDrag}
                     onDragLeave={handleDrag}

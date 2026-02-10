@@ -1,30 +1,48 @@
-import { supabase } from '../config/supabaseClient.js';
+import { supabase, supabaseAdmin } from '../config/supabaseClient.js';
 import AnalyticsService from '../services/analyticsService.js';
-import MetaService from '../services/metaService.js';
-import CampaignFactoryService from '../services/campaigns/CampaignFactoryService.js';
+
+// Use admin client (bypasses RLS) since auth is already handled by middleware
+const db = supabaseAdmin || supabase;
+
+// Map frontend type values to DB enum values
+const TYPE_MAP = {
+    'awareness': 'AWARENESS',
+    'traffic': 'TRAFFIC',
+    'engagement': 'ENGAGEMENT',
+    'leadgen': 'LEAD_GENERATION',
+    'conversion': 'SALES',
+    'app_promotion': 'APP_PROMOTION',
+    'local_business': 'LOCAL_BUSINESS',
+    'remarketing': 'REMARKETING',
+    'offer_event': 'OFFER_EVENT'
+};
 
 export const createCampaign = async (req, res) => {
     try {
-        const { type, ...campaignData } = req.body;
+        const { type, name, objective, creative_assets, destination_url, start_date, end_date, targeting, ...extra } = req.body;
         const userId = req.user.id;
 
-        let tableName;
-        switch (type) {
-            case 'awareness': tableName = 'awareness_campaigns'; break;
-            case 'traffic': tableName = 'traffic_campaigns'; break;
-            case 'engagement': tableName = 'engagement_campaigns'; break;
-            case 'leadgen': tableName = 'leadgen_campaigns'; break;
-            case 'conversion': tableName = 'conversion_campaigns'; break;
-            case 'app_promotion': tableName = 'app_promotion_campaigns'; break;
-            case 'local_business': tableName = 'local_business_campaigns'; break;
-            case 'remarketing': tableName = 'remarketing_campaigns'; break;
-            case 'offer_event': tableName = 'offer_event_campaigns'; break;
-            default: return res.status(400).json({ error: 'Invalid campaign type' });
+        const dbType = TYPE_MAP[type];
+        if (!dbType) {
+            return res.status(400).json({ success: false, error: `Invalid campaign type: ${type}` });
         }
 
-        const { data, error } = await supabase
-            .from(tableName)
-            .insert({ ...campaignData, created_by: userId })
+        const campaignRow = {
+            user_id: userId,
+            name: name || 'Untitled Campaign',
+            type: dbType,
+            objective: objective || type,
+            status: 'DRAFT',
+            creative: creative_assets || null,
+            targeting: targeting || null,
+            start_time: start_date || null,
+            end_time: end_date || null,
+            raw_config: { destination_url, ...extra }
+        };
+
+        const { data, error } = await db
+            .from('campaigns')
+            .insert(campaignRow)
             .select()
             .single();
 
@@ -40,29 +58,24 @@ export const createCampaign = async (req, res) => {
 export const getCampaigns = async (req, res) => {
     try {
         const { type } = req.query;
-        let query = supabase.from('awareness_campaigns').select('*'); // Default, need to handle multiple types or specific type
+        const userId = req.user.id;
 
-        // Simplified for MVP: just fetch awareness for now or specific table if provided
-        // In a real app, might want a union view or separate endpoints
-        let tableName = 'awareness_campaigns';
-        if (type === 'traffic') tableName = 'traffic_campaigns';
-        if (type === 'engagement') tableName = 'engagement_campaigns';
-        if (type === 'leadgen') tableName = 'leadgen_campaigns';
-        if (type === 'conversion') tableName = 'conversion_campaigns';
-        if (type === 'app_promotion') tableName = 'app_promotion_campaigns';
-        if (type === 'local_business') tableName = 'local_business_campaigns';
-        if (type === 'remarketing') tableName = 'remarketing_campaigns';
-        if (type === 'offer_event') tableName = 'offer_event_campaigns';
-
-        const { data, error } = await supabase
-            .from(tableName)
+        let query = db
+            .from('campaigns')
             .select('*')
-            .eq('created_by', req.user.id) // Filter by user
+            .eq('user_id', userId)
             .order('created_at', { ascending: false });
+
+        // Filter by type if provided
+        if (type && TYPE_MAP[type]) {
+            query = query.eq('type', TYPE_MAP[type]);
+        }
+
+        const { data, error } = await query;
 
         if (error) throw error;
 
-        res.json({ success: true, campaigns: data });
+        res.json({ success: true, campaigns: data || [] });
     } catch (error) {
         console.error('Get Campaigns Error:', error);
         res.status(500).json({ success: false, error: error.message });
@@ -71,23 +84,20 @@ export const getCampaigns = async (req, res) => {
 
 export const serveCampaign = async (req, res) => {
     try {
-        const { type, context } = req.query; // context could be 'sidebar', 'hero', etc.
+        const { type, context } = req.query;
         const userId = req.user ? req.user.id : null;
 
-        // Logic to select best campaign
-        // 1. Fetch active campaigns of requested type
-        // 2. Filter by targeting (simple version)
-        // 3. Check frequency caps (if user is logged in)
-        // 4. Return selected campaign
-
-        let tableName = 'awareness_campaigns';
-        if (type === 'traffic') tableName = 'traffic_campaigns';
-
-        const { data: campaigns, error } = await supabase
-            .from(tableName)
+        let query = db
+            .from('campaigns')
             .select('*')
-            //.eq('status', 'active') // Uncomment when status field is populated/used
-            .limit(5); // Get a batch to choose from
+            .eq('status', 'ACTIVE')
+            .limit(5);
+
+        if (type && TYPE_MAP[type]) {
+            query = query.eq('type', TYPE_MAP[type]);
+        }
+
+        const { data: campaigns, error } = await query;
 
         if (error) throw error;
 
@@ -95,7 +105,7 @@ export const serveCampaign = async (req, res) => {
             return res.json({ success: true, campaign: null });
         }
 
-        // Simple Random Selection for MVP
+        // Simple Random Selection
         const selected = campaigns[Math.floor(Math.random() * campaigns.length)];
 
         // Track Impression (Async)

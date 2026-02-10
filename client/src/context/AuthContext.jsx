@@ -7,16 +7,18 @@ export const useAuth = () => useContext(AuthContext);
 
 export const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(null);
+    const [session, setSession] = useState(null);
     const [loading, setLoading] = useState(true);
     const [credits, setCredits] = useState(0);
 
     useEffect(() => {
         // Get session on mount
         const getSession = async () => {
-            const { data: { session } } = await supabase.auth.getSession();
-            setUser(session?.user ?? null);
-            if (session?.user) {
-                fetchCredits(session.user.id);
+            const { data: { session: currentSession } } = await supabase.auth.getSession();
+            setSession(currentSession);
+            setUser(currentSession?.user ?? null);
+            if (currentSession?.user) {
+                fetchCredits(currentSession.user.id);
             }
             setLoading(false);
         };
@@ -24,10 +26,11 @@ export const AuthProvider = ({ children }) => {
         getSession();
 
         // Listen for auth changes
-        const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
-            setUser(session?.user ?? null);
-            if (session?.user) {
-                fetchCredits(session.user.id);
+        const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, currentSession) => {
+            setSession(currentSession);
+            setUser(currentSession?.user ?? null);
+            if (currentSession?.user) {
+                fetchCredits(currentSession.user.id);
             } else {
                 setCredits(0);
             }
@@ -65,6 +68,7 @@ export const AuthProvider = ({ children }) => {
 
     const value = {
         user,
+        session,
         loading,
         credits,
         refreshCredits,

@@ -12,6 +12,8 @@ import { useAuth } from '../context/AuthContext';
 import MetaConnectModal from '../components/meta/MetaConnectModal';
 // import { toast } from 'react-hot-toast'; // Assuming usage
 
+const API_BASE = import.meta.env.VITE_API_URL || '';
+
 const CampaignManagerPage = ({ embedded = false }) => {
     const { user, session } = useAuth();
     const [activeTab, setActiveTab] = useState('list'); // list, create
@@ -68,7 +70,7 @@ const CampaignManagerPage = ({ embedded = false }) => {
 
     const checkMetaConnection = async () => {
         try {
-            const res = await fetch('/api/meta/connection', {
+            const res = await fetch(`${API_BASE}/api/meta/connection`, {
                 headers: getAuthHeaders()
             });
             const data = await res.json();
@@ -84,7 +86,7 @@ const CampaignManagerPage = ({ embedded = false }) => {
 
     const fetchCampaigns = async () => {
         try {
-            const res = await fetch('/api/campaigns', {
+            const res = await fetch(`${API_BASE}/api/campaigns`, {
                 headers: getAuthHeaders()
             });
             const data = await res.json();
@@ -101,26 +103,29 @@ const CampaignManagerPage = ({ embedded = false }) => {
 
     const handleCreateSubmit = async (e) => {
         e.preventDefault();
+        console.log('[Campaign] Submitting form data:', formData);
+        console.log('[Campaign] Auth headers:', getAuthHeaders());
         try {
-            const res = await fetch('/api/campaigns', {
+            const res = await fetch(`${API_BASE}/api/campaigns`, {
                 method: 'POST',
                 headers: getAuthHeaders(),
                 body: JSON.stringify(formData)
             });
+            console.log('[Campaign] Response status:', res.status);
             const data = await res.json();
+            console.log('[Campaign] Response data:', data);
             if (data.success) {
-                // toast.success('Campaign created successfully');
+                alert('Campaign created successfully!');
                 setActiveTab('list');
                 setSelectedType(null);
                 fetchCampaigns();
-                // Reset form slightly
                 setFormData({ ...formData, name: '', creative_assets: { ...formData.creative_assets, headline: '' } });
             } else {
-                // toast.error('Failed to create campaign');
                 alert('Error: ' + (data.error || 'Failed to create'));
             }
         } catch (error) {
             console.error('Error creating campaign:', error);
+            alert('Network error: ' + error.message);
         }
     };
 

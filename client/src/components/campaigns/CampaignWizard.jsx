@@ -8,6 +8,8 @@ import StepReview from './steps/StepReview';
 
 const STEPS = ['Promotion Type', 'Content', 'Budget & Schedule', 'Review'];
 
+const API_BASE = import.meta.env.VITE_API_URL || '';
+
 const CampaignWizard = () => {
     const navigate = useNavigate();
     const { session } = useAuth();
@@ -60,7 +62,7 @@ const CampaignWizard = () => {
     const handleSubmit = async () => {
         setIsSubmitting(true);
         try {
-            const response = await fetch('/api/campaigns', {
+            const response = await fetch(`${API_BASE}/api/campaigns`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

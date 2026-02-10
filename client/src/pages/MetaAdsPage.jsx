@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../services/supabaseClient';
@@ -76,6 +76,8 @@ const MetaAdsPage = () => {
     const [showScheduleModal, setShowScheduleModal] = useState(false);
     const [connectMethod, setConnectMethod] = useState('api-key');
     const [connecting, setConnecting] = useState(false);
+    const oauthProcessedRef = useRef(false);
+    const authTokenRef = useRef(null); // Stores auth token synchronously for immediate use
 
     // Form state
     const [apiKeyForm, setApiKeyForm] = useState({
@@ -160,70 +162,81 @@ const MetaAdsPage = () => {
             toast.info('Already added');
         }
     };
-    // Fetch session from Supabase on mount
+    // Listen for auth state changes (handles both initial load and OAuth redirects)
     useEffect(() => {
-        const getSession = async () => {
+        // Reset the processed flag on mount
+        oauthProcessedRef.current = false;
+
+        // Get initial session
+        const initSession = async () => {
             const { data: { session: currentSession } } = await supabase.auth.getSession();
-            setSession(currentSession);
-            if (!currentSession) {
+            if (currentSession) {
+                authTokenRef.current = currentSession.access_token;
+                setSession(currentSession);
+                // Check for Facebook provider token on initial load
+                checkForFacebookToken(currentSession);
+            } else {
                 setLoading(false);
             }
         };
-        getSession();
+
+        initSession();
+
+        // Listen for auth changes (fires AFTER Supabase processes OAuth redirect tokens)
+        const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, currentSession) => {
+            console.log('[Meta OAuth] Auth state changed:', event);
+
+            if (currentSession) {
+                authTokenRef.current = currentSession.access_token;
+                setSession(currentSession);
+
+                // Only check for Facebook token on SIGNED_IN (not TOKEN_REFRESHED to avoid loops)
+                if (event === 'SIGNED_IN') {
+                    checkForFacebookToken(currentSession);
+                }
+            } else {
+                setSession(null);
+                setLoading(false);
+            }
+        });
+
+        return () => subscription?.unsubscribe();
     }, []);
 
-    // Check for OAuth callback
-    // Check for provider token from Supabase OAuth or URL params
+    // Helper to detect and handle Facebook provider token (with dedup guard)
+    const checkForFacebookToken = async (currentSession) => {
+        if (!currentSession?.provider_token) return;
+        // Prevent duplicate processing
+        if (oauthProcessedRef.current) {
+            console.log('[Meta OAuth] Already processed, skipping...');
+            return;
+        }
+
+        const hasFacebookIdentity =
+            currentSession?.user?.app_metadata?.provider === 'facebook' ||
+            currentSession?.user?.app_metadata?.providers?.includes('facebook') ||
+            currentSession?.user?.identities?.some(id => id.provider === 'facebook');
+
+        if (hasFacebookIdentity) {
+            oauthProcessedRef.current = true;
+            console.log('[Meta OAuth] Found Facebook provider token, connecting...');
+            await handleOAuthComplete(currentSession.provider_token, currentSession.access_token);
+        }
+    };
+
+    // Check for URL params (legacy/manual OAuth flow fallback)
     useEffect(() => {
-        const checkAuth = async () => {
-            // 1. Check for valid provider token from a fresh Supabase login
-            const { data: { session: currentSession } } = await supabase.auth.getSession();
+        const oauthSuccess = searchParams.get('oauth_success');
+        const token = searchParams.get('token');
+        const error = searchParams.get('error');
 
-            if (!currentSession) {
-                console.log('[Meta OAuth] No session found');
-                return;
-            }
-
-            // Set session state immediately so getAuthHeaders works
-            setSession(currentSession);
-
-            // Check if we have a Facebook provider token
-            // Note: app_metadata.provider is the ORIGINAL signup provider (e.g. 'email')
-            // We need to check provider_token + identities/providers for Facebook
-            const hasFacebookIdentity =
-                currentSession?.user?.app_metadata?.provider === 'facebook' ||
-                currentSession?.user?.app_metadata?.providers?.includes('facebook') ||
-                currentSession?.user?.identities?.some(id => id.provider === 'facebook');
-
-            console.log('[Meta OAuth] Session check:', {
-                hasProviderToken: !!currentSession?.provider_token,
-                provider: currentSession?.user?.app_metadata?.provider,
-                providers: currentSession?.user?.app_metadata?.providers,
-                hasFacebookIdentity,
-                identities: currentSession?.user?.identities?.map(i => i.provider)
-            });
-
-            if (currentSession?.provider_token && hasFacebookIdentity) {
-                console.log('[Meta OAuth] Found Facebook provider token, connecting...');
-                // Pass the session access_token directly to avoid race condition
-                await handleOAuthComplete(currentSession.provider_token, currentSession.access_token);
-                return;
-            }
-
-            // 2. Fallback: Check for URL params (legacy or manual flow)
-            const oauthSuccess = searchParams.get('oauth_success');
-            const token = searchParams.get('token');
-            const error = searchParams.get('error');
-
-            if (oauthSuccess && token) {
-                await handleOAuthComplete(token, currentSession.access_token);
-            } else if (error) {
-                toast.error(`Connection failed: ${error}`);
-            }
-        };
-
-        checkAuth();
-    }, [searchParams]);
+        if (oauthSuccess && token && session?.access_token && !oauthProcessedRef.current) {
+            oauthProcessedRef.current = true;
+            handleOAuthComplete(token, session.access_token);
+        } else if (error) {
+            toast.error(`Connection failed: ${error}`);
+        }
+    }, [searchParams, session]);
 
     // Load connection status on mount
     useEffect(() => {
@@ -234,7 +247,7 @@ const MetaAdsPage = () => {
 
     const getAuthHeaders = (authToken) => ({
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${authToken || session?.access_token}`
+        'Authorization': `Bearer ${authToken || session?.access_token || authTokenRef.current}`
     });
 
     const checkConnection = async () => {
@@ -364,7 +377,10 @@ const MetaAdsPage = () => {
     const handleSupabaseOAuthConnect = async () => {
         try {
             setConnecting(true);
-            const { data, error } = await supabase.auth.signInWithOAuth({
+            oauthProcessedRef.current = false; // Reset for new attempt
+
+            // Use linkIdentity to keep the existing session (avoids logging out the user)
+            const { data, error } = await supabase.auth.linkIdentity({
                 provider: 'facebook',
                 options: {
                     redirectTo: window.location.origin + '/meta-ads-agent',
@@ -372,7 +388,18 @@ const MetaAdsPage = () => {
                 }
             });
 
-            if (error) throw error;
+            if (error) {
+                // If linkIdentity fails (e.g. identity already linked), fall back to signInWithOAuth
+                console.warn('[Meta OAuth] linkIdentity failed, trying signInWithOAuth:', error.message);
+                const { error: signInError } = await supabase.auth.signInWithOAuth({
+                    provider: 'facebook',
+                    options: {
+                        redirectTo: window.location.origin + '/meta-ads-agent',
+                        scopes: 'pages_manage_posts,pages_read_engagement,pages_show_list,ads_management,ads_read,business_management,instagram_basic,instagram_content_publish'
+                    }
+                });
+                if (signInError) throw signInError;
+            }
             // Redirect happens automatically
         } catch (error) {
             console.error('Supabase OAuth error:', error);
@@ -385,10 +412,9 @@ const MetaAdsPage = () => {
     const handleOAuthConnect = handleSupabaseOAuthConnect;
 
     const handleOAuthComplete = async (providerToken, authToken) => {
-        // Avoid re-processing if already connecting (unless it's a new attempt)
-        if (connecting && !searchParams.get('token') && !searchParams.get('code')) return;
-
         setConnecting(true);
+        // Store token in ref for immediate synchronous access
+        if (authToken) authTokenRef.current = authToken;
         try {
             console.log('[Meta OAuth] Completing connection with auth token:', authToken ? 'present' : 'missing');
             const response = await fetch(`${API_BASE}/api/meta/connect-api-key`, {
