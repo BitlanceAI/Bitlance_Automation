@@ -197,8 +197,17 @@ class MetaService {
             name,
             objective, // OUTCOME_TRAFFIC, OUTCOME_ENGAGEMENT, OUTCOME_LEADS, etc.
             status,
-            special_ad_categories: [] // Required field
+            special_ad_categories: [], // Required field
         };
+
+        if (dailyBudget) {
+            campaignData.daily_budget = dailyBudget;
+            campaignData.bid_strategy = 'LOWEST_COST_WITHOUT_CAP'; // Often required when setting budget at campaign level (CBO)
+            // Note: CBO (Campaign Budget Optimization) requires 'advantage_plus_creative' or specific flags, 
+            // but for simple API usage, daily_budget on campaign usually implies CBO. 
+            // If adset level budget is desired, it's different. 
+            // For now, checks if we enable CBO. To enable CBO, we need special_ad_categories and proper bid_strategy.
+        }
 
         return this.request('POST', `/act_${adAccountId}/campaigns`, campaignData);
     }

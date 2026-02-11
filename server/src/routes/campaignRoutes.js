@@ -1,9 +1,11 @@
 import express from 'express';
-import { createCampaign, getCampaigns, serveCampaign, trackInteraction } from '../controllers/campaignController.js';
+import { createCampaign, getCampaigns, serveCampaign, trackInteraction, getCampaignStats } from '../controllers/campaignController.js';
 import { authenticateUser } from '../middleware/authMiddleware.js';
 import multer from 'multer';
 import { createClient } from '@supabase/supabase-js';
 import path from 'path';
+import dotenv from 'dotenv';
+dotenv.config();
 
 // Initialize Supabase (reusing env vars, defaulting to service role if needed for storage policies, 
 // but usually authenticated user token is better. Here we use service role for backend upload to ensure it works, 
@@ -30,6 +32,7 @@ router.post('/track', trackInteraction);
 // Protected endpoints
 router.post('/', authenticateUser, createCampaign);
 router.get('/', authenticateUser, getCampaigns);
+router.get('/:id/stats', authenticateUser, getCampaignStats);
 
 // Upload Endpoint
 router.post('/upload', authenticateUser, upload.single('file'), async (req, res) => {

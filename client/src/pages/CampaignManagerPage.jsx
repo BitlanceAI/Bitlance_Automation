@@ -6,11 +6,11 @@ import {
 import {
     Target, MousePointerClick, MessageCircle, FileText,
     ShoppingBag, Smartphone, MapPin, RefreshCw, Calendar,
-    Plus, BarChart2, List, Trash2, Eye, Link2, Unlink
+    Plus, BarChart2, List, Trash2, Eye, Link2, Unlink, X, Image
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import MetaConnectModal from '../components/meta/MetaConnectModal';
-// import { toast } from 'react-hot-toast'; // Assuming usage
+import { toast } from 'react-hot-toast';
 
 const API_BASE = import.meta.env.VITE_API_URL || '';
 
@@ -26,6 +26,15 @@ const CampaignManagerPage = ({ embedded = false }) => {
 
     // Form State
     const [selectedType, setSelectedType] = useState(null);
+    const [showStatsModal, setShowStatsModal] = useState(false);
+    const [selectedStats, setSelectedStats] = useState(null);
+    const [statsLoading, setStatsLoading] = useState(false);
+
+    // Graphic Generator State
+    const [showGraphicModal, setShowGraphicModal] = useState(false);
+    const [graphics, setGraphics] = useState([]);
+    const [graphicsLoading, setGraphicsLoading] = useState(false);
+
     const [formData, setFormData] = useState({
         name: '',
         type: 'awareness', // awareness, traffic, engagement, leadgen
@@ -41,6 +50,7 @@ const CampaignManagerPage = ({ embedded = false }) => {
         destination_url: '',
         start_date: new Date().toISOString().split('T')[0],
         end_date: '',
+        budget: '',
         targeting: {},
     });
 
@@ -101,32 +111,109 @@ const CampaignManagerPage = ({ embedded = false }) => {
         }
     };
 
+    const handleViewStats = async (campaign) => {
+        setSelectedStats(null);
+        setShowStatsModal(true);
+        setStatsLoading(true);
+        try {
+            const res = await fetch(`${API_BASE}/api/campaigns/${campaign.id}/stats`, {
+                headers: getAuthHeaders()
+            });
+            const data = await res.json();
+            if (data.success) {
+                setSelectedStats(data.stats);
+            } else {
+                // toast.error(data.error || 'Failed to load stats');
+            }
+        } catch (error) {
+            console.error('Failed to load stats:', error);
+        } finally {
+            setStatsLoading(false);
+        }
+    };
+
     const handleCreateSubmit = async (e) => {
         e.preventDefault();
-        console.log('[Campaign] Submitting form data:', formData);
-        console.log('[Campaign] Auth headers:', getAuthHeaders());
         try {
             const res = await fetch(`${API_BASE}/api/campaigns`, {
                 method: 'POST',
                 headers: getAuthHeaders(),
                 body: JSON.stringify(formData)
             });
-            console.log('[Campaign] Response status:', res.status);
             const data = await res.json();
-            console.log('[Campaign] Response data:', data);
+
             if (data.success) {
-                alert('Campaign created successfully!');
+                // Check Meta sync status
+                if (data.meta_result?.success) {
+                    toast.success('Campaign created and synced to Meta!');
+                } else {
+                    toast.success('Campaign created locally!');
+                    if (data.meta_result?.error) {
+                        toast.error(`Meta Sync Failed: ${data.meta_result.error}`, { duration: 6000 });
+                    } else {
+                        toast('Saved as Local Draft (Not synced)', { icon: '⚠️' });
+                    }
+                }
+
                 setActiveTab('list');
                 setSelectedType(null);
                 fetchCampaigns();
-                setFormData({ ...formData, name: '', creative_assets: { ...formData.creative_assets, headline: '' } });
+                // Reset form
+                setFormData({
+                    ...formData,
+                    name: '',
+                    budget: '',
+                    creative_assets: {
+                        ...formData.creative_assets,
+                        headline: '',
+                        imageUrl: ''
+                    }
+                });
             } else {
-                alert('Error: ' + (data.error || 'Failed to create'));
+                toast.error(data.error || 'Failed to create campaign');
             }
         } catch (error) {
             console.error('Error creating campaign:', error);
-            alert('Network error: ' + error.message);
+            toast.error('Network error: ' + error.message);
         }
+    };
+
+    const fetchGraphics = async () => {
+        try {
+            setGraphicsLoading(true);
+            const token = session?.access_token || user?.token;
+            const res = await fetch(`${API_BASE}/api/design/jobs`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+            const data = await res.json();
+            if (data.success) {
+                // Filter for completed jobs with flyer_url
+                const validGraphics = data.jobs?.filter(job => job.status === 'completed' && job.flyer_url) || [];
+                setGraphics(validGraphics);
+            }
+        } catch (error) {
+            console.error('Failed to load graphics:', error);
+        } finally {
+            setGraphicsLoading(false);
+        }
+    };
+
+    const handleGraphicSelect = (url) => {
+        setFormData({
+            ...formData,
+            creative_assets: {
+                ...formData.creative_assets,
+                imageUrl: url
+            }
+        });
+        setShowGraphicModal(false);
+    };
+
+    const handleOpenGraphicModal = () => {
+        setShowGraphicModal(true);
+        fetchGraphics();
     };
 
     const handleInputChange = (e, section = null) => {
@@ -144,7 +231,7 @@ const CampaignManagerPage = ({ embedded = false }) => {
     };
 
     const renderSpecificForm = () => {
-        const props = { formData, handleInputChange };
+        const props = { formData, handleInputChange, onOpenGraphicModal: handleOpenGraphicModal };
         switch (selectedType) {
             case 'awareness': return <AwarenessForm {...props} />;
             case 'traffic': return <TrafficForm {...props} />;
@@ -167,6 +254,55 @@ const CampaignManagerPage = ({ embedded = false }) => {
                 onSuccess={() => { setIsConnected(true); checkMetaConnection(); }}
                 userToken={session?.access_token || user?.token}
             />
+
+            {/* Graphic Selection Modal */}
+            {showGraphicModal && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+                    <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-xl w-full max-w-3xl max-h-[80vh] overflow-hidden flex flex-col animate-in fade-in zoom-in duration-200">
+                        <div className="flex items-center justify-between p-4 border-b border-gray-100 dark:border-gray-700">
+                            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Select Generated Graphic</h3>
+                            <button
+                                onClick={() => setShowGraphicModal(false)}
+                                className="p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-700 text-gray-500 transition-colors"
+                            >
+                                <X size={20} />
+                            </button>
+                        </div>
+                        <div className="p-6 overflow-y-auto flex-1">
+                            {graphicsLoading ? (
+                                <div className="flex justify-center py-12">
+                                    <RefreshCw className="h-8 w-8 animate-spin text-blue-500" />
+                                </div>
+                            ) : graphics.length === 0 ? (
+                                <div className="text-center py-12 text-gray-500 dark:text-gray-400">
+                                    <Image size={48} className="mx-auto mb-4 opacity-50" />
+                                    <p>No generated graphics found.</p>
+                                    <p className="text-sm mt-2">Generate flyers in the Design Studio first.</p>
+                                </div>
+                            ) : (
+                                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                                    {graphics.map((job) => (
+                                        <div
+                                            key={job.id}
+                                            onClick={() => handleGraphicSelect(job.flyer_url)}
+                                            className="group relative cursor-pointer rounded-xl overflow-hidden border border-gray-200 dark:border-gray-700 hover:ring-2 hover:ring-blue-500 transition-all aspect-[4/5]"
+                                        >
+                                            <img
+                                                src={job.flyer_url}
+                                                alt={`Job ${job.id}`}
+                                                className="w-full h-full object-cover transition-transform group-hover:scale-105"
+                                            />
+                                            <div className="absolute inset-x-0 bottom-0 p-2 bg-gradient-to-t from-black/80 to-transparent text-white text-xs opacity-0 group-hover:opacity-100 transition-opacity">
+                                                {job.property_type} • {new Date(job.created_at).toLocaleDateString()}
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {/* Header */}
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
@@ -246,7 +382,10 @@ const CampaignManagerPage = ({ embedded = false }) => {
                                         </td>
                                         <td className="p-4">
                                             <div className="flex gap-2">
-                                                <button className="p-1.5 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors">
+                                                <button
+                                                    onClick={() => handleViewStats(campaign)}
+                                                    className="p-1.5 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                                                >
                                                     <BarChart2 size={16} />
                                                 </button>
                                                 <button className="p-1.5 text-gray-500 hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors">
@@ -303,8 +442,25 @@ const CampaignManagerPage = ({ embedded = false }) => {
 
                                 {/* Schedule - Common Logic */}
                                 <div className="border-t border-gray-100 dark:border-gray-700 pt-6">
-                                    <h3 className="text-lg font-semibold mb-4 text-gray-800 dark:text-gray-200">Schedule</h3>
+                                    <h3 className="text-lg font-semibold mb-4 text-gray-800 dark:text-gray-200">Budget & Schedule</h3>
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Daily Budget (INR)</label>
+                                            <div className="relative">
+                                                <span className="absolute left-3 top-2.5 text-gray-500">₹</span>
+                                                <input
+                                                    type="number"
+                                                    name="budget"
+                                                    value={formData.budget}
+                                                    onChange={handleInputChange}
+                                                    placeholder="500.00"
+                                                    step="1"
+                                                    min="85"
+                                                    className="w-full pl-8 pr-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-slate-900 focus:ring-2 focus:ring-blue-500"
+                                                />
+                                            </div>
+                                            <p className="text-xs text-gray-500 mt-1">Min. ₹85/day approx.</p>
+                                        </div>
                                         <div>
                                             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Start Date</label>
                                             <input
@@ -336,6 +492,52 @@ const CampaignManagerPage = ({ embedded = false }) => {
                             </form>
                         </div>
                     )}
+                </div>
+            )}
+            {/* Analytics Modal */}
+            {showStatsModal && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+                    <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in duration-200">
+                        <div className="flex items-center justify-between p-4 border-b border-gray-100 dark:border-gray-700">
+                            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Campaign Analytics</h3>
+                            <button
+                                onClick={() => setShowStatsModal(false)}
+                                className="p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-700 text-gray-500 transition-colors"
+                            >
+                                <X size={20} />
+                            </button>
+                        </div>
+                        <div className="p-6">
+                            {statsLoading ? (
+                                <div className="flex justify-center py-8">
+                                    <RefreshCw className="h-8 w-8 animate-spin text-blue-500" />
+                                </div>
+                            ) : selectedStats ? (
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="p-4 rounded-xl bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800/30">
+                                        <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">Impressions</p>
+                                        <p className="text-2xl font-bold text-gray-900 dark:text-white">{selectedStats.impressions}</p>
+                                    </div>
+                                    <div className="p-4 rounded-xl bg-green-50 dark:bg-green-900/20 border border-green-100 dark:border-green-800/30">
+                                        <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">Clicks</p>
+                                        <p className="text-2xl font-bold text-gray-900 dark:text-white">{selectedStats.clicks}</p>
+                                    </div>
+                                    <div className="p-4 rounded-xl bg-purple-50 dark:bg-purple-900/20 border border-purple-100 dark:border-purple-800/30">
+                                        <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">CTR</p>
+                                        <p className="text-2xl font-bold text-gray-900 dark:text-white">{selectedStats.ctr}%</p>
+                                    </div>
+                                    <div className="p-4 rounded-xl bg-orange-50 dark:bg-orange-900/20 border border-orange-100 dark:border-orange-800/30">
+                                        <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">Amount Spent</p>
+                                        <p className="text-2xl font-bold text-gray-900 dark:text-white">₹{selectedStats.spend || '0.00'}</p>
+                                    </div>
+                                </div>
+                            ) : (
+                                <div className="text-center py-8 text-gray-500">
+                                    No data available
+                                </div>
+                            )}
+                        </div>
+                    </div>
                 </div>
             )}
         </div>

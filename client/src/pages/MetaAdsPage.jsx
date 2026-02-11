@@ -8,7 +8,7 @@ import {
     Target,
     Sparkles,
     BarChart3,
-    DollarSign,
+    IndianRupee,
     TrendingUp,
     Settings,
     PlayCircle,
@@ -767,7 +767,7 @@ const MetaAdsPage = () => {
                         {[
                             { label: 'Total Campaigns', value: stats.totalCampaigns, icon: Layers, color: 'from-blue-500 to-cyan-500' },
                             { label: 'Active Campaigns', value: stats.activeCampaigns, icon: PlayCircle, color: 'from-emerald-500 to-teal-500' },
-                            { label: 'Total Spent', value: `$${stats.totalSpent.toLocaleString()}`, icon: DollarSign, color: 'from-amber-500 to-orange-500' },
+                            { label: 'Total Spent', value: `₹${stats.totalSpent.toLocaleString()}`, icon: IndianRupee, color: 'from-amber-500 to-orange-500' },
                             { label: 'Impressions', value: stats.totalImpressions.toLocaleString(), icon: Eye, color: 'from-violet-500 to-purple-500' },
                             { label: 'Conversions', value: stats.totalConversions, icon: TrendingUp, color: 'from-rose-500 to-pink-500' }
                         ].map((stat) => (
@@ -956,7 +956,7 @@ const MetaAdsPage = () => {
                                                             <div>
                                                                 <p className="text-xs text-gray-400 dark:text-gray-500">Spent</p>
                                                                 <p className="text-lg font-semibold text-gray-900 dark:text-white">
-                                                                    ${spent.toFixed(2)}
+                                                                    ₹{spent.toFixed(2)}
                                                                 </p>
                                                             </div>
                                                             <div>

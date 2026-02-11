@@ -1,8 +1,9 @@
 import React from 'react';
 import StatusBadge from './StatusBadge';
+import { CheckCircle2 } from 'lucide-react';
 
 const AgentCard = ({
-    icon,
+    icon: Icon,
     title,
     description,
     features,
@@ -13,11 +14,11 @@ const AgentCard = ({
         <div
             onClick={onClick}
             className="
-        group relative bg-white rounded-2xl shadow-md 
+        group relative bg-white dark:bg-slate-800 rounded-2xl shadow-md 
         hover:shadow-2xl hover:-translate-y-1 
         transition-all duration-300 ease-in-out
         p-8 flex flex-col h-full cursor-pointer
-        border border-gray-100 hover:border-gray-200
+        border border-gray-100 dark:border-slate-700 hover:border-gray-200 dark:hover:border-slate-600
       "
         >
             {/* Status Badge - Top Right */}
@@ -28,44 +29,32 @@ const AgentCard = ({
             {/* Icon */}
             <div className="mb-6">
                 <div className="
-          w-16 h-16 rounded-2xl bg-gradient-to-br from-indigo-50 to-purple-50
-          flex items-center justify-center text-4xl
+          w-16 h-16 rounded-2xl bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-indigo-900/20 dark:to-purple-900/20
+          flex items-center justify-center text-4xl text-indigo-600 dark:text-indigo-400
           group-hover:scale-110 transition-transform duration-300
         ">
-                    {icon}
+                    <Icon className="w-8 h-8" />
                 </div>
             </div>
 
             {/* Title */}
-            <h3 className="text-2xl font-bold text-gray-900 mb-3 leading-tight">
+            <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-3 leading-tight">
                 {title}
             </h3>
 
             {/* Description */}
-            <p className="text-gray-600 text-sm leading-relaxed mb-6 flex-grow">
+            <p className="text-gray-600 dark:text-gray-300 text-sm leading-relaxed mb-6 flex-grow">
                 {description}
             </p>
 
             {/* Features List */}
-            <div className="space-y-3 pt-4 border-t border-gray-100">
+            <div className="space-y-3 pt-4 border-t border-gray-100 dark:border-slate-700">
                 {features.map((feature, index) => (
                     <div
                         key={index}
-                        className="flex items-start gap-3 text-sm text-gray-700"
+                        className="flex items-start gap-3 text-sm text-gray-700 dark:text-gray-300"
                     >
-                        <svg
-                            className="w-5 h-5 text-indigo-600 flex-shrink-0 mt-0.5"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                        >
-                            <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2.5}
-                                d="M5 13l4 4L19 7"
-                            />
-                        </svg>
+                        <CheckCircle2 className="w-5 h-5 text-indigo-600 dark:text-indigo-400 flex-shrink-0 mt-0.5" />
                         <span className="leading-snug">{feature}</span>
                     </div>
                 ))}

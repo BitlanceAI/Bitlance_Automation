@@ -166,7 +166,7 @@ export const CampaignFormBase = ({ formData, handleInputChange, children }) => (
     </div>
 );
 
-export const CreativeAssetsSection = ({ formData, handleInputChange, showDestination = false }) => {
+export const CreativeAssetsSection = ({ formData, handleInputChange, showDestination = false, onOpenGraphicModal }) => {
     // Determine initial active tab based on content
     const [activeTab, setActiveTab] = useState(
         formData.creative_assets?.videoUrl ? 'video' :
@@ -243,6 +243,12 @@ export const CreativeAssetsSection = ({ formData, handleInputChange, showDestina
                         >
                             <Link size={16} /> Image URL
                         </button>
+                        <button
+                            onClick={(e) => { e.preventDefault(); setActiveTab('generated'); }}
+                            className={`px-3 py-1.5 rounded-md text-sm font-medium flex items-center gap-2 transition-all ${activeTab === 'generated' ? 'bg-white dark:bg-slate-700 shadow text-blue-600 dark:text-blue-400' : 'text-gray-500 hover:text-gray-700'}`}
+                        >
+                            <ImageIcon size={16} /> Generated Library
+                        </button>
                     </div>
 
                     <div className="min-h-[140px]">
@@ -291,6 +297,34 @@ export const CreativeAssetsSection = ({ formData, handleInputChange, showDestina
                                 )}
                             </div>
                         )}
+
+                        {activeTab === 'generated' && (
+                            <div className="border-2 border-dashed border-blue-200 dark:border-blue-900 bg-blue-50 dark:bg-blue-900/10 rounded-lg p-6 text-center">
+                                <ImageIcon className="mx-auto h-12 w-12 text-blue-400 mb-3" />
+                                <h4 className="text-lg font-medium text-blue-900 dark:text-blue-100 mb-2">Select from Generated Graphics</h4>
+                                <p className="text-sm text-blue-700 dark:text-blue-300 mb-4">
+                                    Choose a flyer you created with the Graphic Generator.
+                                </p>
+                                <button
+                                    onClick={(e) => { e.preventDefault(); onOpenGraphicModal?.(); }}
+                                    className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors"
+                                >
+                                    Open Library
+                                </button>
+                                {formData.creative_assets?.imageUrl && formData.creative_assets.imageUrl.includes('flyer_') && (
+                                    <div className="mt-4 pt-4 border-t border-blue-200 dark:border-blue-800">
+                                        <p className="text-xs text-blue-600 dark:text-blue-400 mb-2">Selected Graphic:</p>
+                                        <div className="h-32 rounded-lg overflow-hidden inline-block border border-blue-200">
+                                            <img
+                                                src={formData.creative_assets.imageUrl}
+                                                alt="Selected"
+                                                className="h-full object-contain"
+                                            />
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        )}
                     </div>
                 </div>
 
@@ -316,31 +350,31 @@ export const CreativeAssetsSection = ({ formData, handleInputChange, showDestina
 };
 
 // 1. Awareness Form
-export const AwarenessForm = ({ formData, handleInputChange }) => (
+export const AwarenessForm = ({ formData, handleInputChange, onOpenGraphicModal }) => (
     <CampaignFormBase formData={formData} handleInputChange={handleInputChange}>
         <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg mb-4">
             <p className="text-sm text-blue-800 dark:text-blue-300">
                 <strong>Goal:</strong> Maximize brand visibility. Ads will be shown to people most likely to remember them.
             </p>
         </div>
-        <CreativeAssetsSection formData={formData} handleInputChange={handleInputChange} />
+        <CreativeAssetsSection formData={formData} handleInputChange={handleInputChange} onOpenGraphicModal={onOpenGraphicModal} />
     </CampaignFormBase>
 );
 
 // 2. Traffic Form
-export const TrafficForm = ({ formData, handleInputChange }) => (
+export const TrafficForm = ({ formData, handleInputChange, onOpenGraphicModal }) => (
     <CampaignFormBase formData={formData} handleInputChange={handleInputChange}>
         <div className="bg-green-50 dark:bg-green-900/20 p-4 rounded-lg mb-4">
             <p className="text-sm text-green-800 dark:text-green-300">
                 <strong>Goal:</strong> Drive clicks to a website or landing page.
             </p>
         </div>
-        <CreativeAssetsSection formData={formData} handleInputChange={handleInputChange} showDestination={true} />
+        <CreativeAssetsSection formData={formData} handleInputChange={handleInputChange} showDestination={true} onOpenGraphicModal={onOpenGraphicModal} />
     </CampaignFormBase>
 );
 
 // 3. Engagement Form
-export const EngagementForm = ({ formData, handleInputChange }) => (
+export const EngagementForm = ({ formData, handleInputChange, onOpenGraphicModal }) => (
     <CampaignFormBase formData={formData} handleInputChange={handleInputChange}>
         <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Engagement Type</label>
@@ -353,12 +387,12 @@ export const EngagementForm = ({ formData, handleInputChange }) => (
                 <option value="event_responses">Event Responses</option>
             </select>
         </div>
-        <CreativeAssetsSection formData={formData} handleInputChange={handleInputChange} />
+        <CreativeAssetsSection formData={formData} handleInputChange={handleInputChange} onOpenGraphicModal={onOpenGraphicModal} />
     </CampaignFormBase>
 );
 
 // 4. Lead Gen Form
-export const LeadGenForm = ({ formData, handleInputChange }) => (
+export const LeadGenForm = ({ formData, handleInputChange, onOpenGraphicModal }) => (
     <CampaignFormBase formData={formData} handleInputChange={handleInputChange}>
         <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Lead Form Type</label>
@@ -369,12 +403,12 @@ export const LeadGenForm = ({ formData, handleInputChange }) => (
                 <option value="messenger_automated">Messenger Automated Chat</option>
             </select>
         </div>
-        <CreativeAssetsSection formData={formData} handleInputChange={handleInputChange} />
+        <CreativeAssetsSection formData={formData} handleInputChange={handleInputChange} onOpenGraphicModal={onOpenGraphicModal} />
     </CampaignFormBase>
 );
 
 // 5. Sales / Conversion Form
-export const SalesForm = ({ formData, handleInputChange }) => (
+export const SalesForm = ({ formData, handleInputChange, onOpenGraphicModal }) => (
     <CampaignFormBase formData={formData} handleInputChange={handleInputChange}>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
@@ -396,12 +430,12 @@ export const SalesForm = ({ formData, handleInputChange }) => (
                 />
             </div>
         </div>
-        <CreativeAssetsSection formData={formData} handleInputChange={handleInputChange} showDestination={true} />
+        <CreativeAssetsSection formData={formData} handleInputChange={handleInputChange} showDestination={true} onOpenGraphicModal={onOpenGraphicModal} />
     </CampaignFormBase>
 );
 
 // 6. App Promotion Form
-export const AppPromotionForm = ({ formData, handleInputChange }) => (
+export const AppPromotionForm = ({ formData, handleInputChange, onOpenGraphicModal }) => (
     <CampaignFormBase formData={formData} handleInputChange={handleInputChange}>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
@@ -427,12 +461,12 @@ export const AppPromotionForm = ({ formData, handleInputChange }) => (
                 />
             </div>
         </div>
-        <CreativeAssetsSection formData={formData} handleInputChange={handleInputChange} />
+        <CreativeAssetsSection formData={formData} handleInputChange={handleInputChange} onOpenGraphicModal={onOpenGraphicModal} />
     </CampaignFormBase>
 );
 
 // 7. Local Business Form
-export const LocalBusinessForm = ({ formData, handleInputChange }) => (
+export const LocalBusinessForm = ({ formData, handleInputChange, onOpenGraphicModal }) => (
     <CampaignFormBase formData={formData} handleInputChange={handleInputChange}>
         <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Business Address</label>
@@ -470,12 +504,12 @@ export const LocalBusinessForm = ({ formData, handleInputChange }) => (
                 />
             </div>
         </div>
-        <CreativeAssetsSection formData={formData} handleInputChange={handleInputChange} />
+        <CreativeAssetsSection formData={formData} handleInputChange={handleInputChange} onOpenGraphicModal={onOpenGraphicModal} />
     </CampaignFormBase>
 );
 
 // 8. Remarketing Form
-export const RemarketingForm = ({ formData, handleInputChange }) => (
+export const RemarketingForm = ({ formData, handleInputChange, onOpenGraphicModal }) => (
     <CampaignFormBase formData={formData} handleInputChange={handleInputChange}>
         <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Target Audience Source</label>
@@ -487,12 +521,12 @@ export const RemarketingForm = ({ formData, handleInputChange }) => (
                 <option value="engagers">Video Viewers / Page Engagers</option>
             </select>
         </div>
-        <CreativeAssetsSection formData={formData} handleInputChange={handleInputChange} showDestination={true} />
+        <CreativeAssetsSection formData={formData} handleInputChange={handleInputChange} showDestination={true} onOpenGraphicModal={onOpenGraphicModal} />
     </CampaignFormBase>
 );
 
 // 9. Offer / Event Form
-export const OfferEventForm = ({ formData, handleInputChange }) => (
+export const OfferEventForm = ({ formData, handleInputChange, onOpenGraphicModal }) => (
     <CampaignFormBase formData={formData} handleInputChange={handleInputChange}>
         <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Campaign Sub-Type</label>

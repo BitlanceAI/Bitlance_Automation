@@ -1,6 +1,16 @@
+import {
+  Brain,
+  Target,
+  Share2,
+  Video,
+  Mic,
+  Shield,
+  Palette
+} from 'lucide-react';
+
 export const agents = [
   {
-    icon: "🧠",
+    icon: Brain,
     title: "SEO AI Agent",
     description: "Automates keyword research and content optimization.",
     features: [
@@ -12,7 +22,7 @@ export const agents = [
     status: "Available"
   },
   {
-    icon: "🎯",
+    icon: Target,
     title: "Meta Ads Automation AI",
     description: "Automates AI-driven Facebook & Instagram campaign workflows.",
     features: [
@@ -24,7 +34,7 @@ export const agents = [
     status: "Available"
   },
   {
-    icon: "📱",
+    icon: Share2,
     title: "Social Media Automation",
     description: "Multi-platform AI content posting and scheduling.",
     features: [
@@ -36,7 +46,7 @@ export const agents = [
     status: "Available"
   },
   {
-    icon: "🎥",
+    icon: Video,
     title: "UGC Video AI Agent",
     description: "AI-powered UGC video creation and editing for maximum engagement.",
     features: [
@@ -48,7 +58,7 @@ export const agents = [
     status: "Coming Soon"
   },
   {
-    icon: "🎙️",
+    icon: Mic,
     title: "AI Voice Agent",
     description: "Automated phone calls and voice interactions with real-time analytics.",
     features: [
@@ -60,7 +70,7 @@ export const agents = [
     status: "Available"
   },
   {
-    icon: "🔒",
+    icon: Shield,
     title: "Security Audit AI",
     description: "Automated security scanning and vulnerability detection.",
     features: [
@@ -72,7 +82,7 @@ export const agents = [
     status: "Disabled"
   },
   {
-    icon: "🎨",
+    icon: Palette,
     title: "Graphic Designer AI",
     description: "AI-powered real estate flyer generation with professional templates.",
     features: [
