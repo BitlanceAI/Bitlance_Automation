@@ -10,6 +10,7 @@ import { google } from 'googleapis';
 import axios from 'axios';
 import { encryptData, decryptData } from './utils/encryption.js';
 import metaRoutes from './src/routes/metaRoutes.js';
+import whatsappRoutes from './src/routes/whatsappRoutes.js';
 
 // Load environment variables
 dotenv.config();
@@ -32,6 +33,7 @@ app.use((req, res, next) => {
 
 // Mount Meta Ads API routes
 app.use('/api/meta', metaRoutes);
+app.use('/api/whatsapp', whatsappRoutes);
 
 const API_KEY = process.env.RETELL_API_KEY;
 

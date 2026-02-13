@@ -59,6 +59,9 @@ app.use('/api/meta', metaRoutes);
 import webhookRoutes from './routes/webhookRoutes.js';
 app.use('/webhooks/meta', webhookRoutes);
 
+import whatsappRoutes from './routes/whatsappRoutes.js';
+app.use('/api/whatsapp', whatsappRoutes);
+
 
 // Legacy routes handling
 app.use('/api/add-to-google-sheet', googleSheetsRoutes);

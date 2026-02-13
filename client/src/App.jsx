@@ -3,7 +3,8 @@ import { Routes, Route, useNavigate, useLocation, Navigate } from 'react-router-
 import { ThemeProvider } from './context/ThemeContext';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
-import LandingPage from './pages/LandingPage';
+import LandingPage from './pages/LandingPage'; // Kept for reference or fallback
+import RealEstateLanding from './pages/RealEstateLanding';
 import AgentsPage from './pages/AgentsPage';
 import BroadcastPage from './pages/BroadcastPage';
 import SalesDashboard from './pages/SalesDashboard';
@@ -23,7 +24,6 @@ import TrafficLanding from './pages/landing/TrafficLanding';
 import LeadGenLanding from './pages/landing/LeadGenLanding';
 import SalesLanding from './pages/landing/SalesLanding';
 import OfferLanding from './pages/landing/OfferLanding';
-// Campaign Wizard
 import CampaignWizard from './components/campaigns/CampaignWizard';
 
 import HomePage from './pages/HomePage'; // Import HomePage
@@ -54,7 +54,9 @@ const RootRedirect = () => {
 
   if (loading) return null;
 
-  return user ? <Navigate to="/home" replace /> : <LandingPage />;
+  if (loading) return null;
+
+  return user ? <Navigate to="/home" replace /> : <RealEstateLanding />;
 };
 
 function App() {
@@ -189,12 +191,15 @@ function App() {
             <Route path="/l/leadgen/:campaignId" element={<LeadGenLanding />} />
             <Route path="/l/sales/:campaignId" element={<SalesLanding />} />
             <Route path="/l/offer/:campaignId" element={<OfferLanding />} />
+            {/* Real Estate Landing is now at root */}
+
+
 
           </Routes>
-          {!isDashboard && <Footer />}
+          {!isDashboard && location.pathname !== '/' && <Footer />}
         </div>
       </AuthProvider>
-    </ThemeProvider>
+    </ThemeProvider >
   );
 }
 

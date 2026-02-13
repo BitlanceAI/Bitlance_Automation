@@ -301,7 +301,9 @@ router.get('/connection', async (req, res) => {
             expiresAt: connection.token_expires_at,
             pages: connection.pages || [],
             adAccounts: connection.ad_accounts || [],
-            connectionType: connection.connection_type
+            connectionType: connection.connection_type,
+            whatsappPhoneId: connection.whatsapp_phone_id || '',
+            wabaId: connection.waba_id || ''
         });
 
     } catch (error) {
