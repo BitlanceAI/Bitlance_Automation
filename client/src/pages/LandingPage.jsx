@@ -8,8 +8,8 @@ import SolutionSection from '../components/landing/SolutionSection';
 import UseCasesSection from '../components/landing/UseCasesSection';
 import HowItWorksSection from '../components/landing/HowItWorksSection';
 import SocialProofSection from '../components/landing/SocialProofSection';
-import PricingSection from '../components/landing/PricingSection';
 import FinalCtaSection from '../components/landing/FinalCtaSection';
+import Footer from '../components/landing/Footer';
 
 const LandingPage = () => {
     const { user, loading } = useAuth();
@@ -31,8 +31,8 @@ const LandingPage = () => {
             <UseCasesSection />
             <HowItWorksSection />
             <SocialProofSection />
-            <PricingSection />
             <FinalCtaSection onOpenBooking={handleOpenBooking} />
+            <Footer />
 
             <BookingModal isOpen={isBookingModalOpen} onClose={() => setIsBookingModalOpen(false)} />
         </div>

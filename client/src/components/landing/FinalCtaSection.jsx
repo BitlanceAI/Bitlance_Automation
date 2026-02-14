@@ -1,11 +1,12 @@
 import React from 'react';
 import { MessageCircle } from 'lucide-react';
+import ScrollReveal from '../ui/ScrollReveal';
 
 const FinalCtaSection = ({ onOpenBooking }) => {
     return (
         <section className="py-24 bg-gray-900 text-white relative overflow-hidden">
             <div className="absolute top-0 right-0 w-96 h-96 bg-indigo-600 rounded-full blur-[120px] opacity-30"></div>
-            <div className="max-w-4xl mx-auto px-6 text-center relative z-10">
+            <ScrollReveal className="max-w-4xl mx-auto px-6 text-center relative z-10">
                 <h2 className="text-4xl md:text-5xl font-bold mb-8">Want to see your AI agent in action this week?</h2>
                 <p className="text-xl text-gray-300 mb-10 max-w-2xl mx-auto">
                     Get a live demo tailored to your industry. We’ll show real conversations, workflows, and how quickly you can start capturing more leads without hiring more people.
@@ -21,7 +22,7 @@ const FinalCtaSection = ({ onOpenBooking }) => {
                         <MessageCircle size={20} /> Prefer WhatsApp? Click here to chat with the AI agent directly.
                     </button>
                 </div>
-            </div>
+            </ScrollReveal>
         </section>
     );
 };
