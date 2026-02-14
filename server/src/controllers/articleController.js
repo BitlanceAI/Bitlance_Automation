@@ -59,18 +59,20 @@ export const generateArticle = async (req, res) => {
             return res.status(400).json({ success: false, error: 'Topic or Industry is required' });
         }
 
-        // 1. Pre-flight Credit Check (NEW LEDGER SYSTEM)
+        // 1. Pre-flight Credit Check (UPDATED FOR FLAT RATE)
+        // With flat_rate model, we validate for 1 unit of usage
+        const usageAmount = 1;
+
         const lengthMapping = {
             "Short (300-500 words)": 300,
             "Medium (500-1000 words)": 500,
             "Long (1000-2000 words)": 1000,
         };
-        const estimatedWords = lengthMapping[length] || 500;
 
         const creditCheck = await CreditLedgerService.validateCreditsAvailable(
             userId,
             'blog',
-            estimatedWords
+            usageAmount
         );
 
         if (!creditCheck.hasEnough) {
@@ -83,7 +85,7 @@ export const generateArticle = async (req, res) => {
             });
         }
 
-        console.log(`✅ Credit pre-check passed: ${creditCheck.creditsNeeded} credits available`);
+        console.log(`✅ Credit pre-check passed: ${creditCheck.creditsNeeded} credits required`);
 
         // 1.5 Handle Industry Mode (Auto-generate Topic/Keywords)
         let finalTopic = topic;
@@ -278,13 +280,14 @@ export const generateArticle = async (req, res) => {
                 agentType: 'blog',
                 referenceId: savedArticle.id,
                 referenceTable: 'articles',
-                usageQuantity: wordCount,
+                usageQuantity: 1, // Flat rate: 1 unit per blog post
                 metadata: {
                     topic: finalTopic,
                     language,
                     style,
                     model: 'sonar-pro',
-                    category: category || 'Technology'
+                    category: category || 'Technology',
+                    actual_word_count: wordCount // Store actual word count in metadata for analytics
                 }
             });
 

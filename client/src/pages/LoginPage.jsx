@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { LogIn, Mail, Lock, AlertCircle } from 'lucide-react';
+import { LogIn, Mail, Lock } from 'lucide-react';
+import toast from 'react-hot-toast';
 import ThemeToggle from '../components/ThemeToggle';
 
 const LoginPage = () => {
@@ -11,19 +12,27 @@ const LoginPage = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [loading, setLoading] = useState(false);
-    const [error, setError] = useState('');
-
     const handleLogin = async (e) => {
         e.preventDefault();
         setLoading(true);
-        setError('');
 
         try {
             const { error } = await signIn({ email, password });
             if (error) throw error;
+            toast.success("Welcome back! 👋");
             navigate('/home');
         } catch (error) {
-            setError(error.message);
+            console.error(error);
+            const message = error.message === "Invalid login credentials"
+                ? "Oops! Incorrect email or password. Please try again."
+                : error.message;
+            toast.error(message, {
+                style: {
+                    borderRadius: '10px',
+                    background: '#333',
+                    color: '#fff',
+                },
+            });
         } finally {
             setLoading(false);
         }
@@ -43,13 +52,6 @@ const LoginPage = () => {
                     <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Welcome Back</h1>
                     <p className="text-gray-500 dark:text-gray-400">Sign in to access your AI agents</p>
                 </div>
-
-                {error && (
-                    <div className="mb-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-700 rounded-xl flex items-start gap-3 text-red-700 dark:text-red-300">
-                        <AlertCircle size={20} className="flex-shrink-0 mt-0.5" />
-                        <span className="text-sm">{error}</span>
-                    </div>
-                )}
 
                 <form onSubmit={handleLogin} className="space-y-5">
                     <div>
