@@ -158,7 +158,19 @@ const whatsappService = {
         const formattedPhone = to.replace('+', '');
         const mediaPayload = {};
         if (mediaType === 'image') mediaPayload.image = { link: mediaUrl, caption };
-        else if (mediaType === 'video') mediaPayload.video = { link: mediaUrl, caption };
+        else if (mediaType === 'video') {
+            // Cloudinary video transformation for WhatsApp compatibility
+            // Ensures H.264 baseline codec and AAC audio
+            let processedUrl = mediaUrl;
+            if (mediaUrl.includes('cloudinary.com') && mediaUrl.includes('/upload/')) {
+                processedUrl = mediaUrl.replace(
+                    '/upload/',
+                    '/upload/f_mp4,vc_h264:baseline:3.0,ac_aac,br_500k,q_auto/'
+                );
+                console.log(`[WhatsApp] Transforming Cloudinary URL: ${mediaUrl} -> ${processedUrl}`);
+            }
+            mediaPayload.video = { link: processedUrl, caption };
+        }
         else if (mediaType === 'document') mediaPayload.document = { link: mediaUrl, caption, filename: 'document' };
 
         try {

@@ -14,7 +14,6 @@ import {
     Menu,
     X,
     LogIn,
-    User,
     ChevronDown
 } from 'lucide-react';
 
@@ -128,16 +127,6 @@ const Navbar = () => {
                             </div>
                         ) : (
                             <div className="flex items-center gap-3">
-                                <Link to="/login" className="flex items-center gap-2 text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
-                                    <LogIn className="w-4 h-4" />
-                                    Login
-                                </Link>
-                                <Link to="/signup">
-                                    <button className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-slate-900 dark:bg-white text-white dark:text-slate-900 text-sm font-semibold hover:bg-slate-800 dark:hover:bg-gray-100 transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-0.5">
-                                        Get Started
-                                        <ChevronDown className="w-4 h-4 rotate-[-90deg]" />
-                                    </button>
-                                </Link>
                             </div>
                         )}
                     </div>
@@ -170,8 +159,8 @@ const Navbar = () => {
                                     key={link.name}
                                     to={link.path}
                                     className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-colors ${location.pathname === link.path
-                                            ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400'
-                                            : 'text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800'
+                                        ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400'
+                                        : 'text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800'
                                         }`}
                                     onClick={() => setMobileMenuOpen(false)}
                                 >

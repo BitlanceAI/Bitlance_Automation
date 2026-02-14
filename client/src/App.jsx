@@ -4,7 +4,6 @@ import { ThemeProvider } from './context/ThemeContext';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import LandingPage from './pages/LandingPage'; // Kept for reference or fallback
-import RealEstateLanding from './pages/RealEstateLanding';
 import AgentsPage from './pages/AgentsPage';
 import BroadcastPage from './pages/BroadcastPage';
 import SalesDashboard from './pages/SalesDashboard';
@@ -56,7 +55,7 @@ const RootRedirect = () => {
 
   if (loading) return null;
 
-  return user ? <Navigate to="/home" replace /> : <RealEstateLanding />;
+  return user ? <Navigate to="/home" replace /> : <LandingPage />;
 };
 
 function App() {
