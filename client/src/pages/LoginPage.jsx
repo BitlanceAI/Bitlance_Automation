@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { LogIn, Mail, Lock } from 'lucide-react';
 import toast from 'react-hot-toast';
 import ThemeToggle from '../components/ThemeToggle';
+import FacebookLogin from '../components/FacebookLogin';
 
 const LoginPage = () => {
     const navigate = useNavigate();
@@ -92,6 +93,19 @@ const LoginPage = () => {
                         {loading ? 'Signing in...' : 'Sign In'}
                     </button>
                 </form>
+
+                <div className="mt-6">
+                    <div className="relative">
+                        <div className="absolute inset-0 flex items-center">
+                            <div className="w-full border-t border-gray-300 dark:border-gray-600"></div>
+                        </div>
+                        <div className="relative flex justify-center text-sm">
+                            <span className="px-2 bg-white dark:bg-slate-800 text-gray-500">Or continue with</span>
+                        </div>
+                    </div>
+
+                    <FacebookLogin />
+                </div>
 
                 <p className="mt-8 text-center text-sm text-gray-600 dark:text-gray-400">
                     Don't have an account?{' '}

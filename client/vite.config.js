@@ -19,5 +19,17 @@ export default defineConfig(({ mode }) => {
         },
       },
     },
+    build: {
+      chunkSizeWarningLimit: 1000,
+      rollupOptions: {
+        output: {
+          manualChunks: {
+            vendor: ['react', 'react-dom'],
+            charts: ['recharts'],
+            ui: ['lucide-react', 'framer-motion']
+          }
+        }
+      }
+    }
   }
 })

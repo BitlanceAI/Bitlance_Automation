@@ -3,6 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { UserPlus, Mail, Lock, User, AlertCircle, CheckCircle } from 'lucide-react';
 import ThemeToggle from '../components/ThemeToggle';
+import FacebookLogin from '../components/FacebookLogin';
 
 const SignupPage = () => {
     const navigate = useNavigate();
@@ -149,6 +150,19 @@ const SignupPage = () => {
                         {loading ? 'Creating Account...' : 'Create Account'}
                     </button>
                 </form>
+
+                <div className="mt-6">
+                    <div className="relative">
+                        <div className="absolute inset-0 flex items-center">
+                            <div className="w-full border-t border-gray-300 dark:border-gray-600"></div>
+                        </div>
+                        <div className="relative flex justify-center text-sm">
+                            <span className="px-2 bg-white dark:bg-slate-800 text-gray-500">Or continue with</span>
+                        </div>
+                    </div>
+
+                    <FacebookLogin />
+                </div>
 
                 <p className="mt-8 text-center text-sm text-gray-600 dark:text-gray-400">
                     Already have an account?{' '}
