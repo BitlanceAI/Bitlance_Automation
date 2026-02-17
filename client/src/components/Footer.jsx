@@ -19,7 +19,7 @@ const Footer = () => {
                         </p>
                         <div className="flex gap-4">
                             <SocialIcon icon={<Twitter size={18} />} />
-                            <SocialIcon icon={<Linkedin size={18} />} />
+                            <SocialIcon icon={<Linkedin size={18} />} href="https://www.linkedin.com/company/bitlance-tech-hub-pvt-ltd/" />
                             <SocialIcon icon={<Facebook size={18} />} />
                             <SocialIcon icon={<Instagram size={18} />} />
                         </div>
@@ -30,9 +30,12 @@ const Footer = () => {
                         <h3 className="text-lg font-bold mb-6">Quick Links</h3>
                         <ul className="space-y-3">
                             <FooterLink to="/" label="Home" />
-                            <FooterLink to="/agents" label="AI Agents" />
-                            <FooterLink to="/broadcast" label="Broadcast" />
-                            <FooterLink to="/dashboard" label="Dashboard" />
+                            <FooterLink to="/agents" label="All AI Agents" />
+                            <FooterLink to="/seo-agent" label="SEO AI Agent" />
+                            <FooterLink to="/meta-ads-agent" label="Meta Ads Automation" />
+                            <FooterLink to="/broadcast" label="Social Media Automation" />
+                            <FooterLink to="/dashboard" label="AI Voice Agent" />
+                            <FooterLink to="/design-agent" label="Graphic Designer AI" />
                         </ul>
                     </div>
 
@@ -72,8 +75,8 @@ const Footer = () => {
     );
 };
 
-const SocialIcon = ({ icon }) => (
-    <a href="#" className="w-8 h-8 rounded-full bg-slate-800 flex items-center justify-center text-slate-400 hover:bg-blue-600 hover:text-white transition-all transform hover:-translate-y-1">
+const SocialIcon = ({ icon, href }) => (
+    <a href={href || "#"} target="_blank" rel="noopener noreferrer" className="w-8 h-8 rounded-full bg-slate-800 flex items-center justify-center text-slate-400 hover:bg-blue-600 hover:text-white transition-all transform hover:-translate-y-1">
         {icon}
     </a>
 );

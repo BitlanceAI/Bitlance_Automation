@@ -1,5 +1,6 @@
-import { MapPin, Mail, Phone, Twitter, Linkedin, Github, Bot } from 'lucide-react';
+import { MapPin, Mail, Phone, Linkedin } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import Logo from '../../assets/logo.webp';
 
 const Footer = () => {
     return (
@@ -8,21 +9,14 @@ const Footer = () => {
                 <div className="grid md:grid-cols-4 gap-12 mb-12">
                     <div className="col-span-1 md:col-span-2">
                         <div className="flex items-center gap-2 mb-6">
-                            <Bot className="w-8 h-8 text-indigo-500" />
-                            <span className="text-2xl font-bold text-white">Agentic AI</span>
+                            <img src={Logo} alt="Bitlance.ai" className="h-10 w-auto" />
                         </div>
                         <p className="text-gray-400 max-w-md leading-relaxed">
                             Empowering businesses with intelligent automation. 24/7 engagement, instant qualification, and seamless scheduling.
                         </p>
                         <div className="flex gap-4 mt-6">
-                            {/* <a href="#" className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center hover:bg-indigo-600 hover:text-white transition-all ring-1 ring-white/10">
-                                <Twitter size={18} />
-                            </a>
-                            <a href="#" className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center hover:bg-indigo-600 hover:text-white transition-all ring-1 ring-white/10">
+                            <a href="https://www.linkedin.com/company/bitlance-tech-hub-pvt-ltd/" target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center hover:bg-indigo-600 hover:text-white transition-all ring-1 ring-white/10">
                                 <Linkedin size={18} />
-                            </a> */}
-                            <a href="#" className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center hover:bg-indigo-600 hover:text-white transition-all ring-1 ring-white/10">
-                                <Github size={18} />
                             </a>
                         </div>
                     </div>
@@ -31,8 +25,12 @@ const Footer = () => {
                     <div>
                         <h4 className="text-white font-bold mb-6 text-lg">Company</h4>
                         <ul className="space-y-4">
-                            <li><Link to="/about" className="hover:text-indigo-400 transition-colors">About Us</Link></li>
-                            <li><Link to="/blog" className="hover:text-indigo-400 transition-colors">Blog</Link></li>
+
+                            <li><Link to="/blogs" className="hover:text-indigo-400 transition-colors">Blog</Link></li>
+
+                            <li><Link to="/privacy" className="hover:text-indigo-400 transition-colors">Privacy Policy</Link></li>
+                            <li><Link to="/terms" className="hover:text-indigo-400 transition-colors">Terms of Service</Link></li>
+
                         </ul>
                     </div>
 
