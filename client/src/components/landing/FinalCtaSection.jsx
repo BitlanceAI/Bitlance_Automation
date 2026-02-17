@@ -1,10 +1,12 @@
+
 import React from 'react';
 import { MessageCircle } from 'lucide-react';
 import ScrollReveal from '../ui/ScrollReveal';
 
 const FinalCtaSection = ({ onOpenBooking }) => {
     return (
-        <section className="py-24 bg-gray-900 text-white relative overflow-hidden">
+        <section className="py-24 relative overflow-hidden">
+            <div className="absolute inset-0 bg-indigo-600/5 -z-10" />
             <div className="absolute top-0 right-0 w-96 h-96 bg-indigo-600 rounded-full blur-[120px] opacity-30"></div>
             <ScrollReveal className="max-w-4xl mx-auto px-6 text-center relative z-10">
                 <h2 className="text-4xl md:text-5xl font-bold mb-8">Want to see your AI agent in action this week?</h2>
@@ -18,9 +20,14 @@ const FinalCtaSection = ({ onOpenBooking }) => {
                     >
                         Book My Demo Now
                     </button>
-                    <button className="text-green-400 hover:text-green-300 flex items-center gap-2 font-medium transition-colors">
+                    <a
+                        href="https://wa.me/917030951331"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-green-400 hover:text-green-300 flex items-center gap-2 font-medium transition-colors"
+                    >
                         <MessageCircle size={20} /> Prefer WhatsApp? Click here to chat with the AI agent directly.
-                    </button>
+                    </a>
                 </div>
             </ScrollReveal>
         </section>

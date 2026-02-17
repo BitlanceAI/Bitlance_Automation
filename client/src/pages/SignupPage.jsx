@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { UserPlus, Mail, Lock, User, AlertCircle, CheckCircle } from 'lucide-react';
-import ThemeToggle from '../components/ThemeToggle';
 import FacebookLogin from '../components/FacebookLogin';
 
 const SignupPage = () => {
@@ -63,7 +62,7 @@ const SignupPage = () => {
     return (
         <div className="min-h-screen bg-gray-50 dark:bg-slate-900 flex flex-col items-center justify-center p-4 transition-colors duration-300">
             <div className="absolute top-6 right-6">
-                <ThemeToggle />
+
             </div>
 
             <div className="w-full max-w-md bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-gray-100 dark:border-slate-700 p-8 transition-colors duration-300">

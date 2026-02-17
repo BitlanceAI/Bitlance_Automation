@@ -3,7 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../services/supabaseClient';
 import { ArrowLeft, Plus, Upload, Trash2, Eye, RefreshCw, Home, LayoutDashboard, Bot, Radio, FileText } from 'lucide-react';
-import ThemeToggle from '../components/ThemeToggle';
+
 import blogService from '../services/blogService';
 import API_BASE_URL from '../config.js';
 import ProfileSelection from '../components/ProfileSelection';
@@ -400,7 +400,7 @@ const BlogPage = () => {
                         <Plus size={18} />
                         New Article
                     </button>
-                    <ThemeToggle />
+
                 </div>
             </header>
 

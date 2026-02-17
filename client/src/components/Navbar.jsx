@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import Logo from '../assets/logo.webp';
-import ThemeToggle from './ThemeToggle';
 import {
     Home,
     Users,
@@ -45,9 +44,9 @@ const Navbar = () => {
 
     return (
         <nav
-            className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ease-in-out ${scrolled
-                ? 'bg-white/80 dark:bg-slate-900/80 backdrop-blur-md shadow-lg py-3'
-                : 'bg-transparent py-5'
+            className={`fixed z-50 transition-all duration-500 ease-in-out ${scrolled
+                ? 'top-4 left-1/2 -translate-x-1/2 w-[92%] max-w-6xl bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl shadow-2xl shadow-black/10 dark:shadow-black/30 py-2.5 rounded-2xl border border-gray-200/50 dark:border-slate-700/50'
+                : 'top-0 left-0 right-0 w-full bg-transparent py-5'
                 }`}
         >
             <div className="max-w-7xl mx-auto px-6 flex justify-between items-center">
@@ -64,8 +63,8 @@ const Navbar = () => {
                     />
                 </Link>
 
-                {/* Desktop Links */}
-                <div className="hidden md:flex items-center space-x-8">
+                {/* Desktop Links - Centered */}
+                <div className="hidden md:flex items-center space-x-8 absolute left-1/2 transform -translate-x-1/2">
                     {navLinks.map((link) => {
                         const Icon = link.icon;
                         return (
@@ -94,47 +93,50 @@ const Navbar = () => {
                             Admin
                         </Link>
                     )}
+                </div>
 
-                    <div className="h-6 w-px bg-gray-200 dark:bg-gray-700 mx-2"></div>
-
-                    <div className="flex items-center gap-4">
-                        <ThemeToggle />
-
-                        {user ? (
-                            <div className="flex items-center gap-4">
-                                <div className="bg-indigo-50 dark:bg-indigo-900/30 px-3 py-1.5 rounded-lg border border-indigo-100 dark:border-indigo-800 flex items-center gap-2 transition-transform hover:scale-105">
-                                    <Sparkles className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
-                                    <span className="text-sm font-semibold text-indigo-700 dark:text-indigo-300">
-                                        {credits} Credits
-                                    </span>
-                                </div>
-                                <div className="relative group flex items-center gap-2 cursor-pointer">
-                                    <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-blue-500 to-indigo-600 flex items-center justify-center text-white font-bold text-xs shadow-md">
-                                        {user.email?.charAt(0).toUpperCase()}
-                                    </div>
-                                    <span className="text-sm text-gray-700 dark:text-gray-300 hidden lg:block">
-                                        {user.email?.split('@')[0]}
-                                    </span>
-                                </div>
-                                <button
-                                    onClick={signOut}
-                                    className="flex items-center gap-2 text-sm text-gray-500 hover:text-red-600 dark:text-gray-400 dark:hover:text-red-400 font-medium transition-colors group"
-                                    title="Logout"
-                                >
-                                    <LogOut className="w-4 h-4 transition-transform group-hover:-translate-x-0.5" />
-                                    <span className="hidden lg:inline">Logout</span>
-                                </button>
+                {/* Right Side - Auth & Credits */}
+                <div className="hidden md:flex items-center gap-4">
+                    {user ? (
+                        <div className="flex items-center gap-4">
+                            <div className="bg-indigo-50 dark:bg-indigo-900/30 px-3 py-1.5 rounded-lg border border-indigo-100 dark:border-indigo-800 flex items-center gap-2 transition-transform hover:scale-105">
+                                <Sparkles className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
+                                <span className="text-sm font-semibold text-indigo-700 dark:text-indigo-300">
+                                    {credits} Credits
+                                </span>
                             </div>
-                        ) : (
-                            <div className="flex items-center gap-3">
+                            <div className="relative group flex items-center gap-2 cursor-pointer">
+                                <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-blue-500 to-indigo-600 flex items-center justify-center text-white font-bold text-xs shadow-md">
+                                    {user.email?.charAt(0).toUpperCase()}
+                                </div>
+                                <span className="text-sm text-gray-700 dark:text-gray-300 hidden lg:block">
+                                    {user.email?.split('@')[0]}
+                                </span>
                             </div>
-                        )}
-                    </div>
+                            <button
+                                onClick={signOut}
+                                className="flex items-center gap-2 text-sm text-gray-500 hover:text-red-600 dark:text-gray-400 dark:hover:text-red-400 font-medium transition-colors group"
+                                title="Logout"
+                            >
+                                <LogOut className="w-4 h-4 transition-transform group-hover:-translate-x-0.5" />
+                                <span className="hidden lg:inline">Logout</span>
+                            </button>
+                        </div>
+                    ) : (
+                        <div className="flex items-center gap-3">
+                            <Link
+                                to="/login"
+                                className="flex items-center gap-2 px-5 py-2 text-sm font-semibold text-white bg-gradient-to-r from-blue-600 to-indigo-600 rounded-xl hover:from-blue-700 hover:to-indigo-700 shadow-md hover:shadow-lg transition-all duration-300 hover:scale-105"
+                            >
+                                <LogIn className="w-4 h-4" />
+                                Login
+                            </Link>
+                        </div>
+                    )}
                 </div>
 
                 {/* Mobile Menu Button */}
                 <div className="md:hidden flex items-center gap-4">
-                    <ThemeToggle />
                     <button
                         onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
                         className="text-gray-700 dark:text-gray-200 focus:outline-none p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"

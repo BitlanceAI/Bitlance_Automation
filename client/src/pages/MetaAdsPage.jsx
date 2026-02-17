@@ -42,7 +42,7 @@ import {
     UploadCloud,
     Trash2
 } from 'lucide-react';
-import ThemeToggle from '../components/ThemeToggle';
+
 import {
     SchedulePostModal,
     StepAccount,
@@ -695,7 +695,7 @@ const MetaAdsPage = () => {
                                 </div>
                             </div>
 
-                            <ThemeToggle />
+
                         </div>
                     </div>
                 </div>

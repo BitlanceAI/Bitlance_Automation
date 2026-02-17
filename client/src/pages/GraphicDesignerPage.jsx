@@ -29,7 +29,7 @@ import {
     ListChecks,
     Bed
 } from 'lucide-react';
-import ThemeToggle from '../components/ThemeToggle';
+
 
 // Input field component - defined outside to prevent re-creation on each render
 const InputField = ({ icon: Icon, label, name, value, onChange, type = 'text', placeholder, required = true, colSpan = false }) => (
@@ -284,7 +284,7 @@ const GraphicDesignerPage = () => {
                                 </div>
                             </div>
 
-                            <ThemeToggle />
+
                         </div>
                     </div>
                 </div>

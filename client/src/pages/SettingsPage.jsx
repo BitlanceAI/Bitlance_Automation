@@ -11,7 +11,7 @@ import {
     Eye,
     EyeOff
 } from 'lucide-react';
-import ThemeToggle from '../components/ThemeToggle';
+
 import { saveUserSettings, getUserSettings, deleteUserSettings } from '../services/settingsService';
 
 const SettingsPage = () => {
@@ -133,7 +133,7 @@ const SettingsPage = () => {
                             </h1>
                         </div>
                     </div>
-                    <ThemeToggle />
+
                 </div>
             </header>
 

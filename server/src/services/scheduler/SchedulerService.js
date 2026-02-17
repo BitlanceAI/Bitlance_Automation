@@ -11,7 +11,12 @@ function getSupabase() {
             console.error('❌ [SchedulerService] Missing Supabase credentials!');
             return null;
         }
-        supabase = createClient(supabaseUrl, supabaseKey);
+        supabase = createClient(supabaseUrl, supabaseKey, {
+            auth: {
+                persistSession: false,
+                autoRefreshToken: false,
+            }
+        });
     }
     return supabase;
 }

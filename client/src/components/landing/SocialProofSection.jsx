@@ -62,25 +62,6 @@ const SocialProofSection = () => {
                     </motion.div>
                 </div>
 
-                <div className="max-w-3xl mx-auto text-center mb-16">
-                    <motion.blockquote
-                        initial={{ opacity: 0 }}
-                        whileInView={{ opacity: 1 }}
-                        transition={{ duration: 0.8 }}
-                        viewport={{ once: true }}
-                        className="text-2xl font-medium italic leading-relaxed mb-6"
-                    >
-                        “We used to miss 20–30% calls during peak time. After adding the AI agent, every lead is answered and pre‑qualified before it reaches our sales team.”
-                    </motion.blockquote>
-                    <div className="flex items-center justify-center gap-4">
-                        {/* <div className="w-12 h-12 rounded-full bg-gray-300"></div> */}
-                        <div className="text-left">
-                            <div className="font-bold">[Client Name]</div>
-                            <div className="text-indigo-200 text-sm">[Business Type]</div>
-                        </div>
-                    </div>
-                </div>
-
                 <div className="text-center opacity-60 text-sm uppercase tracking-widest mb-8">Trusted by teams in real estate, healthcare, education, and local services</div>
 
                 {/* Marquee Effect */}

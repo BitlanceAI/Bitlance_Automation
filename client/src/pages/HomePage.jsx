@@ -10,7 +10,7 @@ import {
     Zap,
     LayoutDashboard
 } from 'lucide-react';
-import ThemeToggle from '../components/ThemeToggle';
+
 import { supabase } from '../lib/supabase';
 import DashboardStats from '../components/DashboardStats';
 import RecentActivity from '../components/RecentActivity';

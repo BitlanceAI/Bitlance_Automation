@@ -15,32 +15,6 @@ const HeroSection = ({ onOpenBooking }) => {
 
     return (
         <header ref={ref} className="relative pt-32 pb-20 lg:pt-48 lg:pb-32 overflow-hidden perspective-1000">
-            {/* Dynamic Background */}
-            <motion.div
-                style={{ y: backgroundY }}
-                className="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-indigo-50 via-white to-purple-50 dark:from-slate-900 dark:via-slate-900 dark:to-indigo-950/30 -z-20"
-            />
-
-            {/* Animated Blobs */}
-            <motion.div
-                animate={{
-                    scale: [1, 1.2, 1],
-                    rotate: [0, 90, 0],
-                    opacity: [0.3, 0.5, 0.3]
-                }}
-                transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-                className="absolute top-[-10%] right-[-10%] w-[800px] h-[800px] rounded-full bg-indigo-500/10 blur-[100px] -z-10"
-            />
-            <motion.div
-                animate={{
-                    scale: [1, 1.5, 1],
-                    x: [0, 100, 0],
-                    opacity: [0.3, 0.5, 0.3]
-                }}
-                transition={{ duration: 25, repeat: Infinity, ease: "linear" }}
-                className="absolute bottom-[-10%] left-[-10%] w-[600px] h-[600px] rounded-full bg-purple-500/10 blur-[100px] -z-10"
-            />
-
             <div className="max-w-7xl mx-auto px-6 text-center relative z-10">
 
                 {/* Badge */}
@@ -48,13 +22,13 @@ const HeroSection = ({ onOpenBooking }) => {
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.6 }}
-                    className="inline-flex items-center px-4 py-2 rounded-full bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm border border-indigo-100 dark:border-slate-700 shadow-lg mb-8"
+                    className="inline-flex items-center px-4 py-2 rounded-full bg-white/5 backdrop-blur-sm border border-white/10 shadow-lg mb-8"
                 >
                     <span className="flex h-2 w-2 relative mr-3">
                         <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
                         <span className="relative inline-flex rounded-full h-2 w-2 bg-indigo-500"></span>
                     </span>
-                    <span className="bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-purple-600 dark:from-indigo-400 dark:to-purple-400 font-bold text-sm">
+                    <span className="bg-clip-text text-transparent bg-gradient-to-r from-indigo-300 to-purple-300 font-bold text-sm">
                         AI Agents v2.0 Live
                     </span>
                 </motion.div>
@@ -65,12 +39,12 @@ const HeroSection = ({ onOpenBooking }) => {
                         initial={{ opacity: 0, y: 30 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.8, delay: 0.2 }}
-                        className="text-5xl md:text-7xl font-extrabold tracking-tight mb-8 leading-tight text-gray-900 dark:text-white"
+                        className="text-5xl md:text-7xl font-extrabold tracking-tight mb-8 leading-tight text-white"
                     >
                         Turn Missed Opportunities Into <br className="hidden md:block" />
-                        <span className="bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-purple-600 dark:from-indigo-400 dark:to-purple-400 relative">
+                        <span className="bg-clip-text text-transparent bg-gradient-to-r from-indigo-300 via-white/90 to-rose-300 relative">
                             Closed Deals
-                            <svg className="absolute w-full h-3 -bottom-1 left-0 text-indigo-400/30 dark:text-indigo-600/30" viewBox="0 0 100 10" preserveAspectRatio="none">
+                            <svg className="absolute w-full h-3 -bottom-1 left-0 text-indigo-400/30" viewBox="0 0 100 10" preserveAspectRatio="none">
                                 <path d="M0 5 Q 50 10 100 5" stroke="currentColor" strokeWidth="8" fill="none" />
                             </svg>
                         </span>
@@ -81,7 +55,7 @@ const HeroSection = ({ onOpenBooking }) => {
                         initial={{ opacity: 0, y: 30 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.8, delay: 0.4 }}
-                        className="text-xl text-gray-600 dark:text-gray-300 mb-12 max-w-3xl mx-auto leading-relaxed"
+                        className="text-xl text-white/60 mb-12 max-w-3xl mx-auto leading-relaxed"
                     >
                         Deploy a 24/7 smart assistant that talks to your leads, answers questions, and books appointments automatically—without hiring extra staff.
                     </motion.p>

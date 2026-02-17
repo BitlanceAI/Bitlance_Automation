@@ -3,7 +3,12 @@ import { Routes, Route, useNavigate, useLocation, Navigate } from 'react-router-
 import { ThemeProvider } from './context/ThemeContext';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
-import LandingPage from './pages/LandingPage'; // Kept for reference or fallback
+import ShapeHeroDemo from './pages/ShapeHeroDemo';
+import LandingPage from './pages/LandingPage';
+
+// ... existing imports
+
+
 import AgentsPage from './pages/AgentsPage';
 import BroadcastPage from './pages/BroadcastPage';
 import SalesDashboard from './pages/SalesDashboard';
@@ -24,6 +29,15 @@ import LeadGenLanding from './pages/landing/LeadGenLanding';
 import SalesLanding from './pages/landing/SalesLanding';
 import OfferLanding from './pages/landing/OfferLanding';
 import CampaignWizard from './components/campaigns/CampaignWizard';
+import PrivacyPolicy from './pages/PrivacyPolicy';
+import TermsPage from './pages/TermsPage';
+import TestimonialDemo from './pages/TestimonialDemo';
+
+
+
+// ... existing imports
+
+
 
 import HomePage from './pages/HomePage'; // Import HomePage
 import PublicBlogListPage from './pages/PublicBlogListPage';
@@ -103,7 +117,11 @@ function App() {
           <Routes>
             {/* Public Routes */}
             <Route path="/" element={<RootRedirect />} />
+            <Route path="/privacy" element={<PrivacyPolicy />} />
+            <Route path="/terms" element={<TermsPage />} />
+
             <Route path="/blogs" element={<PublicBlogListPage />} />
+
             <Route path="/blogs/:id" element={<PublicArticlePage />} />
             <Route path="/login" element={
               <PublicRoute>
@@ -191,6 +209,8 @@ function App() {
             <Route path="/l/sales/:campaignId" element={<SalesLanding />} />
             <Route path="/l/offer/:campaignId" element={<OfferLanding />} />
             {/* Real Estate Landing is now at root */}
+            <Route path="/testimonial-demo" element={<TestimonialDemo />} />
+            <Route path="/shape-demo" element={<ShapeHeroDemo />} />
 
 
 

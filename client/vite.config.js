@@ -6,6 +6,11 @@ export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '');
   return {
     plugins: [react()],
+    resolve: {
+      alias: {
+        "@": "/src",
+      },
+    },
     server: {
       proxy: {
         '/api/n8n': {

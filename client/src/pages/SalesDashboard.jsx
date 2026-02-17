@@ -24,7 +24,7 @@ import {
 } from 'lucide-react';
 
 import VoiceAgentInterface from '../components/VoiceAgentInterface';
-import ThemeToggle from '../components/ThemeToggle';
+
 import AiAvatar from '../assets/ai_agent_avatar.png';
 import { meetingsService } from '../services/meetingsService';
 import { useAuth } from '../context/AuthContext';
@@ -489,7 +489,7 @@ const SalesDashboard = () => {
                             )}
                         </div>
                         <div className="h-6 w-px bg-gray-200 dark:bg-slate-700 hidden md:block"></div>
-                        <ThemeToggle />
+
                         <div className="flex items-center gap-2 text-green-500 bg-green-500/10 px-3 py-1 rounded-full text-xs font-medium">
                             <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
                             System Online

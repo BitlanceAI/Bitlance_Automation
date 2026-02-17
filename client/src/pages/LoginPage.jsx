@@ -3,7 +3,6 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { LogIn, Mail, Lock } from 'lucide-react';
 import toast from 'react-hot-toast';
-import ThemeToggle from '../components/ThemeToggle';
 import FacebookLogin from '../components/FacebookLogin';
 
 const LoginPage = () => {
@@ -42,7 +41,7 @@ const LoginPage = () => {
     return (
         <div className="min-h-screen bg-gray-50 dark:bg-slate-900 flex flex-col items-center justify-center p-4 transition-colors duration-300">
             <div className="absolute top-6 right-6">
-                <ThemeToggle />
+
             </div>
 
             <div className="w-full max-w-md bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-gray-100 dark:border-slate-700 p-8 transition-colors duration-300">

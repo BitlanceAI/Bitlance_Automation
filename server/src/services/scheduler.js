@@ -16,7 +16,12 @@ export const startPostScheduler = () => {
             return;
         }
 
-        supabase = createClient(supabaseUrl, supabaseKey);
+        supabase = createClient(supabaseUrl, supabaseKey, {
+            auth: {
+                persistSession: false,
+                autoRefreshToken: false,
+            }
+        });
     }
 
     console.log('⏰ Starting Post Scheduler (1-minute interval)...');

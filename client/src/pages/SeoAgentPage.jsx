@@ -19,7 +19,7 @@ import {
     Layers,
     LogOut
 } from 'lucide-react';
-import ThemeToggle from '../components/ThemeToggle';
+
 import blogService from '../services/blogService';
 import API_BASE_URL from '../config.js';
 import ProfileSelection from '../components/ProfileSelection';
@@ -432,10 +432,7 @@ const SeoAgentPage = () => {
                     </div>
 
                     <div className="h-6 w-px bg-gray-200 dark:bg-slate-700 hidden md:block"></div>
-                    <div className="flex items-center gap-3">
-                        <ThemeToggle />
 
-                    </div>
                 </div>
             </header>
 

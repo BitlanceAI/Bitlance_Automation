@@ -45,27 +45,27 @@ const ThreeDCard = ({ step, title, desc, color, image, index }) => {
                 rotateX,
                 transformStyle: "preserve-3d",
             }}
-            className="relative h-[400px] w-full rounded-xl bg-white dark:bg-slate-800 shadow-xl cursor-pointer"
+            className="relative h-[400px] w-full rounded-xl bg-white/5 border border-white/10 shadow-xl cursor-pointer backdrop-blur-sm"
         >
             <div
                 style={{
                     transform: "translateZ(75px)",
                     transformStyle: "preserve-3d",
                 }}
-                className="absolute inset-4 grid place-content-center rounded-xl bg-gradient-to-br from-indigo-50 to-white dark:from-slate-700 dark:to-slate-800 shadow-inner"
+                className="absolute inset-4 grid place-content-center rounded-xl bg-gradient-to-br from-white/10 to-transparent shadow-inner border border-white/5"
             >
                 {/* 3D Content Layer */}
                 <div className="text-center p-6" style={{ transform: "translateZ(50px)" }}>
-                    <div className={`w-20 h-20 mx-auto rounded-full bg-gradient-to-tr ${color} flex items-center justify-center text-3xl font-bold text-white mb-6 shadow-lg`}>
+                    <div className={`w-20 h-20 mx-auto rounded-full bg-gradient-to-tr ${color} flex items-center justify-center text-3xl font-bold text-white mb-6 shadow-lg shadow-indigo-500/20`}>
                         {step}
                     </div>
-                    <h3 className="text-2xl font-bold mb-4 text-gray-900 dark:text-white">{title}</h3>
-                    <p className="text-gray-600 dark:text-gray-300 mb-6">
+                    <h3 className="text-2xl font-bold mb-4 text-white">{title}</h3>
+                    <p className="text-white/60 mb-6">
                         {desc}
                     </p>
 
                     {/* Dynamic Image Layer */}
-                    <div className="h-48 w-full rounded-lg bg-gray-50 dark:bg-slate-900/50 border border-gray-100 dark:border-slate-700 flex items-center justify-center relative overflow-hidden group-hover:scale-105 transition-transform duration-500">
+                    <div className="h-48 w-full rounded-lg bg-white/5 border border-white/10 flex items-center justify-center relative overflow-hidden group-hover:scale-105 transition-transform duration-500">
                         <div className={`absolute inset-0 opacity-20 bg-gradient-to-br ${color}`}></div>
 
                         <img
@@ -75,7 +75,7 @@ const ThreeDCard = ({ step, title, desc, color, image, index }) => {
                         />
                     </div>
 
-                    <div className="mt-4 text-sm font-semibold text-indigo-600 dark:text-indigo-400 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <div className="mt-4 text-sm font-semibold text-indigo-400 opacity-0 group-hover:opacity-100 transition-opacity">
                         Hover to tilt
                     </div>
                 </div>
@@ -86,14 +86,14 @@ const ThreeDCard = ({ step, title, desc, color, image, index }) => {
 
 const HowItWorksSection = () => {
     return (
-        <section className="py-32 bg-gray-50 dark:bg-slate-900 overflow-hidden">
+        <section className="py-32 relative overflow-hidden">
             <ScrollReveal className="max-w-7xl mx-auto px-6">
                 <div className="text-center mb-24">
-                    <span className="text-indigo-600 dark:text-indigo-400 font-bold tracking-wider uppercase text-sm mb-2 block">Process</span>
-                    <h2 className="text-4xl md:text-6xl font-extrabold mb-6">
-                        Go live in <span className="bg-clip-text text-transparent bg-gradient-to-r from-indigo-500 to-purple-500">3 simple steps</span>
+                    <span className="text-indigo-400 font-bold tracking-wider uppercase text-sm mb-2 block">Process</span>
+                    <h2 className="text-4xl md:text-6xl font-extrabold mb-6 text-white">
+                        Go live in <span className="bg-clip-text text-transparent bg-gradient-to-r from-indigo-400 to-purple-400">3 simple steps</span>
                     </h2>
-                    <p className="text-xl text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
+                    <p className="text-xl text-white/60 max-w-2xl mx-auto">
                         We handle the complexity. You get a fully trained AI agent ready to close deals.
                     </p>
                 </div>
