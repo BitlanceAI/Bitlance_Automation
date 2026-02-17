@@ -14,9 +14,9 @@ const ProblemSection = () => {
                         whileInView={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.5 }}
                         viewport={{ once: true }}
-                        className="text-3xl md:text-4xl font-bold mb-6 text-white"
+                        className="text-3xl md:text-5xl font-bold mb-6 text-white"
                     >
-                        Your team is busy. Your leads won’t wait.
+                        How many leads did you collect last month that nobody ever called or messaged back?
                     </motion.h2>
                     <motion.p
                         initial={{ opacity: 0, y: 20 }}
@@ -25,16 +25,16 @@ const ProblemSection = () => {
                         viewport={{ once: true }}
                         className="text-lg text-white/60 max-w-3xl mx-auto leading-relaxed"
                     >
-                        Every missed call, late reply, or slow follow‑up costs you leads, revenue, and reputation. Your prospects expect instant, clear answers on every channel.
+                        If your best lead was called right now, would your team actually capture and track it properly?
                     </motion.p>
                 </div>
 
                 <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
                     {[
-                        { icon: Phone, text: "Leads drop when no one answers outside office hours.", color: "rose" },
-                        { icon: MessageSquare, text: "Sales reps waste time on repetitive FAQs instead of hot leads.", color: "blue" },
-                        { icon: Share2, text: "Managing WhatsApp, calls, website chat, and socials feels chaotic.", color: "violet" },
-                        { icon: Users, text: "Hiring, training, and monitoring staff for basic queries is expensive.", color: "emerald" }
+                        { icon: Phone, text: "Still tracking leads in Excel, WhatsApp, and random notebooks?", color: "rose" },
+                        { icon: MessageSquare, text: "Are you replying to prospects hours later while your competitors reply in minutes?", color: "blue" },
+                        { icon: Share2, text: "Do you know exactly how many leads turned into meetings and how many just ‘disappeared’?", color: "violet" },
+                        { icon: Users, text: "Is your sales follow-up fully dependent on people remembering, instead of an automated system?", color: "emerald" }
                     ].map((item, idx) => (
                         <TiltCard key={idx} className="h-full">
                             <div className="bg-white/5 p-6 rounded-xl shadow-sm border border-white/10 flex flex-col items-center text-center hover:bg-white/10 transition-all h-full transform-style-3d backdrop-blur-sm">

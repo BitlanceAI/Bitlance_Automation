@@ -8,7 +8,7 @@ const SolutionSection = () => {
         <section className="py-24 relative overflow-hidden">
             <ScrollReveal className="max-w-7xl mx-auto px-6">
                 <div className="text-center mb-20">
-                    <span className="text-indigo-400 font-bold tracking-wider uppercase text-sm">Solution</span>
+                    <span className="text-indigo-400 font-bold tracking-wider uppercase text-sm">Consideration</span>
                     <motion.h2
                         initial={{ opacity: 0, y: 20 }}
                         whileInView={{ opacity: 1, y: 0 }}
@@ -16,7 +16,7 @@ const SolutionSection = () => {
                         viewport={{ once: true }}
                         className="text-3xl md:text-5xl font-bold mt-2 mb-6 text-white"
                     >
-                        Meet Your AI Agent: Only-On, On-Brand, On-Time
+                        What would happen to your revenue if every lead got a response in under 5 minutes, automatically?
                     </motion.h2>
                     <motion.p
                         initial={{ opacity: 0, y: 20 }}
@@ -25,33 +25,33 @@ const SolutionSection = () => {
                         viewport={{ once: true }}
                         className="text-xl text-white/60 max-w-3xl mx-auto"
                     >
-                        Your AI agent becomes a trained virtual team member that handles conversations, qualifies leads, and triggers actions in your existing tools—all in real time.
+                        Are your best salespeople spending time chasing unqualified leads instead of talking to ready-to-buy prospects?
                     </motion.p>
                 </div>
 
                 <div className="grid md:grid-cols-2 gap-12">
                     {[
                         {
-                            title: "Smart conversations",
-                            desc: "Understands natural language, answers FAQs, and handles objections in multiple languages so your prospects feel they’re talking to a real executive, not a bot.",
+                            title: "Manual Work",
+                            desc: "How much time does your team waste every week updating sheets, reports, and follow-up lists manually?",
                             icon: MessageCircle,
                             color: "indigo"
                         },
                         {
-                            title: "Lead qualification",
-                            desc: "Asks the right questions, captures intent, filters out junk, and sends only qualified leads to your team with full context.",
+                            title: "Visibility",
+                            desc: "Do you have one place where you can see every lead, every conversation, and every follow-up status in real time?",
                             icon: Check,
                             color: "emerald"
                         },
                         {
-                            title: "Booking & workflows",
-                            desc: "Books appointments, schedules demos, and pushes data into your CRM, calendar, or WhatsApp flows automatically—no manual follow‑ups.",
+                            title: "Lost Opportunities",
+                            desc: "How many ‘hot’ leads go cold because nobody sent a reminder message or follow-up sequence?",
                             icon: Calendar,
                             color: "violet"
                         },
                         {
-                            title: "Omnichannel presence",
-                            desc: "Works on your website, WhatsApp, social DMs, and landing pages so you never lose a prospect because they chose the ‘wrong’ channel.",
+                            title: "Data-Driven Decisions",
+                            desc: "If you could see which campaigns and ads actually bring leads that convert, what decisions would you change this month?",
                             icon: Globe,
                             color: "blue"
                         }
