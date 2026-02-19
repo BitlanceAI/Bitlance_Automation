@@ -65,6 +65,12 @@ app.use('/api/whatsapp', whatsappRoutes);
 import leadsRoutes from './routes/leadsRoutes.js';
 app.use('/api/leads', leadsRoutes);
 
+import blogRoutes from './routes/blogRoutes.js';
+app.use('/api/blogs', blogRoutes);
+
+import pushRoutes from './routes/pushRoutes.js';
+app.use('/api/push', pushRoutes);
+
 
 
 // Legacy routes handling

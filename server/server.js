@@ -11,6 +11,7 @@ import axios from 'axios';
 import { encryptData, decryptData } from './utils/encryption.js';
 import metaRoutes from './src/routes/metaRoutes.js';
 import whatsappRoutes from './src/routes/whatsappRoutes.js';
+import blogRoutes from './src/routes/blogRoutes.js';
 
 // Load environment variables
 dotenv.config();
@@ -34,6 +35,7 @@ app.use((req, res, next) => {
 // Mount Meta Ads API routes
 app.use('/api/meta', metaRoutes);
 app.use('/api/whatsapp', whatsappRoutes);
+app.use('/api/blogs', blogRoutes);
 
 const API_KEY = process.env.RETELL_API_KEY;
 
@@ -296,14 +298,17 @@ app.post('/api/articles/generate', async (req, res) => {
             return res.status(401).json({ error: "Invalid token" });
         }
 
-        const {
+        let {
             topic,
+            industry,
             keywords = "",
             language = "English",
             style = "conversational",
             length = "Medium (500-1000 words)",
             audience = "general public",
             variants: rawVariants = 1,
+            image_option = "auto",
+            custom_image_url = ""
         } = req.body;
 
         const userId = user.id;
@@ -312,6 +317,50 @@ app.post('/api/articles/generate', async (req, res) => {
         // Validations
 
         const lengthNum = lengthMapping[length] || 500;
+
+        if (!topic && !industry) {
+            return res.status(400).json({ error: "Please provide either a topic or an industry." });
+        }
+
+        // --------- INDUSTRY TO TOPIC GENERATION ---------
+        if (!topic && industry) {
+            console.log(`Generating topic for industry: ${industry}`);
+            try {
+                const topicPrompt = `Generate a single, high-potential, trending blog post topic for the "${industry}" industry.
+                
+                Criteria:
+                - Engaging and specific
+                - Relevant to current trends
+                - Good for SEO
+                
+                Return ONLY the topic title, nothing else.`;
+
+                const topicResponse = await axios.post(
+                    "https://api.perplexity.ai/chat/completions",
+                    {
+                        model: "sonar-pro",
+                        messages: [
+                            { role: "system", content: "You are a professional content strategist." },
+                            { role: "user", content: topicPrompt },
+                        ],
+                        max_tokens: 100,
+                        n: 1,
+                    },
+                    {
+                        headers: {
+                            Authorization: `Bearer ${process.env.PERPLEXITY_API_KEY}`,
+                            "Content-Type": "application/json",
+                        },
+                    }
+                );
+                topic = topicResponse.data.choices?.[0]?.message?.content?.trim();
+                topic = topic.replace(/^["']|["']$/g, '');
+                console.log(`Generated topic: ${topic}`);
+            } catch (err) {
+                console.error("Topic generation failed:", err);
+                return res.status(500).json({ error: "Failed to generate topic from industry." });
+            }
+        }
 
         // --------- KEYWORD RESEARCH ---------
         let generatedKeywords = keywords;
@@ -443,13 +492,16 @@ Content:`;
             plagiarismResult += " ⚠️ Could not fully eliminate plagiarism, but the article is returned to user.";
         }
 
-        // --------- AI GENERATES SUITABLE TEXT FOR IMAGE ---------
+        // --------- IMAGE GENERATION ---------
         let imageUrl = "";
         let imageText = "";
 
-        try {
-            // Step 1: Let AI generate suitable text for the image based on blog content
-            const textPrompt = `Based on this blog content, create a short, simplest, small and catchy headline or phrase (maximum 3 words) that would look good on a blog header image. Make it engaging and relevant to the content:
+        if (image_option === "custom" && custom_image_url) {
+            imageUrl = custom_image_url;
+        } else if (image_option !== "none") {
+            try {
+                // Step 1: Let AI generate suitable text for the image based on blog content
+                const textPrompt = `Based on this blog content, create a short, simplest, small and catchy headline or phrase (maximum 3 words) that would look good on a blog header image. Make it engaging and relevant to the content:
 
 ${blogText.substring(0, 1000)}
 
@@ -457,32 +509,32 @@ Topic: ${topic}
 
 Return only the headline text, nothing else.`;
 
-            const textResponse = await axios.post(
-                "https://api.perplexity.ai/chat/completions",
-                {
-                    model: "sonar-pro",
-                    messages: [
-                        { role: "system", content: "You are a marketing copywriter expert at creating catchy headlines." },
-                        { role: "user", content: textPrompt },
-                    ],
-                    max_tokens: 100,
-                    n: 1,
-                },
-                {
-                    headers: {
-                        Authorization: `Bearer ${process.env.PERPLEXITY_API_KEY}`,
-                        "Content-Type": "application/json",
+                const textResponse = await axios.post(
+                    "https://api.perplexity.ai/chat/completions",
+                    {
+                        model: "sonar-pro",
+                        messages: [
+                            { role: "system", content: "You are a marketing copywriter expert at creating catchy headlines." },
+                            { role: "user", content: textPrompt },
+                        ],
+                        max_tokens: 100,
+                        n: 1,
                     },
-                }
-            );
+                    {
+                        headers: {
+                            Authorization: `Bearer ${process.env.PERPLEXITY_API_KEY}`,
+                            "Content-Type": "application/json",
+                        },
+                    }
+                );
 
-            imageText = textResponse.data.choices?.[0]?.message?.content?.trim() || topic;
+                imageText = textResponse.data.choices?.[0]?.message?.content?.trim() || topic;
 
-            // Clean up the generated text (remove quotes, extra punctuation)
-            imageText = imageText.replace(/^["']|["']$/g, '').replace(/[^\w\s-]/g, '').trim();
+                // Clean up the generated text (remove quotes, extra punctuation)
+                imageText = imageText.replace(/^["']|["']$/g, '').replace(/[^\w\s-]/g, '').trim();
 
-            console.log("AI-generated image text:", imageText);
-            const backgroundPrompt = `Create a professional blog header image about: ${topic}.
+                console.log("AI-generated image text:", imageText);
+                const backgroundPrompt = `Create a professional blog header image about: ${topic}.
 
 VISUAL REQUIREMENTS:
 - High-quality, modern design with relevant visual elements
@@ -496,38 +548,39 @@ TEXT OVERLAY REQUIREMENTS:
 - Use clean, modern typography (sans-serif font recommended)
 
 CRITICAL: The text "${imageText}" must appear exactly as written, with perfect spelling and clear visibility.`;
-            const imageResponse = await axios.post(
-                "https://api.openai.com/v1/images/generations",
-                {
-                    model: "dall-e-3",
-                    prompt: backgroundPrompt,
-                    n: 1,
-                    size: "1792x1024",
-                    response_format: "url"
-                },
-                {
-                    headers: {
-                        Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
-                        "Content-Type": "application/json",
+                const imageResponse = await axios.post(
+                    "https://api.openai.com/v1/images/generations",
+                    {
+                        model: "dall-e-3",
+                        prompt: backgroundPrompt,
+                        n: 1,
+                        size: "1792x1024",
+                        response_format: "url"
                     },
+                    {
+                        headers: {
+                            Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
+                            "Content-Type": "application/json",
+                        },
+                    }
+                );
+
+                const backgroundUrl = imageResponse.data.data[0]?.url;
+
+                if (backgroundUrl) {
+                    imageUrl = backgroundUrl;
+                } else {
+                    throw new Error("No background image generated");
                 }
-            );
 
-            const backgroundUrl = imageResponse.data.data[0]?.url;
+            } catch (error) {
+                console.error("AI text/image generation failed:", error.message);
 
-            if (backgroundUrl) {
-                imageUrl = backgroundUrl;
-            } else {
-                throw new Error("No background image generated");
+                // Fallback: use topic as text and generate simple image
+                imageText = topic;
+                const encodedText = encodeURIComponent(imageText.substring(0, 50));
+                imageUrl = `https://via.placeholder.com/1792x1024/2563eb/ffffff?text=${encodedText}`;
             }
-
-        } catch (error) {
-            console.error("AI text/image generation failed:", error.message);
-
-            // Fallback: use topic as text and generate simple image
-            imageText = topic;
-            const encodedText = encodeURIComponent(imageText.substring(0, 50));
-            imageUrl = `https://via.placeholder.com/1792x1024/2563eb/ffffff?text=${encodedText}`;
         }
 
         // --------- FORMAT AND SAVE ---------

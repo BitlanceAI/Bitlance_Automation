@@ -4,6 +4,7 @@ import { supabase, supabaseAdmin } from '../config/supabaseClient.js';
 import { createClient } from '@supabase/supabase-js';
 import axios from 'axios';
 import CreditLedgerService from '../services/creditLedgerService.js';
+import { sendPushNotification } from '../services/pushService.js';
 
 const generateSlug = (text) => {
     return text
@@ -106,7 +107,12 @@ export const generateArticle = async (req, res) => {
         // 2. Keyword Research (if still needed)
         console.log('Starting keyword research...');
         if (!generatedKeywords || generatedKeywords.trim() === '') {
-            generatedKeywords = await PerplexityService.generateKeywords(finalTopic);
+            try {
+                generatedKeywords = await PerplexityService.generateKeywords(finalTopic);
+            } catch (kError) {
+                console.warn('Perplexity Keyword Gen failed, trying OpenAI...', kError.message);
+                generatedKeywords = await OpenAIService.generateKeywords(finalTopic);
+            }
         }
         console.log('Keywords:', generatedKeywords);
 
@@ -143,18 +149,36 @@ export const generateArticle = async (req, res) => {
             }
         }
 
-        const { blogText, wordCount } = await PerplexityService.generateBlogContent(
-            finalTopic,
-            generatedKeywords,
-            language,
-            audience,
-            style,
-            lengthNum,
-            0,
-            3,
-            variants,
-            interlinks // Pass interlinks
-        );
+        let contentResult;
+        try {
+            contentResult = await PerplexityService.generateBlogContent(
+                finalTopic,
+                generatedKeywords,
+                language,
+                audience,
+                style,
+                lengthNum,
+                0,
+                3,
+                variants,
+                interlinks
+            );
+        } catch (cError) {
+            console.warn('Perplexity Blog Gen failed, trying OpenAI...', cError.message);
+            contentResult = await OpenAIService.generateBlogContent(
+                finalTopic,
+                generatedKeywords,
+                language,
+                audience,
+                style,
+                lengthNum,
+                0,
+                3,
+                variants,
+                interlinks
+            );
+        }
+        const { blogText, wordCount } = contentResult;
         console.log('Blog content generated. Words:', wordCount);
 
         // 4. Generate SEO Title
@@ -301,7 +325,25 @@ export const generateArticle = async (req, res) => {
             // In production, send alert to monitoring service
         }
 
-        // 10. Return Response
+        // 10. Trigger Push Notification (NEW)
+        try {
+            console.log('Sending push notification to subscribers...');
+            await sendPushNotification({
+                title: `New Article: ${finalTopic}`,
+                body: `Check out our latest post on "${finalTopic}"!`,
+                image: imageUrl,
+                data: {
+                    slug: savedArticle.slug,
+                    type: 'new_blog'
+                }
+            });
+            console.log('✅ Push notification queue initiated.');
+        } catch (pushErr) {
+            console.warn('⚠️ Failed to send push notification:', pushErr.message);
+            // Don't fail the request, just log it
+        }
+
+        // 11. Return Response
 
         res.json({
             success: true,

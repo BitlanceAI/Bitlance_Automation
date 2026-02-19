@@ -45,6 +45,86 @@ CRITICAL: The text "${imageText}" must appear exactly as written, with perfect s
             return `https://via.placeholder.com/1792x1024/2563eb/ffffff?text=${encodedText}`;
         }
     }
+
+    async generateBlogContent(topic, keywords, language, audience, style, lengthNum, attempts, maxAttempts, variants, interlinks = []) {
+        try {
+            // Build Interlinking Instructions
+            let interlinkInstructions = "";
+            if (interlinks && interlinks.length > 0) {
+                interlinkInstructions = `
+                MANDATORY INTERLINKING RULES:
+                1. You MUST include links to the following articles within the content.
+                2. Do NOT list them at the end. Do NOT show the raw URL.
+                3. You MUST use relevant keywords or phrases as the anchor text for the link.
+                4. The link must flow naturally in the sentence.
+                
+                Articles to integrate:
+                ${interlinks.map(link => `- Link to "${link.title}" (${link.link})`).join('\n')}
+                `;
+            }
+
+            const prompt = `
+            You are a professional human blogger who writes helpful, experience-driven articles.
+            Write an engaging blog for ${audience} in ${language} on "${topic}". 
+            
+            Keywords to include: ${keywords || "none"}.
+            Style: ${style}. 
+            Minimum Words: ${lengthNum}.
+
+            CONTENT REQUIREMENTS:
+            - Write in first person, sharing real-experience style insights.
+            - Tone: friendly, conversational, easy to understand. Avoid jargon.
+            - Structure: Hooking Introduction, 4–6 main sections, Conclusion with CTA.
+            - Use Markdown format: ## for main sections, ### for subsections, **bold**, *italic*.
+            
+            ${interlinkInstructions}
+
+            ⚠️ Important: 
+            - Do not use [1], [2] citation numbers. 
+            - Insert valid external references as clickable Markdown links if relevant.
+            `;
+
+            console.log('Generating blog content via OpenAI (GPT-4o)...');
+            const response = await this.openai.chat.completions.create({
+                model: "gpt-4o",
+                messages: [
+                    { role: "system", content: "You are an expert content writer." },
+                    { role: "user", content: prompt }
+                ],
+                max_tokens: 4000,
+                n: 1
+            });
+
+            const blogText = response.choices[0].message.content || "";
+            const wordCount = blogText.split(/\s+/).length;
+
+            return { blogText, wordCount };
+
+        } catch (error) {
+            console.error('OpenAI Blog Content Gen Error:', error.message);
+            throw new Error('Failed to generate blog content via OpenAI');
+        }
+    }
+
+    async generateKeywords(topic) {
+        try {
+            const prompt = `Generate 5-10 relevant SEO keywords for "${topic}" as a comma-separated list.`;
+
+            const response = await this.openai.chat.completions.create({
+                model: "gpt-4o",
+                messages: [
+                    { role: "system", content: "You are an SEO expert." },
+                    { role: "user", content: prompt }
+                ],
+                max_tokens: 100
+            });
+
+            return response.choices[0].message.content || "";
+        } catch (error) {
+            console.error('OpenAI Keyword Gen Error:', error.message);
+            return ""; // Fallback
+        }
+    }
 }
 
 export default new OpenAIService();

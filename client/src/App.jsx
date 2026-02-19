@@ -42,10 +42,19 @@ import TestimonialDemo from './pages/TestimonialDemo';
 import HomePage from './pages/HomePage'; // Import HomePage
 import PublicBlogListPage from './pages/PublicBlogListPage';
 import PublicArticlePage from './pages/PublicArticlePage';
+import PushNotificationPage from './pages/PushNotificationPage';
+import DeviceTokensPage from './pages/DeviceTokensPage';
+import BlogManagerPage from './pages/BlogManagerPage';
+import BlogEditorPage from './pages/BlogEditorPage';
+
+
+import CookieDemoPage from './pages/CookieDemoPage';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import AuthGuard from './components/AuthGuard';
 import AdminGuard from './components/AdminGuard';
 import { Toaster } from 'react-hot-toast';
+import NotificationPermission from './components/NotificationPermission';
+import { CookieBanner } from './components/ui/cookie-banner';
 import './index.css';
 
 // Public Route wrapper that redirects to home if already logged in
@@ -61,15 +70,16 @@ const PublicRoute = ({ children }) => {
   return children;
 };
 
-// Root redirect handler
 const RootRedirect = () => {
   const { user, loading } = useAuth();
 
-  if (loading) return null;
+  if (loading) return null; // Or a spinner
 
-  if (loading) return null;
+  if (user) {
+    return <Navigate to="/home" replace />;
+  }
 
-  return user ? <Navigate to="/home" replace /> : <LandingPage />;
+  return <LandingPage />;
 };
 
 function App() {
@@ -108,6 +118,12 @@ function App() {
       <AuthProvider>
         <Toaster position="top-right" reverseOrder={false} />
         <div className={isDashboard ? 'bg-gray-50 dark:bg-slate-900 min-h-screen transition-colors duration-300' : 'bg-gray-50 dark:bg-slate-900 min-h-screen transition-colors duration-300'}>
+          <NotificationPermission />
+          <CookieBanner
+            message="We use cookies to improve your experience. Allowing them helps us keep you updated with the latest blogs."
+            acceptText="Allow & Subscribe"
+            declineText="Decline"
+          />
           {/* Temporary Debug Banner
           <div className="fixed top-0 left-0 bg-red-500 text-white z-[100] text-xs p-1">
             Path: {location.pathname} | isDashboard: {isDashboard.toString()}
@@ -134,7 +150,15 @@ function App() {
               </PublicRoute>
             } />
 
-            {/* Protected Routes */}
+            <Route path="/cookie-demo" element={<CookieDemoPage />} />
+
+            {/* Push & Blog Routes */}
+            <Route path="/push/send" element={
+              <AuthGuard>
+                <PushNotificationPage />
+              </AuthGuard>
+            } />
+
             <Route path="/home" element={
               <AuthGuard>
                 <HomePage />
@@ -213,7 +237,34 @@ function App() {
             <Route path="/shape-demo" element={<ShapeHeroDemo />} />
 
 
+            {/* Push & Blog Routes */}
+            <Route path="/push/send" element={
+              <AuthGuard>
+                <PushNotificationPage />
+              </AuthGuard>
+            } />
+            <Route path="/push/tokens" element={
+              <AuthGuard>
+                <DeviceTokensPage />
+              </AuthGuard>
+            } />
 
+
+            <Route path="/blogs-manager" element={
+              <AuthGuard>
+                <BlogManagerPage />
+              </AuthGuard>
+            } />
+            <Route path="/blog/new" element={
+              <AuthGuard>
+                <BlogEditorPage />
+              </AuthGuard>
+            } />
+            <Route path="/blog/edit/:id" element={
+              <AuthGuard>
+                <BlogEditorPage />
+              </AuthGuard>
+            } />
           </Routes>
           {!isDashboard && location.pathname !== '/' && <Footer />}
         </div>
