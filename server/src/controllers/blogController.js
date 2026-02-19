@@ -121,6 +121,24 @@ export const createPost = async (req, res) => {
 
         if (error) throw error;
 
+        // Send Push Notification if published
+        if (data.is_published) {
+            const { sendPushNotification } = await import('../services/pushService.js');
+
+            // Run asynchronously, don't block response
+            sendPushNotification({
+                title: `New Post: ${data.topic || data.title || 'Fresh Content'}`,
+                body: data.seo_description || 'Check out our latest update!',
+                image: data.featured_image,
+                target: 'topic',
+                data: {
+                    slug: data.slug,
+                    topic: 'blog_updates',
+                    useTopic: true
+                }
+            }).catch(err => console.error('Background Push Error:', err));
+        }
+
         res.json({ success: true, post: data });
     } catch (error) {
         console.error('Error creating post:', error);

@@ -4,13 +4,13 @@ import axios from 'axios';
 
 // Config from existing firebaseBlogs.js (seo-automation-a90f2)
 export const firebaseConfig = {
-    apiKey: "AIzaSyDtSwhXr-phrrGDXyPP61j1uVINozhgxNk",
-    authDomain: "seo-automation-a90f2.firebaseapp.com",
-    projectId: "seo-automation-a90f2",
-    storageBucket: "seo-automation-a90f2.firebasestorage.app",
-    messagingSenderId: "792330041476",
-    appId: "1:792330041476:web:81bfe252e2b564248faad1",
-    measurementId: "G-T2JP0WB4R6"
+    apiKey: "AIzaSyBiqRvXwRXIvL23Avfu2iCEGrF92UL9v1Y",
+    authDomain: "blogtest-34119.firebaseapp.com",
+    projectId: "blogtest-34119",
+    storageBucket: "blogtest-34119.firebasestorage.app",
+    messagingSenderId: "370621229029",
+    appId: "1:370621229029:web:eb30e5759019443e9ef10c",
+    measurementId: "G-B21J6J80JZ"
 };
 
 // Initialize Firebase
@@ -40,7 +40,8 @@ export const requestNotificationPermission = async () => {
 
             // 3. Get FCM Token
             const token = await getToken(messaging, {
-                serviceWorkerRegistration: readyRegistration
+                serviceWorkerRegistration: readyRegistration,
+                vapidKey: import.meta.env.VITE_FIREBASE_VAPID_KEY
             });
 
             if (token) {

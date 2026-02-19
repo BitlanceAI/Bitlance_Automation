@@ -28,6 +28,17 @@ export const registerToken = async (req, res) => {
         // Or use deviceId if available and consistent
         await firestore.collection(TOKENS_COLLECTION).doc(token).set(tokenData, { merge: true });
 
+        // Subscribe to general updates topic
+        if (messaging) {
+            try {
+                await messaging.subscribeToTopic([token], 'blog_updates');
+                console.log(`Subscribed ${token.slice(0, 10)}... to blog_updates`);
+            } catch (subError) {
+                console.warn('Failed to subscribe to topic:', subError.message);
+                // Non-fatal, continue
+            }
+        }
+
         res.json({ success: true, message: 'Token registered successfully' });
     } catch (error) {
         console.error('Error registering token:', error);
