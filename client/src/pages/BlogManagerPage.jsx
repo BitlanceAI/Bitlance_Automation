@@ -7,16 +7,41 @@ import { toast } from 'react-hot-toast';
 import { useAuth } from '../context/AuthContext';
 
 const BlogManagerPage = () => {
-    const { token } = useAuth();
+    const { token, user } = useAuth();
     const [posts, setPosts] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [activeTab, setActiveTab] = useState('company'); // 'company' or 'client'
+
+    const ADMIN_ID = '0d396440-7d07-407c-89da-9cb93e353347';
+    const isAdmin = user?.id === ADMIN_ID;
+
+    // Default to client tab for non-admins (though they only have one view)
+    useEffect(() => {
+        if (user && !isAdmin) {
+            setActiveTab('client');
+        }
+    }, [user, isAdmin]);
 
     const fetchPosts = async () => {
+        if (!token) return;
         setLoading(true);
         try {
-            const res = await axios.get(`${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/api/blogs`, {
-                headers: { Authorization: `Bearer ${token}` }
+            let url = `${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/api/blogs`;
+            const params = {};
+
+            if (isAdmin) {
+                if (activeTab === 'client') {
+                    params.target_table = 'articles';
+                } else {
+                    params.target_table = 'company_articles';
+                }
+            }
+
+            const res = await axios.get(url, {
+                headers: { Authorization: `Bearer ${token}` },
+                params
             });
+
             if (res.data.success) {
                 setPosts(res.data.posts);
             }
@@ -30,12 +55,31 @@ const BlogManagerPage = () => {
 
     useEffect(() => {
         fetchPosts();
-    }, []);
+    }, [activeTab, token, isAdmin]);
 
     const handleDelete = async (id) => {
         if (!window.confirm('Are you sure you want to delete this post?')) return;
         try {
-            await axios.delete(`${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/api/blogs/${id}`, {
+            const params = {};
+            if (isAdmin) {
+                params.target_table = activeTab === 'client' ? 'articles' : 'company_articles';
+                // Some backends might expect body for delete, but usually query is safer for DELETE method issues in some clients
+                // But wait, axios delete accepts params in config.
+            }
+
+            // Note: Our backend deletePost extracts from req, so query params work if using getTableName(req)
+            // But let's check backend implementation. deletePost uses getTableName(req).
+            // req.query is checked in getTableName. So passing as query param works.
+
+            let url = `${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/api/blogs/${id}`;
+            // Append query manually or use params config
+            if (isAdmin && activeTab === 'client') {
+                url += `?target_table=articles`;
+            } else if (isAdmin) {
+                url += `?target_table=company_articles`;
+            }
+
+            await axios.delete(url, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             toast.success('Post deleted');
@@ -49,7 +93,7 @@ const BlogManagerPage = () => {
         <div className="min-h-screen bg-gray-50 dark:bg-slate-900 pb-12">
             <Navbar />
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-                <div className="flex justify-between items-center mb-10">
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
                     <div>
                         <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Blog Posts</h1>
                         <p className="mt-2 text-gray-600 dark:text-gray-400">Manage and schedule your content</p>
@@ -62,6 +106,31 @@ const BlogManagerPage = () => {
                         Create New Post
                     </Link>
                 </div>
+
+                {isAdmin && (
+                    <div className="flex space-x-1 rounded-xl bg-gray-200 p-1 mb-8 w-fit dark:bg-slate-800">
+                        <button
+                            onClick={() => setActiveTab('company')}
+                            className={`w-40 rounded-lg py-2.5 text-sm font-medium leading-5 transition-all
+                                ${activeTab === 'company'
+                                    ? 'bg-white text-indigo-700 shadow dark:bg-slate-600 dark:text-white'
+                                    : 'text-gray-700 hover:bg-white/[0.12] hover:text-indigo-600 dark:text-gray-400 dark:hover:text-white'
+                                }`}
+                        >
+                            Company Blogs
+                        </button>
+                        <button
+                            onClick={() => setActiveTab('client')}
+                            className={`w-40 rounded-lg py-2.5 text-sm font-medium leading-5 transition-all
+                                ${activeTab === 'client'
+                                    ? 'bg-white text-indigo-700 shadow dark:bg-slate-600 dark:text-white'
+                                    : 'text-gray-700 hover:bg-white/[0.12] hover:text-indigo-600 dark:text-gray-400 dark:hover:text-white'
+                                }`}
+                        >
+                            Client Articles
+                        </button>
+                    </div>
+                )}
 
                 <div className="bg-white dark:bg-slate-800 rounded-xl border border-gray-100 dark:border-slate-700 shadow-sm overflow-hidden">
                     <div className="overflow-x-auto">
@@ -92,8 +161,8 @@ const BlogManagerPage = () => {
                                             </td>
                                             <td className="px-6 py-4">
                                                 <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${post.is_published
-                                                        ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300'
-                                                        : 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300'
+                                                    ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300'
+                                                    : 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300'
                                                     }`}>
                                                     {post.is_published ? 'Published' : 'Draft/Scheduled'}
                                                 </span>
@@ -107,14 +176,14 @@ const BlogManagerPage = () => {
                                             <td className="px-6 py-4 text-right">
                                                 <div className="flex justify-end gap-2">
                                                     <Link
-                                                        to={`/blogs/${post.id}`}
+                                                        to={`/blogs/${post.id}`} // This might need update if public route differs, but usually slug based
                                                         target="_blank"
                                                         className="p-2 text-gray-400 hover:text-indigo-600 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors"
                                                     >
                                                         <Eye className="w-4 h-4" />
                                                     </Link>
                                                     <Link
-                                                        to={`/blog/edit/${post.id}`}
+                                                        to={`/blog/edit/${post.id}?type=${isAdmin && activeTab === 'client' ? 'client' : 'company'}`}
                                                         className="p-2 text-gray-400 hover:text-indigo-600 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors"
                                                     >
                                                         <Edit3 className="w-4 h-4" />

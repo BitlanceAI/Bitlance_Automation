@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Navbar from '../components/Navbar';
 import { Save, ArrowLeft, Calendar, FileText, Image as ImageIcon, Bell } from 'lucide-react';
-import { Link, useNavigate, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import axios from 'axios';
 import { toast } from 'react-hot-toast';
 import { useAuth } from '../context/AuthContext';
@@ -9,8 +9,21 @@ import { useAuth } from '../context/AuthContext';
 const BlogEditorPage = () => {
     const { id } = useParams(); // If present, we are editing
     const navigate = useNavigate();
-    const { token } = useAuth();
+    const [searchParams] = useSearchParams();
+    const { token, user } = useAuth();
     const [loading, setLoading] = useState(false);
+
+    const ADMIN_ID = '0d396440-7d07-407c-89da-9cb93e353347';
+    const postType = searchParams.get('type'); // 'client' or 'company' (default)
+
+    const [isCompanyBlog, setIsCompanyBlog] = useState(false);
+
+    useEffect(() => {
+        if (user?.id === ADMIN_ID) {
+            // If type is explicitly client, set false. Otherwise default to true for admin.
+            setIsCompanyBlog(postType !== 'client');
+        }
+    }, [user, postType]);
 
     const [formData, setFormData] = useState({
         title: '',
@@ -30,14 +43,24 @@ const BlogEditorPage = () => {
     });
 
     useEffect(() => {
-        if (id) {
+        if (id && token) {
             fetchPost(id);
         }
-    }, [id]);
+    }, [id, token]);
 
     const fetchPost = async (postId) => {
         try {
-            const res = await axios.get(`${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/api/blogs/${postId}`, {
+            let url = `${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/api/blogs/${postId}`;
+            // If admin and explicitly asking for client post (based on URL from manager)
+            // Or just try to match the state.
+            // Actually, if we are editing, we rely on the URL param passed from manager
+            if (user?.id === ADMIN_ID && postType === 'client') {
+                url += `?target_table=articles`;
+            } else if (user?.id === ADMIN_ID) {
+                url += `?target_table=company_articles`;
+            }
+
+            const res = await axios.get(url, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             if (res.data.success) {
@@ -55,6 +78,7 @@ const BlogEditorPage = () => {
                 });
             }
         } catch (error) {
+            console.error(error);
             toast.error('Failed to fetch post');
             navigate('/blogs-manager');
         }
@@ -90,6 +114,12 @@ const BlogEditorPage = () => {
                 payload.publish_date = new Date(payload.publish_date).toISOString();
             } else {
                 payload.publish_date = null;
+            }
+
+            // Admin Logic for Target Table
+            if (user?.id === ADMIN_ID) {
+                payload.target_table = isCompanyBlog ? 'company_articles' : 'articles';
+                payload.is_company_blog = isCompanyBlog;
             }
 
             if (id) {
@@ -215,6 +245,32 @@ const BlogEditorPage = () => {
 
                     {/* Sidebar */}
                     <div className="space-y-6">
+                        {/* Admin Options */}
+                        {user?.id === ADMIN_ID && (
+                            <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm p-6 border border-gray-100 dark:border-slate-700">
+                                <h2 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white flex items-center gap-2">
+                                    🏢 Admin Settings
+                                </h2>
+                                <div className="flex items-center gap-2">
+                                    <input
+                                        type="checkbox"
+                                        id="is_company_blog"
+                                        checked={isCompanyBlog}
+                                        onChange={(e) => setIsCompanyBlog(e.target.checked)}
+                                        className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                                    />
+                                    <label htmlFor="is_company_blog" className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                                        Post as Company Blog
+                                    </label>
+                                </div>
+                                <p className="text-xs text-gray-500 mt-2">
+                                    {isCompanyBlog
+                                        ? "This post will appear on the public main blog."
+                                        : "This post will be saved to your personal (client) articles."}
+                                </p>
+                            </div>
+                        )}
+
                         {/* Status & Schedule */}
                         <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm p-6 border border-gray-100 dark:border-slate-700">
                             <h2 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white flex items-center gap-2">

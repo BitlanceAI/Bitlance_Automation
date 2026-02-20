@@ -13,6 +13,25 @@ const getScopedSupabase = (req) => {
     });
 };
 
+const ADMIN_ID = '0d396440-7d07-407c-89da-9cb93e353347';
+
+const getTableName = (req) => {
+    // Check various sources for the table preference
+    const isCompanyBlog = req.body?.is_company_blog || req.query?.is_company_blog === 'true';
+
+    // If Admin:
+    if (req.user && req.user.id === ADMIN_ID) {
+        // If explicitly asking for client/regular articles, give it.
+        // Otherwise default to company_articles
+        if (req.body?.target_table === 'articles' || req.query?.target_table === 'articles') {
+            return 'articles';
+        }
+        return 'company_articles';
+    }
+
+    return 'articles';
+};
+
 export const getPosts = async (req, res) => {
     try {
         const supabase = getScopedSupabase(req);
@@ -22,8 +41,10 @@ export const getPosts = async (req, res) => {
         const from = (page - 1) * limit;
         const to = from + limit - 1;
 
+        const tableName = getTableName(req);
+
         let query = supabase
-            .from('articles')
+            .from(tableName)
             .select('*', { count: 'exact' })
             .order('created_at', { ascending: false })
             .range(from, to);
@@ -60,9 +81,10 @@ export const getPostById = async (req, res) => {
         if (!supabase) return res.status(401).json({ success: false, error: 'Unauthorized' });
 
         const { id } = req.params;
+        const tableName = getTableName(req);
 
         const { data, error } = await supabase
-            .from('articles')
+            .from(tableName)
             .select('*')
             .eq('id', id)
             .single();
@@ -96,6 +118,7 @@ export const createPost = async (req, res) => {
         } = req.body;
 
         const userId = req.user.id;
+        const tableName = getTableName(req);
 
         const postData = {
             user_id: userId,
@@ -114,7 +137,7 @@ export const createPost = async (req, res) => {
         };
 
         const { data, error } = await supabase
-            .from('articles')
+            .from(tableName)
             .insert(postData)
             .select()
             .single();
@@ -124,19 +147,24 @@ export const createPost = async (req, res) => {
         // Send Push Notification if published
         if (data.is_published) {
             const { sendPushNotification } = await import('../services/pushService.js');
+            const notifSettings = req.body.notification_settings || {};
 
             // Run asynchronously, don't block response
-            sendPushNotification({
-                title: `New Post: ${data.topic || data.title || 'Fresh Content'}`,
-                body: data.seo_description || 'Check out our latest update!',
-                image: data.featured_image,
-                target: 'topic',
-                data: {
-                    slug: data.slug,
-                    topic: 'blog_updates',
-                    useTopic: true
-                }
-            }).catch(err => console.error('Background Push Error:', err));
+            // Respect notification_settings from request if provided (even if not saved to DB yet)
+            if (notifSettings.send !== false) {
+                sendPushNotification({
+                    title: notifSettings.title || `New Post: ${data.topic || data.title || 'Fresh Content'}`,
+                    body: notifSettings.body || data.seo_description || 'Check out our latest update!',
+                    image: notifSettings.image || data.featured_image,
+                    target: 'topic',
+                    data: {
+                        slug: data.slug,
+                        topic: 'blog_updates',
+                        url: `/blogs/${data.slug}`,
+                        useTopic: true
+                    }
+                }).catch(err => console.error('Background Push Error:', err));
+            }
         }
 
         res.json({ success: true, post: data });
@@ -153,21 +181,55 @@ export const updatePost = async (req, res) => {
 
         const { id } = req.params;
         const updates = req.body;
+        const tableName = getTableName(req);
+
+        // Check if we are publishing a draft
+        let isPublishing = false;
+        if (updates.is_published === true) {
+            const { data: current } = await supabase
+                .from(tableName)
+                .select('is_published')
+                .eq('id', id)
+                .single();
+            if (current && !current.is_published) {
+                isPublishing = true;
+            }
+        }
+
+        const notificationSettings = updates.notification_settings || {};
 
         // Prevent updating immutable fields if any
         delete updates.id;
         delete updates.created_at;
         delete updates.user_id;
+        delete updates.notification_settings;
 
         updates.updated_at = new Date().toISOString();
         if (updates.title) updates.topic = updates.title;
 
         const { data, error } = await supabase
-            .from('articles')
+            .from(tableName)
             .update(updates)
             .eq('id', id)
             .select()
             .single();
+
+        // Send notification if just published
+        if (!error && isPublishing && notificationSettings.send !== false) {
+            const { sendPushNotification } = await import('../services/pushService.js');
+            sendPushNotification({
+                title: notificationSettings.title || `New Post: ${data.topic || data.title || 'Fresh Content'}`,
+                body: notificationSettings.body || data.seo_description || 'Check out our latest update!',
+                image: notificationSettings.image || data.featured_image,
+                target: 'topic',
+                data: {
+                    slug: data.slug,
+                    topic: 'blog_updates',
+                    url: `/blogs/${data.slug}`,
+                    useTopic: true
+                }
+            }).catch(err => console.error('Background Push Error (Update):', err));
+        }
 
         if (error) throw error;
 
@@ -184,9 +246,10 @@ export const deletePost = async (req, res) => {
         if (!supabase) return res.status(401).json({ success: false, error: 'Unauthorized' });
 
         const { id } = req.params;
+        const tableName = getTableName(req);
 
         const { error } = await supabase
-            .from('articles')
+            .from(tableName)
             .delete()
             .eq('id', id);
 

@@ -6,6 +6,19 @@ import axios from 'axios';
 import CreditLedgerService from '../services/creditLedgerService.js';
 import { sendPushNotification } from '../services/pushService.js';
 
+const ADMIN_ID = '0d396440-7d07-407c-89da-9cb93e353347';
+
+const getTableName = (req) => {
+    const userId = req.user.id;
+    if (userId === ADMIN_ID) {
+        if (req.body?.target_table === 'articles') {
+            return 'articles';
+        }
+        return 'company_articles';
+    }
+    return 'articles';
+};
+
 const generateSlug = (text) => {
     return text
         .toString()
@@ -46,6 +59,7 @@ export const generateArticle = async (req, res) => {
 
         const userId = req.user.id; // From Auth Middleware
         const token = req.token;
+        const tableName = getTableName(userId);
 
         // Create scoped Supabase client for RLS
         const scopedSupabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY, {
@@ -76,7 +90,7 @@ export const generateArticle = async (req, res) => {
             usageAmount
         );
 
-        if (!creditCheck.hasEnough) {
+        if (!creditCheck.hasEnough && userId !== ADMIN_ID) {
             return res.status(402).json({
                 success: false,
                 error: 'Insufficient credits',
@@ -86,7 +100,11 @@ export const generateArticle = async (req, res) => {
             });
         }
 
-        console.log(`✅ Credit pre-check passed: ${creditCheck.creditsNeeded} credits required`);
+        if (userId === ADMIN_ID) {
+            console.log('👑 Admin access: Bypassing credit check');
+        } else {
+            console.log(`✅ Credit pre-check passed: ${creditCheck.creditsNeeded} credits required`);
+        }
 
         // 1.5 Handle Industry Mode (Auto-generate Topic/Keywords)
         let finalTopic = topic;
@@ -125,7 +143,6 @@ export const generateArticle = async (req, res) => {
         if (wp_url) {
             try {
                 console.log(`Fetching recent posts from ${wp_url} for interlinking...`);
-                // Ensure URL has protocol
                 let baseUrl = wp_url;
                 if (!baseUrl.startsWith('http')) {
                     baseUrl = `https://${baseUrl}`;
@@ -145,7 +162,6 @@ export const generateArticle = async (req, res) => {
                 }
             } catch (wpError) {
                 console.warn('Failed to fetch WordPress posts for interlinking:', wpError.message);
-                // Continue without interlinks
             }
         }
 
@@ -254,13 +270,13 @@ export const generateArticle = async (req, res) => {
         const blogHTML = formatBlogToHTML(blogText);
 
         // 8. Save Article FIRST (for ledger reference)
-        console.log('Saving article...');
+        console.log(`Saving article to ${tableName}...`);
         const slug = custom_slug ? generateSlug(custom_slug) : generateSlug(seoTitle || finalTopic) + '-' + Math.floor(Math.random() * 1000);
         const estimatedReadTime = calculateReadTime(wordCount);
         const finalAuthorName = author_name || 'AI Agent';
 
         const { data: savedArticle, error: saveError } = await scopedSupabase
-            .from('articles')
+            .from(tableName)
             .insert({
                 user_id: userId,
                 topic: finalTopic,
@@ -303,7 +319,7 @@ export const generateArticle = async (req, res) => {
                 userId,
                 agentType: 'blog',
                 referenceId: savedArticle.id,
-                referenceTable: 'articles',
+                referenceTable: tableName,
                 usageQuantity: 1, // Flat rate: 1 unit per blog post
                 metadata: {
                     topic: finalTopic,

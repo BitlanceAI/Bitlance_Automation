@@ -154,6 +154,16 @@ const SeoAgentPage = () => {
 
 
 
+    // Admin check
+    const ADMIN_ID = '0d396440-7d07-407c-89da-9cb93e353347';
+    const [isCompanyBlog, setIsCompanyBlog] = useState(false);
+
+    useEffect(() => {
+        if (user?.id === ADMIN_ID) {
+            setIsCompanyBlog(true);
+        }
+    }, [user]);
+
     const handleGenerate = async () => {
         if (generationMode === 'topic' && !topic.trim()) {
             alert('Please enter a topic');
@@ -204,7 +214,9 @@ const SeoAgentPage = () => {
                 wp_password: wpPassword,
                 // Image
                 image_option: imageOption,
-                custom_image_url: customImageUrl
+                custom_image_url: customImageUrl,
+                // Admin Target Table
+                target_table: (user?.id === ADMIN_ID && isCompanyBlog) ? 'company_articles' : 'articles'
             };
 
             // Handle Profile Logic (Insert into payload)
@@ -854,6 +866,26 @@ const SeoAgentPage = () => {
                                                 className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-slate-900/50 border border-gray-200 dark:border-slate-700 focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 focus:border-transparent outline-none transition-all text-gray-900 dark:text-gray-100 placeholder-gray-400"
                                             />
                                         </div>
+
+                                        {user?.id === ADMIN_ID && (
+                                            <div className="md:col-span-2 flex items-start gap-3 p-4 bg-indigo-50 dark:bg-indigo-900/20 rounded-xl border border-indigo-100 dark:border-indigo-800">
+                                                <input
+                                                    type="checkbox"
+                                                    id="isCompanyBlog"
+                                                    checked={isCompanyBlog}
+                                                    onChange={(e) => setIsCompanyBlog(e.target.checked)}
+                                                    className="mt-1 h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                                                />
+                                                <div>
+                                                    <label htmlFor="isCompanyBlog" className="block text-sm font-medium text-gray-900 dark:text-white cursor-pointer select-none">
+                                                        Generate as Company Blog Post (Public)
+                                                    </label>
+                                                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                                        If checked, this article will be published to the main company blog. Uncheck to save as a personal client article.
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        )}
                                     </div>
 
                                     <button

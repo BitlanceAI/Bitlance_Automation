@@ -152,8 +152,7 @@ const PublicArticlePage = () => {
                     className="prose prose-lg dark:prose-invert max-w-none
                     prose-headings:font-bold prose-headings:text-gray-900 dark:prose-headings:text-white
                     prose-a:text-indigo-600 dark:prose-a:text-indigo-400 prose-a:no-underline hover:prose-a:underline
-                    prose-img:rounded-xl prose-img:shadow-md
-                    "
+                    prose-img:rounded-xl prose-img:shadow-md text-gray-800 dark:text-gray-200 whitespace-pre-wrap"
                     dangerouslySetInnerHTML={{ __html: article.content }}
                 />
 

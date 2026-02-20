@@ -16,9 +16,9 @@ const HeroSection = ({ onOpenBooking }) => {
 
 
     return (
-        <header ref={ref} className="relative pt-32 pb-20 lg:pt-48 lg:pb-32 overflow-hidden perspective-1000">
+        <header ref={ref} className="relative pt-24 pb-16 lg:pt-48 lg:pb-32 overflow-hidden perspective-1000">
             <div className="max-w-7xl mx-auto px-6 relative z-10 w-full">
-                <div className="grid lg:grid-cols-2 gap-12 lg:gap-8 items-center">
+                <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
 
                     {/* Left Column: Text Content */}
                     <div className="text-center lg:text-left flex flex-col items-center lg:items-start">
@@ -43,7 +43,7 @@ const HeroSection = ({ onOpenBooking }) => {
                             initial={{ opacity: 0, y: 30 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ duration: 0.8, delay: 0.2 }}
-                            className="text-5xl md:text-6xl lg:text-7xl font-extrabold tracking-tight mb-6 leading-tight text-white"
+                            className="text-4xl sm:text-5xl lg:text-7xl font-extrabold tracking-tight mb-6 leading-tight text-white"
                         >
                             Turn Missed Opportunities Into <br className="hidden md:block" />
                             <span className="bg-clip-text text-transparent bg-gradient-to-r from-indigo-300 via-white/90 to-rose-300 relative inline-block">
@@ -59,7 +59,7 @@ const HeroSection = ({ onOpenBooking }) => {
                             initial={{ opacity: 0, y: 30 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ duration: 0.8, delay: 0.4 }}
-                            className="text-lg md:text-xl text-white/60 mb-10 max-w-2xl mx-auto lg:mx-0 leading-relaxed"
+                            className="text-lg md:text-xl text-white/60 mb-8 lg:mb-10 max-w-2xl mx-auto lg:mx-0 leading-relaxed"
                         >
                             Deploy a 24/7 smart assistant that talks to your leads, answers questions, and books appointments automatically.
                         </motion.p>
@@ -92,7 +92,7 @@ const HeroSection = ({ onOpenBooking }) => {
                     </div>
 
                     {/* Right Column: 3D Visualization */}
-                    <div className="relative w-full h-full max-h-[600px] flex items-center justify-center">
+                    <div className="relative w-full h-full md:max-h-[600px] flex items-center justify-center">
                         {/* Spotlight Background for the 3D element */}
                         <Spotlight
                             className="-top-40 left-0 md:left-60 md:-top-20 z-0 opacity-50 pointer-events-none"
@@ -103,7 +103,7 @@ const HeroSection = ({ onOpenBooking }) => {
                             initial={{ opacity: 0, scale: 0.9, x: 20 }}
                             animate={{ opacity: 1, scale: 1, x: 0 }}
                             transition={{ duration: 1, delay: 0.4 }}
-                            className="relative h-[450px] md:h-[550px] w-full rounded-2xl overflow-hidden shadow-2xl shadow-indigo-500/10 border border-white/5 bg-black/40 backdrop-blur-sm"
+                            className="relative h-[300px] sm:h-[400px] md:h-[550px] w-full rounded-2xl overflow-hidden shadow-2xl shadow-indigo-500/10 border border-white/5 bg-black/40 backdrop-blur-sm"
                         >
                             <div className="absolute inset-0 z-10">
                                 <SplineScene

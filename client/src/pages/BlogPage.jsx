@@ -695,91 +695,12 @@ const BlogPage = () => {
                                 )}
 
                                 <div
-                                    className="article-content mb-6 p-4 bg-white dark:bg-slate-800 rounded-lg"
+                                    className="prose prose-lg dark:prose-invert max-w-none mb-6 p-4 bg-white dark:bg-slate-800 rounded-lg
+                                    prose-headings:font-bold prose-headings:text-gray-900 dark:prose-headings:text-white
+                                    prose-a:text-indigo-600 dark:prose-a:text-indigo-400 prose-a:no-underline hover:prose-a:underline
+                                    prose-img:rounded-xl prose-img:shadow-md text-gray-800 dark:text-gray-200 whitespace-pre-wrap"
                                     dangerouslySetInnerHTML={{ __html: selectedArticle.content }}
                                 />
-
-                                <style>{`
-                                    .article-content {
-                                        line-height: 1.8;
-                                        color: inherit;
-                                    }
-                                    .article-content h1 {
-                                        font-size: 2rem;
-                                        font-weight: 700;
-                                        margin-top: 2rem;
-                                        margin-bottom: 1rem;
-                                        color: #1e40af;
-                                    }
-                                    .dark .article-content h1 {
-                                        color: #60a5fa;
-                                    }
-                                    .article-content h2 {
-                                        font-size: 1.75rem;
-                                        font-weight: 700;
-                                        margin-top: 1.75rem;
-                                        margin-bottom: 0.875rem;
-                                        color: #2563eb;
-                                    }
-                                    .dark .article-content h2 {
-                                        color: #93c5fd;
-                                    }
-                                    .article-content h3 {
-                                        font-size: 1.5rem;
-                                        font-weight: 600;
-                                        margin-top: 1.5rem;
-                                        margin-bottom: 0.75rem;
-                                        color: #3b82f6;
-                                    }
-                                    .dark .article-content h3 {
-                                        color: #bfdbfe;
-                                    }
-                                    .article-content h4 {
-                                        font-size: 1.25rem;
-                                        font-weight: 600;
-                                        margin-top: 1.25rem;
-                                        margin-bottom: 0.625rem;
-                                        color: #60a5fa;
-                                    }
-                                    .dark .article-content h4 {
-                                        color: #dbeafe;
-                                    }
-                                    .article-content p {
-                                        margin-bottom: 1rem;
-                                        font-size: 1rem;
-                                    }
-                                    .article-content ul, .article-content ol {
-                                        margin-bottom: 1rem;
-                                        margin-left: 1.5rem;
-                                    }
-                                    .article-content li {
-                                        margin-bottom: 0.5rem;
-                                    }
-                                    .article-content strong {
-                                        font-weight: 600;
-                                        color: #1f2937;
-                                    }
-                                    .dark .article-content strong {
-                                        color: #f9fafb;
-                                    }
-                                    .article-content a {
-                                        color: #2563eb;
-                                        text-decoration: underline;
-                                    }
-                                    .dark .article-content a {
-                                        color: #60a5fa;
-                                    }
-                                    .article-content code {
-                                        background: #f3f4f6;
-                                        padding: 0.125rem 0.375rem;
-                                        border-radius: 0.25rem;
-                                        font-family: monospace;
-                                        font-size: 0.875rem;
-                                    }
-                                    .dark .article-content code {
-                                        background: #374151;
-                                    }
-                                `}</style>
 
                                 {/* WordPress Section */}
                                 <div className="border-t border-gray-200 dark:border-slate-700 pt-6 mt-6">
