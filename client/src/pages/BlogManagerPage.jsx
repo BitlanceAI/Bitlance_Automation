@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import Navbar from '../components/Navbar';
-import { Plus, Edit3, Trash2, Eye, Calendar, FileText } from 'lucide-react';
+import { Plus, Edit3, Trash2, Eye, Calendar, FileText, Bell, Send, X } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
 import { toast } from 'react-hot-toast';
@@ -11,6 +11,8 @@ const BlogManagerPage = () => {
     const [posts, setPosts] = useState([]);
     const [loading, setLoading] = useState(true);
     const [activeTab, setActiveTab] = useState('company'); // 'company' or 'client'
+    const [sendingNotifId, setSendingNotifId] = useState(null);
+    const [notifModal, setNotifModal] = useState(null); // { post, title, body }
 
     const ADMIN_ID = '0d396440-7d07-407c-89da-9cb93e353347';
     const isAdmin = user?.id === ADMIN_ID;
@@ -63,16 +65,9 @@ const BlogManagerPage = () => {
             const params = {};
             if (isAdmin) {
                 params.target_table = activeTab === 'client' ? 'articles' : 'company_articles';
-                // Some backends might expect body for delete, but usually query is safer for DELETE method issues in some clients
-                // But wait, axios delete accepts params in config.
             }
 
-            // Note: Our backend deletePost extracts from req, so query params work if using getTableName(req)
-            // But let's check backend implementation. deletePost uses getTableName(req).
-            // req.query is checked in getTableName. So passing as query param works.
-
             let url = `${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/api/blogs/${id}`;
-            // Append query manually or use params config
             if (isAdmin && activeTab === 'client') {
                 url += `?target_table=articles`;
             } else if (isAdmin) {
@@ -86,6 +81,44 @@ const BlogManagerPage = () => {
             fetchPosts();
         } catch (error) {
             toast.error('Failed to delete post');
+        }
+    };
+
+    const openNotifModal = (post) => {
+        setNotifModal({
+            post,
+            title: `New Post: ${post.topic || post.seo_title || 'Fresh Content'}`,
+            body: post.seo_description || 'Check out our latest update!'
+        });
+    };
+
+    const handleSendNotification = async () => {
+        if (!notifModal) return;
+        const { post, title, body } = notifModal;
+        setSendingNotifId(post.id);
+        try {
+            await axios.post(
+                `${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/api/push/send`,
+                {
+                    title,
+                    body,
+                    target: 'all',
+                    image: post.featured_image || null,
+                    data: {
+                        slug: post.slug,
+                        topic: 'blog_updates',
+                        url: `/blogs/${post.slug}`
+                    }
+                },
+                { headers: { Authorization: `Bearer ${token}` } }
+            );
+            toast.success('Push notification sent!');
+        } catch (error) {
+            console.error(error);
+            toast.error('Failed to send notification');
+        } finally {
+            setSendingNotifId(null);
+            setNotifModal(null);
         }
     };
 
@@ -176,7 +209,7 @@ const BlogManagerPage = () => {
                                             <td className="px-6 py-4 text-right">
                                                 <div className="flex justify-end gap-2">
                                                     <Link
-                                                        to={`/blogs/${post.id}`} // This might need update if public route differs, but usually slug based
+                                                        to={`/blogs/${post.id}`}
                                                         target="_blank"
                                                         className="p-2 text-gray-400 hover:text-indigo-600 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors"
                                                     >
@@ -188,6 +221,14 @@ const BlogManagerPage = () => {
                                                     >
                                                         <Edit3 className="w-4 h-4" />
                                                     </Link>
+                                                    <button
+                                                        onClick={() => openNotifModal(post)}
+                                                        disabled={sendingNotifId === post.id}
+                                                        className="p-2 text-gray-400 hover:text-amber-600 rounded-lg hover:bg-amber-50 dark:hover:bg-amber-900/20 transition-colors disabled:opacity-50"
+                                                        title="Send Push Notification"
+                                                    >
+                                                        <Bell className={`w-4 h-4 ${sendingNotifId === post.id ? 'animate-pulse' : ''}`} />
+                                                    </button>
                                                     <button
                                                         onClick={() => handleDelete(post.id)}
                                                         className="p-2 text-gray-400 hover:text-red-600 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
@@ -203,6 +244,59 @@ const BlogManagerPage = () => {
                         </table>
                     </div>
                 </div>
+
+                {/* Push Notification Modal */}
+                {notifModal && (
+                    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+                        <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl p-6 w-full max-w-md mx-4 border border-gray-200 dark:border-slate-700">
+                            <div className="flex items-center justify-between mb-5">
+                                <h3 className="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                                    <Bell className="w-5 h-5 text-amber-500" />
+                                    Send Push Notification
+                                </h3>
+                                <button onClick={() => setNotifModal(null)} className="p-1 hover:bg-gray-100 dark:hover:bg-slate-700 rounded-lg">
+                                    <X className="w-5 h-5 text-gray-400" />
+                                </button>
+                            </div>
+                            <div className="space-y-4">
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Notification Title</label>
+                                    <input
+                                        type="text"
+                                        value={notifModal.title}
+                                        onChange={(e) => setNotifModal(prev => ({ ...prev, title: e.target.value }))}
+                                        className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-white text-sm"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Notification Body</label>
+                                    <textarea
+                                        rows="3"
+                                        value={notifModal.body}
+                                        onChange={(e) => setNotifModal(prev => ({ ...prev, body: e.target.value }))}
+                                        className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-white text-sm"
+                                    />
+                                </div>
+                                <div className="flex gap-3 pt-2">
+                                    <button
+                                        onClick={() => setNotifModal(null)}
+                                        className="flex-1 px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 text-gray-700 dark:text-gray-300 text-sm font-medium hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors"
+                                    >
+                                        Cancel
+                                    </button>
+                                    <button
+                                        onClick={handleSendNotification}
+                                        disabled={sendingNotifId}
+                                        className="flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-amber-500 hover:bg-amber-600 text-white text-sm font-semibold transition-colors disabled:opacity-50"
+                                    >
+                                        <Send className="w-4 h-4" />
+                                        {sendingNotifId ? 'Sending...' : 'Send Now'}
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                )}
             </div>
         </div>
     );

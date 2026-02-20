@@ -28,6 +28,7 @@ import TrafficLanding from './pages/landing/TrafficLanding';
 import LeadGenLanding from './pages/landing/LeadGenLanding';
 import SalesLanding from './pages/landing/SalesLanding';
 import OfferLanding from './pages/landing/OfferLanding';
+import RealEstateLeadGen from './pages/landing/RealEstateLeadGen';
 import CampaignWizard from './components/campaigns/CampaignWizard';
 import PrivacyPolicy from './pages/PrivacyPolicy';
 import TermsPage from './pages/TermsPage';
@@ -232,7 +233,8 @@ function App() {
             <Route path="/l/leadgen/:campaignId" element={<LeadGenLanding />} />
             <Route path="/l/sales/:campaignId" element={<SalesLanding />} />
             <Route path="/l/offer/:campaignId" element={<OfferLanding />} />
-            {/* Real Estate Landing is now at root */}
+            {/* Real Estate Landing Custom Funnel */}
+            <Route path="/apply/real-estate" element={<RealEstateLeadGen />} />
             <Route path="/testimonial-demo" element={<TestimonialDemo />} />
             <Route path="/shape-demo" element={<ShapeHeroDemo />} />
 

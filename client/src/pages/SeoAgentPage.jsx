@@ -35,7 +35,7 @@ import BlogManagerPanel from '../components/seo/BlogManagerPanel';
 
 const SeoAgentPage = () => {
     const navigate = useNavigate();
-    const { user, credits, refreshCredits } = useAuth();
+    const { user, credits, isAdmin, refreshCredits } = useAuth();
 
     // Tab State
     const [activeTab, setActiveTab] = useState('generate');
@@ -176,7 +176,7 @@ const SeoAgentPage = () => {
 
         // Check credits
         const CREDIT_COST = 5;
-        if (credits < CREDIT_COST) {
+        if (!isAdmin && credits < CREDIT_COST) {
             alert(`⚠️ Insufficient credits! You need ${CREDIT_COST} credits to generate an article. Current balance: ${credits}`);
             return;
         }

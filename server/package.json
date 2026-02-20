@@ -20,7 +20,9 @@
         "googleapis": "^170.1.0",
         "multer": "^2.0.2",
         "node-cron": "^4.2.1",
-        "openai": "^6.16.0"
+        "nodemailer": "^8.0.1",
+        "openai": "^6.16.0",
+        "twilio": "^5.12.2"
     },
     "engines": {
         "node": ">=18"

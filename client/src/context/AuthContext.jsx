@@ -5,11 +5,15 @@ const AuthContext = createContext();
 
 export const useAuth = () => useContext(AuthContext);
 
+const ADMIN_ID = '0d396440-7d07-407c-89da-9cb93e353347';
+
 export const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(null);
     const [session, setSession] = useState(null);
     const [loading, setLoading] = useState(true);
     const [credits, setCredits] = useState(0);
+
+    const isAdmin = user?.id === ADMIN_ID;
 
     useEffect(() => {
         // Get session on mount
@@ -71,6 +75,7 @@ export const AuthProvider = ({ children }) => {
         session,
         loading,
         credits,
+        isAdmin,
         refreshCredits,
         signUp: (data) => supabase.auth.signUp(data),
         signIn: (data) => supabase.auth.signInWithPassword(data),

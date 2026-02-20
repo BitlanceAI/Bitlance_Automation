@@ -156,12 +156,11 @@ export const createPost = async (req, res) => {
                     title: notifSettings.title || `New Post: ${data.topic || data.title || 'Fresh Content'}`,
                     body: notifSettings.body || data.seo_description || 'Check out our latest update!',
                     image: notifSettings.image || data.featured_image,
-                    target: 'topic',
+                    target: 'all',
                     data: {
                         slug: data.slug,
                         topic: 'blog_updates',
-                        url: `/blogs/${data.slug}`,
-                        useTopic: true
+                        url: `/blogs/${data.slug}`
                     }
                 }).catch(err => console.error('Background Push Error:', err));
             }
@@ -221,12 +220,11 @@ export const updatePost = async (req, res) => {
                 title: notificationSettings.title || `New Post: ${data.topic || data.title || 'Fresh Content'}`,
                 body: notificationSettings.body || data.seo_description || 'Check out our latest update!',
                 image: notificationSettings.image || data.featured_image,
-                target: 'topic',
+                target: 'all',
                 data: {
                     slug: data.slug,
                     topic: 'blog_updates',
-                    url: `/blogs/${data.slug}`,
-                    useTopic: true
+                    url: `/blogs/${data.slug}`
                 }
             }).catch(err => console.error('Background Push Error (Update):', err));
         }

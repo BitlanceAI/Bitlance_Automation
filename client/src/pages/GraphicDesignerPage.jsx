@@ -56,7 +56,7 @@ const InputField = ({ icon: Icon, label, name, value, onChange, type = 'text', p
 
 const GraphicDesignerPage = () => {
     const navigate = useNavigate();
-    const { user, credits, refreshCredits } = useAuth();
+    const { user, credits, isAdmin, refreshCredits } = useAuth();
     const [loading, setLoading] = useState(false);
     const [jobs, setJobs] = useState([]);
     const [filter, setFilter] = useState('all');
@@ -131,7 +131,7 @@ const GraphicDesignerPage = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        if (credits < COST_PER_FLYER) {
+        if (!isAdmin && credits < COST_PER_FLYER) {
             toast.error(`Insufficient credits. You need ${COST_PER_FLYER} credits to generate a flyer.`);
             return;
         }
@@ -445,42 +445,21 @@ const GraphicDesignerPage = () => {
                                         colSpan
                                     />
 
-                                    {/* Template Selector */}
-                                    <div className="space-y-3">
-                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                                            Choose Template Style
-                                        </label>
-                                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                                            {TEMPLATES.map((template) => (
-                                                <button
-                                                    key={template.id}
-                                                    type="button"
-                                                    onClick={() => setFormData(prev => ({ ...prev, template_id: template.id }))}
-                                                    className={`group relative overflow-hidden rounded-xl p-3 text-left transition-all duration-200 border-2 ${formData.template_id === template.id
-                                                        ? 'border-purple-500 bg-purple-50 dark:bg-purple-900/20 ring-2 ring-purple-500/20'
-                                                        : 'border-gray-200 dark:border-slate-700 hover:border-purple-300 dark:hover:border-purple-700 bg-white dark:bg-slate-800/50'
-                                                        }`}
-                                                >
-                                                    <div className={`absolute top-0 right-0 w-12 h-12 bg-gradient-to-br ${template.color} opacity-20 rounded-full -translate-y-1/2 translate-x-1/2`} />
-                                                    <div className="text-xl mb-1">{template.icon}</div>
-                                                    <p className="text-sm font-semibold text-gray-900 dark:text-white truncate">
-                                                        {template.name}
-                                                    </p>
-                                                    <p className="text-xs text-gray-500 dark:text-gray-400 line-clamp-1">
-                                                        {template.description}
-                                                    </p>
-                                                    {formData.template_id === template.id && (
-                                                        <div className="absolute top-2 right-2">
-                                                            <CheckCircle2 className="h-4 w-4 text-purple-500" />
-                                                        </div>
-                                                    )}
-                                                </button>
-                                            ))}
+                                    {/* Random template auto-selected */}
+                                    <div className="p-4 rounded-xl bg-gradient-to-r from-violet-50 to-purple-50 dark:from-violet-900/20 dark:to-purple-900/20 border border-violet-200/50 dark:border-violet-700/30">
+                                        <div className="flex items-center gap-3">
+                                            <div className="p-2 rounded-lg bg-gradient-to-br from-violet-500 to-purple-600 shadow-md">
+                                                <Sparkles className="h-4 w-4 text-white" />
+                                            </div>
+                                            <div>
+                                                <p className="text-sm font-semibold text-gray-900 dark:text-white">🎲 Random Template</p>
+                                                <p className="text-xs text-gray-500 dark:text-gray-400">A unique design style will be picked automatically</p>
+                                            </div>
                                         </div>
                                     </div>
 
                                     {/* Credits Warning */}
-                                    {credits < COST_PER_FLYER && (
+                                    {!isAdmin && credits < COST_PER_FLYER && (
                                         <div className="p-4 rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800/50">
                                             <p className="text-sm text-red-600 dark:text-red-400 flex items-center gap-2">
                                                 <XCircle className="h-4 w-4" />
@@ -492,7 +471,7 @@ const GraphicDesignerPage = () => {
                                     {/* Submit Button */}
                                     <button
                                         type="submit"
-                                        disabled={loading || credits < COST_PER_FLYER}
+                                        disabled={loading || (!isAdmin && credits < COST_PER_FLYER)}
                                         className="w-full relative group overflow-hidden rounded-xl bg-gradient-to-r from-violet-600 via-purple-600 to-indigo-600 text-white py-4 px-6 font-semibold text-lg transition-all duration-300 hover:shadow-xl hover:shadow-purple-500/25 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:shadow-none"
                                     >
                                         <div className="absolute inset-0 bg-gradient-to-r from-violet-500 via-purple-500 to-indigo-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />

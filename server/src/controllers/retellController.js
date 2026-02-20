@@ -1,6 +1,8 @@
 import { supabase, supabaseAdmin } from '../config/supabaseClient.js';
 import OpenAI from 'openai';
 
+const ADMIN_ID = '0d396440-7d07-407c-89da-9cb93e353347';
+
 const openai = new OpenAI({
     apiKey: process.env.OPENAI_API_KEY
 });
@@ -70,24 +72,29 @@ export const createWebCall = async (req, res) => {
             return res.status(401).json({ error: 'Unauthorized: Invalid token' });
         }
 
-        // 1. Check Credits
+        // 1. Check Credits (Admin bypasses)
         const CALL_COST = 5;
-        // Use supabaseAdmin to check balance to avoid RLS issues even for reading if policy is strict, though scoped/anon should work for read usually.
-        // Let's use supabaseAdmin for consistency in backend logic where possible for sensitive credit ops.
-        const { data: creditData, error: creditError } = await supabaseAdmin
-            .from('user_credits')
-            .select('balance')
-            .eq('user_id', user.id)
-            .single();
+        const isAdmin = user.id === ADMIN_ID;
+        let currentBalance = 0;
 
-        if (creditError && creditError.code !== 'PGRST116') {
-            console.error('Credit check error:', creditError);
-            return res.status(500).json({ error: 'Failed to check credits' });
-        }
+        if (isAdmin) {
+            console.log('👑 Admin access: Bypassing credit check for web call');
+        } else {
+            const { data: creditData, error: creditError } = await supabaseAdmin
+                .from('user_credits')
+                .select('balance')
+                .eq('user_id', user.id)
+                .single();
 
-        const currentBalance = creditData?.balance || 0;
-        if (currentBalance < CALL_COST) {
-            return res.status(402).json({ error: 'Insufficient credits', required: CALL_COST, balance: currentBalance });
+            if (creditError && creditError.code !== 'PGRST116') {
+                console.error('Credit check error:', creditError);
+                return res.status(500).json({ error: 'Failed to check credits' });
+            }
+
+            currentBalance = creditData?.balance || 0;
+            if (currentBalance < CALL_COST) {
+                return res.status(402).json({ error: 'Insufficient credits', required: CALL_COST, balance: currentBalance });
+            }
         }
 
         const { user_phone } = req.body;
@@ -122,19 +129,23 @@ export const createWebCall = async (req, res) => {
         if (!callResponse.ok) throw new Error('Failed to create web call');
         const callData = await callResponse.json();
 
-        // 2. Deduct Credits
-        const { error: deductError } = await supabaseAdmin
-            .from('user_credits')
-            .update({
-                balance: currentBalance - CALL_COST,
-                updated_at: new Date().toISOString()
-            })
-            .eq('user_id', user.id);
-
-        if (deductError) {
-            console.error('Failed to deduct credits after call creation:', deductError);
+        // 2. Deduct Credits (Admin bypasses)
+        if (isAdmin) {
+            console.log('👑 Admin access: Skipping credit deduction for web call');
         } else {
-            console.log(`Call created. Credits deducted: ${CALL_COST}. New balance: ${currentBalance - CALL_COST}`);
+            const { error: deductError } = await supabaseAdmin
+                .from('user_credits')
+                .update({
+                    balance: currentBalance - CALL_COST,
+                    updated_at: new Date().toISOString()
+                })
+                .eq('user_id', user.id);
+
+            if (deductError) {
+                console.error('Failed to deduct credits after call creation:', deductError);
+            } else {
+                console.log(`Call created. Credits deducted: ${CALL_COST}. New balance: ${currentBalance - CALL_COST}`);
+            }
         }
 
         res.json(callData);
@@ -157,22 +168,29 @@ export const createPhoneCall = async (req, res) => {
             return res.status(401).json({ error: 'Unauthorized: Invalid token' });
         }
 
-        // 1. Check Credits
+        // 1. Check Credits (Admin bypasses)
         const CALL_COST = 5;
-        const { data: creditData, error: creditError } = await supabaseAdmin
-            .from('user_credits')
-            .select('balance')
-            .eq('user_id', user.id)
-            .single();
+        const isAdmin = user.id === ADMIN_ID;
+        let currentBalance = 0;
 
-        if (creditError && creditError.code !== 'PGRST116') {
-            console.error('Credit check error:', creditError);
-            return res.status(500).json({ error: 'Failed to check credits' });
-        }
+        if (isAdmin) {
+            console.log('👑 Admin access: Bypassing credit check for phone call');
+        } else {
+            const { data: creditData, error: creditError } = await supabaseAdmin
+                .from('user_credits')
+                .select('balance')
+                .eq('user_id', user.id)
+                .single();
 
-        const currentBalance = creditData?.balance || 0;
-        if (currentBalance < CALL_COST) {
-            return res.status(402).json({ error: 'Insufficient credits', required: CALL_COST, balance: currentBalance });
+            if (creditError && creditError.code !== 'PGRST116') {
+                console.error('Credit check error:', creditError);
+                return res.status(500).json({ error: 'Failed to check credits' });
+            }
+
+            currentBalance = creditData?.balance || 0;
+            if (currentBalance < CALL_COST) {
+                return res.status(402).json({ error: 'Insufficient credits', required: CALL_COST, balance: currentBalance });
+            }
         }
 
         const { to_number } = req.body;
@@ -247,19 +265,23 @@ export const createPhoneCall = async (req, res) => {
         const callData = await callResponse.json();
         console.log('Phone call created successfully:', callData.call_id);
 
-        // 2. Deduct Credits (Phone Call)
-        const { error: deductError } = await supabaseAdmin
-            .from('user_credits')
-            .update({
-                balance: currentBalance - CALL_COST,
-                updated_at: new Date().toISOString()
-            })
-            .eq('user_id', user.id);
-
-        if (deductError) {
-            console.error('Failed to deduct credits after phone call creation:', deductError);
+        // 2. Deduct Credits (Phone Call - Admin bypasses)
+        if (isAdmin) {
+            console.log('👑 Admin access: Skipping credit deduction for phone call');
         } else {
-            console.log(`Phone Call created. Credits deducted: ${CALL_COST}. New balance: ${currentBalance - CALL_COST}`);
+            const { error: deductError } = await supabaseAdmin
+                .from('user_credits')
+                .update({
+                    balance: currentBalance - CALL_COST,
+                    updated_at: new Date().toISOString()
+                })
+                .eq('user_id', user.id);
+
+            if (deductError) {
+                console.error('Failed to deduct credits after phone call creation:', deductError);
+            } else {
+                console.log(`Phone Call created. Credits deducted: ${CALL_COST}. New balance: ${currentBalance - CALL_COST}`);
+            }
         }
 
         res.json(callData);

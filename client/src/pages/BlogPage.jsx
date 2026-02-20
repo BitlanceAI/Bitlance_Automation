@@ -9,7 +9,7 @@ import API_BASE_URL from '../config.js';
 import ProfileSelection from '../components/ProfileSelection';
 
 const BlogPage = () => {
-    const { user, credits } = useAuth();
+    const { user, credits, isAdmin, refreshCredits } = useAuth();
     const navigate = useNavigate();
 
     // Article state
@@ -75,7 +75,7 @@ const BlogPage = () => {
 
         // Check credits
         const CREDIT_COST = 5;
-        if (credits < CREDIT_COST) {
+        if (!isAdmin && credits < CREDIT_COST) {
             alert(`⚠️ Insufficient credits! You need ${CREDIT_COST} credits to generate an article. Current balance: ${credits}`);
             return;
         }
@@ -154,21 +154,23 @@ const BlogPage = () => {
             const data = await response.json();
 
             if (data.success) {
-                // Deduct credits
-                try {
-                    await fetch(`${API_BASE_URL}/api/credits/deduct`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            userId: user.id,
-                            amount: CREDIT_COST,
-                            action: 'generate_article_blog_page'
-                        })
-                    });
-                    refreshCredits(); // Update local credit state
-                } catch (creditError) {
-                    console.error('Error deducting credits:', creditError);
+                // Deduct credits (skip for admin)
+                if (!isAdmin) {
+                    try {
+                        await fetch(`${API_BASE_URL}/api/credits/deduct`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                userId: user.id,
+                                amount: CREDIT_COST,
+                                action: 'generate_article_blog_page'
+                            })
+                        });
+                    } catch (creditError) {
+                        console.error('Error deducting credits:', creditError);
+                    }
                 }
+                refreshCredits(); // Update local credit state
 
                 // If WordPress source selected, upload to WordPress
                 if (sourceType === 'wordpress') {

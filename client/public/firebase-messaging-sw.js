@@ -1,7 +1,6 @@
 importScripts('https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js');
 importScripts('https://www.gstatic.com/firebasejs/9.22.0/firebase-messaging-compat.js');
 
-// Initialize the Firebase app in the service worker by passing in the messagingSenderId.
 firebase.initializeApp({
     apiKey: "AIzaSyBiqRvXwRXIvL23Avfu2iCEGrF92UL9v1Y",
     authDomain: "blogtest-34119.firebaseapp.com",
@@ -11,18 +10,46 @@ firebase.initializeApp({
     appId: "1:370621229029:web:eb30e5759019443e9ef10c"
 });
 
-// Retrieve an instance of Firebase Messaging so that it can handle background messages.
 const messaging = firebase.messaging();
 
+// Handle background messages (when app/tab is not in focus)
 messaging.onBackgroundMessage((payload) => {
-    console.log('[firebase-messaging-sw.js] Received background message ', payload);
-    // Customize notification here
-    const notificationTitle = payload.notification.title;
+    console.log('[SW] Received background message:', payload);
+
+    const title = payload.notification?.title || 'New Update';
+    const body = payload.notification?.body || 'Check out our latest content!';
+    const url = payload.data?.url || '/';
+
     const notificationOptions = {
-        body: payload.notification.body,
-        icon: payload.notification.icon || '/logo192.png',
-        data: payload.data
+        body,
+        icon: '/favicon.png',  // Use existing favicon
+        badge: '/favicon.png',
+        data: { url, ...payload.data },
+        requireInteraction: false,
+        vibrate: [200, 100, 200]
     };
 
-    self.registration.showNotification(notificationTitle, notificationOptions);
+    self.registration.showNotification(title, notificationOptions);
+});
+
+// Handle notification click — open the blog URL
+self.addEventListener('notificationclick', (event) => {
+    event.notification.close();
+    const url = event.notification.data?.url || '/';
+    event.waitUntil(
+        clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
+            // If app already open, focus it
+            for (const client of clientList) {
+                if (client.url.includes(self.location.origin) && 'focus' in client) {
+                    client.focus();
+                    client.navigate(url);
+                    return;
+                }
+            }
+            // Otherwise open new window
+            if (clients.openWindow) {
+                return clients.openWindow(url);
+            }
+        })
+    );
 });

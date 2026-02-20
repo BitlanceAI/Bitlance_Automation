@@ -16,6 +16,7 @@ const __dirname = path.dirname(__filename);
  */
 
 const COST_PER_FLYER = 5; // Credits per image
+const ADMIN_ID = '0d396440-7d07-407c-89da-9cb93e353347';
 
 /**
  * POST /api/design/generate-flyer
@@ -56,24 +57,30 @@ export const generateFlyer = async (req, res) => {
             }
         });
 
-        // 1. Pre-flight Credit Check
-        const creditCheck = await CreditLedgerService.validateCreditsAvailable(
-            userId,
-            'design',
-            1 // 1 image
-        );
+        // 1. Pre-flight Credit Check (Admin bypasses)
+        const isAdmin = userId === ADMIN_ID;
 
-        if (!creditCheck.hasEnough) {
-            return res.status(402).json({
-                success: false,
-                error: 'Insufficient credits',
-                required: creditCheck.creditsNeeded,
-                balance: creditCheck.currentBalance,
-                deficit: creditCheck.deficit
-            });
+        if (isAdmin) {
+            console.log('👑 Admin access: Bypassing credit check');
+        } else {
+            const creditCheck = await CreditLedgerService.validateCreditsAvailable(
+                userId,
+                'design',
+                1 // 1 image
+            );
+
+            if (!creditCheck.hasEnough) {
+                return res.status(402).json({
+                    success: false,
+                    error: 'Insufficient credits',
+                    required: creditCheck.creditsNeeded,
+                    balance: creditCheck.currentBalance,
+                    deficit: creditCheck.deficit
+                });
+            }
+
+            console.log(`✅ Credit pre-check passed: ${creditCheck.creditsNeeded} credits available`);
         }
-
-        console.log(`✅ Credit pre-check passed: ${creditCheck.creditsNeeded} credits available`);
 
         // 2. Create Design Job Entry (PENDING status)
         const { data: designJob, error: saveError } = await supabaseAdmin
@@ -100,42 +107,46 @@ export const generateFlyer = async (req, res) => {
 
         console.log(`✅ Design job created: ${designJob.id}`);
 
-        // 3. Deduct Credits via Ledger
+        // 3. Deduct Credits via Ledger (Admin bypasses)
         let ledgerResult;
-        try {
-            ledgerResult = await CreditLedgerService.deductCreditsWithLedger({
-                userId,
-                agentType: 'design',
-                referenceId: designJob.id,
-                referenceTable: 'design_jobs',
-                usageQuantity: 1, // 1 image
-                metadata: {
-                    property_type,
-                    location,
-                    price,
-                    builder
-                }
-            });
+        if (isAdmin) {
+            console.log('👑 Admin access: Skipping credit deduction');
+        } else {
+            try {
+                ledgerResult = await CreditLedgerService.deductCreditsWithLedger({
+                    userId,
+                    agentType: 'design',
+                    referenceId: designJob.id,
+                    referenceTable: 'design_jobs',
+                    usageQuantity: 1, // 1 image
+                    metadata: {
+                        property_type,
+                        location,
+                        price,
+                        builder
+                    }
+                });
 
-            console.log(`💰 Ledger entry created: ${ledgerResult.ledger_id}`);
-            console.log(`📊 Credits deducted: ${ledgerResult.credits_deducted} (Balance: ${ledgerResult.new_balance})`);
+                console.log(`💰 Ledger entry created: ${ledgerResult.ledger_id}`);
+                console.log(`📊 Credits deducted: ${ledgerResult.credits_deducted} (Balance: ${ledgerResult.new_balance})`);
 
-        } catch (ledgerError) {
-            console.error('⚠️ CRITICAL: Design job saved but credits not deducted!', ledgerError);
+            } catch (ledgerError) {
+                console.error('⚠️ CRITICAL: Design job saved but credits not deducted!', ledgerError);
 
-            // Mark job as failed due to credit deduction failure
-            await supabaseAdmin
-                .from('design_jobs')
-                .update({
-                    status: 'failed',
-                    error_message: 'Credit deduction failed'
-                })
-                .eq('id', designJob.id);
+                // Mark job as failed due to credit deduction failure
+                await supabaseAdmin
+                    .from('design_jobs')
+                    .update({
+                        status: 'failed',
+                        error_message: 'Credit deduction failed'
+                    })
+                    .eq('id', designJob.id);
 
-            return res.status(500).json({
-                success: false,
-                error: 'Failed to process payment'
-            });
+                return res.status(500).json({
+                    success: false,
+                    error: 'Failed to process payment'
+                });
+            }
         }
 
 

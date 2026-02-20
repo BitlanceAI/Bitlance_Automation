@@ -1,6 +1,5 @@
-import React, { useState } from 'react';
-import { Navigate } from 'react-router-dom';
-import BookingModal from '../components/real-estate/BookingModal';
+import React from 'react';
+import { Navigate, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import HeroSection from '../components/landing/HeroSection';
 import ProblemSection from '../components/landing/ProblemSection';
@@ -10,20 +9,21 @@ import HowItWorksSection from '../components/landing/HowItWorksSection';
 import SocialProofSection from '../components/landing/SocialProofSection';
 import TestimonialsSection from '../components/landing/TestimonialsSection';
 import FinalCtaSection from '../components/landing/FinalCtaSection';
+import LatestBlogsSection from '../components/landing/LatestBlogsSection';
 import Footer from '../components/landing/Footer';
 
 import { ElegantShape } from '../components/ui/shape-landing-hero';
 
 const LandingPage = () => {
     const { user, loading } = useAuth();
-    const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
+    const navigate = useNavigate();
 
     // Redirect if logged in
     if (loading) return null;
     if (user) return <Navigate to="/home" replace />;
 
     const handleOpenBooking = () => {
-        setIsBookingModalOpen(true);
+        navigate('/apply/real-estate');
     };
 
     return (
@@ -84,10 +84,9 @@ const LandingPage = () => {
                 <SocialProofSection />
                 <TestimonialsSection />
                 <FinalCtaSection onOpenBooking={handleOpenBooking} />
+                <LatestBlogsSection />
                 <Footer />
             </div>
-
-            <BookingModal isOpen={isBookingModalOpen} onClose={() => setIsBookingModalOpen(false)} />
         </div>
     );
 };

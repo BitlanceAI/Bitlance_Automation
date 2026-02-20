@@ -8,14 +8,23 @@ export const sendPushNotification = async ({ title, body, target = 'all', image,
         throw new Error('Firebase service unavailable');
     }
 
-    // 1. Determine Target (Topic or Tokens)
+    // FCM requires ALL data values to be strings — convert everything
+    const sanitizedData = {};
+    if (data) {
+        Object.entries(data).forEach(([key, val]) => {
+            if (val !== null && val !== undefined) {
+                sanitizedData[key] = String(val);
+            }
+        });
+    }
+
     let message = {
         notification: {
-            title,
-            body,
+            title: title || 'New Update',
+            body: body || 'Check out our latest content!',
             ...(image && { imageUrl: image })
         },
-        data: data || {}
+        data: sanitizedData
     };
 
     let successCount = 0;
@@ -23,27 +32,7 @@ export const sendPushNotification = async ({ title, body, target = 'all', image,
     let response;
 
     try {
-        if (target === 'all' || target === 'topic') {
-            // Use topic if explicitly requested or conceptually 'all'
-            // However, 'all' currently maps to fetching tokens manually in your old logic.
-            // Let's support an explicit 'topic' param in the input object or infer it.
-            // If data.topic is provided, use it.
-            const topic = data?.topic || 'blog_updates'; // Default topic
-
-            // If we are sending to a topic
-            if (target === 'topic' || (target === 'all' && data?.useTopic)) {
-                message.topic = topic;
-                // Note: send() is for single message/topic, sendEachForMulticast is for tokens
-                const msgId = await messaging.send(message);
-                successCount = 1; // Topic send counts as 1 successful request (fanout handled by FCM)
-                response = { successCount: 1, failureCount: 0, messageId: msgId };
-                console.log('Sent to topic:', topic);
-                return { success: true, message: `Notification sent to topic ${topic}`, details: response };
-            }
-        }
-
-        // Fallback to Token-based sending (original logic) if not topic
-        // 1b. Fetch active tokens based on target if not generic topic
+        // Fetch active tokens from Firestore
         let query = firestore.collection(TOKENS_COLLECTION).where('isActive', '==', true);
 
         if (target === 'ios') {
@@ -51,6 +40,7 @@ export const sendPushNotification = async ({ title, body, target = 'all', image,
         } else if (target === 'android') {
             query = query.where('platform', '==', 'android');
         }
+        // 'all' fetches all platforms
 
         const snapshot = await query.get();
         const tokens = [];
@@ -59,37 +49,63 @@ export const sendPushNotification = async ({ title, body, target = 'all', image,
             if (d.token) tokens.push(d.token);
         });
 
+        console.log(`[Push] Found ${tokens.length} active token(s) for target="${target}"`);
+
         if (tokens.length === 0) {
-            return { success: true, message: 'No active device tokens found to send to.', successCount: 0 };
+            console.warn('[Push] No active device tokens found. Make sure devices have registered tokens with isActive=true in Firestore.');
+            return { success: true, message: 'No active device tokens found.', successCount: 0 };
         }
 
-        // 2. Prepare Message for Multicast
-        message.tokens = tokens; // Add tokens array
-
-        // 3. Send
+        // Send via multicast (up to 500 tokens per call)
+        message.tokens = tokens;
         response = await messaging.sendEachForMulticast(message);
         successCount = response.successCount;
         failureCount = response.failureCount;
 
+        // Log per-token results for debugging
+        response.responses.forEach((r, idx) => {
+            if (r.success) {
+                console.log(`[Push] ✅ Token[${idx}] sent successfully. MessageId: ${r.messageId}`);
+            } else {
+                console.error(`[Push] ❌ Token[${idx}] failed. Code: ${r.error?.code} | Message: ${r.error?.message}`);
+                // Mark stale tokens as inactive
+                if (
+                    r.error?.code === 'messaging/invalid-registration-token' ||
+                    r.error?.code === 'messaging/registration-token-not-registered'
+                ) {
+                    const staleToken = tokens[idx];
+                    firestore.collection(TOKENS_COLLECTION).doc(staleToken).update({ isActive: false })
+                        .then(() => console.log(`[Push] Marked stale token as inactive: ${staleToken.slice(0, 10)}...`))
+                        .catch(e => console.error('[Push] Failed to mark stale token:', e.message));
+                }
+            }
+        });
+
+        console.log(`[Push] Result: ${successCount} success, ${failureCount} failed`);
+
     } catch (err) {
-        console.error("Push Service Error:", err);
+        console.error('[Push] Service Error:', err);
         throw err;
     }
 
-    // 4. Log to History
-    await firestore.collection(NOTIFICATIONS_COLLECTION).add({
-        title,
-        body,
-        target,
-        sentAt: new Date().toISOString(),
-        successCount: response.successCount,
-        failureCount: response.failureCount,
-        image: image || null
-    });
+    // Log to Firestore history
+    try {
+        await firestore.collection(NOTIFICATIONS_COLLECTION).add({
+            title,
+            body,
+            target,
+            sentAt: new Date().toISOString(),
+            successCount,
+            failureCount,
+            image: image || null
+        });
+    } catch (logErr) {
+        console.warn('[Push] Could not log to Firestore history:', logErr.message);
+    }
 
     return {
         success: true,
-        message: `Notification sent to ${response.successCount} devices`,
-        details: response
+        message: `Notification sent to ${successCount} device(s)`,
+        details: { successCount, failureCount }
     };
 };
