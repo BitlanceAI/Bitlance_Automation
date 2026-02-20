@@ -9,10 +9,34 @@ const PublicArticlePage = () => {
     const [article, setArticle] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [latestBlogs, setLatestBlogs] = useState([]);
+    const [loadingLatest, setLoadingLatest] = useState(true);
+
+    const fetchLatestBlogs = async () => {
+        try {
+            setLoadingLatest(true);
+            const response = await fetch(`${API_BASE_URL}/api/public/blogs?page=1&limit=5&sort=created_at&order=desc`);
+            const data = await response.json();
+            if (data.success) {
+                // Filter out the current article to avoid showing it in latest
+                const currentIdentifier = slug || id;
+                const filtered = data.articles.filter(a => a.id !== currentIdentifier && (!slug || a.slug !== currentIdentifier)).slice(0, 4);
+                setLatestBlogs(filtered);
+            }
+        } catch (error) {
+            console.error('Error fetching latest blogs:', error);
+        } finally {
+            setLoadingLatest(false);
+        }
+    };
 
     useEffect(() => {
         fetchArticle();
         window.scrollTo(0, 0);
+    }, [id]);
+
+    useEffect(() => {
+        fetchLatestBlogs();
     }, [id]);
 
     const fetchArticle = async () => {
@@ -74,6 +98,8 @@ const PublicArticlePage = () => {
     const wordCount = article.word_count || article.content?.split(/\s+/).length || 0;
     const readingTime = Math.ceil(wordCount / 200);
 
+
+
     return (
         <div className="min-h-screen bg-gray-50 dark:bg-slate-900 pb-20">
             <SEOHead
@@ -100,12 +126,12 @@ const PublicArticlePage = () => {
 
             {/* Header Image & Title */}
             <div className="bg-white dark:bg-slate-800 border-b border-gray-200 dark:border-slate-700">
-                <div className="max-w-4xl mx-auto px-6 py-12 md:py-20">
+                <div className="max-w-7xl mx-auto px-6 py-12 md:py-20 lg:px-8">
                     <Link to="/blogs" className="inline-flex items-center text-gray-500 hover:text-indigo-600 mb-8 transition-colors">
                         <ArrowLeft size={20} className="mr-2" /> Back to Articles
                     </Link>
 
-                    <h1 className="text-3xl md:text-5xl font-extrabold text-gray-900 dark:text-white mb-6 leading-tight">
+                    <h1 className="text-3xl md:text-5xl font-extrabold text-gray-900 dark:text-white mb-6 leading-tight max-w-4xl">
                         {article.seo_title || article.topic}
                     </h1>
 
@@ -134,11 +160,11 @@ const PublicArticlePage = () => {
                     </div>
 
                     {article.image_url && (
-                        <div className="rounded-2xl overflow-hidden shadow-lg mt-8">
+                        <div className="rounded-2xl overflow-hidden shadow-lg mt-8 max-w-5xl">
                             <img
                                 src={article.image_url}
                                 alt={article.seo_title || article.topic}
-                                className="w-full h-auto object-cover max-h-[500px]"
+                                className="w-full h-auto object-cover max-h-[600px]"
                                 onError={(e) => e.target.style.display = 'none'}
                             />
                         </div>
@@ -146,138 +172,197 @@ const PublicArticlePage = () => {
                 </div>
             </div>
 
-            {/* Article Content */}
-            <article className="max-w-3xl mx-auto px-6 py-12">
-                <div
-                    className="prose prose-lg dark:prose-invert max-w-none
-                    prose-headings:font-bold prose-headings:text-gray-900 dark:prose-headings:text-white
-                    prose-a:text-indigo-600 dark:prose-a:text-indigo-400 prose-a:no-underline hover:prose-a:underline
-                    prose-img:rounded-xl prose-img:shadow-md text-gray-800 dark:text-gray-200 whitespace-pre-wrap"
-                    dangerouslySetInnerHTML={{ __html: article.content }}
-                />
+            {/* Layout Container */}
+            <div className="max-w-7xl mx-auto px-6 lg:px-8 py-12 flex flex-col lg:flex-row gap-12 lg:gap-16">
 
-                {/* Tags Section */}
-                {article.tags && article.tags.length > 0 && (
-                    <div className="mb-12">
-                        <h4 className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-4">
-                            Tags
-                        </h4>
-                        <div className="flex flex-wrap gap-2">
-                            {article.tags.map((tag, index) => (
-                                <span key={index} className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-gray-100 dark:bg-slate-800 text-gray-700 dark:text-gray-300 text-sm hover:bg-indigo-50 dark:hover:bg-indigo-900/30 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors cursor-pointer">
-                                    <Tag size={14} />
-                                    {tag}
-                                </span>
-                            ))}
-                        </div>
-                    </div>
-                )}
+                {/* Article Content */}
+                <article className="flex-1 max-w-3xl">
+                    <div
+                        className="prose prose-lg dark:prose-invert max-w-none
+                        prose-headings:font-bold prose-headings:text-gray-900 dark:prose-headings:text-white
+                        prose-a:text-indigo-600 dark:prose-a:text-indigo-400 prose-a:no-underline hover:prose-a:underline
+                        prose-img:rounded-xl prose-img:shadow-md text-gray-800 dark:text-gray-200 whitespace-pre-wrap"
+                        dangerouslySetInnerHTML={{ __html: article.content }}
+                    />
 
-                {/* Share / Tags section could go here */}
-                {/* Author Profile Section */}
-                <div className="mt-16 mb-12 pt-8 border-t border-gray-200 dark:border-slate-700">
-                    <h3 className="text-xl font-bold mb-6 text-gray-900 dark:text-white uppercase tracking-wider text-sm">About the Author</h3>
-
-                    <div className="flex flex-col md:flex-row gap-6 items-start bg-gray-50 dark:bg-slate-800/50 p-6 rounded-2xl">
-                        {/* Avatar */}
-                        <div className="flex-shrink-0">
-                            {(article.author?.profile_image || article.author_details?.profile_image) ? (
-                                <img
-                                    src={article.author?.profile_image || article.author_details?.profile_image}
-                                    alt={article.author_name}
-                                    className="w-24 h-24 md:w-32 md:h-32 rounded-xl object-cover shadow-sm border-2 border-white dark:border-slate-700"
-                                />
-                            ) : (
-                                <div className="w-24 h-24 md:w-32 md:h-32 rounded-xl bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center text-indigo-600 dark:text-indigo-400">
-                                    <User size={40} />
-                                </div>
-                            )}
-                        </div>
-
-                        {/* Details */}
-                        <div className="flex-1">
-                            <h4 className="text-xl md:text-2xl font-bold text-gray-900 dark:text-gray-100 mb-1">
-                                {article.author?.name || article.author_details?.name || article.author_name || 'Bitlance Author'}
+                    {/* Tags Section */}
+                    {article.tags && article.tags.length > 0 && (
+                        <div className="mb-12 mt-10">
+                            <h4 className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-4">
+                                Tags
                             </h4>
+                            <div className="flex flex-wrap gap-2">
+                                {article.tags.map((tag, index) => (
+                                    <span key={index} className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-gray-100 dark:bg-slate-800 text-gray-700 dark:text-gray-300 text-sm hover:bg-indigo-50 dark:hover:bg-indigo-900/30 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors cursor-pointer">
+                                        <Tag size={14} />
+                                        {tag}
+                                    </span>
+                                ))}
+                            </div>
+                        </div>
+                    )}
 
-                            {(article.author?.role || article.author_details?.role) && (
-                                <p className="text-indigo-600 dark:text-indigo-400 font-medium mb-3 text-sm md:text-base">
-                                    {article.author?.role || article.author_details?.role}
-                                </p>
-                            )}
+                    {/* Author Profile Section */}
+                    <div className="mt-16 mb-12 pt-8 border-t border-gray-200 dark:border-slate-700">
+                        <h3 className="text-xl font-bold mb-6 text-gray-900 dark:text-white uppercase tracking-wider text-sm">About the Author</h3>
 
-                            <div className="prose prose-sm dark:prose-invert mb-4 text-gray-600 dark:text-gray-300">
-                                <p>{article.author?.bio || article.author_details?.bio || article.author_bio || 'Content Creator at Bitlance Tech Hub'}</p>
+                        <div className="flex flex-col md:flex-row gap-6 items-start bg-gray-50 dark:bg-slate-800/50 p-6 rounded-2xl">
+                            {/* Avatar */}
+                            <div className="flex-shrink-0">
+                                {(article.author?.profile_image || article.author_details?.profile_image) ? (
+                                    <img
+                                        src={article.author?.profile_image || article.author_details?.profile_image}
+                                        alt={article.author_name}
+                                        className="w-24 h-24 md:w-32 md:h-32 rounded-xl object-cover shadow-sm border-2 border-white dark:border-slate-700"
+                                    />
+                                ) : (
+                                    <div className="w-24 h-24 md:w-32 md:h-32 rounded-xl bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center text-indigo-600 dark:text-indigo-400">
+                                        <User size={40} />
+                                    </div>
+                                )}
                             </div>
 
-                            {/* Social Links */}
-                            {(() => {
-                                const socials = article.author?.social_links || article.author_details?.social_links || {};
-                                const hasSocials = Object.keys(socials).length > 0;
+                            {/* Details */}
+                            <div className="flex-1">
+                                <h4 className="text-xl md:text-2xl font-bold text-gray-900 dark:text-gray-100 mb-1">
+                                    {article.author?.name || article.author_details?.name || article.author_name || 'Bitlance Author'}
+                                </h4>
 
-                                if (!hasSocials) return null;
+                                {(article.author?.role || article.author_details?.role) && (
+                                    <p className="text-indigo-600 dark:text-indigo-400 font-medium mb-3 text-sm md:text-base">
+                                        {article.author?.role || article.author_details?.role}
+                                    </p>
+                                )}
 
-                                return (
-                                    <div className="flex flex-wrap gap-3">
-                                        {socials.facebook && (
-                                            <a href={socials.facebook} target="_blank" rel="noopener noreferrer" className="p-2 bg-white dark:bg-slate-700 text-blue-600 rounded-lg hover:shadow-md transition-all" title="Facebook">
-                                                <Facebook size={18} />
-                                            </a>
-                                        )}
-                                        {socials.twitter && (
-                                            <a href={socials.twitter} target="_blank" rel="noopener noreferrer" className="p-2 bg-white dark:bg-slate-700 text-sky-500 rounded-lg hover:shadow-md transition-all" title="Twitter/X">
-                                                <Twitter size={18} />
-                                            </a>
-                                        )}
-                                        {socials.linkedin && (
-                                            <a href={socials.linkedin} target="_blank" rel="noopener noreferrer" className="p-2 bg-white dark:bg-slate-700 text-blue-700 rounded-lg hover:shadow-md transition-all" title="LinkedIn">
-                                                <Linkedin size={18} />
-                                            </a>
-                                        )}
-                                        {socials.website && (
-                                            <a href={socials.website} target="_blank" rel="noopener noreferrer" className="p-2 bg-white dark:bg-slate-700 text-gray-700 dark:text-gray-300 rounded-lg hover:shadow-md transition-all" title="Website">
-                                                <Globe size={18} />
-                                            </a>
-                                        )}
-                                        {socials.email && (
-                                            <a href={`mailto:${socials.email}`} className="p-2 bg-white dark:bg-slate-700 text-red-500 rounded-lg hover:shadow-md transition-all" title="Email">
-                                                <Mail size={18} />
-                                            </a>
-                                        )}
-                                        {socials.phone && (
-                                            <a href={`tel:${socials.phone}`} className="p-2 bg-white dark:bg-slate-700 text-green-600 rounded-lg hover:shadow-md transition-all" title="Phone">
-                                                <Phone size={18} />
-                                            </a>
-                                        )}
-                                    </div>
-                                );
-                            })()}
+                                <div className="prose prose-sm dark:prose-invert mb-4 text-gray-600 dark:text-gray-300">
+                                    <p>{article.author?.bio || article.author_details?.bio || article.author_bio || 'Content Creator at Bitlance Tech Hub'}</p>
+                                </div>
+
+                                {/* Social Links */}
+                                {(() => {
+                                    const socials = article.author?.social_links || article.author_details?.social_links || {};
+                                    const hasSocials = Object.keys(socials).length > 0;
+
+                                    if (!hasSocials) return null;
+
+                                    return (
+                                        <div className="flex flex-wrap gap-3">
+                                            {socials.facebook && (
+                                                <a href={socials.facebook} target="_blank" rel="noopener noreferrer" className="p-2 bg-white dark:bg-slate-700 text-blue-600 rounded-lg hover:shadow-md transition-all" title="Facebook">
+                                                    <Facebook size={18} />
+                                                </a>
+                                            )}
+                                            {socials.twitter && (
+                                                <a href={socials.twitter} target="_blank" rel="noopener noreferrer" className="p-2 bg-white dark:bg-slate-700 text-sky-500 rounded-lg hover:shadow-md transition-all" title="Twitter/X">
+                                                    <Twitter size={18} />
+                                                </a>
+                                            )}
+                                            {socials.linkedin && (
+                                                <a href={socials.linkedin} target="_blank" rel="noopener noreferrer" className="p-2 bg-white dark:bg-slate-700 text-blue-700 rounded-lg hover:shadow-md transition-all" title="LinkedIn">
+                                                    <Linkedin size={18} />
+                                                </a>
+                                            )}
+                                            {socials.website && (
+                                                <a href={socials.website} target="_blank" rel="noopener noreferrer" className="p-2 bg-white dark:bg-slate-700 text-gray-700 dark:text-gray-300 rounded-lg hover:shadow-md transition-all" title="Website">
+                                                    <Globe size={18} />
+                                                </a>
+                                            )}
+                                            {socials.email && (
+                                                <a href={`mailto:${socials.email}`} className="p-2 bg-white dark:bg-slate-700 text-red-500 rounded-lg hover:shadow-md transition-all" title="Email">
+                                                    <Mail size={18} />
+                                                </a>
+                                            )}
+                                            {socials.phone && (
+                                                <a href={`tel:${socials.phone}`} className="p-2 bg-white dark:bg-slate-700 text-green-600 rounded-lg hover:shadow-md transition-all" title="Phone">
+                                                    <Phone size={18} />
+                                                </a>
+                                            )}
+                                        </div>
+                                    );
+                                })()}
+                            </div>
                         </div>
                     </div>
-                </div>
 
-                <div className="mt-8 pt-8 border-t border-gray-200 dark:border-slate-700">
-                    <h3 className="text-lg font-bold mb-4 text-gray-900 dark:text-white">Share this article</h3>
-                    <div className="flex gap-4">
-                        <button
-                            onClick={() => {
-                                if (navigator.share) {
-                                    navigator.share({
-                                        title: article.seoTitle,
-                                        url: window.location.href
-                                    })
-                                } else {
-                                    navigator.clipboard.writeText(window.location.href);
-                                    alert('Link copied to clipboard!');
-                                }
-                            }}
-                            className="flex items-center gap-2 px-4 py-2 bg-gray-100 dark:bg-slate-800 rounded-lg hover:bg-gray-200 dark:hover:bg-slate-700 transition-colors text-gray-700 dark:text-gray-300"
-                        >
-                            <Share2 size={18} /> Share Article
-                        </button>
+                    <div className="mt-8 pt-8 border-t border-gray-200 dark:border-slate-700">
+                        <h3 className="text-lg font-bold mb-4 text-gray-900 dark:text-white">Share this article</h3>
+                        <div className="flex gap-4">
+                            <button
+                                onClick={() => {
+                                    if (navigator.share) {
+                                        navigator.share({
+                                            title: article.seo_title || article.topic,
+                                            url: window.location.href
+                                        })
+                                    } else {
+                                        navigator.clipboard.writeText(window.location.href);
+                                        alert('Link copied to clipboard!');
+                                    }
+                                }}
+                                className="flex items-center gap-2 px-4 py-2 bg-gray-100 dark:bg-slate-800 rounded-lg hover:bg-gray-200 dark:hover:bg-slate-700 transition-colors text-gray-700 dark:text-gray-300"
+                            >
+                                <Share2 size={18} /> Share Article
+                            </button>
+                        </div>
                     </div>
-                </div>
-            </article>
+                </article>
+
+                {/* Sidebar: Latest Blogs */}
+                <aside className="w-full lg:w-80 flex-shrink-0 border-t lg:border-t-0 lg:border-l border-gray-200 dark:border-slate-700 pt-12 lg:pt-0 lg:pl-12">
+                    <h3 className="text-xl font-bold mb-6 text-gray-900 dark:text-white">
+                        Latest Blogs
+                    </h3>
+
+                    {loadingLatest ? (
+                        <div className="flex justify-center py-10">
+                            <Loader2 className="animate-spin text-indigo-600" size={32} />
+                        </div>
+                    ) : latestBlogs.length > 0 ? (
+                        <div className="flex flex-col gap-6">
+                            {latestBlogs.map((blog) => (
+                                <Link
+                                    to={`/blogs/${blog.id}`}
+                                    key={blog.id}
+                                    className="group block"
+                                >
+                                    <div className="flex flex-col gap-3">
+                                        <div className="overflow-hidden rounded-xl aspect-[16/9] shadow-sm">
+                                            <img
+                                                src={blog.image_url || 'https://via.placeholder.com/600x400?text=Blog'}
+                                                alt={blog.seo_title || blog.topic}
+                                                className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                                                onError={(e) => { e.target.src = 'https://via.placeholder.com/600x400?text=No+Image' }}
+                                            />
+                                        </div>
+                                        <div>
+                                            {blog.category && (
+                                                <span className="text-xs font-semibold text-indigo-600 dark:text-indigo-400 mb-1 inline-block">
+                                                    {blog.category}
+                                                </span>
+                                            )}
+                                            <h4 className="font-bold text-gray-900 dark:text-white line-clamp-2 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
+                                                {blog.seo_title || blog.topic}
+                                            </h4>
+                                            <div className="text-xs text-gray-500 dark:text-gray-400 mt-2 flex items-center gap-2">
+                                                <Calendar size={12} />
+                                                {new Date(blog.publish_date || blog.created_at).toLocaleDateString('en-US', {
+                                                    year: 'numeric',
+                                                    month: 'short',
+                                                    day: 'numeric'
+                                                })}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </Link>
+                            ))}
+                        </div>
+                    ) : (
+                        <div className="text-gray-500 dark:text-gray-400 text-sm">
+                            Check back soon for latest blogs!
+                        </div>
+                    )}
+                </aside>
+            </div>
         </div>
     );
 };
