@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import API_BASE_URL from '../config';
 import { useAuth } from '../context/AuthContext';
 import { toast } from 'react-hot-toast';
+import { Plus } from 'lucide-react';
 
 const AdminUsers = () => {
     const [users, setUsers] = useState([]);
@@ -99,42 +100,52 @@ const AdminUsers = () => {
         }
     };
 
-    if (loading) return <div className="text-center py-10">Loading users...</div>;
+    if (loading) return <div className="text-center py-12 text-gray-500 dark:text-gray-400">Loading system users...</div>;
 
     return (
-        <div>
-            <div className="flex justify-between items-center mb-4">
-                <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Registered Users</h2>
+        <div className="space-y-6">
+            <div className="flex justify-between items-center mb-6">
+                <div>
+                    <h3 className="text-xl font-bold text-gray-900 dark:text-white">System Users</h3>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">Manage registered users and credit balances.</p>
+                </div>
                 <button
                     onClick={() => setIsAddUserModalOpen(true)}
-                    className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg transition-colors"
+                    className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-xl transition-colors flex items-center gap-2 font-medium"
                 >
-                    + Add User
+                    <Plus size={18} /> Add User
                 </button>
             </div>
 
-            <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm overflow-hidden border border-gray-100 dark:border-slate-700 w-full mb-8">
+            <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm overflow-hidden border border-gray-100 dark:border-slate-700 w-full mb-8">
                 <div className="overflow-x-auto">
                     <table className="min-w-full divide-y divide-gray-200 dark:divide-slate-700">
                         <thead className="bg-gray-50 dark:bg-slate-700/50">
                             <tr>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">User</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Credits</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Joined</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Last Sign In</th>
-                                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Actions</th>
+                                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">User Account</th>
+                                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Credits Available</th>
+                                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Joined Date</th>
+                                <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Last Sign In</th>
+                                <th className="px-6 py-4 text-right text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Actions</th>
                             </tr>
                         </thead>
                         <tbody className="bg-white dark:bg-slate-800 divide-y divide-gray-200 dark:divide-slate-700">
                             {users.map((u) => (
                                 <tr key={u.id} className="hover:bg-gray-50 dark:hover:bg-slate-700/50 transition-colors">
                                     <td className="px-6 py-4 whitespace-nowrap">
-                                        <div className="text-sm font-medium text-gray-900 dark:text-white">{u.email}</div>
-                                        <div className="text-xs text-gray-500 dark:text-gray-400">ID: {u.id}</div>
+                                        <div className="flex items-center gap-3">
+                                            <div className="h-10 w-10 rounded-full bg-slate-100 dark:bg-slate-700 flex items-center justify-center text-slate-500 dark:text-slate-400 font-bold uppercase">
+                                                {u.email.charAt(0)}
+                                            </div>
+                                            <div>
+                                                <div className="text-sm font-medium text-gray-900 dark:text-white">{u.email}</div>
+                                                <div className="text-xs text-gray-500 dark:text-gray-400 font-mono mt-0.5">ID: {u.id.substring(0, 8)}...</div>
+                                            </div>
+                                        </div>
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap">
-                                        <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-400">
-                                            {u.credits}
+                                        <span className="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-800/50">
+                                            {u.credits.toLocaleString()} Credits
                                         </span>
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
@@ -150,7 +161,7 @@ const AdminUsers = () => {
                                                 setCreditAmount(0);
                                                 setIsAddCreditModalOpen(true);
                                             }}
-                                            className="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300"
+                                            className="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300 font-semibold"
                                         >
                                             Add Credits
                                         </button>
@@ -161,7 +172,7 @@ const AdminUsers = () => {
                     </table>
                 </div>
                 {users.length === 0 && (
-                    <div className="text-center py-10 text-gray-500 dark:text-gray-400">
+                    <div className="text-center py-12 text-gray-500 dark:text-gray-400">
                         No registered users found.
                     </div>
                 )}
@@ -172,55 +183,57 @@ const AdminUsers = () => {
                 <div className="fixed inset-0 z-[100] overflow-y-auto">
                     <div className="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
                         <div className="fixed inset-0 transition-opacity" aria-hidden="true">
-                            <div className="absolute inset-0 bg-gray-500 opacity-75" onClick={() => setIsAddUserModalOpen(false)}></div>
+                            <div className="absolute inset-0 bg-gray-500/75 dark:bg-slate-900/80 backdrop-blur-sm" onClick={() => setIsAddUserModalOpen(false)}></div>
                         </div>
                         <span className="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
-                        <div className="inline-block align-bottom bg-white dark:bg-slate-800 rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full border border-gray-100 dark:border-slate-700">
-                            <form onSubmit={handleAddUser} className="p-6">
-                                <h3 className="text-lg leading-6 font-medium text-gray-900 dark:text-white mb-4">Add New User</h3>
-                                <div className="space-y-4">
+                        <div className="inline-block align-bottom bg-white dark:bg-slate-800 rounded-2xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full border border-gray-100 dark:border-slate-700">
+                            <form onSubmit={handleAddUser} className="p-8">
+                                <h3 className="text-xl leading-6 font-bold text-gray-900 dark:text-white mb-6">Create New System User</h3>
+                                <div className="space-y-5">
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Email</label>
+                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Email Address</label>
                                         <input
                                             type="email"
                                             required
-                                            className="mt-1 block w-full rounded-md border-gray-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border"
+                                            placeholder="admin@example.com"
+                                            className="block w-full rounded-xl border-gray-300 dark:border-slate-600 dark:bg-slate-700/50 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-3 border transition-colors"
                                             value={newUser.email}
                                             onChange={(e) => setNewUser({ ...newUser, email: e.target.value })}
                                         />
                                     </div>
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Password</label>
+                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Temporary Password</label>
                                         <input
                                             type="password"
                                             required
-                                            className="mt-1 block w-full rounded-md border-gray-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border"
+                                            placeholder="••••••••"
+                                            className="block w-full rounded-xl border-gray-300 dark:border-slate-600 dark:bg-slate-700/50 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-3 border transition-colors"
                                             value={newUser.password}
                                             onChange={(e) => setNewUser({ ...newUser, password: e.target.value })}
                                         />
                                     </div>
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Initial Credits</label>
+                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Initial Credit Balance</label>
                                         <input
                                             type="number"
                                             min="0"
-                                            className="mt-1 block w-full rounded-md border-gray-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border"
+                                            className="block w-full rounded-xl border-gray-300 dark:border-slate-600 dark:bg-slate-700/50 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-3 border transition-colors"
                                             value={newUser.credits}
                                             onChange={(e) => setNewUser({ ...newUser, credits: e.target.value })}
                                         />
                                     </div>
                                 </div>
-                                <div className="mt-5 sm:mt-6 sm:grid sm:grid-cols-2 sm:gap-3 sm:grid-flow-row-dense">
+                                <div className="mt-8 flex gap-3 sm:flex-row-reverse">
                                     <button
                                         type="submit"
                                         disabled={isAddingUser}
-                                        className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-indigo-600 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:col-start-2 sm:text-sm disabled:opacity-50"
+                                        className="w-full inline-flex justify-center rounded-xl border border-transparent shadow-sm px-4 py-2 bg-indigo-600 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:w-auto sm:text-sm disabled:opacity-50 transition-colors"
                                     >
-                                        {isAddingUser ? 'Creating...' : 'Create'}
+                                        {isAddingUser ? 'Creating...' : 'Create User'}
                                     </button>
                                     <button
                                         type="button"
-                                        className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:col-start-1 sm:text-sm dark:bg-slate-700 dark:text-gray-300 dark:border-slate-600 dark:hover:bg-slate-600"
+                                        className="mt-3 w-full inline-flex justify-center rounded-xl border border-gray-300 dark:border-slate-600 shadow-sm px-4 py-2 bg-white dark:bg-slate-700 text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:w-auto sm:text-sm transition-colors"
                                         onClick={() => setIsAddUserModalOpen(false)}
                                     >
                                         Cancel
@@ -237,38 +250,39 @@ const AdminUsers = () => {
                 <div className="fixed inset-0 z-[100] overflow-y-auto">
                     <div className="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
                         <div className="fixed inset-0 transition-opacity" aria-hidden="true">
-                            <div className="absolute inset-0 bg-gray-500 opacity-75" onClick={() => setIsAddCreditModalOpen(false)}></div>
+                            <div className="absolute inset-0 bg-gray-500/75 dark:bg-slate-900/80 backdrop-blur-sm" onClick={() => setIsAddCreditModalOpen(false)}></div>
                         </div>
                         <span className="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
-                        <div className="inline-block align-bottom bg-white dark:bg-slate-800 rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full border border-gray-100 dark:border-slate-700">
-                            <form onSubmit={handleAddCredits} className="p-6">
-                                <h3 className="text-lg leading-6 font-medium text-gray-900 dark:text-white mb-4">
-                                    Add Credits for {selectedUser.email}
+                        <div className="inline-block align-bottom bg-white dark:bg-slate-800 rounded-2xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full border border-gray-100 dark:border-slate-700">
+                            <form onSubmit={handleAddCredits} className="p-8">
+                                <h3 className="text-xl leading-6 font-bold text-gray-900 dark:text-white mb-2">
+                                    Add Service Credits
                                 </h3>
-                                <div className="space-y-4">
+                                <p className="text-sm text-gray-500 dark:text-gray-400 mb-6 font-medium">For user: <span className="text-gray-900 dark:text-white">{selectedUser.email}</span></p>
+                                <div className="space-y-5">
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Credits to Add</label>
+                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Amount to Add</label>
                                         <input
                                             type="number"
                                             required
                                             min="1"
-                                            className="mt-1 block w-full rounded-md border-gray-300 dark:border-slate-600 dark:bg-slate-700 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border"
+                                            className="block w-full rounded-xl border-gray-300 dark:border-slate-600 dark:bg-slate-700/50 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-3 border transition-colors text-lg font-bold text-center"
                                             value={creditAmount}
                                             onChange={(e) => setCreditAmount(e.target.value)}
                                         />
                                     </div>
                                 </div>
-                                <div className="mt-5 sm:mt-6 sm:grid sm:grid-cols-2 sm:gap-3 sm:grid-flow-row-dense">
+                                <div className="mt-8 flex gap-3 sm:flex-row-reverse">
                                     <button
                                         type="submit"
                                         disabled={isAddingCredits}
-                                        className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-indigo-600 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:col-start-2 sm:text-sm disabled:opacity-50"
+                                        className="w-full inline-flex justify-center rounded-xl border border-transparent shadow-sm px-4 py-2 bg-indigo-600 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:w-auto sm:text-sm disabled:opacity-50 transition-colors"
                                     >
-                                        {isAddingCredits ? 'Adding...' : 'Add Credits'}
+                                        {isAddingCredits ? 'Processing...' : 'Add Credits'}
                                     </button>
                                     <button
                                         type="button"
-                                        className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:col-start-1 sm:text-sm dark:bg-slate-700 dark:text-gray-300 dark:border-slate-600 dark:hover:bg-slate-600"
+                                        className="mt-3 w-full inline-flex justify-center rounded-xl border border-gray-300 dark:border-slate-600 shadow-sm px-4 py-2 bg-white dark:bg-slate-700 text-base font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:w-auto sm:text-sm transition-colors"
                                         onClick={() => setIsAddCreditModalOpen(false)}
                                     >
                                         Cancel

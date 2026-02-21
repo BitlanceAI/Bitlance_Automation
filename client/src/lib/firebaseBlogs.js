@@ -3,7 +3,7 @@ import { getDatabase } from "firebase/database";
 
 // Config for Blogs Firebase project
 const firebaseBlogsConfig = {
-    apiKey: "AIzaSyDtSwhXr-phrrGDXyPP61j1uVINozhgxNk",
+    apiKey: import.meta.env.VITE_FIREBASE_BLOGS_API_KEY,
     authDomain: "seo-automation-a90f2.firebaseapp.com",
     databaseURL: "https://seo-automation-a90f2-default-rtdb.firebaseio.com",
     projectId: "seo-automation-a90f2",

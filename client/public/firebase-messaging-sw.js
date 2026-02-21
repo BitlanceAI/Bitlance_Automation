@@ -1,8 +1,11 @@
 importScripts('https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js');
 importScripts('https://www.gstatic.com/firebasejs/9.22.0/firebase-messaging-compat.js');
 
+const urlParams = new URL(location).searchParams;
+const apiKey = urlParams.get('apiKey') || "YOUR_FIREBASE_API_KEY"; // Ensure this matches the env var in production
+
 firebase.initializeApp({
-    apiKey: "AIzaSyBiqRvXwRXIvL23Avfu2iCEGrF92UL9v1Y",
+    apiKey: apiKey,
     authDomain: "blogtest-34119.firebaseapp.com",
     projectId: "blogtest-34119",
     storageBucket: "blogtest-34119.firebasestorage.app",

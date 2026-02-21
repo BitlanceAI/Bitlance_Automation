@@ -10,6 +10,7 @@
         "build": "echo 'No build necessary for backend'"
     },
     "dependencies": {
+        "@onesignal/node-onesignal": "^5.3.1-beta1",
         "@supabase/supabase-js": "^2.39.0",
         "axios": "^1.13.3",
         "bcrypt": "^6.0.0",

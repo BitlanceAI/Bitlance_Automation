@@ -4,7 +4,7 @@ import axios from 'axios';
 
 // Config from existing firebaseBlogs.js (seo-automation-a90f2)
 export const firebaseConfig = {
-    apiKey: "AIzaSyBiqRvXwRXIvL23Avfu2iCEGrF92UL9v1Y",
+    apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
     authDomain: "blogtest-34119.firebaseapp.com",
     projectId: "blogtest-34119",
     storageBucket: "blogtest-34119.firebasestorage.app",
@@ -28,10 +28,9 @@ export const requestNotificationPermission = async () => {
 
             // 1. Ensure Service Worker is Registered
             if ('serviceWorker' in navigator) {
-                const registration = await navigator.serviceWorker.getRegistration();
-                if (!registration) {
-                    await navigator.serviceWorker.register('/firebase-messaging-sw.js');
-                }
+                const apiKey = import.meta.env.VITE_FIREBASE_API_KEY;
+                const swUrl = `/firebase-messaging-sw.js?apiKey=${apiKey}`;
+                await navigator.serviceWorker.register(swUrl);
             }
 
             // 2. WAIT for Service Worker to be Ready (Active & Controlling)

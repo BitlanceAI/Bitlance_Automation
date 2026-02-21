@@ -15,7 +15,7 @@ export const getAllUsers = async (req, res) => {
         if (authError) throw authError;
 
         // 2. Get all credit balances
-        const { data: credits, error: creditError } = await supabase
+        const { data: credits, error: creditError } = await supabaseAdmin
             .from('user_credits')
             .select('user_id, balance');
 
@@ -140,3 +140,102 @@ export const addUserCredits = async (req, res) => {
         res.status(500).json({ success: false, error: error.message });
     }
 };
+
+import { sendRemarketingEmail } from '../services/onesignalService.js';
+
+export const sendRemarketingEmails = async (req, res) => {
+    try {
+        const { userEmails, subject, body } = req.body;
+
+        if (!userEmails || !Array.isArray(userEmails) || userEmails.length === 0) {
+            return res.status(400).json({ success: false, error: 'An array of user emails is required' });
+        }
+
+        if (!subject || !body) {
+            return res.status(400).json({ success: false, error: 'Email subject and body are required' });
+        }
+
+        const result = await sendRemarketingEmail(userEmails, subject, body);
+
+        if (result.success) {
+            res.json({ success: true, message: `Remarketing email sent to ${userEmails.length} users.` });
+        } else {
+            res.status(500).json({ success: false, error: result.error || 'Failed to send remarketing emails' });
+        }
+    } catch (error) {
+        console.error('Error in sendRemarketingEmails controller:', error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+};
+
+export const getRenderLogs = async (req, res) => {
+    try {
+        const renderApiKey = process.env.RENDER_API_KEY;
+        const renderServiceId = process.env.RENDER_SERVICE_ID;
+        const renderOwnerId = process.env.RENDER_OWNER_ID;
+
+        if (!renderApiKey || !renderServiceId || !renderOwnerId) {
+            return res.status(500).json({
+                success: false,
+                error: 'Render API configuration missing. Add RENDER_API_KEY, RENDER_SERVICE_ID, and RENDER_OWNER_ID to your .env file.'
+            });
+        }
+
+        const { limit = 100 } = req.query;
+
+        // Render API endpoint: /v1/logs with required ownerId and resource filter
+        const params = new URLSearchParams({
+            ownerId: renderOwnerId,
+            resource: renderServiceId,
+            limit: String(limit),
+            direction: 'backward'
+        });
+
+        const url = `https://api.render.com/v1/logs?${params.toString()}`;
+
+        // Use https module directly to avoid NODE_TLS_REJECT_UNAUTHORIZED interference
+        const https = await import('https');
+        const result = await new Promise((resolve, reject) => {
+            const options = {
+                method: 'GET',
+                headers: {
+                    'Accept': 'application/json',
+                    'Authorization': `Bearer ${renderApiKey}`
+                },
+                rejectUnauthorized: true, // Force proper TLS for Render API
+                timeout: 15000
+            };
+
+            const request = https.get(url, options, (response) => {
+                let data = '';
+                response.on('data', chunk => data += chunk);
+                response.on('end', () => {
+                    if (response.statusCode >= 400) {
+                        console.error('Render API error:', response.statusCode, data);
+                        reject(new Error(`Render API returned ${response.statusCode}: ${data}`));
+                    } else {
+                        try {
+                            resolve(JSON.parse(data));
+                        } catch (e) {
+                            reject(new Error('Failed to parse Render API response'));
+                        }
+                    }
+                });
+            });
+
+            request.on('error', reject);
+            request.on('timeout', () => {
+                request.destroy();
+                reject(new Error('Render API request timed out'));
+            });
+        });
+
+        res.json({ success: true, logs: result.logs || result });
+
+    } catch (error) {
+        console.error('Error fetching Render logs:', error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+};
+
+

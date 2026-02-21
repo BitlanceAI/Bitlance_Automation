@@ -110,8 +110,8 @@ function App() {
     (normalizedPath.includes('blog') && !normalizedPath.startsWith('/blogs')) ||
     normalizedPath.includes('settings') ||
     normalizedPath.includes('broadcast') ||
-    normalizedPath.includes('broadcast') ||
     normalizedPath.includes('meta-ads-agent') ||
+    normalizedPath.includes('admin') ||
     normalizedPath.startsWith('/l/'); // Hide Main Nav for Landing Pages
 
   return (
