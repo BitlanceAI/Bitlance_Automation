@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import axios from 'axios';
 import { toast } from 'react-hot-toast';
 import { useAuth } from '../../context/AuthContext';
+import API_BASE_URL from '../../config.js';
 
 const BlogManagerPanel = () => {
     const { token } = useAuth();
@@ -13,7 +14,7 @@ const BlogManagerPanel = () => {
     const fetchPosts = async () => {
         setLoading(true);
         try {
-            const res = await axios.get(`${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/api/blogs`, {
+            const res = await axios.get(`${API_BASE_URL}/api/blog/posts`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             if (res.data.success) setPosts(res.data.posts);
@@ -30,7 +31,7 @@ const BlogManagerPanel = () => {
     const handleDelete = async (id) => {
         if (!window.confirm('Are you sure you want to delete this post?')) return;
         try {
-            await axios.delete(`${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/api/blogs/${id}`, {
+            await axios.delete(`${API_BASE_URL}/api/blog/posts/${id}`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             toast.success('Post deleted');

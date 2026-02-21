@@ -154,22 +154,7 @@ const BlogPage = () => {
             const data = await response.json();
 
             if (data.success) {
-                // Deduct credits (skip for admin)
-                if (!isAdmin) {
-                    try {
-                        await fetch(`${API_BASE_URL}/api/credits/deduct`, {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({
-                                userId: user.id,
-                                amount: CREDIT_COST,
-                                action: 'generate_article_blog_page'
-                            })
-                        });
-                    } catch (creditError) {
-                        console.error('Error deducting credits:', creditError);
-                    }
-                }
+                // Credits are deducted atomically by the Python backend
                 refreshCredits(); // Update local credit state
 
                 // If WordPress source selected, upload to WordPress

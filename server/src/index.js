@@ -22,7 +22,7 @@ app.use(cors());
 app.use(express.json());
 
 // Routes will be imported here
-import articleRoutes from './routes/articleRoutes.js';
+
 import creditRoutes from './routes/creditRoutes.js';
 import settingsRoutes from './routes/settingsRoutes.js';
 import googleSheetsRoutes from './routes/googleSheetsRoutes.js';
@@ -32,15 +32,15 @@ import designRoutes from './routes/designRoutes.js';
 import campaignRoutes from './routes/campaignRoutes.js';
 import trackingRoutes from './routes/trackingRoutes.js';
 
-import publicBlogRoutes from './routes/publicBlogRoutes.js';
 import adminRoutes from './routes/adminRoutes.js';
 import profileRoutes from './routes/profileRoutes.js';
 import authRoutes from './routes/authRoutes.js';
 import metaRoutes from './routes/metaRoutes.js';
+import articleRoutes from './routes/articleRoutes.js';
 
 // Mount routes
 app.use('/api/auth', authRoutes);
-app.use('/api/articles', articleRoutes);
+
 app.use('/api/credits', creditRoutes);
 app.use('/api/user/settings', settingsRoutes);
 app.use('/api/google-sheets', googleSheetsRoutes);
@@ -50,10 +50,11 @@ app.use('/api/design', designRoutes);
 app.use('/api/campaigns', campaignRoutes);
 app.use('/api/track', trackingRoutes);
 
-app.use('/api/public', publicBlogRoutes);
+
 app.use('/api/admin', adminRoutes);
 app.use('/api/profiles', profileRoutes);
 app.use('/api/meta', metaRoutes);
+app.use('/api', articleRoutes); // blog generation + CRUD + public blog routes
 
 // Meta Webhooks (no /api prefix as Meta expects direct path)
 import webhookRoutes from './routes/webhookRoutes.js';
@@ -65,8 +66,7 @@ app.use('/api/whatsapp', whatsappRoutes);
 import leadsRoutes from './routes/leadsRoutes.js';
 app.use('/api/leads', leadsRoutes);
 
-import blogRoutes from './routes/blogRoutes.js';
-app.use('/api/blogs', blogRoutes);
+
 
 import pushRoutes from './routes/pushRoutes.js';
 app.use('/api/push', pushRoutes);

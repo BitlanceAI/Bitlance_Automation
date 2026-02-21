@@ -5,6 +5,7 @@ import { Link } from 'react-router-dom';
 import axios from 'axios';
 import { toast } from 'react-hot-toast';
 import { useAuth } from '../context/AuthContext';
+import API_BASE_URL from '../config.js';
 
 const BlogManagerPage = () => {
     const { token, user } = useAuth();
@@ -28,7 +29,7 @@ const BlogManagerPage = () => {
         if (!token) return;
         setLoading(true);
         try {
-            let url = `${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/api/blogs`;
+            let url = `${API_BASE_URL}/api/blog/posts`;
             const params = {};
 
             if (isAdmin) {
@@ -67,7 +68,7 @@ const BlogManagerPage = () => {
                 params.target_table = activeTab === 'client' ? 'articles' : 'company_articles';
             }
 
-            let url = `${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/api/blogs/${id}`;
+            let url = `${API_BASE_URL}/api/blog/posts/${id}`;
             if (isAdmin && activeTab === 'client') {
                 url += `?target_table=articles`;
             } else if (isAdmin) {

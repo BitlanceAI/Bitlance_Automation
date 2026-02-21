@@ -5,6 +5,7 @@ import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import axios from 'axios';
 import { toast } from 'react-hot-toast';
 import { useAuth } from '../context/AuthContext';
+import API_BASE_URL from '../config.js';
 
 const BlogEditorPage = () => {
     const { id } = useParams(); // If present, we are editing
@@ -50,7 +51,7 @@ const BlogEditorPage = () => {
 
     const fetchPost = async (postId) => {
         try {
-            let url = `${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/api/blogs/${postId}`;
+            let url = `${API_BASE_URL}/api/blog/posts/${postId}`;
             // If admin and explicitly asking for client post (based on URL from manager)
             // Or just try to match the state.
             // Actually, if we are editing, we rely on the URL param passed from manager
@@ -123,12 +124,12 @@ const BlogEditorPage = () => {
             }
 
             if (id) {
-                await axios.put(`${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/api/blogs/${id}`, payload, {
+                await axios.put(`${API_BASE_URL}/api/blog/posts/${id}`, payload, {
                     headers: { Authorization: `Bearer ${token}` }
                 });
                 toast.success('Post updated');
             } else {
-                await axios.post(`${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/api/blogs`, payload, {
+                await axios.post(`${API_BASE_URL}/api/blog/posts`, payload, {
                     headers: { Authorization: `Bearer ${token}` }
                 });
                 toast.success('Post created');
