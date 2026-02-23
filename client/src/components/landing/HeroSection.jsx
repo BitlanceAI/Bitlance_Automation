@@ -91,16 +91,16 @@ const HeroSection = ({ onOpenBooking }) => {
                     </div>
 
                     {/* Right Column: 3D Visualization */}
-                    <div className="relative w-[50vw]  h-full min-h-[400px] md:min-h-[600px] lg:min-h-[700px] flex items-center justify-center mt-8 lg:mt-0">
+                    <div className="relative hidden md:block md:w-[50vw] w-full  h-full min-h-[400px] md:min-h-[600px] lg:min-h-[700px] flex items-center justify-center mt-8 lg:mt-0">
                         <motion.div
                             initial={{ opacity: 0, scale: 0.9, x: 20 }}
                             animate={{ opacity: 1, scale: 1, x: 0 }}
                             transition={{ duration: 1, delay: 0.4 }}
-                            className="relative h-[400px] sm:h-[500px] md:h-[600px] lg:h-[700px] w-full rounded-2xl overflow-hidden "
+                            className="relative h-[400px] sm:h-[500px] md:h-[600px] lg:h-[700px] w-full orgin-center rounded-2xl overflow-hidden "
                         >
                             <Spline
                                 scene="https://prod.spline.design/M6cpWkK3umnhRoUB/scene.splinecode"
-                                className="w-full h-full !scale-125 md:!scale-113 origin-center"
+                                className="w-full h-full md:!scale-125 origin-center"
                             />
                         </motion.div>
                     </div>
