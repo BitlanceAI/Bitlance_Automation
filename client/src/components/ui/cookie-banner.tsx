@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
-import { requestNotificationPermission } from "@/lib/firebaseMessaging";
+
 
 interface CookieBannerProps {
     message?: string;
@@ -42,16 +42,9 @@ const CookieBanner = (props: CookieBannerProps) => {
         setTimeout(() => setRender(false), EXIT_MS);
     };
 
-    const handleAccept = async () => {
+    const handleAccept = () => {
         localStorage.setItem("cookie-consent", "true");
         closeWithExit();
-
-        // Trigger Push Permission Request
-        try {
-            await requestNotificationPermission();
-        } catch (err) {
-            console.error("Failed to request notification permission:", err);
-        }
     };
 
     const handleDecline = () => {

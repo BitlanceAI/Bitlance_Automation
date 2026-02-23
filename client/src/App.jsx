@@ -55,8 +55,8 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 import AuthGuard from './components/AuthGuard';
 import AdminGuard from './components/AdminGuard';
 import { Toaster } from 'react-hot-toast';
-import NotificationPermission from './components/NotificationPermission';
-import { CookieBanner } from './components/ui/cookie-banner';
+
+
 import './index.css';
 
 // Public Route wrapper that redirects to home if already logged in
@@ -121,12 +121,8 @@ function App() {
       <AuthProvider>
         <Toaster position="top-right" reverseOrder={false} />
         <div className={isDashboard ? 'bg-gray-50 dark:bg-slate-900 min-h-screen transition-colors duration-300' : 'bg-gray-50 dark:bg-slate-900 min-h-screen transition-colors duration-300'}>
-          <NotificationPermission />
-          <CookieBanner
-            message="We use cookies to improve your experience. Allowing them helps us keep you updated with the latest blogs."
-            acceptText="Allow & Subscribe"
-            declineText="Decline"
-          />
+
+
           {/* Temporary Debug Banner
           <div className="fixed top-0 left-0 bg-red-500 text-white z-[100] text-xs p-1">
             Path: {location.pathname} | isDashboard: {isDashboard.toString()}
