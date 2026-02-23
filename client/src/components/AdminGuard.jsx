@@ -12,7 +12,7 @@ const AdminGuard = ({ children }) => {
     }
 
     if (!user || user.email !== ADMIN_EMAIL) {
-        return <Navigate to="/dashboard" replace />;
+        return <Navigate to="/home" replace />;
     }
 
     return children;

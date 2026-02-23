@@ -329,7 +329,7 @@ const BlogPage = () => {
                         </button>
 
                         <button
-                            onClick={() => navigate('/dashboard')}
+                            onClick={() => navigate('/voice-agent')}
                             className="w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-700 text-gray-700 dark:text-gray-300 transition-colors text-base font-medium"
                             title="Sales Dashboard"
                         >

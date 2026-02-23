@@ -124,7 +124,7 @@ const HomePage = () => {
             title: 'AI Voice Agent',
             description: 'Intelligent voice assistants for sales, support, and customer engagement.',
             icon: Phone,
-            path: '/dashboard',
+            path: '/voice-agent',
             color: 'from-purple-500 to-pink-500',
             stats: 'Call Analytics'
         },

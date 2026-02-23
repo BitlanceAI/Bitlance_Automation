@@ -12,6 +12,7 @@ import LandingPage from './pages/LandingPage';
 import AgentsPage from './pages/AgentsPage';
 import BroadcastPage from './pages/BroadcastPage';
 import SalesDashboard from './pages/SalesDashboard';
+import SocialDashboard from './pages/SocialDashboard';
 import SeoAgentPage from './pages/SeoAgentPage';
 import BlogPage from './pages/BlogPage';
 import SettingsPage from './pages/SettingsPage';
@@ -88,10 +89,10 @@ function App() {
   const location = useLocation();
 
   const handleAgentSelect = (agent) => {
-    if (agent.title === 'Social Media Automation') {
+    if (agent.title === 'WhatsApp Broadcasting Automation') {
       navigate('/broadcast');
     } else if (agent.title === 'AI Voice Agent') {
-      navigate('/dashboard');
+      navigate('/voice-agent');
     } else if (agent.title === 'SEO AI Agent') {
       navigate('/seo-agent');
     } else if (agent.title === 'Graphic Designer AI') {
@@ -105,6 +106,7 @@ function App() {
   const normalizedPath = location.pathname.toLowerCase().replace(/\/$/, "");
   // Add home and other pages to dashboard layout (no public nav/footer)
   const isDashboard = normalizedPath.includes('dashboard') ||
+    normalizedPath.includes('voice-agent') ||
     normalizedPath.includes('seo-agent') ||
     normalizedPath.includes('design-agent') ||
     (normalizedPath.includes('blog') && !normalizedPath.startsWith('/blogs')) ||
@@ -176,6 +178,11 @@ function App() {
               </AuthGuard>
             } />
             <Route path="/dashboard" element={
+              <AuthGuard>
+                <SocialDashboard />
+              </AuthGuard>
+            } />
+            <Route path="/voice-agent" element={
               <AuthGuard>
                 <SalesDashboard />
               </AuthGuard>

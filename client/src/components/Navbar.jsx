@@ -38,7 +38,6 @@ const Navbar = () => {
     const navLinks = [
         { name: 'Home', path: '/', icon: Home },
         { name: 'Agents', path: '/agents', icon: Users },
-        { name: 'Broadcast', path: '/broadcast', icon: Radio },
         { name: 'Blogs', path: '/blogs', icon: FileText },
     ];
 

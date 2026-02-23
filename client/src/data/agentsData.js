@@ -5,7 +5,9 @@ import {
   Video,
   Mic,
   Shield,
-  Palette
+  Palette,
+  MessageCircle,
+  MessageSquare
 } from 'lucide-react';
 
 export const agents = [
@@ -34,14 +36,15 @@ export const agents = [
     status: "Available"
   },
   {
-    icon: Share2,
-    title: "Social Media Automation",
-    description: "Multi-platform AI content posting and scheduling.",
+    icon: MessageSquare,
+    title: "WhatsApp Broadcasting Automation",
+    description: "AI-powered bulk messaging, follow-ups, and lead engagement on WhatsApp.",
     features: [
-      "Multi-platform posting",
-      "AI content generation",
-      "Scheduling optimization",
-      "Engagement analytics"
+      "Bulk message broadcasting",
+      "Automated follow-ups & reminders",
+      "AI personalized replies",
+      "Lead tagging & segmentation",
+      "Delivery & engagement analytics"
     ],
     status: "Available"
   },
@@ -69,18 +72,7 @@ export const agents = [
     ],
     status: "Available"
   },
-  {
-    icon: Shield,
-    title: "Security Audit AI",
-    description: "Automated security scanning and vulnerability detection.",
-    features: [
-      "Vulnerability scanning",
-      "Compliance checking",
-      "Threat detection",
-      "Security reports"
-    ],
-    status: "Disabled"
-  },
+
   {
     icon: Palette,
     title: "Graphic Designer AI",
@@ -92,5 +84,17 @@ export const agents = [
       "Multi-format export"
     ],
     status: "Available"
+  },
+  {
+    icon: MessageCircle,
+    title: "Handle Social Media Account",
+    description: "AI-driven comprehensive social media account management and community engagement.",
+    features: [
+      "Account management",
+      "Community engagement",
+      "Content moderation",
+      "Performance tracking"
+    ],
+    status: "Coming Soon"
   }
 ];

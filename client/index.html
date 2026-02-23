@@ -24,6 +24,18 @@
     fbq('track', 'PageView');
   </script>
   <!-- End Meta Pixel Code -->
+
+  <!-- OneSignal Push Notifications -->
+  <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
+  <script>
+    window.OneSignalDeferred = window.OneSignalDeferred || [];
+    OneSignalDeferred.push(async function(OneSignal) {
+      await OneSignal.init({
+        appId: "b8119755-1466-495a-a428-2259043b9ed9",
+      });
+    });
+  </script>
+  <!-- End OneSignal -->
 </head>
 
 <body>

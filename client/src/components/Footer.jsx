@@ -34,7 +34,7 @@ const Footer = () => {
                             <FooterLink to="/seo-agent" label="SEO AI Agent" />
                             <FooterLink to="/meta-ads-agent" label="Meta Ads Automation" />
                             <FooterLink to="/broadcast" label="Social Media Automation" />
-                            <FooterLink to="/dashboard" label="AI Voice Agent" />
+                            <FooterLink to="/voice-agent" label="AI Voice Agent" />
                             <FooterLink to="/design-agent" label="Graphic Designer AI" />
                         </ul>
                     </div>
