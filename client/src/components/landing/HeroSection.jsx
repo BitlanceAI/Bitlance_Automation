@@ -2,8 +2,7 @@ import React, { useRef } from 'react';
 import { ArrowRight, Play, Zap } from 'lucide-react'; // Removed unused icons
 import { motion, useScroll, useTransform } from 'framer-motion';
 // import NumberTicker from '../ui/NumberTicker'; // Assuming used elsewhere or removing if part of old viz
-import { SplineScene } from '../ui/spline-scene';
-import { Spotlight } from '../ui/spotlight';
+import Spline from '@splinetool/react-spline';
 
 const HeroSection = ({ onOpenBooking }) => {
     const ref = useRef(null);
@@ -18,10 +17,10 @@ const HeroSection = ({ onOpenBooking }) => {
     return (
         <header ref={ref} className="relative pt-24 pb-16 lg:pt-48 lg:pb-32 overflow-hidden perspective-1000">
             <div className="max-w-7xl mx-auto px-6 relative z-10 w-full">
-                <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
+                <div className="grid lg:grid-cols-2 gap-8 lg:gap-4 items-center">
 
                     {/* Left Column: Text Content */}
-                    <div className="text-center lg:text-left flex flex-col items-center lg:items-start">
+                    <div className="text-center lg:text-left flex flex-col items-center">
                         {/* Badge */}
                         {/* <motion.div
                             initial={{ opacity: 0, y: 20 }}
@@ -92,32 +91,17 @@ const HeroSection = ({ onOpenBooking }) => {
                     </div>
 
                     {/* Right Column: 3D Visualization */}
-                    <div className="relative w-full h-full md:max-h-[600px] flex items-center justify-center">
-                        {/* Spotlight Background for the 3D element */}
-                        <Spotlight
-                            className="-top-40 left-0 md:left-60 md:-top-20 z-0 opacity-50 pointer-events-none"
-                            fill="white"
-                        />
-
+                    <div className="relative w-[50vw]  h-full min-h-[400px] md:min-h-[600px] lg:min-h-[700px] flex items-center justify-center mt-8 lg:mt-0">
                         <motion.div
                             initial={{ opacity: 0, scale: 0.9, x: 20 }}
                             animate={{ opacity: 1, scale: 1, x: 0 }}
                             transition={{ duration: 1, delay: 0.4 }}
-                            className="relative h-[300px] sm:h-[400px] md:h-[550px] w-full rounded-2xl overflow-hidden shadow-2xl shadow-indigo-500/10 border border-white/5 bg-black/40 backdrop-blur-sm"
+                            className="relative h-[400px] sm:h-[500px] md:h-[600px] lg:h-[700px] w-full rounded-2xl overflow-hidden "
                         >
-                            <div className="absolute inset-0 z-10">
-                                <SplineScene
-                                    scene="https://prod.spline.design/kZDDjO5HuC9GJUM2/scene.splinecode"
-                                    className="w-full h-full"
-                                />
-                            </div>
-
-                            {/* Overlay Badge */}
-                            {/* <div className="absolute bottom-6 left-6 z-20 pointer-events-none select-none">
-                                <div className="flex items-center gap-2 text-white/40 text-[10px] uppercase tracking-widest font-mono">
-                                    <Zap size={12} className="text-indigo-400" />
-                                </div>
-                            </div> */}
+                            <Spline
+                                scene="https://prod.spline.design/M6cpWkK3umnhRoUB/scene.splinecode"
+                                className="w-full h-full !scale-125 md:!scale-113 origin-center"
+                            />
                         </motion.div>
                     </div>
 
