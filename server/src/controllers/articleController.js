@@ -7,7 +7,7 @@
 import { createClient } from '@supabase/supabase-js';
 import axios from 'axios';
 import CreditLedgerService from '../services/creditLedgerService.js';
-import { sendPushNotification } from '../services/pushService.js';
+import { sendPushNotification } from '../services/onesignalService.js';
 import { supabaseAdmin } from '../config/supabaseClient.js';
 
 const ADMIN_ID = '0d396440-7d07-407c-89da-9cb93e353347';
@@ -48,65 +48,45 @@ const uploadImageToSupabase = async (imageUrl) => {
 // POST /api/articles/generate
 // Calls Python to generate, then saves result to Supabase
 // ─────────────────────────────────────────────────────────────────────────────
-export const generateArticle = async (req, res) => {
-    const userId = req.user.id;
-    const token = req.token;
-    const {
-        topic, industry, keywords, language, style, length, audience,
-        image_option, custom_image_url, wp_url,
-        // Saving-specific fields (not sent to Python)
-        author_name, author_bio, author_profile_id, author_details,
-        category = 'Technology', tags = [], is_published = false,
-        custom_slug, target_table,
-    } = req.body;
-
+// ─────────────────────────────────────────────────────────────────────────────
+// Internal Helper: Generate and Save Article
+// ─────────────────────────────────────────────────────────────────────────────
+export const generateAndSaveArticleInternal = async ({
+    userId, token, topic, industry, keywords, language, style, length, audience,
+    image_option, custom_image_url, wp_url, author_name, author_bio, author_profile_id,
+    author_details, category = 'Technology', tags = [], is_published = false,
+    custom_slug, target_table
+}) => {
     const tableName = getTableName(userId, target_table);
 
-    // ── 1. Credit pre-flight ──────────────────────────────────────────────────
-    if (userId !== ADMIN_ID) {
-        try {
-            const check = await CreditLedgerService.validateCredits(userId, 'blog', 1);
-            if (!check.hasEnough) {
-                return res.status(402).json({
-                    success: false,
-                    error: 'Insufficient credits',
-                    required: check.creditsNeeded,
-                    balance: check.currentBalance,
-                });
-            }
-        } catch (e) {
-            console.error('Credit check failed:', e);
-        }
-    }
-
-    // ── 2. Call Python generation service ─────────────────────────────────────
+    // ── 1. Call Python generation service ─────────────────────────────────────
     let genData;
     try {
         const genRes = await axios.post(
             `${PYTHON_API_URL}/api/blog/generate`,
             { topic, industry, keywords, language, style, length, audience, image_option, custom_image_url, wp_url },
-            { headers: { Authorization: req.headers.authorization }, timeout: 120000 }
+            { headers: { Authorization: `Bearer ${token}` }, timeout: 300000 }
         );
         genData = genRes.data;
         if (!genData.success) throw new Error(genData.error || 'Generation failed');
     } catch (e) {
-        console.error('Python generation error:', e.message);
-        return res.status(500).json({ success: false, error: `Generation failed: ${e.message}` });
+        console.error(`Python generation error for topic "${topic}":`, e.message);
+        throw new Error(`Generation failed: ${e.message}`);
     }
 
     const { article: blogHtml, markdown: blogText, seoTitle, imageUrl: rawImageUrl, wordCount, plagiarismCheck, topic: finalTopic, keywords: finalKeywords } = genData;
 
-    // ── 3. Upload image to Supabase Storage ───────────────────────────────────
+    // ── 2. Upload image to Supabase Storage ───────────────────────────────────
     const imageUrl = await uploadImageToSupabase(rawImageUrl);
 
-    // ── 4. Build slug ─────────────────────────────────────────────────────────
+    // ── 3. Build slug ─────────────────────────────────────────────────────────
     const slug = custom_slug
         ? generateSlug(custom_slug)
         : `${generateSlug(seoTitle || finalTopic)}-${Math.floor(Math.random() * 1000)}`;
 
     const readTime = Math.ceil(wordCount / 200);
 
-    // ── 5. Save to Supabase ───────────────────────────────────────────────────
+    // ── 4. Save to Supabase ───────────────────────────────────────────────────
     const scoped = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY, {
         global: { headers: { Authorization: `Bearer ${token}` } },
         auth: { persistSession: false },
@@ -147,35 +127,38 @@ export const generateArticle = async (req, res) => {
 
     if (saveError) {
         console.error('Supabase save error:', saveError);
-        return res.status(500).json({ success: false, error: 'Failed to save article' });
+        throw new Error('Failed to save article');
     }
 
-    // ── 6. Deduct credits ─────────────────────────────────────────────────────
+    // ── 5. Deduct credits ─────────────────────────────────────────────────────
     let ledgerResult = {};
-    try {
-        ledgerResult = await CreditLedgerService.deductCreditsWithLedger({
-            userId,
-            agentType: 'blog',
-            referenceId: savedArticle.id,
-            referenceTable: tableName,
-            usageQuantity: 1,
-            metadata: { topic: finalTopic, language, style, model: 'sonar-pro', category, actual_word_count: wordCount },
-        });
-    } catch (e) {
-        console.error('⚠️ Credit deduction failed (article saved):', e);
+    if (userId !== ADMIN_ID) {
+        try {
+            ledgerResult = await CreditLedgerService.deductCreditsWithLedger({
+                userId,
+                agentType: 'blog',
+                referenceId: savedArticle.id,
+                referenceTable: 'articles', // Force to 'articles' to satisfy DB constraint
+                usageQuantity: 1,
+                metadata: { topic: finalTopic, language, style, model: 'sonar-pro', category, actual_word_count: wordCount, actual_table: tableName },
+            });
+        } catch (e) {
+            console.error('⚠️ Credit deduction failed (article saved):', e);
+        }
     }
 
-    // ── 7. Push notification (non-blocking) ───────────────────────────────────
+    // ── 6. Push notification (non-blocking) ───────────────────────────────────
     if (is_published) {
-        sendPushNotification({
-            title: `New Article: ${finalTopic}`,
-            body: `Check out our latest post on "${finalTopic}"!`,
-            image: imageUrl,
-            data: { slug, url: `/blogs/${slug}` },
-        }).catch(e => console.error('Push failed:', e));
+        const articleUrl = `${process.env.APP_URL || 'https://www.bitlancetechhub.com'}/blogs/${slug}`;
+        sendPushNotification(
+            `New Article: ${finalTopic}`,
+            `Check out our latest post on "${finalTopic}"!`,
+            articleUrl,
+            imageUrl
+        ).catch(e => console.error('OneSignal Push fail:', e));
     }
 
-    return res.json({
+    return {
         success: true,
         article: blogHtml,
         seoTitle,
@@ -185,9 +168,137 @@ export const generateArticle = async (req, res) => {
         id: savedArticle.id,
         slug: savedArticle.slug,
         topic: finalTopic,
-        creditsUsed: ledgerResult.credits_deducted,
-        newBalance: ledgerResult.new_balance,
-    });
+        creditsUsed: ledgerResult?.credits_deducted || 0,
+        newBalance: ledgerResult?.new_balance || null,
+    };
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+// POST /api/articles/generate
+// Calls Python to generate, then saves result to Supabase
+// ─────────────────────────────────────────────────────────────────────────────
+export const generateArticle = async (req, res) => {
+    const userId = req.user.id;
+    const token = req.token;
+
+    // ── 1. Credit pre-flight ──────────────────────────────────────────────────
+    if (userId !== ADMIN_ID) {
+        try {
+            const check = await CreditLedgerService.validateCredits(userId, 'blog', 1);
+            if (!check.hasEnough) {
+                return res.status(402).json({
+                    success: false,
+                    error: 'Insufficient credits',
+                    required: check.creditsNeeded,
+                    balance: check.currentBalance,
+                });
+            }
+        } catch (e) {
+            console.error('Credit check failed:', e);
+        }
+    }
+
+    try {
+        const result = await generateAndSaveArticleInternal({
+            userId,
+            token,
+            ...req.body
+        });
+        return res.json(result);
+    } catch (error) {
+        return res.status(500).json({ success: false, error: error.message });
+    }
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+// POST /api/articles/bulk-generate
+// Bulk generate articles from uploaded Excel file
+// ─────────────────────────────────────────────────────────────────────────────
+import * as xlsx from 'xlsx';
+
+export const bulkGenerateArticles = async (req, res) => {
+    const userId = req.user.id;
+    const token = req.token;
+
+    if (!req.file) {
+        return res.status(400).json({ success: false, error: 'No Excel file uploaded' });
+    }
+
+    try {
+        // Parse the Excel file
+        const workbook = xlsx.read(req.file.buffer, { type: 'buffer' });
+        const sheetName = workbook.SheetNames[0];
+        const worksheet = workbook.Sheets[sheetName];
+        let rows = xlsx.utils.sheet_to_json(worksheet, { defval: '' });
+
+        // Filter out empty rows based on Topic
+        rows = rows.filter(row => row.Topic && row.Topic.trim() !== '');
+
+        if (rows.length === 0) {
+            return res.status(400).json({ success: false, error: 'Excel file is empty or missing Topic column' });
+        }
+
+        // Credit check for bulk if not admin
+        if (userId !== ADMIN_ID) {
+            const check = await CreditLedgerService.validateCredits(userId, 'blog', rows.length);
+            if (!check.hasEnough) {
+                return res.status(402).json({
+                    success: false,
+                    error: 'Insufficient credits for bulk generation',
+                    required: check.creditsNeeded,
+                    balance: check.currentBalance,
+                });
+            }
+        }
+
+        // Respond immediately to prevent timeout
+        res.status(202).json({
+            success: true,
+            message: `Bulk processing started for ${rows.length} topics. This will take some time.`,
+            count: rows.length
+        });
+
+        // Process in background
+        (async () => {
+            console.log(`Starting bulk generation for ${rows.length} articles...`);
+            for (let i = 0; i < rows.length; i++) {
+                const row = rows[i];
+                console.log(`[Bulk Gen ${i + 1}/${rows.length}] Processing topic: "${row.Topic}"`);
+                try {
+                    await generateAndSaveArticleInternal({
+                        userId,
+                        token,
+                        topic: row.Topic,
+                        industry: row.Industry || '',
+                        keywords: row.Keywords || '',
+                        category: row.Category || 'Technology',
+                        target_table: row.TargetTable || 'company_articles',
+                        language: row.Language || 'English',
+                        style: row.Style || 'Professional',
+                        length: row.Length || 'Medium',
+                        audience: row.Audience || 'General',
+                        is_published: true, // Auto publish is true for bulk by default
+                    });
+                    console.log(`[Bulk Gen ${i + 1}/${rows.length}] Success: "${row.Topic}"`);
+                } catch (error) {
+                    console.error(`[Bulk Gen ${i + 1}/${rows.length}] Failed for "${row.Topic}":`, error.message);
+                }
+
+                // Small delay between requests to avoid overloading Python API
+                if (i < rows.length - 1) {
+                    await new Promise(resolve => setTimeout(resolve, 5000));
+                }
+            }
+            console.log('Bulk article generation completed.');
+        })();
+
+    } catch (error) {
+        console.error('Bulk generation error:', error);
+        // Only sensible to reply with error if we haven't already replied 202
+        if (!res.headersSent) {
+            return res.status(500).json({ success: false, error: 'Failed to process Excel file: ' + error.message });
+        }
+    }
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -285,12 +396,14 @@ export const updateArticle = async (req, res) => {
     // Send push if publishing
     if (updates.is_published && data) {
         const notif = updates.notification_settings || {};
-        sendPushNotification({
-            title: notif.title || `New Post: ${data.topic || 'Fresh Content'}`,
-            body: notif.body || data.seo_description || 'Check out our latest update!',
-            image: notif.image || data.featured_image,
-            data: { slug: data.slug, url: `/blogs/${data.slug}` },
-        }).catch(() => { });
+        const articleUrl = `${process.env.APP_URL || 'https://www.bitlancetechhub.com'}/blogs/${data.slug}`;
+
+        sendPushNotification(
+            notif.title || `New Post: ${data.topic || 'Fresh Content'}`,
+            notif.body || data.seo_description || 'Check out our latest update!',
+            articleUrl,
+            notif.image || data.featured_image
+        ).catch(e => console.error('OneSignal Push fail:', e));
     }
 
     res.json({ success: true, post: data });

@@ -60,6 +60,10 @@ app.use('/api', articleRoutes); // blog generation + CRUD + public blog routes
 import webhookRoutes from './routes/webhookRoutes.js';
 app.use('/webhooks/meta', webhookRoutes);
 
+import autoBlogRoutes from './routes/autoBlogRoutes.js';
+app.use('/api/admin/auto-blog', autoBlogRoutes);
+
+
 import whatsappRoutes from './routes/whatsappRoutes.js';
 app.use('/api/whatsapp', whatsappRoutes);
 

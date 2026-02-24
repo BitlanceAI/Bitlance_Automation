@@ -108,7 +108,7 @@ const BlogManagerPage = () => {
                     data: {
                         slug: post.slug,
                         topic: 'blog_updates',
-                        url: `/blogs/${post.slug}`
+                        url: `https://www.bitlancetechhub.com/blogs/${post.slug}`
                     }
                 },
                 { headers: { Authorization: `Bearer ${token}` } }

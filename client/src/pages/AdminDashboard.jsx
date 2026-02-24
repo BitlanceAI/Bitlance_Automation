@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import AdminUsers from '../components/AdminUsers';
 import AdminRemarketing from '../components/AdminRemarketing';
 import AdminLogs from '../components/AdminLogs';
+import AdminAutoBlog from '../components/AdminAutoBlog';
 import { useAuth } from '../context/AuthContext';
 import {
     LayoutDashboard,
@@ -14,11 +15,11 @@ import {
     Plus,
     Activity,
     Server,
-    Search,
     MoreVertical,
     CheckCircle,
     Mail,
-    Terminal
+    Terminal,
+    FileText
 } from 'lucide-react';
 
 // Custom NavItem component similar to SalesDashboard
@@ -372,6 +373,12 @@ const AdminDashboard = () => {
                         onClick={() => setCurrentView('logs')}
                     />
                     <NavItem
+                        icon={<FileText size={20} />}
+                        label="Auto Blog (Excel)"
+                        active={currentView === 'autoblog'}
+                        onClick={() => setCurrentView('autoblog')}
+                    />
+                    <NavItem
                         icon={<Megaphone size={20} />}
                         label="Campaigns"
                         active={false}
@@ -408,6 +415,7 @@ const AdminDashboard = () => {
                                 {currentView === 'users' && <AdminUsers />}
                                 {currentView === 'remarketing' && <AdminRemarketing />}
                                 {currentView === 'logs' && <AdminLogs />}
+                                {currentView === 'autoblog' && <AdminAutoBlog />}
                             </>
                         )}
                     </div>

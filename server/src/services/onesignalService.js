@@ -52,6 +52,56 @@ export const sendRemarketingEmail = async (userEmails, subject, body) => {
     }
 };
 
+/**
+ * Sends a native web push notification via OneSignal REST API
+ * @param {string} title - Push notification title
+ * @param {string} body - Push notification summary/body length
+ * @param {string} url - Deep link / URL to open on click
+ * @param {string} imageUrl - Optional image URL for rich push
+ */
+export const sendPushNotification = async (title, body, url, imageUrl) => {
+    try {
+        if (!appId || !restApiKey) {
+            throw new Error('OneSignal configuration missing from environment variables.');
+        }
+
+        const payload = {
+            app_id: appId,
+            // Target all active web push subscribers
+            included_segments: ["Total Subscriptions"],
+            contents: { en: body },
+            headings: { en: title },
+            url: url || undefined,
+            chrome_web_image: imageUrl || undefined,
+            target_channel: "push"
+        };
+
+        const response = await fetch('https://api.onesignal.com/notifications', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Key ${restApiKey}`
+            },
+            body: JSON.stringify(payload)
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            console.error('OneSignal Push Error:', data);
+            throw new Error(data.errors?.[0] || JSON.stringify(data));
+        }
+
+        console.log('OneSignal Push sent successfully:', data);
+        return { success: true, response: data };
+
+    } catch (error) {
+        console.error('Error sending OneSignal push:', error);
+        return { success: false, error: error.message };
+    }
+};
+
 export default {
-    sendRemarketingEmail
+    sendRemarketingEmail,
+    sendPushNotification
 };

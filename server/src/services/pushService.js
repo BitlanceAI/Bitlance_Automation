@@ -24,7 +24,12 @@ export const sendPushNotification = async ({ title, body, target = 'all', image,
             body: body || 'Check out our latest content!',
             ...(image && { imageUrl: image })
         },
-        data: sanitizedData
+        data: sanitizedData,
+        webpush: data?.url ? {
+            fcm_options: {
+                link: data.url
+            }
+        } : undefined
     };
 
     let successCount = 0;
