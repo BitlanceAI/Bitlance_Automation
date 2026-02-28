@@ -1,11 +1,11 @@
-import { supabase } from '../config/supabaseClient.js';
+import { supabaseAdmin } from '../config/supabaseClient.js';
 
 // Get all profiles for a user
 export const getProfiles = async (req, res) => {
     try {
         const userId = req.user.id;
 
-        const { data, error } = await supabase
+        const { data, error } = await supabaseAdmin
             .from('blog_profiles')
             .select('*')
             .eq('user_id', userId)
@@ -33,7 +33,7 @@ export const createProfile = async (req, res) => {
             return res.status(400).json({ success: false, error: 'Name is required' });
         }
 
-        const { data, error } = await supabase
+        const { data, error } = await supabaseAdmin
             .from('blog_profiles')
             .insert({
                 user_id: userId,
@@ -65,7 +65,7 @@ export const updateProfile = async (req, res) => {
         const { id } = req.params;
         const { name, role, bio, profile_image, social_links } = req.body;
 
-        const { data, error } = await supabase
+        const { data, error } = await supabaseAdmin
             .from('blog_profiles')
             .update({
                 name,
@@ -97,7 +97,7 @@ export const deleteProfile = async (req, res) => {
         const userId = req.user.id;
         const { id } = req.params;
 
-        const { error } = await supabase
+        const { error } = await supabaseAdmin
             .from('blog_profiles')
             .delete()
             .eq('id', id)

@@ -63,6 +63,26 @@ const GraphicDesignerPage = () => {
     const [previewJob, setPreviewJob] = useState(null);
     const [refreshing, setRefreshing] = useState(false);
 
+    // Helper to force download instead of opening in new tab
+    const forceDownload = async (url, filename) => {
+        try {
+            const response = await fetch(url);
+            const blob = await response.blob();
+            const blobUrl = window.URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = blobUrl;
+            link.download = filename || 'design.png';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            window.URL.revokeObjectURL(blobUrl);
+        } catch (error) {
+            console.error('Download failed:', error);
+            // Fallback to opening in new tab if fetch fails due to CORS
+            window.open(url, '_blank');
+        }
+    };
+
     // Available templates
     const TEMPLATES = [
         { id: 'classic', name: 'Classic Elegant', description: 'Timeless design with gradient overlay', color: 'from-rose-500 to-red-600', icon: '🏛️' },
@@ -614,15 +634,13 @@ const GraphicDesignerPage = () => {
                                                                 <Eye className="h-4 w-4" />
                                                                 Preview
                                                             </button>
-                                                            <a
-                                                                href={job.flyer_url}
-                                                                target="_blank"
-                                                                rel="noopener noreferrer"
+                                                            <button
+                                                                onClick={() => forceDownload(job.flyer_url, `flyer_${job.property_type.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.png`)}
                                                                 className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-violet-600 to-purple-600 text-white hover:from-violet-500 hover:to-purple-500 transition-colors text-sm font-medium shadow-lg shadow-purple-500/20"
                                                             >
                                                                 <Download className="h-4 w-4" />
                                                                 Download
-                                                            </a>
+                                                            </button>
                                                         </div>
                                                     )}
                                                 </div>
@@ -648,15 +666,13 @@ const GraphicDesignerPage = () => {
                                 <p className="text-sm text-gray-500 dark:text-gray-400">{previewJob.property_type}</p>
                             </div>
                             <div className="flex items-center gap-3">
-                                <a
-                                    href={previewJob.flyer_url}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
+                                <button
+                                    onClick={() => forceDownload(previewJob.flyer_url, `flyer_${previewJob.property_type.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.png`)}
                                     className="flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-violet-600 to-purple-600 text-white text-sm font-medium hover:from-violet-500 hover:to-purple-500 transition-colors"
                                 >
                                     <Download className="h-4 w-4" />
                                     Download
-                                </a>
+                                </button>
                                 <button
                                     onClick={() => setPreviewJob(null)}
                                     className="p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-slate-800 text-gray-500 dark:text-gray-400 transition-colors"
