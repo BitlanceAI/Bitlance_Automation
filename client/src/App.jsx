@@ -34,6 +34,7 @@ import CampaignWizard from './components/campaigns/CampaignWizard';
 import PrivacyPolicy from './pages/PrivacyPolicy';
 import TermsPage from './pages/TermsPage';
 import TestimonialDemo from './pages/TestimonialDemo';
+import VoiceBotFeaturesPage from './pages/VoiceBotFeaturesPage';
 
 
 
@@ -240,6 +241,7 @@ function App() {
             <Route path="/apply/real-estate" element={<RealEstateLeadGen />} />
             <Route path="/testimonial-demo" element={<TestimonialDemo />} />
             <Route path="/shape-demo" element={<ShapeHeroDemo />} />
+            <Route path="/features/voice-bot" element={<VoiceBotFeaturesPage />} />
 
 
             {/* Push & Blog Routes */}

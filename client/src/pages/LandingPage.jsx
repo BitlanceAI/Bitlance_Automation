@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import HeroSection from '../components/landing/HeroSection';
 import ProblemSection from '../components/landing/ProblemSection';
 import SolutionSection from '../components/landing/SolutionSection';
+import VoiceBotSection from '../components/landing/VoiceBotSection';
 import UseCasesSection from '../components/landing/UseCasesSection';
 import HowItWorksSection from '../components/landing/HowItWorksSection';
 import SocialProofSection from '../components/landing/SocialProofSection';
@@ -79,6 +80,7 @@ const LandingPage = () => {
                 <HeroSection onOpenBooking={handleOpenBooking} />
                 <ProblemSection />
                 <SolutionSection />
+                <VoiceBotSection onOpenBooking={handleOpenBooking} />
                 <UseCasesSection />
                 <HowItWorksSection />
                 <SocialProofSection />
