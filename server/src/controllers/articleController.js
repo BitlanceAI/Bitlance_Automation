@@ -25,22 +25,38 @@ const getTableName = (userId, targetTable) => {
 const generateSlug = (text) =>
     text.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
 
-// Upload image URL to Supabase Storage and return public URL
+// Upload image URL (or base64 data URI) to Supabase Storage and return public URL
 const uploadImageToSupabase = async (imageUrl) => {
     if (!imageUrl) return null;
     try {
-        const response = await axios.get(imageUrl, { responseType: 'arraybuffer', timeout: 15000 });
-        const buffer = Buffer.from(response.data);
-        const filename = `blog-${Date.now()}.png`;
+        let buffer;
+        let contentType = 'image/png';
+
+        if (imageUrl.startsWith('data:')) {
+            // Handle base64 data URI from Gemini Imagen (e.g. data:image/png;base64,...)
+            const [meta, b64data] = imageUrl.split(',');
+            const mimeMatch = meta.match(/data:([^;]+);base64/);
+            if (mimeMatch) contentType = mimeMatch[1];
+            buffer = Buffer.from(b64data, 'base64');
+        } else {
+            // Handle regular http(s) URLs (e.g. DALL-E, or any CDN URL)
+            const response = await axios.get(imageUrl, { responseType: 'arraybuffer', timeout: 15000 });
+            buffer = Buffer.from(response.data);
+            const ct = response.headers['content-type'];
+            if (ct) contentType = ct.split(';')[0];
+        }
+
+        const ext = contentType.split('/')[1] || 'png';
+        const filename = `blog-${Date.now()}.${ext}`;
         const { data, error } = await supabaseAdmin.storage
             .from('blog-images')
-            .upload(filename, buffer, { contentType: 'image/png', upsert: true });
+            .upload(filename, buffer, { contentType, upsert: true });
         if (error) throw error;
         const { data: urlData } = supabaseAdmin.storage.from('blog-images').getPublicUrl(filename);
         return urlData.publicUrl;
     } catch (e) {
         console.error('Image upload failed:', e.message);
-        return imageUrl; // fallback: use the raw URL
+        return imageUrl.startsWith('data:') ? null : imageUrl; // don't return raw base64 as fallback
     }
 };
 
@@ -62,9 +78,36 @@ export const generateAndSaveArticleInternal = async ({
     // ── 1. Call Python generation service ─────────────────────────────────────
     let genData;
     try {
+        // If wp_url provided, pre-fetch articles from Supabase to use as interlinks
+        // (works for any site, not just WordPress)
+        let prebuiltInterlinks = [];
+        if (wp_url) {
+            try {
+                const { data: recentArticles } = await supabaseAdmin
+                    .from('company_articles')
+                    .select('seo_title, slug')
+                    .eq('is_published', true)
+                    .order('created_at', { ascending: false })
+                    .limit(10);
+                if (recentArticles?.length) {
+                    const siteBase = (process.env.APP_URL || 'https://www.bitlancetechhub.com').replace(/\/$/, '');
+                    prebuiltInterlinks = recentArticles.map(a => ({
+                        title: a.seo_title,
+                        link: `${siteBase}/blogs/${a.slug}`
+                    }));
+                    console.log(`[Interlinks] Passing ${prebuiltInterlinks.length} articles from Supabase for interlinking`);
+                }
+            } catch (e) {
+                console.warn('[Interlinks] Could not fetch Supabase articles:', e.message);
+            }
+        }
+
         const genRes = await axios.post(
             `${PYTHON_API_URL}/api/blog/generate`,
-            { topic, industry, keywords, language, style, length, audience, image_option, custom_image_url, wp_url },
+            {
+                topic, industry, keywords, language, style, length, audience, image_option, custom_image_url, wp_url,
+                interlinks: prebuiltInterlinks.length ? prebuiltInterlinks : undefined
+            },
             { headers: { Authorization: `Bearer ${token}` }, timeout: 300000 }
         );
         genData = genRes.data;
@@ -202,7 +245,8 @@ export const generateArticle = async (req, res) => {
         const result = await generateAndSaveArticleInternal({
             userId,
             token,
-            ...req.body
+            ...req.body,
+            is_published: true  // Auto-publish immediately after generation
         });
         return res.json(result);
     } catch (error) {
@@ -426,31 +470,61 @@ export const deleteArticle = async (req, res) => {
 
 // Public endpoints (no auth needed)
 export const publicListBlogs = async (req, res) => {
+    if (!supabaseAdmin) {
+        console.error('publicListBlogs: supabaseAdmin is null — SUPABASE_SERVICE_ROLE_KEY is missing from .env');
+        return res.status(503).json({ success: false, error: 'Server misconfiguration: admin client not initialised. Check SUPABASE_SERVICE_ROLE_KEY in .env.' });
+    }
+
     const { page = 1, limit = 10, sort = 'created_at', order = 'desc' } = req.query;
     const offset = (parseInt(page) - 1) * parseInt(limit);
 
-    const { data, error, count } = await supabaseAdmin
-        .from('company_articles')
-        .select('id, topic, seo_title, seo_description, image_url, featured_image, slug, category, tags, author_name, publish_date, created_at, estimated_read_time, word_count', { count: 'exact' })
-        .eq('is_published', true)
-        .order(sort, { ascending: order === 'asc' })
-        .range(offset, offset + parseInt(limit) - 1);
+    try {
+        const { data, error, count } = await supabaseAdmin
+            .from('company_articles')
+            .select('id, topic, seo_title, seo_description, image_url, featured_image, slug, category, tags, author_name, publish_date, created_at, estimated_read_time, word_count', { count: 'exact' })
+            .eq('is_published', true)
+            .order(sort, { ascending: order === 'asc' })
+            .range(offset, offset + parseInt(limit) - 1);
 
-    if (error) return res.status(500).json({ success: false, error: error.message });
-    const totalPages = Math.ceil(count / parseInt(limit));
-    res.json({
-        success: true, articles: data,
-        pagination: { currentPage: parseInt(page), totalPages, hasNextPage: parseInt(page) < totalPages, hasPrevPage: parseInt(page) > 1, total: count }
-    });
+        if (error) {
+            const isConnectivity = error.message?.includes('fetch') || error.message?.includes('ECONNREFUSED') || error.message?.includes('timeout');
+            console.error('publicListBlogs Supabase error:', error.message);
+            return res.status(isConnectivity ? 503 : 500).json({
+                success: false,
+                error: isConnectivity
+                    ? 'Database temporarily unavailable — Supabase project may be paused. Visit supabase.com/dashboard to restore it.'
+                    : error.message
+            });
+        }
+
+        const totalPages = Math.ceil(count / parseInt(limit));
+        res.json({
+            success: true, articles: data,
+            pagination: { currentPage: parseInt(page), totalPages, hasNextPage: parseInt(page) < totalPages, hasPrevPage: parseInt(page) > 1, total: count }
+        });
+    } catch (err) {
+        console.error('publicListBlogs unexpected error:', err.message);
+        res.status(503).json({
+            success: false,
+            error: 'Database temporarily unavailable — Supabase project may be paused. Visit supabase.com/dashboard to restore it.'
+        });
+    }
 };
 
 export const publicGetBlog = async (req, res) => {
     const { identifier } = req.params;
     const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(identifier);
 
-    const query = supabaseAdmin.from('company_articles').select('*').eq('is_published', true);
-    const { data, error } = await (isUuid ? query.eq('id', identifier) : query.eq('slug', identifier)).single();
-
-    if (error || !data) return res.status(404).json({ success: false, error: 'Article not found' });
-    res.json({ success: true, article: data });
+    try {
+        const query = supabaseAdmin.from('company_articles').select('*').eq('is_published', true);
+        const { data, error } = await (isUuid ? query.eq('id', identifier) : query.eq('slug', identifier)).single();
+        if (error || !data) return res.status(404).json({ success: false, error: 'Article not found' });
+        res.json({ success: true, article: data });
+    } catch (err) {
+        console.error('publicGetBlog unexpected error:', err.message);
+        res.status(503).json({
+            success: false,
+            error: 'Database temporarily unavailable — Supabase project may be paused. Visit supabase.com/dashboard to restore it.'
+        });
+    }
 };

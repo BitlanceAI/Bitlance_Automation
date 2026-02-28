@@ -90,8 +90,16 @@ const BlogPage = () => {
             // user object from useAuth might be Supabase user.
             // Let's assume global supabase client usage or we need to get session.
 
+            // Refresh session first to prevent stale token 401 errors
+            await supabase.auth.refreshSession();
             const { data: { session } } = await supabase.auth.getSession();
             const token = session?.access_token;
+
+            if (!token) {
+                alert('❌ Session expired. Please log in again.');
+                navigate('/login');
+                return;
+            }
 
             // Handle Profile Logic
             let authorProfileId = null;

@@ -8,6 +8,31 @@ const CHECK_INTERVAL = 60 * 1000; // 1 minute
 
 import { sendPushNotification } from './pushService.js';
 
+// Quick connectivity check — returns false if Supabase is paused/unreachable
+const isSupabaseReachable = async () => {
+    try {
+        const url = `${process.env.SUPABASE_URL}/rest/v1/`;
+        const res = await fetch(url, {
+            headers: { apikey: process.env.SUPABASE_SERVICE_ROLE_KEY },
+            signal: AbortSignal.timeout(5000),
+        });
+        const text = await res.text();
+        // Paused projects return an HTML page instead of JSON
+        if (text.trim().startsWith('<')) {
+            return false;
+        }
+        return true;
+    } catch {
+        return false;
+    }
+};
+
+// Helper: Supabase occasionally throws an HTML error (e.g., 525 SSL Handshake Failed from Cloudflare)
+// if the project is paused or offline. This prevents filling the logs with raw HTML.
+const isHtmlError = (error) => {
+    return error && typeof error.message === 'string' && (error.message.trim().startsWith('<') || error.message.includes('<!DOCTYPE html>'));
+};
+
 export const startPostScheduler = () => {
     if (!supabase) {
         const supabaseUrl = process.env.SUPABASE_URL;
@@ -31,16 +56,22 @@ export const startPostScheduler = () => {
 
     console.log('⏰ Starting Post Scheduler (1-minute interval)...');
 
-    // Run immediately on start
-    checkAndPublishPosts();
-    checkAndPublishBlogPosts();
-
-    // Set interval
-    setInterval(() => {
+    const runScheduler = async () => {
+        const reachable = await isSupabaseReachable();
+        if (!reachable) {
+            console.warn('⏸  [Scheduler] Supabase unreachable (project may be paused). Skipping tick.');
+            return;
+        }
         checkAndPublishPosts();
         checkAndPublishBlogPosts();
         checkAndPublishAutoBlogs();
-    }, CHECK_INTERVAL);
+    };
+
+    // Run immediately on start
+    runScheduler();
+
+    // Set interval
+    setInterval(runScheduler, CHECK_INTERVAL);
 };
 
 const checkAndPublishAutoBlogs = async () => {
@@ -54,7 +85,11 @@ const checkAndPublishAutoBlogs = async () => {
             .single();
 
         if (settingsError && settingsError.code !== 'PGRST116' && settingsError.code !== 'PGRST205') { // PGRST116 is not found, PGRST205 is table missing
-            console.error('❌ [Scheduler] Error fetching auto_blog_settings:', settingsError);
+            if (isHtmlError(settingsError)) {
+                console.warn('⏸  [Scheduler] Supabase connection issue (HTML error received). Project may be paused. Skipping auto blog check.');
+            } else {
+                console.error('❌ [Scheduler] Error fetching auto_blog_settings:', settingsError);
+            }
             return;
         }
 
@@ -91,7 +126,11 @@ const checkAndPublishAutoBlogs = async () => {
             .limit(1);
 
         if (fetchError) {
-            console.error('❌ [Scheduler] Error fetching pending auto blogs:', fetchError);
+            if (isHtmlError(fetchError)) {
+                console.warn('⏸  [Scheduler] Supabase connection issue (HTML error received). Project may be paused. Skipping pending blogs fetch.');
+            } else {
+                console.error('❌ [Scheduler] Error fetching pending auto blogs:', fetchError);
+            }
             return;
         }
 
@@ -204,7 +243,11 @@ const checkAndPublishBlogPosts = async () => {
                 .not('publish_date', 'is', null);
 
             if (error) {
-                console.error(`❌ [Scheduler] Error fetching blog posts from ${tableName}:`, error);
+                if (isHtmlError(error)) {
+                    console.warn(`⏸  [Scheduler] Supabase connection issue (HTML error received). Project may be paused. Skipping blog posts fetch for ${tableName}.`);
+                } else {
+                    console.error(`❌ [Scheduler] Error fetching blog posts from ${tableName}:`, error);
+                }
                 continue;
             }
 
@@ -287,7 +330,11 @@ const checkAndPublishPosts = async () => {
             .lte('scheduled_time', now);
 
         if (error) {
-            console.error('❌ [Scheduler] Error fetching posts:', error);
+            if (isHtmlError(error)) {
+                console.warn('⏸  [Scheduler] Supabase connection issue (HTML error received). Project may be paused. Skipping scheduled posts fetch.');
+            } else {
+                console.error('❌ [Scheduler] Error fetching posts:', error);
+            }
             return;
         }
 

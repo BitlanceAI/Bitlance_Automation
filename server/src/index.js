@@ -1,3 +1,8 @@
+// ⚠️  Must be set BEFORE any imports — ES module imports are hoisted and
+// supabaseClient.js initialises its fetch client at import time.
+// Setting this via .env (dotenv.config) is too late.
+process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
+
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';

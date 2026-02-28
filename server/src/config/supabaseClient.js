@@ -1,3 +1,6 @@
+// Must be set before createClient — disables strict TLS for self-signed/paused project certs
+process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
+
 import { createClient } from '@supabase/supabase-js';
 import dotenv from 'dotenv';
 dotenv.config();

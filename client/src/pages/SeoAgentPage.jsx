@@ -260,8 +260,17 @@ const SeoAgentPage = () => {
             payload.author_profile_id = authorProfileId;
             payload.author_details = authorDetails;
 
+            // Refresh session first to prevent stale token 401 errors
+            await supabase.auth.refreshSession();
             const { data: { session } } = await supabase.auth.getSession();
             const token = session?.access_token;
+
+            if (!token) {
+                alert('❌ Session expired. Please log in again.');
+                navigate('/login');
+                return;
+            }
+
 
             const response = await fetch(`${API_BASE_URL}/api/articles/generate`, {
                 method: 'POST',

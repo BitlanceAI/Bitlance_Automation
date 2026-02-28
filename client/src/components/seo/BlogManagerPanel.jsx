@@ -12,6 +12,7 @@ const BlogManagerPanel = () => {
     const [loading, setLoading] = useState(true);
 
     const fetchPosts = async () => {
+        if (!token) return; // Wait until auth token is available
         setLoading(true);
         try {
             const res = await axios.get(`${API_BASE_URL}/api/blog/posts`, {
@@ -26,7 +27,7 @@ const BlogManagerPanel = () => {
         }
     };
 
-    useEffect(() => { fetchPosts(); }, []);
+    useEffect(() => { fetchPosts(); }, [token]); // Re-run when token becomes available
 
     const handleDelete = async (id) => {
         if (!window.confirm('Are you sure you want to delete this post?')) return;
