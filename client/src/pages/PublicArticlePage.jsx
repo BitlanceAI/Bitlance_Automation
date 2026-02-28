@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import SEOHead from '../components/SEOHead';
-import { Loader2, ArrowLeft, Calendar, User, Clock, Share2, Tag, Facebook, Twitter, Linkedin, Globe, Mail, Phone } from 'lucide-react';
+import { Loader2, ArrowLeft, Calendar, User, Clock, Share2, Tag, Facebook, Twitter, Linkedin, Globe, Mail, Phone, MessageSquare, Send, ArrowRight } from 'lucide-react';
 import API_BASE_URL from '../config.js';
 
 const PublicArticlePage = () => {
@@ -11,6 +11,68 @@ const PublicArticlePage = () => {
     const [error, setError] = useState(null);
     const [latestBlogs, setLatestBlogs] = useState([]);
     const [loadingLatest, setLoadingLatest] = useState(true);
+
+    // Comments State
+    const [comments, setComments] = useState([]);
+    const [newComment, setNewComment] = useState('');
+    const [commentName, setCommentName] = useState('');
+    const [isSubmittingComment, setIsSubmittingComment] = useState(false);
+    const [commentsError, setCommentsError] = useState(null);
+
+    const fetchComments = async () => {
+        try {
+            const identifier = slug || id;
+            if (!identifier) return;
+            const res = await fetch(`${API_BASE_URL}/api/public/blogs/${identifier}/comments`);
+            const data = await res.json();
+            if (data.success) {
+                setComments(data.comments);
+            }
+        } catch (err) {
+            console.error('Failed to fetch comments', err);
+        }
+    };
+
+    useEffect(() => {
+        if (id || slug) {
+            fetchComments();
+        }
+    }, [id, slug]);
+
+    const handlePostComment = async (e) => {
+        e.preventDefault();
+        if (!newComment.trim() || !commentName.trim()) return;
+
+        setIsSubmittingComment(true);
+        setCommentsError(null);
+
+        try {
+            const identifier = slug || id;
+            const res = await fetch(`${API_BASE_URL}/api/public/blogs/${identifier}/comments`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    author_name: commentName.trim(),
+                    text: newComment.trim()
+                })
+            });
+
+            const data = await res.json();
+
+            if (data.success) {
+                // Add the new comment to the top of the list
+                setComments([data.comment, ...comments]);
+                setNewComment('');
+            } else {
+                setCommentsError(data.error || 'Failed to post comment');
+            }
+        } catch (err) {
+            console.error('Failed to post comment', err);
+            setCommentsError('Network error while posting comment');
+        } finally {
+            setIsSubmittingComment(false);
+        }
+    };
 
     const fetchLatestBlogs = async () => {
         try {
@@ -303,6 +365,112 @@ const PublicArticlePage = () => {
                             >
                                 <Share2 size={18} /> Share Article
                             </button>
+                        </div>
+                    </div>
+
+                    {/* CTA Section (Book a Demo) */}
+                    <div className="mt-12 bg-gradient-to-br from-indigo-900 via-indigo-800 to-purple-900 rounded-2xl p-8 md:p-10 shadow-xl overflow-hidden relative">
+                        {/* Decorative elements */}
+                        <div className="absolute top-0 right-0 -mx-8 -my-8 w-64 h-64 bg-white/5 rounded-full blur-3xl mix-blend-overlay"></div>
+                        <div className="absolute bottom-0 left-0 -mx-8 -my-8 w-48 h-48 bg-purple-500/20 rounded-full blur-2xl"></div>
+
+                        <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-8">
+                            <div className="flex-1 text-center md:text-left">
+                                <h3 className="text-2xl md:text-3xl font-bold text-white mb-3">
+                                    Want to transform your workflow?
+                                </h3>
+                                <p className="text-indigo-100 text-lg max-w-xl">
+                                    See how our AI agents can automate your tasks and boost productivity. Schedule a free personalized demo today.
+                                </p>
+                            </div>
+                            <div className="flex-shrink-0 w-full md:w-auto">
+                                <Link
+                                    to="/demo"
+                                    className="w-full md:w-auto inline-flex items-center justify-center bg-white text-indigo-700 hover:bg-slate-50 px-8 py-4 rounded-xl font-bold text-lg shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300"
+                                >
+                                    Book a Demo
+                                    <ArrowRight className="ml-2" size={20} />
+                                </Link>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Comments Section */}
+                    <div className="mt-16 pt-8 border-t border-gray-200 dark:border-slate-700">
+                        <div className="flex items-center gap-3 mb-8">
+                            <MessageSquare className="text-indigo-600 dark:text-indigo-400" size={28} />
+                            <h3 className="text-2xl font-bold text-gray-900 dark:text-white">
+                                Comments ({comments.length})
+                            </h3>
+                        </div>
+
+                        {/* Comment Form */}
+                        <div className="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-sm border border-gray-200 dark:border-slate-700 mb-10">
+                            <h4 className="text-lg font-bold text-gray-800 dark:text-gray-200 mb-4">Leave a Reply</h4>
+                            <form onSubmit={handlePostComment} className="space-y-4">
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Your Name</label>
+                                    <input
+                                        type="text"
+                                        required
+                                        value={commentName}
+                                        onChange={(e) => setCommentName(e.target.value)}
+                                        placeholder="John Doe"
+                                        className="w-full px-4 py-3 rounded-lg bg-gray-50 dark:bg-slate-900 border border-gray-200 dark:border-slate-700 focus:ring-2 focus:ring-indigo-500 outline-none transition-all text-gray-900 dark:text-white"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Your Comment</label>
+                                    <textarea
+                                        required
+                                        value={newComment}
+                                        onChange={(e) => setNewComment(e.target.value)}
+                                        placeholder="What are your thoughts?"
+                                        rows="4"
+                                        className="w-full px-4 py-3 rounded-lg bg-gray-50 dark:bg-slate-900 border border-gray-200 dark:border-slate-700 focus:ring-2 focus:ring-indigo-500 outline-none transition-all resize-none text-gray-900 dark:text-white"
+                                    ></textarea>
+                                </div>
+                                <button
+                                    type="submit"
+                                    disabled={isSubmittingComment || !newComment.trim() || !commentName.trim()}
+                                    className="flex items-center gap-2 px-6 py-3 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg font-medium transition-colors"
+                                >
+                                    {isSubmittingComment ? <Loader2 className="animate-spin" size={18} /> : <Send size={18} />}
+                                    {isSubmittingComment ? 'Posting...' : 'Post Comment'}
+                                </button>
+                                {commentsError && (
+                                    <p className="text-red-500 text-sm mt-2">{commentsError}</p>
+                                )}
+                            </form>
+                        </div>
+
+                        {/* Comments List */}
+                        <div className="space-y-6">
+                            {comments.length === 0 ? (
+                                <p className="text-gray-500 dark:text-gray-400 italic">No comments yet. Be the first to share your thoughts!</p>
+                            ) : (
+                                comments.map(comment => (
+                                    <div key={comment.id} className="flex gap-4 p-5 rounded-2xl bg-gray-50 dark:bg-slate-800/50 border border-gray-100 dark:border-slate-700/50">
+                                        <div className="flex-shrink-0">
+                                            <div className="w-12 h-12 rounded-full bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center text-indigo-700 dark:text-indigo-400 font-bold text-lg">
+                                                {comment.author_name ? comment.author_name.charAt(0).toUpperCase() : 'A'}
+                                            </div>
+                                        </div>
+                                        <div className="flex-1">
+                                            <div className="flex items-baseline justify-between mb-1">
+                                                <h5 className="font-bold text-gray-900 dark:text-white">{comment.author_name}</h5>
+                                                <span className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1">
+                                                    <Clock size={12} />
+                                                    {new Date(comment.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
+                                                </span>
+                                            </div>
+                                            <p className="text-gray-700 dark:text-gray-300 leading-relaxed text-sm md:text-base">
+                                                {comment.text}
+                                            </p>
+                                        </div>
+                                    </div>
+                                ))
+                            )}
                         </div>
                     </div>
                 </article>

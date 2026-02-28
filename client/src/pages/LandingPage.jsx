@@ -11,7 +11,9 @@ import SocialProofSection from '../components/landing/SocialProofSection';
 import TestimonialsSection from '../components/landing/TestimonialsSection';
 import FinalCtaSection from '../components/landing/FinalCtaSection';
 import LatestBlogsSection from '../components/landing/LatestBlogsSection';
+import BlogAgentSection from '../components/landing/BlogAgentSection';
 import Footer from '../components/landing/Footer';
+import ScrollToTopButton from '../components/ui/ScrollToTopButton';
 
 import { ElegantShape } from '../components/ui/shape-landing-hero';
 
@@ -81,6 +83,7 @@ const LandingPage = () => {
                 <ProblemSection />
                 <SolutionSection />
                 <VoiceBotSection onOpenBooking={handleOpenBooking} />
+                <BlogAgentSection onOpenBooking={handleOpenBooking} />
                 <UseCasesSection />
                 <HowItWorksSection />
                 <SocialProofSection />
@@ -89,6 +92,8 @@ const LandingPage = () => {
                 <LatestBlogsSection />
                 <Footer />
             </div>
+
+            <ScrollToTopButton />
         </div>
     );
 };

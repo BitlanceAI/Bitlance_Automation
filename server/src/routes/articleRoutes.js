@@ -11,6 +11,8 @@ import {
     deleteArticle,
     publicListBlogs,
     publicGetBlog,
+    publicGetComments,
+    publicPostComment,
 } from '../controllers/articleController.js';
 
 const router = express.Router();
@@ -24,6 +26,8 @@ const upload = multer({
 // Public routes (no auth)
 router.get('/public/blogs', publicListBlogs);
 router.get('/public/blogs/:identifier', publicGetBlog);
+router.get('/public/blogs/:identifier/comments', publicGetComments);
+router.post('/public/blogs/:identifier/comments', publicPostComment);
 
 // Authenticated routes
 router.post('/articles/generate', authenticateUser, generateArticle);

@@ -35,6 +35,7 @@ import PrivacyPolicy from './pages/PrivacyPolicy';
 import TermsPage from './pages/TermsPage';
 import TestimonialDemo from './pages/TestimonialDemo';
 import VoiceBotFeaturesPage from './pages/VoiceBotFeaturesPage';
+import BlogAgentFeaturesPage from './pages/BlogAgentFeaturesPage';
 
 
 
@@ -242,6 +243,7 @@ function App() {
             <Route path="/testimonial-demo" element={<TestimonialDemo />} />
             <Route path="/shape-demo" element={<ShapeHeroDemo />} />
             <Route path="/features/voice-bot" element={<VoiceBotFeaturesPage />} />
+            <Route path="/features/blog-agent" element={<BlogAgentFeaturesPage />} />
 
 
             {/* Push & Blog Routes */}

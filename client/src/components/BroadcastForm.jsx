@@ -155,9 +155,9 @@ const BroadcastForm = () => {
         }
 
         try {
+            const token = session?.access_token;
             if (sendMode === 'template') {
                 // Use Meta WhatsApp Business API — Template Broadcast
-                const token = session?.access_token;
                 const payload = new FormData();
                 payload.append('name', formData.name || `Broadcast ${new Date().toLocaleString()}`);
                 payload.append('sendMode', 'template');

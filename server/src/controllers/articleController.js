@@ -275,11 +275,14 @@ export const bulkGenerateArticles = async (req, res) => {
         const worksheet = workbook.Sheets[sheetName];
         let rows = xlsx.utils.sheet_to_json(worksheet, { defval: '' });
 
-        // Filter out empty rows based on Topic
-        rows = rows.filter(row => row.Topic && row.Topic.trim() !== '');
+        // Support both new column names (Niche / Industry, Title / Topic) and old names (Industry, Topic)
+        const getField = (row, newKey, oldKey) => (row[newKey] || row[oldKey] || '').toString().trim();
+
+        // Filter out empty rows — accept either 'Title / Topic' or 'Topic'
+        rows = rows.filter(row => (row['Title / Topic'] || row['Topic'] || '').toString().trim() !== '');
 
         if (rows.length === 0) {
-            return res.status(400).json({ success: false, error: 'Excel file is empty or missing Topic column' });
+            return res.status(400).json({ success: false, error: "Excel file is empty or missing 'Title / Topic' column. Download the template for the correct format." });
         }
 
         // Credit check for bulk if not admin
@@ -307,25 +310,26 @@ export const bulkGenerateArticles = async (req, res) => {
             console.log(`Starting bulk generation for ${rows.length} articles...`);
             for (let i = 0; i < rows.length; i++) {
                 const row = rows[i];
-                console.log(`[Bulk Gen ${i + 1}/${rows.length}] Processing topic: "${row.Topic}"`);
+                const topicLabel = getField(row, 'Title / Topic', 'Topic');
+                console.log(`[Bulk Gen ${i + 1}/${rows.length}] Processing topic: "${topicLabel}"`);
                 try {
                     await generateAndSaveArticleInternal({
                         userId,
                         token,
-                        topic: row.Topic,
-                        industry: row.Industry || '',
-                        keywords: row.Keywords || '',
+                        topic: getField(row, 'Title / Topic', 'Topic'),
+                        industry: getField(row, 'Niche / Industry', 'Industry'),
+                        keywords: getField(row, 'Keywords', 'Keywords'),
                         category: row.Category || 'Technology',
                         target_table: row.TargetTable || 'company_articles',
                         language: row.Language || 'English',
                         style: row.Style || 'Professional',
                         length: row.Length || 'Medium',
                         audience: row.Audience || 'General',
-                        is_published: true, // Auto publish is true for bulk by default
+                        is_published: true,
                     });
-                    console.log(`[Bulk Gen ${i + 1}/${rows.length}] Success: "${row.Topic}"`);
+                    console.log(`[Bulk Gen ${i + 1}/${rows.length}] Success: "${topicLabel}"`);
                 } catch (error) {
-                    console.error(`[Bulk Gen ${i + 1}/${rows.length}] Failed for "${row.Topic}":`, error.message);
+                    console.error(`[Bulk Gen ${i + 1}/${rows.length}] Failed for "${topicLabel}":`, error.message);
                 }
 
                 // Small delay between requests to avoid overloading Python API
@@ -528,3 +532,96 @@ export const publicGetBlog = async (req, res) => {
         });
     }
 };
+
+// ─────────────────────────────────────────────────────────────────────────────
+// COMMENTS endpoints
+// ─────────────────────────────────────────────────────────────────────────────
+
+// GET /api/public/blogs/:identifier/comments
+export const publicGetComments = async (req, res) => {
+    const { identifier } = req.params;
+    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(identifier);
+
+    try {
+        // First resolve the article_id if it's a slug
+        let articleId = identifier;
+        if (!isUuid) {
+            const { data: art, error: artErr } = await supabaseAdmin
+                .from('company_articles')
+                .select('id')
+                .eq('slug', identifier)
+                .single();
+            if (artErr || !art) return res.status(404).json({ success: false, error: 'Article not found' });
+            articleId = art.id;
+        }
+
+        const { data, error } = await supabaseAdmin
+            .from('comments')
+            .select('*')
+            .eq('article_id', articleId)
+            .eq('status', 'approved')
+            .order('created_at', { ascending: false });
+
+        if (error) {
+            // Ignore if table doesn't exist yet, just return empty array instead of failing
+            if (error.code === '42P01') {
+                return res.json({ success: true, comments: [] });
+            }
+            throw error;
+        }
+
+        res.json({ success: true, comments: data || [] });
+    } catch (err) {
+        console.error('publicGetComments error:', err.message);
+        res.status(500).json({ success: false, error: 'Failed to fetch comments' });
+    }
+};
+
+// POST /api/public/blogs/:identifier/comments
+export const publicPostComment = async (req, res) => {
+    const { identifier } = req.params;
+    const { author_name, text } = req.body;
+    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(identifier);
+
+    if (!author_name || !text) {
+        return res.status(400).json({ success: false, error: 'Author name and text are required' });
+    }
+
+    try {
+        // First resolve the article_id if it's a slug
+        let articleId = identifier;
+        if (!isUuid) {
+            const { data: art, error: artErr } = await supabaseAdmin
+                .from('company_articles')
+                .select('id')
+                .eq('slug', identifier)
+                .single();
+            if (artErr || !art) return res.status(404).json({ success: false, error: 'Article not found' });
+            articleId = art.id;
+        }
+
+        const { data, error } = await supabaseAdmin
+            .from('comments')
+            .insert({
+                article_id: articleId,
+                author_name: author_name.substring(0, 100),
+                text: text.substring(0, 5000),
+                status: 'approved' // auto-approve for now
+            })
+            .select()
+            .single();
+
+        if (error) {
+            if (error.code === '42P01') {
+                return res.status(400).json({ success: false, error: 'Comments table has not been created in Supabase yet.' });
+            }
+            throw error;
+        }
+
+        res.json({ success: true, comment: data });
+    } catch (err) {
+        console.error('publicPostComment error:', err.message);
+        res.status(500).json({ success: false, error: 'Failed to post comment' });
+    }
+};
+

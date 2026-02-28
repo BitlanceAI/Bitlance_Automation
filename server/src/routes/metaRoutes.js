@@ -167,6 +167,12 @@ router.post('/connect-api-key', async (req, res) => {
 
         // Upsert connection
         console.log(`💾 [Meta Connect] Saving to database...`);
+        const { data: existingConn } = await supabase
+            .from('meta_connections')
+            .select('whatsapp_phone_id, waba_id')
+            .eq('user_id', userId)
+            .single();
+
         const { data: connection, error } = await supabase
             .from('meta_connections')
             .upsert({
@@ -179,6 +185,9 @@ router.post('/connect-api-key', async (req, res) => {
                 pages: pagesResult.success ? pagesResult.pages : [],
                 ad_accounts: adAccountsResult.success ? adAccountsResult.adAccounts : [],
                 is_active: true,
+                // Preserve existing WhatsApp config if present
+                whatsapp_phone_id: existingConn?.whatsapp_phone_id || null,
+                waba_id: existingConn?.waba_id || null,
                 updated_at: new Date().toISOString()
             }, {
                 onConflict: 'user_id'

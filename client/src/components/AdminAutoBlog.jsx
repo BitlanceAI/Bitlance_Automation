@@ -144,15 +144,30 @@ const AdminAutoBlog = () => {
     };
 
     const handleDownloadTemplate = () => {
-        const ws = xlsx.utils.json_to_sheet([{
-            Topic: 'The Future of AI in Real Estate', Industry: 'Real Estate', Keywords: 'AI, automation, property',
-            Category: 'Technology', TargetTable: 'company_articles', Language: 'English', Style: 'Professional',
-            Length: 'Medium', Audience: 'Realtors'
-        }]);
+        const ws = xlsx.utils.json_to_sheet([
+            {
+                'Niche / Industry': 'Real Estate',
+                'Title / Topic': 'How AI is Transforming Property Management in 2025',
+                'Keywords': 'AI real estate, property management, smart homes'
+            },
+            {
+                'Niche / Industry': 'Cybersecurity',
+                'Title / Topic': 'Top 10 Cyber Threats SMBs Face in 2025',
+                'Keywords': 'cybersecurity, SMB, data breach, ransomware'
+            },
+            {
+                'Niche / Industry': 'E-Commerce',
+                'Title / Topic': 'How to Increase Conversions with Personalisation',
+                'Keywords': 'e-commerce, conversion rate, personalisation, UX'
+            }
+        ]);
+        // Set column widths for readability
+        ws['!cols'] = [{ wch: 22 }, { wch: 52 }, { wch: 45 }];
         const wb = xlsx.utils.book_new();
-        xlsx.utils.book_append_sheet(wb, ws, 'Template');
+        xlsx.utils.book_append_sheet(wb, ws, 'Blog Queue');
         xlsx.writeFile(wb, 'AutoBlog_Template.xlsx');
     };
+
 
     const handleUpload = async () => {
         if (!file) return;
@@ -257,6 +272,27 @@ const AdminAutoBlog = () => {
                                 <p className="text-sm text-red-800 dark:text-red-300 font-medium">{bulkMessage}</p>
                             </div>
                         )}
+
+                        {/* Column format legend */}
+                        <div className="mt-5 p-4 bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-100 dark:border-indigo-800 rounded-xl">
+                            <p className="text-xs font-semibold text-indigo-700 dark:text-indigo-300 mb-3 uppercase tracking-wide">Required Excel Column Headers</p>
+                            <div className="grid grid-cols-3 gap-2 text-center">
+                                {[
+                                    { col: 'Niche / Industry', example: 'Real Estate', color: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300' },
+                                    { col: 'Title / Topic', example: 'How AI changes X…', color: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300' },
+                                    { col: 'Keywords', example: 'AI, automation, X', color: 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300' },
+                                ].map(({ col, example, color }) => (
+                                    <div key={col} className={`px-3 py-2 rounded-lg ${color}`}>
+                                        <p className="font-semibold text-xs">{col}</p>
+                                        <p className="text-xs opacity-70 mt-0.5 italic">{example}</p>
+                                    </div>
+                                ))}
+                            </div>
+                            <p className="text-xs text-indigo-600 dark:text-indigo-400 mt-3 text-center">
+                                Column names must match exactly. <button onClick={handleDownloadTemplate} className="underline font-semibold hover:text-indigo-800">Download template</button> to get started.
+                            </p>
+                        </div>
+
 
                         {bulkStatus === 'success' && (
                             <div className="mt-4 p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-xl flex items-start gap-3">

@@ -58,7 +58,15 @@ const whatsappController = {
                 return res.status(400).json({ error: 'No valid recipients found', invalidList: invalidRecipients });
             }
 
-            // 4. Create broadcast record
+            // 4. Validate Meta credentials BEFORE creating any DB records
+            const creds = await whatsappService.getMetaCredentials(userId);
+            if (!creds.whatsappPhoneId) {
+                return res.status(400).json({
+                    error: 'WhatsApp Phone Number ID is not configured. Please go to the Settings tab and save your Phone Number ID and WABA ID before sending messages.'
+                });
+            }
+
+            // 5. Create broadcast record
             const broadcast = await whatsappService.createBroadcast(
                 name || `Broadcast ${new Date().toISOString()}`,
                 templateName,
@@ -66,7 +74,7 @@ const whatsappController = {
                 userId
             );
 
-            // 5. Parse variables
+            // 6. Parse variables
             let parsedVariables = [];
             try {
                 parsedVariables = typeof variables === 'string' ? JSON.parse(variables) : (variables || []);
@@ -74,7 +82,7 @@ const whatsappController = {
                 parsedVariables = [];
             }
 
-            // 6. Send messages async (fire-and-forget)
+            // 7. Send messages async (fire-and-forget)
             const broadcastId = broadcast.id;
             (async () => {
                 let successCount = 0;
@@ -107,7 +115,7 @@ const whatsappController = {
                     await new Promise(resolve => setTimeout(resolve, 50));
                 }
 
-                // Update broadcast status
+                // 8. Update broadcast status
                 const { createClient } = await import('@supabase/supabase-js');
                 const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
                 await supabase
