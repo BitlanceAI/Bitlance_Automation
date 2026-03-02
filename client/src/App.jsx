@@ -36,6 +36,7 @@ import TermsPage from './pages/TermsPage';
 import TestimonialDemo from './pages/TestimonialDemo';
 import VoiceBotFeaturesPage from './pages/VoiceBotFeaturesPage';
 import BlogAgentFeaturesPage from './pages/BlogAgentFeaturesPage';
+import ContactPage from './pages/ContactPage';
 
 
 
@@ -136,6 +137,7 @@ function App() {
             <Route path="/" element={<RootRedirect />} />
             <Route path="/privacy" element={<PrivacyPolicy />} />
             <Route path="/terms" element={<TermsPage />} />
+            <Route path="/contact" element={<ContactPage />} />
 
             <Route path="/blogs" element={<PublicBlogListPage />} />
 

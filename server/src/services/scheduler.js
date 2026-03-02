@@ -6,7 +6,7 @@ let supabase;
 
 const CHECK_INTERVAL = 60 * 1000; // 1 minute
 
-import { sendPushNotification } from './pushService.js';
+import { sendPushNotification } from './onesignalService.js';
 
 // Quick connectivity check — returns false if Supabase is paused/unreachable
 const isSupabaseReachable = async () => {
@@ -76,15 +76,14 @@ export const startPostScheduler = () => {
 
 const checkAndPublishAutoBlogs = async () => {
     try {
-        // 1. Check if it's enabled and time to run (5 hours passed)
-        // If last_run_at is old enough, or null (brand new)
+        // 1. Check if it's enabled and whether delay has passed
         const { data: settings, error: settingsError } = await supabase
             .from('auto_blog_settings')
             .select('*')
             .eq('id', 1)
             .single();
 
-        if (settingsError && settingsError.code !== 'PGRST116' && settingsError.code !== 'PGRST205') { // PGRST116 is not found, PGRST205 is table missing
+        if (settingsError && settingsError.code !== 'PGRST116' && settingsError.code !== 'PGRST205') {
             if (isHtmlError(settingsError)) {
                 console.warn('⏸  [Scheduler] Supabase connection issue (HTML error received). Project may be paused. Skipping auto blog check.');
             } else {
@@ -100,22 +99,22 @@ const checkAndPublishAutoBlogs = async () => {
 
         if (!settings || !settings.is_enabled) return;
 
+        // Dynamic delay: read delay_minutes from settings (default 300 = 5 hours)
+        const delayMinutes = (settings.delay_minutes && settings.delay_minutes > 0) ? settings.delay_minutes : 300;
         const now = new Date();
-        const lastRun = new Date(settings.last_run_at);
-        const hoursSinceLastRun = (now - lastRun) / (1000 * 60 * 60);
+        const lastRun = settings.last_run_at ? new Date(settings.last_run_at) : new Date(0);
         const minutesSinceLastRun = (now - lastRun) / (1000 * 60);
 
-        // 🛑 TESTING MODE TOGGLE 🛑
-        // Set to true to run every 2 minutes for testing. Set to false for the real 5-hour gap.
-        const isTestingMode = true;
-
-        if (isTestingMode) {
-            if (minutesSinceLastRun < 2) return; // Wait 2 minutes in test mode
-        } else {
-            if (hoursSinceLastRun < 5) return; // Wait 5 hours in production mode
+        if (minutesSinceLastRun < delayMinutes) {
+            // Not yet time — log only occasionally to avoid log spam
+            const minutesRemaining = Math.ceil(delayMinutes - minutesSinceLastRun);
+            if (minutesRemaining % 30 === 0 || minutesRemaining <= 5) {
+                console.log(`⏳ [Scheduler] Next auto blog in ${minutesRemaining} min (delay: ${delayMinutes} min)`);
+            }
+            return;
         }
 
-        console.log(`⏰ [Scheduler] 5 hours passed. Searching for pending auto blogs...`);
+        console.log(`⏰ [Scheduler] ${delayMinutes} minutes passed (delay setting). Searching for pending auto blogs...`);
 
         // 2. Fetch ONE pending entry
         const { data: pendingBlogs, error: fetchError } = await supabase
@@ -135,7 +134,14 @@ const checkAndPublishAutoBlogs = async () => {
         }
 
         if (!pendingBlogs || pendingBlogs.length === 0) {
-            console.log(`⏰ [Scheduler] No pending auto blogs found.`);
+            console.log(`⏰ [Scheduler] No pending auto blogs found. Resetting timer so delay is respected.`);
+
+            // Update the last run time so the window starts NOW
+            await supabase
+                .from('auto_blog_settings')
+                .update({ last_run_at: new Date().toISOString() })
+                .eq('id', 1);
+
             return;
         }
 
@@ -148,7 +154,7 @@ const checkAndPublishAutoBlogs = async () => {
             .update({ status: 'processing', processed_at: new Date().toISOString() })
             .eq('id', blogEntry.id);
 
-        // Update the last run time so the 5 hour window starts NOW
+        // Update the last run time so the window starts NOW
         await supabase
             .from('auto_blog_settings')
             .update({ last_run_at: new Date().toISOString() })
@@ -198,7 +204,8 @@ const checkAndPublishAutoBlogs = async () => {
                 audience: 'General',
                 category: 'Technology',
                 target_table: 'company_articles',
-                is_published: true // Automatically publish generated blogs
+                is_published: true, // Automatically publish generated blogs
+                wp_url: settings.website_url // Pass website_url for auto-interlinking
             });
 
             if (result && result.success) {
@@ -209,6 +216,26 @@ const checkAndPublishAutoBlogs = async () => {
                     .from('auto_blogs')
                     .update({ status: 'completed' })
                     .eq('id', blogEntry.id);
+
+                // Get slug from the published article to build the notification URL
+                const publishedSlug = result.slug || null;
+
+                // Send push notification via OneSignal to all subscribers
+                try {
+                    const siteBase = (process.env.APP_URL || 'https://www.bitlancetechhub.com').replace(/\/$/, '');
+                    const blogUrl = publishedSlug ? `${siteBase}/blogs/${publishedSlug}` : siteBase;
+                    await sendPushNotification(
+                        `📝 New Blog Post: ${blogEntry.title}`,
+                        blogEntry.niche
+                            ? `A new article on ${blogEntry.niche} is now live. Read it now!`
+                            : 'A new blog post is now live. Check it out!',
+                        blogUrl,
+                        result.imageUrl || undefined
+                    );
+                    console.log(`🔔 [Scheduler] OneSignal push sent for auto blog: "${blogEntry.title}"`);
+                } catch (notifyError) {
+                    console.warn(`⚠️ [Scheduler] OneSignal push failed for "${blogEntry.title}": ${notifyError.message}`);
+                }
             }
         } catch (genError) {
             console.error(`💥 [Scheduler] Auto blog generation failed for "${blogEntry.title}":`, genError.message);

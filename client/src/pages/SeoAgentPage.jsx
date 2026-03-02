@@ -19,7 +19,6 @@ import {
     Layers,
     LogOut,
     Bell,
-    Smartphone,
     Code
 } from 'lucide-react';
 
@@ -29,7 +28,7 @@ import ProfileSelection from '../components/ProfileSelection';
 
 // Panel components for tabs
 import PushNotificationPanel from '../components/seo/PushNotificationPanel';
-import DeviceTokensPanel from '../components/seo/DeviceTokensPanel';
+
 import BlogManagerPanel from '../components/seo/BlogManagerPanel';
 
 
@@ -44,8 +43,6 @@ const SeoAgentPage = () => {
         { id: 'generate', label: 'Generate', icon: Zap },
         { id: 'blogs', label: 'Blog Manager', icon: FileText },
         { id: 'push', label: 'Send Push', icon: Bell },
-        { id: 'tokens', label: 'Devices', icon: Smartphone },
-
     ];
 
     // Mode State
@@ -526,7 +523,6 @@ const SeoAgentPage = () => {
                 {/* Non-generate tab content */}
                 {activeTab === 'blogs' && <BlogManagerPanel />}
                 {activeTab === 'push' && <PushNotificationPanel />}
-                {activeTab === 'tokens' && <DeviceTokensPanel />}
 
 
                 {/* Generate tab content */}
