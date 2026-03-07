@@ -45,13 +45,10 @@ const SeoAgentPage = () => {
         { id: 'push', label: 'Send Push', icon: Bell },
     ];
 
-    // Mode State
-    const [generationMode, setGenerationMode] = useState('topic'); // 'topic' or 'industry'
-    const [industry, setIndustry] = useState('');
+    // Mode State — removed (now always auto-research mode)
 
     // Form State
     const [topic, setTopic] = useState('');
-    const [keywords, setKeywords] = useState('');
     const [language, setLanguage] = useState('English');
     const [writingStyle, setWritingStyle] = useState('Professional');
     const [articleLength, setArticleLength] = useState('Medium (500-1000 words)');
@@ -162,12 +159,8 @@ const SeoAgentPage = () => {
     }, [user]);
 
     const handleGenerate = async () => {
-        if (generationMode === 'topic' && !topic.trim()) {
-            alert('Please enter a topic');
-            return;
-        }
-        if (generationMode === 'industry' && !industry.trim()) {
-            alert('Please enter an industry');
+        if (!topic.trim()) {
+            alert('Please enter an article title');
             return;
         }
 
@@ -192,9 +185,9 @@ const SeoAgentPage = () => {
         setIsGenerating(true);
         try {
             const payload = {
-                topic: generationMode === 'topic' ? topic : null,
-                industry: generationMode === 'industry' ? industry : null,
-                keywords: generationMode === 'topic' ? keywords : null, // Keywords auto-generated in industry mode
+                topic,           // Article title provided by user
+                industry: null,  // AI auto-researches industry from the title
+                keywords: null,  // AI auto-researches best keywords
                 language,
                 style: writingStyle,
                 length: articleLength,
@@ -533,8 +526,15 @@ const SeoAgentPage = () => {
                         <div className="lg:col-span-2 space-y-6">
                             <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-gray-200 dark:border-slate-700 p-6 md:p-8 transition-colors duration-300">
                                 <h2 className="text-2xl font-bold mb-6 text-gray-900 dark:text-white flex items-center gap-3">
-                                    Create SEO Optimized Article
+                                    <Bot className="text-indigo-500" size={24} />
+                                    AI SEO Article Generator
                                 </h2>
+                                <div className="mb-6 flex items-start gap-3 p-4 bg-indigo-50 dark:bg-indigo-900/20 rounded-xl border border-indigo-100 dark:border-indigo-800">
+                                    <Bot className="w-5 h-5 mt-0.5 text-indigo-500 shrink-0" />
+                                    <p className="text-sm text-indigo-700 dark:text-indigo-300">
+                                        Just enter a title — our AI automatically researches the best <strong>industry positioning</strong>, <strong>SEO keywords</strong>, and <strong>content strategy</strong> using AI SEO best practices (E-E-A-T, authority signals, structured content for AI citation).
+                                    </p>
+                                </div>
 
                                 <div className="space-y-6">
                                     {/* Source Type Selector */}
@@ -630,89 +630,24 @@ const SeoAgentPage = () => {
                                         </p>
                                     </div>
 
-                                    {/* Mode Selection */}
-                                    <div className="mb-6 grid grid-cols-2 gap-4 p-1 bg-gray-100 dark:bg-slate-700/50 rounded-lg">
-                                        <button
-                                            type="button"
-                                            onClick={() => setGenerationMode('topic')}
-                                            className={`py-2 px-4 rounded-md text-sm font-medium transition-all ${generationMode === 'topic'
-                                                ? 'bg-white dark:bg-slate-600 shadow-sm text-indigo-600 dark:text-indigo-400'
-                                                : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
-                                                }`}
-                                        >
-                                            <div className="flex items-center justify-center gap-2">
-                                                <Edit3 className="w-4 h-4" />
-                                                <span>Manual Entry</span>
-                                            </div>
-                                        </button>
-                                        <button
-                                            type="button"
-                                            onClick={() => setGenerationMode('industry')}
-                                            className={`py-2 px-4 rounded-md text-sm font-medium transition-all ${generationMode === 'industry'
-                                                ? 'bg-white dark:bg-slate-600 shadow-sm text-indigo-600 dark:text-indigo-400'
-                                                : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
-                                                }`}
-                                        >
-                                            <div className="flex items-center justify-center gap-2">
-                                                <Bot className="w-4 h-4" />
-                                                <span>Auto-Generate from Industry</span>
-                                            </div>
-                                        </button>
-                                    </div>
-
-                                    {generationMode === 'topic' ? (
-                                        <>
-                                            {/* Topic */}
-                                            <div className="space-y-2">
-                                                <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Topic</label>
-                                                <div className="relative">
-                                                    <textarea
-                                                        value={topic}
-                                                        onChange={(e) => setTopic(e.target.value)}
-                                                        placeholder="Enter your article topic or provide a brief description..."
-                                                        className="w-full h-32 px-4 py-3 rounded-xl bg-gray-50 dark:bg-slate-900/50 border border-gray-200 dark:border-slate-700 focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 focus:border-transparent outline-none transition-all resize-none text-gray-900 dark:text-gray-100 placeholder-gray-400"
-                                                    />
-                                                    <Edit3 className="absolute bottom-3 right-3 text-gray-400" size={16} />
-                                                </div>
-                                                <p className="text-xs text-gray-500 dark:text-gray-400">Provide a clear topic or description for your article</p>
-                                            </div>
-
-                                            {/* Keywords */}
-                                            <div className="space-y-2">
-                                                <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Keywords (Comma Separated)</label>
-                                                <input
-                                                    type="text"
-                                                    value={keywords}
-                                                    onChange={(e) => setKeywords(e.target.value)}
-                                                    placeholder="e.g. Reactjs, Hook, Context"
-                                                    className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-slate-900/50 border border-gray-200 dark:border-slate-700 focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 focus:border-transparent outline-none transition-all text-gray-900 dark:text-gray-100 placeholder-gray-400"
-                                                />
-                                                <p className="text-xs text-gray-500 dark:text-gray-400">Add relevant keywords to optimize your content</p>
-                                            </div>
-                                        </>
-                                    ) : (
-                                        /* Industry Input */
-                                        <div className="mb-6 space-y-2">
-                                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                                                Industry / Niche
-                                            </label>
-                                            <input
-                                                type="text"
-                                                value={industry}
-                                                onChange={(e) => setIndustry(e.target.value)}
-                                                placeholder="E.g., Real Estate, Digital Marketing, SaaS, Crypto"
-                                                className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-slate-900/50 border border-gray-200 dark:border-slate-700 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all text-gray-900 dark:text-white"
+                                    {/* Article Title — only required input */}
+                                    <div className="space-y-2">
+                                        <label className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+                                            Article Title <span className="text-indigo-500">*</span>
+                                        </label>
+                                        <div className="relative">
+                                            <textarea
+                                                value={topic}
+                                                onChange={(e) => setTopic(e.target.value)}
+                                                placeholder="e.g. How AI is Transforming Real Estate Lead Generation in 2025"
+                                                className="w-full h-28 px-4 py-3 rounded-xl bg-gray-50 dark:bg-slate-900/50 border border-gray-200 dark:border-slate-700 focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 focus:border-transparent outline-none transition-all resize-none text-gray-900 dark:text-gray-100 placeholder-gray-400"
                                             />
-                                            <div className="mt-2 bg-indigo-50 dark:bg-indigo-900/20 p-3 rounded-lg border border-indigo-100 dark:border-indigo-900/50">
-                                                <p className="text-sm text-indigo-700 dark:text-indigo-400 flex items-start gap-2">
-                                                    <Bot className="w-4 h-4 mt-0.5 shrink-0" />
-                                                    <span>
-                                                        AI will analyze this industry to find a high-ranking, trending topic and the best keywords automatically.
-                                                    </span>
-                                                </p>
-                                            </div>
+                                            <Edit3 className="absolute bottom-3 right-3 text-gray-400" size={16} />
                                         </div>
-                                    )}
+                                        <p className="text-xs text-gray-500 dark:text-gray-400">
+                                            AI will automatically determine the best industry, keywords, and content angle for this title.
+                                        </p>
+                                    </div>
 
                                     {/* Dropdowns Grid */}
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

@@ -28,7 +28,7 @@ const AdminAutoBlog = () => {
     const [nextRunLabel, setNextRunLabel] = useState('');
 
     // New schedule form
-    const [newSchedule, setNewSchedule] = useState({ niche: '', title: '', keywords: '' });
+    const [newSchedule, setNewSchedule] = useState({ title: '' });
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [submitMessage, setSubmitMessage] = useState({ type: '', text: '' });
 
@@ -171,7 +171,7 @@ const AdminAutoBlog = () => {
             const data = await res.json();
             if (data.success) {
                 setSubmitMessage({ type: 'success', text: 'Topic added to queue!' });
-                setNewSchedule({ niche: '', title: '', keywords: '' });
+                setNewSchedule({ title: '' });
                 fetchScheduledBlogs();
             } else {
                 setSubmitMessage({ type: 'error', text: data.error || 'Failed to queue' });
@@ -382,12 +382,12 @@ const AdminAutoBlog = () => {
                             <p className="text-xs font-semibold text-gray-700 dark:text-gray-300 mb-3 uppercase tracking-wide">Required Sheet Columns</p>
                             <div className="grid grid-cols-3 gap-2 text-center">
                                 {[
-                                    { col: 'Niche / Industry', example: 'Real Estate' },
-                                    { col: 'Title / Topic', example: 'How AI changes X…' },
-                                    { col: 'Keywords', example: 'AI, automation, X' },
-                                ].map(({ col, example }) => (
+                                    { col: 'Title / Topic', example: 'How AI changes X…', required: true },
+                                    { col: 'Niche / Industry', example: 'Real Estate (optional)', required: false },
+                                    { col: 'Keywords', example: 'AI, automation (optional)', required: false },
+                                ].map(({ col, example, required }) => (
                                     <div key={col} className="px-3 py-2 rounded-lg bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700">
-                                        <p className="font-semibold text-xs text-indigo-600 dark:text-indigo-400">{col}</p>
+                                        <p className={`font-semibold text-xs ${required ? 'text-indigo-600 dark:text-indigo-400' : 'text-gray-500 dark:text-gray-400'}`}>{col}</p>
                                         <p className="text-[11px] text-gray-500 dark:text-gray-400 mt-1 italic">{example}</p>
                                     </div>
                                 ))}
@@ -478,34 +478,24 @@ const AdminAutoBlog = () => {
                             </h4>
 
                             <form onSubmit={handleScheduleSubmit} className="space-y-4">
-                                <div>
-                                    <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Niche / Industry</label>
-                                    <input
-                                        type="text" required
-                                        value={newSchedule.niche}
-                                        onChange={e => setNewSchedule({ ...newSchedule, niche: e.target.value })}
-                                        className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-gray-300 dark:border-slate-600 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 dark:text-white"
-                                        placeholder="E.g., Cybersecurity"
-                                    />
+                                {/* AI auto-research banner */}
+                                <div className="flex items-start gap-2 p-3 bg-indigo-50 dark:bg-indigo-900/20 rounded-lg border border-indigo-100 dark:border-indigo-800">
+                                    <Zap size={14} className="text-indigo-500 shrink-0 mt-0.5" />
+                                    <p className="text-xs text-indigo-700 dark:text-indigo-300">
+                                        Just enter a title — AI will auto-research the industry, keywords &amp; content strategy.
+                                    </p>
                                 </div>
+
                                 <div>
-                                    <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Title / Topic</label>
+                                    <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                        Article Title <span className="text-indigo-500">*</span>
+                                    </label>
                                     <input
                                         type="text" required
                                         value={newSchedule.title}
-                                        onChange={e => setNewSchedule({ ...newSchedule, title: e.target.value })}
+                                        onChange={e => setNewSchedule({ title: e.target.value })}
                                         className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-gray-300 dark:border-slate-600 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 dark:text-white"
-                                        placeholder="Focus on specific topic"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Keywords</label>
-                                    <input
-                                        type="text" required
-                                        value={newSchedule.keywords}
-                                        onChange={e => setNewSchedule({ ...newSchedule, keywords: e.target.value })}
-                                        className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-gray-300 dark:border-slate-600 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 dark:text-white"
-                                        placeholder="Comma separated keywords"
+                                        placeholder="e.g. How AI is Changing Real Estate in 2025"
                                     />
                                 </div>
 

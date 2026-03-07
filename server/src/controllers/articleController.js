@@ -76,6 +76,9 @@ export const generateAndSaveArticleInternal = async ({
     const tableName = getTableName(userId, target_table);
 
     // ── 1. Call Python generation service ─────────────────────────────────────
+    if (!industry && !keywords) {
+        console.log(`[AutoResearch] No industry/keywords provided for topic "${topic}" — AI will auto-research industry, keywords, and content strategy.`);
+    }
     let genData;
     try {
         // If wp_url provided, pre-fetch articles from Supabase to use as interlinks
