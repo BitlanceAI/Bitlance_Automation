@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import Navbar from '../components/Navbar';
+import Navbar from '../components/layout/Navbar';
 import { Send, Smartphone, Save, RefreshCw } from 'lucide-react';
 import axios from 'axios';
 import { toast } from 'react-hot-toast';

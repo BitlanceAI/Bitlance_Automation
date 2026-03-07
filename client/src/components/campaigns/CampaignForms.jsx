@@ -148,7 +148,7 @@ const FileUpload = ({ onUpload, type = 'image', currentUrl, onClear, label }) =>
     );
 };
 
-export const CampaignFormBase = ({ formData, handleInputChange, children }) => (
+export const CampaignFormBase = ({ formData, handleInputChange, availablePages = [], children }) => (
     <div className="space-y-6">
         <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Campaign Name</label>
@@ -162,9 +162,127 @@ export const CampaignFormBase = ({ formData, handleInputChange, children }) => (
                 required
             />
         </div>
+        <PageSelectionSection formData={formData} handleInputChange={handleInputChange} availablePages={availablePages} />
+        <TargetingSection formData={formData} handleInputChange={handleInputChange} />
         {children}
     </div>
 );
+
+export const PageSelectionSection = ({ formData, handleInputChange, availablePages = [] }) => {
+    return (
+        <div className="border-t border-gray-100 dark:border-gray-700 pt-6">
+            <h3 className="text-lg font-semibold mb-4 text-gray-800 dark:text-gray-200">Facebook Page</h3>
+            <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Select Page for Ad Delivery</label>
+                <select
+                    name="page_id"
+                    value={formData.page_id || ''}
+                    onChange={handleInputChange}
+                    className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-slate-900 focus:ring-2 focus:ring-blue-500"
+                    required
+                >
+                    <option value="">-- Select a Facebook Page --</option>
+                    {availablePages?.map(page => (
+                        <option key={page.id} value={page.id}>{page.name}</option>
+                    ))}
+                </select>
+                {availablePages?.length === 0 && (
+                    <p className="text-sm text-yellow-600 mt-1">No pages found. Please connect your Meta account or ensure you have a Page.</p>
+                )}
+            </div>
+        </div>
+    );
+};
+
+export const TargetingSection = ({ formData, handleInputChange }) => {
+    const targeting = formData.targeting || { age_min: 18, age_max: 65, gender: 'ALL', locations: '' };
+
+    const handleTargetingChange = (e) => {
+        handleInputChange({
+            target: {
+                name: 'targeting',
+                value: {
+                    ...targeting,
+                    [e.target.name]: e.target.value
+                }
+            }
+        });
+    };
+
+    return (
+        <div className="border-t border-gray-100 dark:border-gray-700 pt-6">
+            <h3 className="text-lg font-semibold mb-4 text-gray-800 dark:text-gray-200">Audience Targeting</h3>
+            <div className="space-y-4 bg-gray-50 dark:bg-slate-900/50 p-4 rounded-xl border border-gray-100 dark:border-gray-800">
+
+                {/* Locations */}
+                <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Locations</label>
+                    <input
+                        type="text"
+                        name="locations"
+                        value={targeting.locations || ''}
+                        onChange={handleTargetingChange}
+                        placeholder="e.g. India, US, London (Comma separated)"
+                        className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-slate-900 focus:ring-2 focus:ring-blue-500"
+                    />
+                </div>
+
+                {/* Age Range */}
+                <div className="flex gap-4">
+                    <div className="flex-1">
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Min Age</label>
+                        <input
+                            type="number"
+                            name="age_min"
+                            value={targeting.age_min || 18}
+                            onChange={handleTargetingChange}
+                            min="13" max="65"
+                            className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-slate-900 focus:ring-2 focus:ring-blue-500"
+                        />
+                    </div>
+                    <div className="flex-1">
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Max Age</label>
+                        <input
+                            type="number"
+                            name="age_max"
+                            value={targeting.age_max || 65}
+                            onChange={handleTargetingChange}
+                            min="13" max="65"
+                            className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-slate-900 focus:ring-2 focus:ring-blue-500"
+                        />
+                    </div>
+                </div>
+
+                {/* Gender */}
+                <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Gender</label>
+                    <select
+                        name="gender"
+                        value={targeting.gender || 'ALL'}
+                        onChange={handleTargetingChange}
+                        className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-slate-900 focus:ring-2 focus:ring-blue-500"
+                    >
+                        <option value="ALL">All Genders</option>
+                        <option value="MALE">Men</option>
+                        <option value="FEMALE">Women</option>
+                    </select>
+                </div>
+
+                {/* Interests */}
+                <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Detailed Targeting (Interests)</label>
+                    <textarea
+                        name="interests"
+                        value={targeting.interests || ''}
+                        onChange={handleTargetingChange}
+                        placeholder="e.g. Technology, Digital Marketing, E-commerce"
+                        className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-slate-900 focus:ring-2 focus:ring-blue-500 h-20"
+                    />
+                </div>
+            </div>
+        </div>
+    );
+};
 
 export const CreativeAssetsSection = ({ formData, handleInputChange, showDestination = false, onOpenGraphicModal }) => {
     // Determine initial active tab based on content
@@ -350,8 +468,8 @@ export const CreativeAssetsSection = ({ formData, handleInputChange, showDestina
 };
 
 // 1. Awareness Form
-export const AwarenessForm = ({ formData, handleInputChange, onOpenGraphicModal }) => (
-    <CampaignFormBase formData={formData} handleInputChange={handleInputChange}>
+export const AwarenessForm = ({ formData, handleInputChange, onOpenGraphicModal, availablePages }) => (
+    <CampaignFormBase formData={formData} handleInputChange={handleInputChange} availablePages={availablePages}>
         <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg mb-4">
             <p className="text-sm text-blue-800 dark:text-blue-300">
                 <strong>Goal:</strong> Maximize brand visibility. Ads will be shown to people most likely to remember them.
@@ -362,8 +480,8 @@ export const AwarenessForm = ({ formData, handleInputChange, onOpenGraphicModal 
 );
 
 // 2. Traffic Form
-export const TrafficForm = ({ formData, handleInputChange, onOpenGraphicModal }) => (
-    <CampaignFormBase formData={formData} handleInputChange={handleInputChange}>
+export const TrafficForm = ({ formData, handleInputChange, onOpenGraphicModal, availablePages }) => (
+    <CampaignFormBase formData={formData} handleInputChange={handleInputChange} availablePages={availablePages}>
         <div className="bg-green-50 dark:bg-green-900/20 p-4 rounded-lg mb-4">
             <p className="text-sm text-green-800 dark:text-green-300">
                 <strong>Goal:</strong> Drive clicks to a website or landing page.
@@ -374,8 +492,8 @@ export const TrafficForm = ({ formData, handleInputChange, onOpenGraphicModal })
 );
 
 // 3. Engagement Form
-export const EngagementForm = ({ formData, handleInputChange, onOpenGraphicModal }) => (
-    <CampaignFormBase formData={formData} handleInputChange={handleInputChange}>
+export const EngagementForm = ({ formData, handleInputChange, onOpenGraphicModal, availablePages }) => (
+    <CampaignFormBase formData={formData} handleInputChange={handleInputChange} availablePages={availablePages}>
         <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Engagement Type</label>
             <select
@@ -392,8 +510,8 @@ export const EngagementForm = ({ formData, handleInputChange, onOpenGraphicModal
 );
 
 // 4. Lead Gen Form
-export const LeadGenForm = ({ formData, handleInputChange, onOpenGraphicModal }) => (
-    <CampaignFormBase formData={formData} handleInputChange={handleInputChange}>
+export const LeadGenForm = ({ formData, handleInputChange, onOpenGraphicModal, availablePages }) => (
+    <CampaignFormBase formData={formData} handleInputChange={handleInputChange} availablePages={availablePages}>
         <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Lead Form Type</label>
             <select
@@ -408,8 +526,8 @@ export const LeadGenForm = ({ formData, handleInputChange, onOpenGraphicModal })
 );
 
 // 5. Sales / Conversion Form
-export const SalesForm = ({ formData, handleInputChange, onOpenGraphicModal }) => (
-    <CampaignFormBase formData={formData} handleInputChange={handleInputChange}>
+export const SalesForm = ({ formData, handleInputChange, onOpenGraphicModal, availablePages }) => (
+    <CampaignFormBase formData={formData} handleInputChange={handleInputChange} availablePages={availablePages}>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Conversion Event</label>
@@ -435,8 +553,8 @@ export const SalesForm = ({ formData, handleInputChange, onOpenGraphicModal }) =
 );
 
 // 6. App Promotion Form
-export const AppPromotionForm = ({ formData, handleInputChange, onOpenGraphicModal }) => (
-    <CampaignFormBase formData={formData} handleInputChange={handleInputChange}>
+export const AppPromotionForm = ({ formData, handleInputChange, onOpenGraphicModal, availablePages }) => (
+    <CampaignFormBase formData={formData} handleInputChange={handleInputChange} availablePages={availablePages}>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">App Name</label>
@@ -466,8 +584,8 @@ export const AppPromotionForm = ({ formData, handleInputChange, onOpenGraphicMod
 );
 
 // 7. Local Business Form
-export const LocalBusinessForm = ({ formData, handleInputChange, onOpenGraphicModal }) => (
-    <CampaignFormBase formData={formData} handleInputChange={handleInputChange}>
+export const LocalBusinessForm = ({ formData, handleInputChange, onOpenGraphicModal, availablePages }) => (
+    <CampaignFormBase formData={formData} handleInputChange={handleInputChange} availablePages={availablePages}>
         <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Business Address</label>
             <input
@@ -509,8 +627,8 @@ export const LocalBusinessForm = ({ formData, handleInputChange, onOpenGraphicMo
 );
 
 // 8. Remarketing Form
-export const RemarketingForm = ({ formData, handleInputChange, onOpenGraphicModal }) => (
-    <CampaignFormBase formData={formData} handleInputChange={handleInputChange}>
+export const RemarketingForm = ({ formData, handleInputChange, onOpenGraphicModal, availablePages }) => (
+    <CampaignFormBase formData={formData} handleInputChange={handleInputChange} availablePages={availablePages}>
         <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Target Audience Source</label>
             <select
@@ -526,8 +644,8 @@ export const RemarketingForm = ({ formData, handleInputChange, onOpenGraphicModa
 );
 
 // 9. Offer / Event Form
-export const OfferEventForm = ({ formData, handleInputChange, onOpenGraphicModal }) => (
-    <CampaignFormBase formData={formData} handleInputChange={handleInputChange}>
+export const OfferEventForm = ({ formData, handleInputChange, onOpenGraphicModal, availablePages }) => (
+    <CampaignFormBase formData={formData} handleInputChange={handleInputChange} availablePages={availablePages}>
         <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Campaign Sub-Type</label>
             <select

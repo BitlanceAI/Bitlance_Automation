@@ -24,7 +24,7 @@ import {
 
 import blogService from '../services/blogService';
 import API_BASE_URL from '../config.js';
-import ProfileSelection from '../components/ProfileSelection';
+import ProfileSelection from '../components/dashboard/ProfileSelection';
 
 // Panel components for tabs
 import PushNotificationPanel from '../components/seo/PushNotificationPanel';

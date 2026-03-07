@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 import { useNavigate } from 'react-router-dom';
-import AdminUsers from '../components/AdminUsers';
-import AdminRemarketing from '../components/AdminRemarketing';
-import AdminLogs from '../components/AdminLogs';
-import AdminAutoBlog from '../components/AdminAutoBlog';
+import AdminUsers from '../components/admin/AdminUsers';
+import AdminRemarketing from '../components/admin/AdminRemarketing';
+import AdminLogs from '../components/admin/AdminLogs';
+import AdminAutoBlog from '../components/admin/AdminAutoBlog';
 import { useAuth } from '../context/AuthContext';
 import {
     LayoutDashboard,

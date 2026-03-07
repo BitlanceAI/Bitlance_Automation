@@ -23,7 +23,7 @@ import {
     Megaphone
 } from 'lucide-react';
 
-import VoiceAgentInterface from '../components/VoiceAgentInterface';
+import VoiceAgentInterface from '../components/agent/VoiceAgentInterface';
 
 import AiAvatar from '../assets/ai_agent_avatar.png';
 import { meetingsService } from '../services/meetingsService';

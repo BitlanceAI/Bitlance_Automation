@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import Navbar from '../components/Navbar';
+import Navbar from '../components/layout/Navbar';
 import { Trash2, Copy, Check, X, Smartphone, RefreshCw, Plus } from 'lucide-react';
 import axios from 'axios';
 import { toast } from 'react-hot-toast';

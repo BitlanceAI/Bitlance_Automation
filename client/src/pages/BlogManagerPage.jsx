@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import Navbar from '../components/Navbar';
+import Navbar from '../components/layout/Navbar';
 import { Plus, Edit3, Trash2, Eye, Calendar, FileText, Bell, Send, X } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';

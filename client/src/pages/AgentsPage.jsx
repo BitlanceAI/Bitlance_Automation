@@ -1,6 +1,6 @@
 import React from 'react';
 import { useAuth } from '../context/AuthContext';
-import AgentGrid from '../components/AgentGrid';
+import AgentGrid from '../components/agent/AgentGrid';
 import { agents } from '../data/agentsData';
 import { Bot, Zap, Clock, ArrowRight } from 'lucide-react';
 

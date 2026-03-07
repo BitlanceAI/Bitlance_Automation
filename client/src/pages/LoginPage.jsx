@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { LogIn, Mail, Lock } from 'lucide-react';
+import { LogIn, Mail, Lock, Eye, EyeOff } from 'lucide-react';
 import toast from 'react-hot-toast';
-import FacebookLogin from '../components/FacebookLogin';
+import FacebookLogin from '../components/auth/FacebookLogin';
+import { trackLogin, trackLoginError } from '../lib/analytics';
 
 const LoginPage = () => {
     const navigate = useNavigate();
@@ -12,6 +13,7 @@ const LoginPage = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [loading, setLoading] = useState(false);
+    const [showPassword, setShowPassword] = useState(false);
     const handleLogin = async (e) => {
         e.preventDefault();
         setLoading(true);
@@ -19,6 +21,7 @@ const LoginPage = () => {
         try {
             const { error } = await signIn({ email, password });
             if (error) throw error;
+            trackLogin('email');
             toast.success("Welcome back! 👋");
             navigate('/home');
         } catch (error) {
@@ -26,6 +29,7 @@ const LoginPage = () => {
             const message = error.message === "Invalid login credentials"
                 ? "Oops! Incorrect email or password. Please try again."
                 : error.message;
+            trackLoginError(message);
             toast.error(message, {
                 style: {
                     borderRadius: '10px',
@@ -73,14 +77,22 @@ const LoginPage = () => {
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Password</label>
                         <div className="relative">
                             <input
-                                type="password"
+                                type={showPassword ? 'text' : 'password'}
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
-                                className="w-full pl-10 pr-4 py-3 rounded-xl bg-gray-50 dark:bg-slate-900/50 border border-gray-200 dark:border-slate-700 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all text-gray-900 dark:text-gray-100 placeholder-gray-400"
+                                className="w-full pl-10 pr-10 py-3 rounded-xl bg-gray-50 dark:bg-slate-900/50 border border-gray-200 dark:border-slate-700 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all text-gray-900 dark:text-gray-100 placeholder-gray-400"
                                 placeholder="••••••••"
                                 required
                             />
                             <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+                            <button
+                                type="button"
+                                onClick={() => setShowPassword(!showPassword)}
+                                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+                                tabIndex={-1}
+                            >
+                                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                            </button>
                         </div>
                     </div>
 
@@ -93,6 +105,7 @@ const LoginPage = () => {
                     </button>
                 </form>
 
+                {/* Facebook login disabled temporarily
                 <div className="mt-6">
                     <div className="relative">
                         <div className="absolute inset-0 flex items-center">
@@ -102,9 +115,9 @@ const LoginPage = () => {
                             <span className="px-2 bg-white dark:bg-slate-800 text-gray-500">Or continue with</span>
                         </div>
                     </div>
-
                     <FacebookLogin />
                 </div>
+                */}
 
                 <p className="mt-8 text-center text-sm text-gray-600 dark:text-gray-400">
                     Don't have an account?{' '}

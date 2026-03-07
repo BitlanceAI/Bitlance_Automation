@@ -192,7 +192,7 @@ class MetaService {
     /**
      * Create a campaign
      */
-    async createCampaign(adAccountId, { name, objective, status = 'PAUSED', dailyBudget }) {
+    async createCampaign(adAccountId, { name, objective, status = 'ACTIVE', dailyBudget }) {
         const campaignData = {
             name,
             objective, // OUTCOME_TRAFFIC, OUTCOME_ENGAGEMENT, OUTCOME_LEADS, etc.

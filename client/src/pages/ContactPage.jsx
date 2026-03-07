@@ -7,6 +7,7 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 import ScrollReveal from '../components/ui/ScrollReveal';
 import { supabase } from '../services/supabaseClient';
+import { trackContactFormSubmit, trackContactFormSuccess, trackContactFormError, trackDemoClick, trackSocialClick } from '../lib/analytics';
 
 /* ─────────────── Contact Info Card ─────────────── */
 const ContactCard = ({ icon: Icon, title, value, sub, color, href }) => (
@@ -78,9 +79,11 @@ const ContactPage = () => {
         setError('');
         if (!form.name || !form.email || !form.message) {
             setError('Please fill in all required fields.');
+            trackContactFormError('Missing required fields');
             return;
         }
         setSubmitting(true);
+        trackContactFormSubmit();
 
         try {
             // 1. Save to Supabase 'contacts' table
@@ -130,9 +133,12 @@ const ContactPage = () => {
             }
 
             setSubmitted(true);
+            trackContactFormSuccess();
         } catch (err) {
             console.error('Submission Error:', err);
-            setError('Something went wrong. Please try again or email us directly.');
+            const msg = 'Something went wrong. Please try again or email us directly.';
+            setError(msg);
+            trackContactFormError(err.message || msg);
         } finally {
             setSubmitting(false);
         }
@@ -178,7 +184,7 @@ const ContactPage = () => {
                         Bitlance<span className="text-violet-500">AI</span>
                     </div>
                     <button
-                        onClick={() => navigate('/apply/real-estate')}
+                        onClick={() => { trackDemoClick('contact_nav'); navigate('/apply/real-estate'); }}
                         className="px-6 py-2.5 bg-white text-black font-semibold rounded-full
                                    hover:bg-gray-200 transition-colors text-sm"
                     >
@@ -472,7 +478,7 @@ const ContactPage = () => {
                         Book a free, no-obligation live demo and watch our agents handle real-world scenarios for your industry.
                     </p>
                     <button
-                        onClick={() => navigate('/apply/real-estate')}
+                        onClick={() => { trackDemoClick('contact_cta'); navigate('/apply/real-estate'); }}
                         className="inline-flex items-center gap-2 bg-white text-black px-10 py-4
                                    rounded-full font-bold text-lg hover:scale-105 transition-transform"
                     >

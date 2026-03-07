@@ -116,7 +116,7 @@ export const createCampaign = async (req, res) => {
                         metaResult = await metaService.createCampaign(adAccountId, {
                             name: name || 'Untitled Campaign',
                             objective: metaObjective,
-                            status: 'PAUSED', // Always create as PAUSED first
+                            status: 'ACTIVE', // Publish directly as ACTIVE
                             special_ad_categories: [], // Required
                             dailyBudget // Pass budget
                         });
@@ -129,12 +129,12 @@ export const createCampaign = async (req, res) => {
                                 .from('campaigns')
                                 .update({
                                     meta_campaign_id: metaResult.data.id,
-                                    status: 'PAUSED' // Sync status
+                                    status: 'ACTIVE' // Sync status
                                 })
                                 .eq('id', localCampaign.id);
 
                             localCampaign.meta_campaign_id = metaResult.data.id;
-                            localCampaign.status = 'PAUSED';
+                            localCampaign.status = 'ACTIVE';
                         } else {
                             console.error('❌ [Campaign] Meta Failed:', metaResult.error);
                             // Keep local campaign but maybe log error?
@@ -248,6 +248,123 @@ export const trackInteraction = async (req, res) => {
 
         res.json({ success: true });
     } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+};
+
+export const stopCampaign = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const userId = req.user.id;
+
+        // Verify ownership & get meta campaign ID
+        const { data: campaign, error: campError } = await db
+            .from('campaigns')
+            .select('id, meta_campaign_id, status')
+            .eq('id', id)
+            .eq('user_id', userId)
+            .single();
+
+        if (campError || !campaign) {
+            return res.status(404).json({ success: false, error: 'Campaign not found' });
+        }
+
+        if (campaign.status === 'PAUSED') {
+            return res.status(400).json({ success: false, error: 'Campaign is already paused' });
+        }
+
+        // Pause on Meta if linked
+        if (campaign.meta_campaign_id) {
+            try {
+                const { data: connection } = await db
+                    .from('meta_connections')
+                    .select('access_token')
+                    .eq('user_id', userId)
+                    .eq('is_active', true)
+                    .single();
+
+                if (connection) {
+                    const token = decryptData(connection.access_token);
+                    if (token) {
+                        const metaService = new MetaService(token);
+                        await metaService.updateCampaignStatus(campaign.meta_campaign_id, 'PAUSED');
+                    }
+                }
+            } catch (metaErr) {
+                console.warn('⚠️ [Campaign] Could not pause on Meta:', metaErr.message);
+                // Continue to update locally even if Meta fails
+            }
+        }
+
+        // Update local status
+        await db
+            .from('campaigns')
+            .update({ status: 'PAUSED' })
+            .eq('id', id);
+
+        console.log(`⏸️ [Campaign] Stopped campaign: ${id}`);
+        res.json({ success: true, message: 'Campaign paused successfully' });
+
+    } catch (error) {
+        console.error('Stop Campaign Error:', error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+};
+
+export const deleteCampaign = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const userId = req.user.id;
+
+        // Verify ownership & get meta campaign ID
+        const { data: campaign, error: campError } = await db
+            .from('campaigns')
+            .select('id, meta_campaign_id')
+            .eq('id', id)
+            .eq('user_id', userId)
+            .single();
+
+        if (campError || !campaign) {
+            return res.status(404).json({ success: false, error: 'Campaign not found' });
+        }
+
+        // Delete from Meta if linked
+        if (campaign.meta_campaign_id) {
+            try {
+                const { data: connection } = await db
+                    .from('meta_connections')
+                    .select('access_token')
+                    .eq('user_id', userId)
+                    .eq('is_active', true)
+                    .single();
+
+                if (connection) {
+                    const token = decryptData(connection.access_token);
+                    if (token) {
+                        const metaService = new MetaService(token);
+                        // Meta requires campaign to be DELETED via status update
+                        await metaService.updateCampaignStatus(campaign.meta_campaign_id, 'DELETED');
+                    }
+                }
+            } catch (metaErr) {
+                console.warn('⚠️ [Campaign] Could not delete on Meta:', metaErr.message);
+                // Continue to delete locally even if Meta fails
+            }
+        }
+
+        // Delete from local DB
+        const { error: deleteError } = await db
+            .from('campaigns')
+            .delete()
+            .eq('id', id);
+
+        if (deleteError) throw deleteError;
+
+        console.log(`🗑️ [Campaign] Deleted campaign: ${id}`);
+        res.json({ success: true, message: 'Campaign deleted successfully' });
+
+    } catch (error) {
+        console.error('Delete Campaign Error:', error);
         res.status(500).json({ success: false, error: error.message });
     }
 };

@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { UserPlus, Mail, Lock, User, AlertCircle, CheckCircle } from 'lucide-react';
-import FacebookLogin from '../components/FacebookLogin';
+import { UserPlus, Mail, Lock, User, AlertCircle, CheckCircle, Eye, EyeOff } from 'lucide-react';
+import FacebookLogin from '../components/auth/FacebookLogin';
+import { trackSignup, trackSignupError } from '../lib/analytics';
 
 const SignupPage = () => {
     const navigate = useNavigate();
@@ -17,6 +18,8 @@ const SignupPage = () => {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
+    const [showPassword, setShowPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -48,11 +51,13 @@ const SignupPage = () => {
 
             if (error) throw error;
 
+            trackSignup('email');
             setSuccess('Account created successfully! Please check your email for verification.');
             setTimeout(() => {
                 navigate('/login');
             }, 3000);
         } catch (error) {
+            trackSignupError(error.message);
             setError(error.message);
         } finally {
             setLoading(false);
@@ -109,15 +114,23 @@ const SignupPage = () => {
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Password</label>
                         <div className="relative">
                             <input
-                                type="password"
+                                type={showPassword ? 'text' : 'password'}
                                 name="password"
                                 value={formData.password}
                                 onChange={handleChange}
-                                className="w-full pl-10 pr-4 py-3 rounded-xl bg-gray-50 dark:bg-slate-900/50 border border-gray-200 dark:border-slate-700 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all text-gray-900 dark:text-gray-100 placeholder-gray-400"
+                                className="w-full pl-10 pr-10 py-3 rounded-xl bg-gray-50 dark:bg-slate-900/50 border border-gray-200 dark:border-slate-700 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all text-gray-900 dark:text-gray-100 placeholder-gray-400"
                                 placeholder="Create a password"
                                 required
                             />
                             <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+                            <button
+                                type="button"
+                                onClick={() => setShowPassword(!showPassword)}
+                                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+                                tabIndex={-1}
+                            >
+                                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                            </button>
                         </div>
                     </div>
 
@@ -125,15 +138,23 @@ const SignupPage = () => {
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Confirm Password</label>
                         <div className="relative">
                             <input
-                                type="password"
+                                type={showConfirmPassword ? 'text' : 'password'}
                                 name="confirmPassword"
                                 value={formData.confirmPassword}
                                 onChange={handleChange}
-                                className="w-full pl-10 pr-4 py-3 rounded-xl bg-gray-50 dark:bg-slate-900/50 border border-gray-200 dark:border-slate-700 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all text-gray-900 dark:text-gray-100 placeholder-gray-400"
+                                className="w-full pl-10 pr-10 py-3 rounded-xl bg-gray-50 dark:bg-slate-900/50 border border-gray-200 dark:border-slate-700 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all text-gray-900 dark:text-gray-100 placeholder-gray-400"
                                 placeholder="Confirm your password"
                                 required
                             />
                             <CheckCircle className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+                            <button
+                                type="button"
+                                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+                                tabIndex={-1}
+                            >
+                                {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                            </button>
                         </div>
                     </div>
 
@@ -150,6 +171,7 @@ const SignupPage = () => {
                     </button>
                 </form>
 
+                {/* Facebook login disabled temporarily
                 <div className="mt-6">
                     <div className="relative">
                         <div className="absolute inset-0 flex items-center">
@@ -159,9 +181,9 @@ const SignupPage = () => {
                             <span className="px-2 bg-white dark:bg-slate-800 text-gray-500">Or continue with</span>
                         </div>
                     </div>
-
                     <FacebookLogin />
                 </div>
+                */}
 
                 <p className="mt-8 text-center text-sm text-gray-600 dark:text-gray-400">
                     Already have an account?{' '}

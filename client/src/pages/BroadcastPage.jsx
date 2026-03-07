@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
-import BroadcastForm from '../components/BroadcastForm';
-import TemplateManager from '../components/TemplateManager';
-import BroadcastHistory from '../components/BroadcastHistory';
-import BroadcastSettings from '../components/BroadcastSettings';
-import Navbar from '../components/Navbar';
+import BroadcastForm from '../components/broadcast/BroadcastForm';
+import TemplateManager from '../components/broadcast/TemplateManager';
+import BroadcastHistory from '../components/broadcast/BroadcastHistory';
+import BroadcastSettings from '../components/broadcast/BroadcastSettings';
+import Navbar from '../components/layout/Navbar';
 import { Radio, FileText, Clock, Send, Zap, Settings } from 'lucide-react';
 
 const BroadcastPage = () => {

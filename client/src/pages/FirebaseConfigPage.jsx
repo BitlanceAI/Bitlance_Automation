@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import Navbar from '../components/Navbar';
+import Navbar from '../components/layout/Navbar';
 import { Settings, Save, AlertTriangle } from 'lucide-react';
 
 const FirebaseConfigPage = () => {

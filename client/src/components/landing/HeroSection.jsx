@@ -76,13 +76,18 @@ const HeroSection = ({ onOpenBooking }) => {
                             {slides[currentSlide].icon}
                         </div>
 
-                        {/* Main Heading */}
-                        <h1 className="text-4xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight mb-8 leading-tight text-white">
+                        {/* Main Heading (SEO Valid H1) */}
+                        <h1 className="sr-only">
+                            Bitlance Automation | AI Voice Bots & Business Automation Services
+                        </h1>
+
+                        {/* Visual Rotating Heading */}
+                        <h2 className="text-4xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight mb-8 leading-tight text-white">
                             {slides[currentSlide].title1} <br className="hidden md:block" />
                             <span className={`bg-clip-text text-transparent bg-gradient-to-r ${slides[currentSlide].gradient} relative inline-block`}>
                                 {slides[currentSlide].title2}
                             </span>
-                        </h1>
+                        </h2>
 
                         {/* Subheading */}
                         <p className="text-lg md:text-xl text-white/70 mb-10 max-w-2xl mx-auto leading-relaxed h-[80px] sm:h-[60px] flex items-center justify-center">
@@ -128,8 +133,8 @@ const HeroSection = ({ onOpenBooking }) => {
                             key={index}
                             onClick={() => setCurrentSlide(index)}
                             className={`transition-all duration-300 rounded-full ${currentSlide === index
-                                    ? 'w-10 h-2 bg-indigo-500'
-                                    : 'w-2 h-2 bg-white/30 hover:bg-white/50'
+                                ? 'w-10 h-2 bg-indigo-500'
+                                : 'w-2 h-2 bg-white/30 hover:bg-white/50'
                                 }`}
                             aria-label={`Go to slide ${index + 1}`}
                         />

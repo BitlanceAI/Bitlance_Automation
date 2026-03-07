@@ -40,7 +40,8 @@ import {
     CalendarClock,
     Users,
     UploadCloud,
-    Trash2
+    Trash2,
+    CreditCard
 } from 'lucide-react';
 
 import {
@@ -78,6 +79,7 @@ const MetaAdsPage = () => {
     const [connecting, setConnecting] = useState(false);
     const oauthProcessedRef = useRef(false);
     const authTokenRef = useRef(null); // Stores auth token synchronously for immediate use
+    const dataLoadedRef = useRef(false); // Prevents re-fetching on every token refresh (tab switch)
 
     // Form state
     const [apiKeyForm, setApiKeyForm] = useState({
@@ -91,6 +93,7 @@ const MetaAdsPage = () => {
     const [scheduledPosts, setScheduledPosts] = useState([]);
     const [insights, setInsights] = useState({});
     const [filter, setFilter] = useState('all');
+    const [adAccountBalance, setAdAccountBalance] = useState(null); // { balance, currency, amount_spent, name }
 
     useEffect(() => {
         if (filter !== 'all') setShowInternalCampaigns(false);
@@ -166,8 +169,9 @@ const MetaAdsPage = () => {
     useEffect(() => {
         // Reset the processed flag on mount
         oauthProcessedRef.current = false;
+        dataLoadedRef.current = false;
 
-        // Get initial session
+        // Get initial session and do ONE full data load
         const initSession = async () => {
             const { data: { session: currentSession } } = await supabase.auth.getSession();
             if (currentSession) {
@@ -187,15 +191,25 @@ const MetaAdsPage = () => {
             console.log('[Meta OAuth] Auth state changed:', event);
 
             if (currentSession) {
+                // Always keep the token ref fresh (needed for API calls)
                 authTokenRef.current = currentSession.access_token;
+
+                if (event === 'TOKEN_REFRESHED') {
+                    // Token silently refreshed (e.g. tab switch) — do NOT reload data
+                    // Just update the ref (already done above), no state update needed
+                    console.log('[Meta OAuth] Token refreshed silently, skipping reload');
+                    return;
+                }
+
                 setSession(currentSession);
 
-                // Only check for Facebook token on SIGNED_IN (not TOKEN_REFRESHED to avoid loops)
+                // Only check for Facebook OAuth token on SIGNED_IN
                 if (event === 'SIGNED_IN') {
                     checkForFacebookToken(currentSession);
                 }
             } else {
                 setSession(null);
+                dataLoadedRef.current = false;
                 setLoading(false);
             }
         });
@@ -238,9 +252,10 @@ const MetaAdsPage = () => {
         }
     }, [searchParams, session]);
 
-    // Load connection status on mount
+    // Load connection status only ONCE per mount (not on every token refresh)
     useEffect(() => {
-        if (session?.access_token) {
+        if (session?.access_token && !dataLoadedRef.current) {
+            dataLoadedRef.current = true;
             checkConnection();
         }
     }, [session]);
@@ -265,7 +280,8 @@ const MetaAdsPage = () => {
                 await Promise.all([
                     loadCampaigns(),
                     loadScheduledPosts(),
-                    loadInsights()
+                    loadInsights(),
+                    loadAdAccountBalance()
                 ]);
             } else {
                 setIsConnected(false);
@@ -339,6 +355,20 @@ const MetaAdsPage = () => {
             }
         } catch (error) {
             console.error('Failed to load insights:', error);
+        }
+    };
+
+    const loadAdAccountBalance = async () => {
+        try {
+            const response = await fetch(`${API_BASE}/api/meta/account-balance`, {
+                headers: getAuthHeaders()
+            });
+            const data = await response.json();
+            if (data.success && data.accounts && data.accounts.length > 0) {
+                setAdAccountBalance(data.accounts[0]); // Use first ad account
+            }
+        } catch (error) {
+            console.error('Failed to load account balance:', error);
         }
     };
 
@@ -473,7 +503,8 @@ const MetaAdsPage = () => {
                 }),
                 loadCampaigns(),
                 loadScheduledPosts(),
-                loadInsights()
+                loadInsights(),
+                loadAdAccountBalance()
             ]);
             await checkConnection();
             toast.success('Data refreshed');
@@ -740,6 +771,15 @@ const MetaAdsPage = () => {
                                         <Calendar className="h-5 w-5" />
                                         Schedule Post
                                     </button>
+                                    <a
+                                        href={`https://business.facebook.com/billing/payment_methods?act=${connection?.ad_accounts?.[0]?.account_id || ''}`}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="flex items-center gap-2 px-6 py-3 rounded-xl bg-white/10 text-white font-semibold hover:bg-white/20 transition-colors backdrop-blur-sm border border-white/20"
+                                    >
+                                        <CreditCard className="h-5 w-5" />
+                                        Add Payment
+                                    </a>
                                     <button
                                         onClick={handleDisconnect}
                                         className="flex items-center gap-2 px-6 py-3 rounded-xl bg-white/10 text-white font-semibold hover:bg-white/20 transition-colors backdrop-blur-sm border border-white/20"
@@ -763,24 +803,58 @@ const MetaAdsPage = () => {
 
                 {/* Stats Cards */}
                 {isConnected && (
-                    <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
-                        {[
-                            { label: 'Total Campaigns', value: stats.totalCampaigns, icon: Layers, color: 'from-blue-500 to-cyan-500' },
-                            { label: 'Active Campaigns', value: stats.activeCampaigns, icon: PlayCircle, color: 'from-emerald-500 to-teal-500' },
-                            { label: 'Total Spent', value: `₹${stats.totalSpent.toLocaleString()}`, icon: IndianRupee, color: 'from-amber-500 to-orange-500' },
-                            { label: 'Impressions', value: stats.totalImpressions.toLocaleString(), icon: Eye, color: 'from-violet-500 to-purple-500' },
-                            { label: 'Conversions', value: stats.totalConversions, icon: TrendingUp, color: 'from-rose-500 to-pink-500' }
-                        ].map((stat) => (
-                            <div key={stat.label} className="group relative overflow-hidden rounded-2xl bg-white dark:bg-slate-800/50 border border-gray-200/50 dark:border-slate-700/50 p-5 transition-all duration-300 hover:shadow-lg hover:shadow-gray-200/50 dark:hover:shadow-slate-900/50 hover:-translate-y-0.5">
-                                <div className={`absolute top-0 right-0 w-20 h-20 bg-gradient-to-br ${stat.color} opacity-10 rounded-full -translate-y-1/2 translate-x-1/2 group-hover:scale-150 transition-transform duration-500`} />
-                                <div className={`inline-flex p-2 rounded-xl bg-gradient-to-br ${stat.color} mb-3`}>
-                                    <stat.icon className="h-5 w-5 text-white" />
+                    <>
+                        {/* Ad Account Balance Card */}
+                        {adAccountBalance && (
+                            <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 p-5 mb-4 shadow-lg shadow-emerald-500/20">
+                                <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2" />
+                                <div className="relative z-10 flex items-center justify-between">
+                                    <div>
+                                        <p className="text-emerald-100 text-sm font-medium mb-1">Available Ad Balance</p>
+                                        <p className="text-3xl font-bold text-white">
+                                            {adAccountBalance.currency} {parseFloat(adAccountBalance.balance).toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                                        </p>
+                                        <p className="text-emerald-200 text-xs mt-1">
+                                            Spent: {adAccountBalance.currency} {parseFloat(adAccountBalance.amount_spent).toLocaleString(undefined, { minimumFractionDigits: 2 })} · {adAccountBalance.name}
+                                        </p>
+                                    </div>
+                                    <div className="flex flex-col items-end gap-2">
+                                        <div className="p-3 rounded-2xl bg-white/20 backdrop-blur-sm">
+                                            <CreditCard className="h-7 w-7 text-white" />
+                                        </div>
+                                        <button
+                                            onClick={loadAdAccountBalance}
+                                            className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-white/15 hover:bg-white/25 text-white text-xs font-medium transition-colors"
+                                            title="Refresh balance"
+                                        >
+                                            <RefreshCw className="h-3 w-3" />
+                                            Refresh
+                                        </button>
+                                    </div>
                                 </div>
-                                <p className="text-2xl font-bold text-gray-900 dark:text-white">{stat.value}</p>
-                                <p className="text-sm text-gray-500 dark:text-gray-400">{stat.label}</p>
                             </div>
-                        ))}
-                    </div>
+                        )}
+
+                        {/* Metric Stats Grid */}
+                        <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
+                            {[
+                                { label: 'Total Campaigns', value: stats.totalCampaigns, icon: Layers, color: 'from-blue-500 to-cyan-500' },
+                                { label: 'Active Campaigns', value: stats.activeCampaigns, icon: PlayCircle, color: 'from-emerald-500 to-teal-500' },
+                                { label: 'Total Spent', value: `₹${stats.totalSpent.toLocaleString()}`, icon: IndianRupee, color: 'from-amber-500 to-orange-500' },
+                                { label: 'Impressions', value: stats.totalImpressions.toLocaleString(), icon: Eye, color: 'from-violet-500 to-purple-500' },
+                                { label: 'Conversions', value: stats.totalConversions, icon: TrendingUp, color: 'from-rose-500 to-pink-500' }
+                            ].map((stat) => (
+                                <div key={stat.label} className="group relative overflow-hidden rounded-2xl bg-white dark:bg-slate-800/50 border border-gray-200/50 dark:border-slate-700/50 p-5 transition-all duration-300 hover:shadow-lg hover:shadow-gray-200/50 dark:hover:shadow-slate-900/50 hover:-translate-y-0.5">
+                                    <div className={`absolute top-0 right-0 w-20 h-20 bg-gradient-to-br ${stat.color} opacity-10 rounded-full -translate-y-1/2 translate-x-1/2 group-hover:scale-150 transition-transform duration-500`} />
+                                    <div className={`inline-flex p-2 rounded-xl bg-gradient-to-br ${stat.color} mb-3`}>
+                                        <stat.icon className="h-5 w-5 text-white" />
+                                    </div>
+                                    <p className="text-2xl font-bold text-gray-900 dark:text-white">{stat.value}</p>
+                                    <p className="text-sm text-gray-500 dark:text-gray-400">{stat.label}</p>
+                                </div>
+                            ))}
+                        </div>
+                    </>
                 )}
 
                 {/* Connected Pages */}

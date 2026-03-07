@@ -1,5 +1,5 @@
 import express from 'express';
-import { createCampaign, getCampaigns, serveCampaign, trackInteraction, getCampaignStats } from '../controllers/campaignController.js';
+import { createCampaign, getCampaigns, serveCampaign, trackInteraction, getCampaignStats, stopCampaign, deleteCampaign } from '../controllers/campaignController.js';
 import { authenticateUser } from '../middleware/authMiddleware.js';
 import multer from 'multer';
 import { createClient } from '@supabase/supabase-js';
@@ -33,6 +33,8 @@ router.post('/track', trackInteraction);
 router.post('/', authenticateUser, createCampaign);
 router.get('/', authenticateUser, getCampaigns);
 router.get('/:id/stats', authenticateUser, getCampaignStats);
+router.patch('/:id/stop', authenticateUser, stopCampaign);
+router.delete('/:id', authenticateUser, deleteCampaign);
 
 // Upload Endpoint
 router.post('/upload', authenticateUser, upload.single('file'), async (req, res) => {

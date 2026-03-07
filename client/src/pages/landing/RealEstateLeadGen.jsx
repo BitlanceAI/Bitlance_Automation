@@ -4,6 +4,7 @@ import { Sparkles, Calendar, XCircle, CheckCircle2, ChevronRight, ArrowRight, Bu
 import LeadQualificationForm from '../../components/funnel/LeadQualificationForm';
 import DisqualifiedView from '../../components/funnel/DisqualifiedView';
 import CalendarBookingView from '../../components/funnel/CalendarBookingView';
+import { trackLeadQualified, trackLeadDisqualified, trackBookingSuccess } from '../../lib/analytics';
 
 const RealEstateLeadGen = () => {
     // view state: 'form', 'qualified', 'disqualified', 'success'
@@ -13,14 +14,17 @@ const RealEstateLeadGen = () => {
     const handleQualify = (data) => {
         setLeadData(data);
         setView('qualified');
+        trackLeadQualified();
     };
 
     const handleDisqualify = () => {
         setView('disqualified');
+        trackLeadDisqualified();
     };
 
     const handleBookingSuccess = () => {
         setView('success');
+        trackBookingSuccess();
     };
 
     return (

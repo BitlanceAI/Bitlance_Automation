@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import SEOHead from '../components/SEOHead';
+import SEOHead from '../components/layout/SEOHead';
 import { Loader2, ArrowLeft, Calendar, User, Clock, Share2, Tag, Facebook, Twitter, Linkedin, Globe, Mail, Phone, MessageSquare, Send, ArrowRight } from 'lucide-react';
 import API_BASE_URL from '../config.js';
+import { trackBlogRead, trackDemoClick } from '../lib/analytics';
 
 const PublicArticlePage = () => {
     const { id, slug } = useParams(); // Support both id and slug
@@ -125,6 +126,7 @@ const PublicArticlePage = () => {
 
             if (data.success) {
                 setArticle(data.article);
+                trackBlogRead(data.article.seo_title || data.article.topic);
             } else {
                 setError(data.error || 'Failed to load article');
             }
@@ -386,6 +388,7 @@ const PublicArticlePage = () => {
                             <div className="flex-shrink-0 w-full md:w-auto">
                                 <Link
                                     to="/demo"
+                                    onClick={() => trackDemoClick('blog_article_cta')}
                                     className="w-full md:w-auto inline-flex items-center justify-center bg-white text-indigo-700 hover:bg-slate-50 px-8 py-4 rounded-xl font-bold text-lg shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300"
                                 >
                                     Book a Demo

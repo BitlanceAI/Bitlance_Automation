@@ -6,7 +6,7 @@ import { ArrowLeft, Plus, Upload, Trash2, Eye, RefreshCw, Home, LayoutDashboard,
 
 import blogService from '../services/blogService';
 import API_BASE_URL from '../config.js';
-import ProfileSelection from '../components/ProfileSelection';
+import ProfileSelection from '../components/dashboard/ProfileSelection';
 
 const BlogPage = () => {
     const { user, credits, isAdmin, refreshCredits } = useAuth();

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import BlogCard from '../components/BlogCard';
-import SEOHead from '../components/SEOHead';
+import BlogCard from '../components/blog/BlogCard';
+import SEOHead from '../components/layout/SEOHead';
 import { Search, Loader2 } from 'lucide-react';
 import API_BASE_URL from '../config.js';
 

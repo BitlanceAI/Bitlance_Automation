@@ -659,4 +659,67 @@ router.get('/insights', async (req, res) => {
     }
 });
 
+/**
+ * Get live ad account balance & spend
+ * GET /api/meta/account-balance
+ */
+router.get('/account-balance', async (req, res) => {
+    try {
+        const userId = req.user.id;
+
+        const { data: connection, error: connError } = await supabase
+            .from('meta_connections')
+            .select('*')
+            .eq('user_id', userId)
+            .eq('is_active', true)
+            .single();
+
+        if (connError || !connection) {
+            return res.status(404).json({ error: 'No active Meta connection' });
+        }
+
+        const decryptedToken = decryptData(connection.access_token);
+        if (!decryptedToken) {
+            return res.status(500).json({ error: 'Failed to decrypt token. Please reconnect.' });
+        }
+
+        const metaService = new MetaService(decryptedToken);
+
+        // Fetch fresh ad account data with balance
+        const adAccountsResult = await metaService.getAdAccounts();
+
+        if (!adAccountsResult.success) {
+            return handleMetaError(res, userId, adAccountsResult);
+        }
+
+        const accounts = adAccountsResult.adAccounts || [];
+
+        if (accounts.length === 0) {
+            return res.json({ success: true, accounts: [], message: 'No ad accounts found' });
+        }
+
+        // Format balances (Meta returns amounts in cents)
+        const formattedAccounts = accounts.map(acc => ({
+            account_id: acc.account_id,
+            name: acc.name,
+            currency: acc.currency || 'USD',
+            account_status: acc.account_status, // 1=Active, 2=Disabled, 3=Unsettled, etc.
+            balance: acc.balance ? (parseFloat(acc.balance) / 100).toFixed(2) : '0.00',
+            amount_spent: acc.amount_spent ? (parseFloat(acc.amount_spent) / 100).toFixed(2) : '0.00',
+        }));
+
+        // Also update stored ad_accounts with fresh data
+        await supabase
+            .from('meta_connections')
+            .update({ ad_accounts: accounts, updated_at: new Date().toISOString() })
+            .eq('user_id', userId);
+
+        res.json({ success: true, accounts: formattedAccounts });
+
+    } catch (error) {
+        console.error('Get account balance error:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
 export default router;

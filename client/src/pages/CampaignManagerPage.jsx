@@ -23,12 +23,17 @@ const CampaignManagerPage = ({ embedded = false }) => {
     // Meta Connection State
     const [isConnected, setIsConnected] = useState(false);
     const [showConnectModal, setShowConnectModal] = useState(false);
+    const [availablePages, setAvailablePages] = useState([]);
 
     // Form State
     const [selectedType, setSelectedType] = useState(null);
     const [showStatsModal, setShowStatsModal] = useState(false);
     const [selectedStats, setSelectedStats] = useState(null);
     const [statsLoading, setStatsLoading] = useState(false);
+
+    // View Campaign State
+    const [showViewModal, setShowViewModal] = useState(false);
+    const [selectedCampaign, setSelectedCampaign] = useState(null);
 
     // Graphic Generator State
     const [showGraphicModal, setShowGraphicModal] = useState(false);
@@ -40,6 +45,7 @@ const CampaignManagerPage = ({ embedded = false }) => {
         type: 'awareness', // awareness, traffic, engagement, leadgen
         objective: 'brand_awareness',
         status: 'draft',
+        page_id: '',
         creative_assets: {
             headline: '',
             description: '',
@@ -51,7 +57,13 @@ const CampaignManagerPage = ({ embedded = false }) => {
         start_date: new Date().toISOString().split('T')[0],
         end_date: '',
         budget: '',
-        targeting: {},
+        targeting: {
+            locations: '',
+            age_min: 18,
+            age_max: 65,
+            gender: 'ALL',
+            interests: ''
+        },
     });
 
     const campaignTypes = [
@@ -86,8 +98,10 @@ const CampaignManagerPage = ({ embedded = false }) => {
             const data = await res.json();
             if (data.connected && data.isValid) {
                 setIsConnected(true);
+                setAvailablePages(data.pages || []);
             } else {
                 setIsConnected(false);
+                setAvailablePages([]);
             }
         } catch (error) {
             console.error('Meta connection check failed:', error);
@@ -129,6 +143,31 @@ const CampaignManagerPage = ({ embedded = false }) => {
             console.error('Failed to load stats:', error);
         } finally {
             setStatsLoading(false);
+        }
+    };
+
+    const handleViewCampaign = (campaign) => {
+        setSelectedCampaign(campaign);
+        setShowViewModal(true);
+    };
+
+    const handleDeleteCampaign = async (id) => {
+        if (!window.confirm('Are you sure you want to delete this campaign?')) return;
+        try {
+            const res = await fetch(`${API_BASE}/api/campaigns/${id}`, {
+                method: 'DELETE',
+                headers: getAuthHeaders()
+            });
+            const data = await res.json();
+            if (data.success) {
+                toast.success('Campaign deleted successfully');
+                fetchCampaigns();
+            } else {
+                toast.error(data.error || 'Failed to delete campaign');
+            }
+        } catch (error) {
+            console.error('Error deleting campaign:', error);
+            toast.error('Network error while deleting');
         }
     };
 
@@ -231,7 +270,7 @@ const CampaignManagerPage = ({ embedded = false }) => {
     };
 
     const renderSpecificForm = () => {
-        const props = { formData, handleInputChange, onOpenGraphicModal: handleOpenGraphicModal };
+        const props = { formData, handleInputChange, onOpenGraphicModal: handleOpenGraphicModal, availablePages };
         switch (selectedType) {
             case 'awareness': return <AwarenessForm {...props} />;
             case 'traffic': return <TrafficForm {...props} />;
@@ -385,11 +424,23 @@ const CampaignManagerPage = ({ embedded = false }) => {
                                                 <button
                                                     onClick={() => handleViewStats(campaign)}
                                                     className="p-1.5 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                                                    title="View Analytics"
                                                 >
                                                     <BarChart2 size={16} />
                                                 </button>
-                                                <button className="p-1.5 text-gray-500 hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors">
+                                                <button
+                                                    onClick={() => handleViewCampaign(campaign)}
+                                                    className="p-1.5 text-gray-500 hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors"
+                                                    title="View Details"
+                                                >
                                                     <Eye size={16} />
+                                                </button>
+                                                <button
+                                                    onClick={() => handleDeleteCampaign(campaign.id)}
+                                                    className="p-1.5 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                                                    title="Delete Campaign"
+                                                >
+                                                    <Trash2 size={16} />
                                                 </button>
                                             </div>
                                         </td>
@@ -534,6 +585,94 @@ const CampaignManagerPage = ({ embedded = false }) => {
                             ) : (
                                 <div className="text-center py-8 text-gray-500">
                                     No data available
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* View Campaign Details Modal */}
+            {showViewModal && selectedCampaign && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+                    <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col animate-in fade-in zoom-in duration-200">
+                        <div className="flex items-center justify-between p-6 border-b border-gray-100 dark:border-gray-700">
+                            <div>
+                                <h3 className="text-xl font-bold text-gray-900 dark:text-white">{selectedCampaign.name}</h3>
+                                <p className="text-sm text-gray-500 dark:text-gray-400 mt-1 capitalize">{selectedCampaign.objective || selectedCampaign.type || 'Campaign'}</p>
+                            </div>
+                            <button
+                                onClick={() => setShowViewModal(false)}
+                                className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-700 text-gray-500 transition-colors"
+                            >
+                                <X size={20} />
+                            </button>
+                        </div>
+                        <div className="p-6 overflow-y-auto flex-1 space-y-6">
+
+                            <div className="grid grid-cols-2 gap-6">
+                                <div>
+                                    <h4 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Status</h4>
+                                    <p className="text-gray-900 dark:text-white font-medium capitalize">
+                                        <span className={`inline-block w-2 h-2 rounded-full mr-2 ${selectedCampaign.status === 'active' ? 'bg-green-500' : 'bg-gray-500'}`}></span>
+                                        {selectedCampaign.status || 'Draft'}
+                                    </p>
+                                </div>
+                                <div>
+                                    <h4 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Budget</h4>
+                                    <p className="text-gray-900 dark:text-white font-medium">₹{selectedCampaign.budget || '0'}/day</p>
+                                </div>
+                                <div>
+                                    <h4 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Start Date</h4>
+                                    <p className="text-gray-900 dark:text-white font-medium">{selectedCampaign.start_date ? new Date(selectedCampaign.start_date).toLocaleDateString() : 'N/A'}</p>
+                                </div>
+                                <div>
+                                    <h4 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Created At</h4>
+                                    <p className="text-gray-900 dark:text-white font-medium">{new Date(selectedCampaign.created_at).toLocaleString()}</p>
+                                </div>
+                            </div>
+
+                            {selectedCampaign.creative_assets && (
+                                <div>
+                                    <h4 className="text-base font-semibold text-gray-900 dark:text-white mb-3 pb-2 border-b border-gray-100 dark:border-gray-700">Creative Assets</h4>
+                                    <div className="bg-gray-50 dark:bg-slate-900/50 rounded-xl p-4 space-y-4 border border-gray-100 dark:border-gray-800">
+                                        {selectedCampaign.creative_assets.headline && (
+                                            <div>
+                                                <span className="text-xs text-gray-500 dark:text-gray-400 block mb-1">Headline</span>
+                                                <p className="text-gray-900 dark:text-white text-sm font-medium">{selectedCampaign.creative_assets.headline}</p>
+                                            </div>
+                                        )}
+                                        {selectedCampaign.creative_assets.description && (
+                                            <div>
+                                                <span className="text-xs text-gray-500 dark:text-gray-400 block mb-1">Description</span>
+                                                <p className="text-gray-700 dark:text-gray-300 text-sm whitespace-pre-wrap">{selectedCampaign.creative_assets.description}</p>
+                                            </div>
+                                        )}
+                                        {selectedCampaign.creative_assets.imageUrl && (
+                                            <div>
+                                                <span className="text-xs text-gray-500 dark:text-gray-400 block mb-2">Image</span>
+                                                <img src={selectedCampaign.creative_assets.imageUrl} alt="Campaign Creative" className="max-w-xs rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm" />
+                                            </div>
+                                        )}
+                                        {selectedCampaign.creative_assets.ctaText && (
+                                            <div>
+                                                <span className="text-xs text-gray-500 dark:text-gray-400 block mb-1">Call to Action</span>
+                                                <span className="inline-block px-3 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 text-sm font-medium rounded-lg">
+                                                    {selectedCampaign.creative_assets.ctaText}
+                                                </span>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            )}
+
+                            {selectedCampaign.destination_url && (
+                                <div>
+                                    <h4 className="text-base font-semibold text-gray-900 dark:text-white mb-3 pb-2 border-b border-gray-100 dark:border-gray-700">Destination URL</h4>
+                                    <a href={selectedCampaign.destination_url} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-500 text-sm flex items-center gap-1.5 break-all">
+                                        <Link2 size={16} />
+                                        {selectedCampaign.destination_url}
+                                    </a>
                                 </div>
                             )}
                         </div>

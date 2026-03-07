@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight, Loader2 } from 'lucide-react';
-import BlogCard from '../BlogCard';
+import BlogCard from '../blog/BlogCard';
 import API_BASE_URL from '../../config';
 
 const LatestBlogsSection = () => {

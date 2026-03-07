@@ -1,8 +1,10 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Routes, Route, useNavigate, useLocation, Navigate } from 'react-router-dom';
+import ReactGA from 'react-ga4';
+import { trackAgentOpen } from './lib/analytics';
 import { ThemeProvider } from './context/ThemeContext';
-import Navbar from './components/Navbar';
-import Footer from './components/Footer';
+import Navbar from './components/layout/Navbar';
+import Footer from './components/layout/Footer';
 import ShapeHeroDemo from './pages/ShapeHeroDemo';
 import LandingPage from './pages/LandingPage';
 
@@ -21,7 +23,13 @@ import SignupPage from './pages/SignupPage';
 import AdminDashboard from './pages/AdminDashboard';
 import ClientHistoryPage from './pages/ClientHistoryPage';
 import GraphicDesignerPage from './pages/GraphicDesignerPage';
-import MetaAdsPage from './pages/MetaAdsPage';
+// import MetaAdsPage from './pages/MetaAdsPage'; // replaced by multipage layout
+import MetaAdsLayout from './pages/meta/MetaAdsLayout';
+import MetaOverviewPage from './pages/meta/MetaOverviewPage';
+import MetaCampaignsPage from './pages/meta/MetaCampaignsPage';
+import MetaScheduledPostsPage from './pages/meta/MetaScheduledPostsPage';
+import MetaInternalCampaignsPage from './pages/meta/MetaInternalCampaignsPage';
+import MetaSettingsPage from './pages/meta/MetaSettingsPage';
 import CampaignManagerPage from './pages/CampaignManagerPage';
 // Landing Pages
 import AwarenessLanding from './pages/landing/AwarenessLanding';
@@ -55,8 +63,8 @@ import BlogEditorPage from './pages/BlogEditorPage';
 
 import CookieDemoPage from './pages/CookieDemoPage';
 import { AuthProvider, useAuth } from './context/AuthContext';
-import AuthGuard from './components/AuthGuard';
-import AdminGuard from './components/AdminGuard';
+import AuthGuard from './components/auth/AuthGuard';
+import AdminGuard from './components/admin/AdminGuard';
 import { Toaster } from 'react-hot-toast';
 
 
@@ -87,11 +95,21 @@ const RootRedirect = () => {
   return <LandingPage />;
 };
 
+// Initialize GA4 once (replace G-XXXXXXXXXX with your actual Measurement ID)
+const GA_MEASUREMENT_ID = 'G-7WE6LY54CL';
+ReactGA.initialize(GA_MEASUREMENT_ID);
+
 function App() {
   const navigate = useNavigate();
   const location = useLocation();
 
+  // Track page views on every route change
+  useEffect(() => {
+    ReactGA.send({ hitType: 'pageview', page: location.pathname + location.search });
+  }, [location]);
+
   const handleAgentSelect = (agent) => {
+    trackAgentOpen(agent.title);
     if (agent.title === 'WhatsApp Broadcasting Automation') {
       navigate('/broadcast');
     } else if (agent.title === 'AI Voice Agent') {
@@ -202,11 +220,21 @@ function App() {
                 <GraphicDesignerPage />
               </AuthGuard>
             } />
-            <Route path="/meta-ads-agent" element={
-              <AuthGuard>
-                <MetaAdsPage />
-              </AuthGuard>
-            } />
+            {/* Meta Ads — multipage layout */}
+            <Route
+              path="/meta-ads-agent"
+              element={
+                <AuthGuard>
+                  <MetaAdsLayout />
+                </AuthGuard>
+              }
+            >
+              <Route index element={<MetaOverviewPage />} />
+              <Route path="campaigns" element={<MetaCampaignsPage />} />
+              <Route path="posts" element={<MetaScheduledPostsPage />} />
+              <Route path="internal" element={<MetaInternalCampaignsPage />} />
+              <Route path="settings" element={<MetaSettingsPage />} />
+            </Route>
             <Route path="/settings" element={
               <AuthGuard>
                 <SettingsPage />

@@ -12,8 +12,9 @@ import {
 } from 'lucide-react';
 
 import { supabase } from '../lib/supabase';
-import DashboardStats from '../components/DashboardStats';
-import RecentActivity from '../components/RecentActivity';
+import DashboardStats from '../components/dashboard/DashboardStats';
+import RecentActivity from '../components/dashboard/RecentActivity';
+import { trackAgentOpen } from '../lib/analytics';
 
 const HomePage = () => {
     const navigate = useNavigate();
@@ -174,7 +175,7 @@ const HomePage = () => {
                             {agents.map((agent, index) => (
                                 <div
                                     key={index}
-                                    onClick={() => navigate(agent.path)}
+                                    onClick={() => { trackAgentOpen(agent.title); navigate(agent.path); }}
                                     className="group relative bg-white dark:bg-slate-800 rounded-3xl p-8 border border-gray-100 dark:border-slate-700 shadow-sm hover:shadow-xl transition-all duration-300 cursor-pointer overflow-hidden"
                                 >
                                     {/* Gradient Hover Effect */}
