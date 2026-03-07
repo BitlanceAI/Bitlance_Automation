@@ -60,6 +60,8 @@
       await OneSignal.init({
         appId: "b8119755-1466-495a-a428-2259043b9ed9",
       });
+      // Explicitly trigger the Slidedown Prompt
+      OneSignal.Slidedown.promptPush();
     });
   </script>
   <!-- End OneSignal -->

@@ -83,10 +83,10 @@ export const toggleCron = async (req, res) => {
 // Add a new auto blog entry to the queue (manual single topic)
 export const scheduleAutoBlog = async (req, res) => {
     try {
-        const { niche, title, keywords, delay_after_minutes } = req.body;
+        const { niche = '', title, keywords = '', delay_after_minutes } = req.body;
 
-        if (!niche || !title || !keywords) {
-            return res.status(400).json({ success: false, error: 'Niche, title, and keywords are required' });
+        if (!title) {
+            return res.status(400).json({ success: false, error: 'Title is required' });
         }
 
         const insertData = { niche, title, keywords, status: 'pending' };
