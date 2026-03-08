@@ -158,72 +158,31 @@ const BroadcastForm = () => {
             const token = session?.access_token;
 
             // Trigger n8n Webhook
-            try {
-                await fetch('https://bitlancetechhub.app.n8n.cloud/webhook/broadcast-bitlance', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        name: formData.name || `Broadcast ${new Date().toLocaleString()}`,
-                        sendMode: sendMode,
-                        recipients: allRecipients,
-                        message: formData.message,
-                        mediaUrl: formData.mediaUrl,
-                        mediaType: formData.mediaType,
-                        templateName: selectedTemplate?.name || '',
-                        variables: formData.variables
-                    })
-                });
-            } catch (webhookError) {
-                console.error('Webhook error:', webhookError);
+            const response = await fetch('https://bitlancetechhub.app.n8n.cloud/webhook/broadcast-bitlance', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    name: formData.name || `Broadcast ${new Date().toLocaleString()}`,
+                    sendMode: sendMode,
+                    recipients: allRecipients,
+                    message: formData.message,
+                    mediaUrl: formData.mediaUrl,
+                    mediaType: formData.mediaType,
+                    templateName: selectedTemplate?.name || '',
+                    variables: formData.variables
+                })
+            });
+
+            if (!response.ok) {
+                throw new Error(`Failed to send to webhook: ${response.statusText}`);
             }
 
-            if (sendMode === 'template') {
-                // Use Meta WhatsApp Business API — Template Broadcast
-                const payload = new FormData();
-                payload.append('name', formData.name || `Broadcast ${new Date().toLocaleString()}`);
-                payload.append('sendMode', 'template');
-                payload.append('templateName', selectedTemplate?.name || '');
-                payload.append('recipients', allRecipients.join(','));
-                payload.append('variables', JSON.stringify(formData.variables));
-                if (csvFile) payload.append('file', csvFile);
+            setStatus({
+                type: 'success',
+                message: `Broadcast data successfully sent to webhook for ${allRecipients.length} recipients.`
+            });
 
-                const response = await axios.post('/api/whatsapp/broadcast', payload, {
-                    headers: {
-                        'Content-Type': 'multipart/form-data',
-                        Authorization: `Bearer ${token}`
-                    }
-                });
-
-                const { stats } = response.data;
-                setStatus({
-                    type: 'success',
-                    message: `Broadcast started! ${stats.valid} valid, ${stats.invalid} invalid out of ${stats.total} recipients.`
-                });
-            } else {
-                // Direct send via Meta WhatsApp Business API
-                const payload = new FormData();
-                payload.append('name', formData.name || `Direct ${new Date().toLocaleString()}`);
-                payload.append('sendMode', 'direct');
-                payload.append('recipients', allRecipients.join(','));
-                payload.append('message', formData.message);
-                if (formData.mediaUrl) {
-                    payload.append('mediaUrl', formData.mediaUrl);
-                    payload.append('mediaType', formData.mediaType || 'image');
-                }
-                if (csvFile) payload.append('file', csvFile);
-
-                const response = await axios.post('/api/whatsapp/broadcast', payload, {
-                    headers: {
-                        'Content-Type': 'multipart/form-data',
-                        Authorization: `Bearer ${token}`
-                    }
-                });
-
-                const { stats } = response.data;
-                setStatus({
-                    type: 'success',
-                    message: `Broadcast started! Sending to ${stats.valid} of ${stats.total} recipients.${stats.invalid > 0 ? ` ${stats.invalid} invalid.` : ''}`
-                });
+            if (sendMode !== 'template') {
                 setFormData(prev => ({ ...prev, message: '', mediaUrl: '' }));
             }
         } catch (error) {

@@ -4,7 +4,12 @@ import multer from 'multer';
 import { authenticateUser } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
-const upload = multer();
+const upload = multer({
+    limits: {
+        fileSize: 50 * 1024 * 1024, // 50 MB
+        fieldSize: 50 * 1024 * 1024 // 50 MB (Allows large base64 strings in body)
+    }
+});
 
 // Apply auth middleware to all WhatsApp routes
 router.use(authenticateUser);

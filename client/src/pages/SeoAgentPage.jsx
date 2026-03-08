@@ -310,7 +310,7 @@ const SeoAgentPage = () => {
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify({
                                 niche: topic,
-                                keywords: keywords,
+                                keywords: data.keywords || '',
                                 title: data.seoTitle || topic,
                                 wordpressUrl: wpUrl,
                                 userId: user.id // Use real authenticated user ID
@@ -331,7 +331,7 @@ const SeoAgentPage = () => {
                     seoTitle: data.seoTitle || topic,
                     content: data.article,
                     imageUrl: data.imageUrl || null,
-                    keywords: keywords,
+                    keywords: data.keywords || '',
                     language: language,
                     style: writingStyle,
                     length: articleLength,

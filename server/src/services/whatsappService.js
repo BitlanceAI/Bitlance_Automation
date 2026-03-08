@@ -156,22 +156,66 @@ const whatsappService = {
         }
 
         const formattedPhone = to.replace('+', '');
+
+        let finalMediaUrl = mediaUrl;
+
+        // If 'mediaUrl' is actually a Base64 string from the frontend file picker
+        if (finalMediaUrl.startsWith('data:')) {
+            try {
+                // Parse the base64 string
+                const match = finalMediaUrl.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/);
+                if (!match || match.length !== 3) {
+                    throw new Error('Invalid base64 media format provided');
+                }
+                const mimeType = match[1];
+                const base64Data = match[2];
+                const buffer = Buffer.from(base64Data, 'base64');
+
+                // Determine file extension
+                const extension = mimeType.split('/')[1] || 'bin';
+                const filename = `broadcasts/${userId}_${Date.now()}.${extension}`;
+
+                // Upload to Supabase Storage (assuming a bucket named 'media' exists)
+                const { data, error } = await supabase.storage
+                    .from('media') // MUST HAVE a bucket named 'media' created
+                    .upload(filename, buffer, {
+                        contentType: mimeType,
+                        upsert: true
+                    });
+
+                if (error) {
+                    throw new Error(`Storage upload failed: ${error.message}`);
+                }
+
+                // Get Public URL
+                const { data: publicUrlData } = supabase.storage
+                    .from('media')
+                    .getPublicUrl(filename);
+
+                finalMediaUrl = publicUrlData.publicUrl;
+                console.log(`[WhatsApp] Base64 payload converted to Public URL: ${finalMediaUrl}`);
+            } catch (err) {
+                console.error('[WhatsApp] Failed converting base64 to URL:', err);
+                return { success: false, error: 'Failed converting base64 image to public URL.' };
+            }
+        }
+
         const mediaPayload = {};
-        if (mediaType === 'image') mediaPayload.image = { link: mediaUrl, caption };
+        if (mediaType === 'image') mediaPayload.image = { link: finalMediaUrl, caption };
         else if (mediaType === 'video') {
             // Cloudinary video transformation for WhatsApp compatibility
             // Ensures H.264 baseline codec and AAC audio
-            let processedUrl = mediaUrl;
-            if (mediaUrl.includes('cloudinary.com') && mediaUrl.includes('/upload/')) {
-                processedUrl = mediaUrl.replace(
+            let processedUrl = finalMediaUrl;
+            if (finalMediaUrl.includes('cloudinary.com') && finalMediaUrl.includes('/upload/')) {
+                processedUrl = finalMediaUrl.replace(
                     '/upload/',
                     '/upload/f_mp4,vc_h264:baseline:3.0,ac_aac,br_500k,q_auto/'
                 );
-                console.log(`[WhatsApp] Transforming Cloudinary URL: ${mediaUrl} -> ${processedUrl}`);
+                console.log(`[WhatsApp] Transforming Cloudinary URL: ${finalMediaUrl} -> ${processedUrl}`);
             }
             mediaPayload.video = { link: processedUrl, caption };
         }
-        else if (mediaType === 'document') mediaPayload.document = { link: mediaUrl, caption, filename: 'document' };
+        else if (mediaType === 'document') mediaPayload.document = { link: finalMediaUrl, caption, filename: 'document' };
 
         try {
             const response = await axios.post(

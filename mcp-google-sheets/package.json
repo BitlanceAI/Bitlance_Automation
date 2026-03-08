@@ -1,0 +1,19 @@
+{
+  "name": "mcp-google-sheets",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.6.1",
+    "axios": "^1.8.1",
+    "dotenv": "^16.4.7",
+    "googleapis": "^144.0.0"
+  }
+}
