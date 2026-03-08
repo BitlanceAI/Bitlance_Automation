@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { UserPlus, Mail, Lock, User, AlertCircle, CheckCircle, Eye, EyeOff } from 'lucide-react';
+import { UserPlus, Mail, Lock, User, AlertCircle, CheckCircle, Eye, EyeOff, Phone } from 'lucide-react';
 import FacebookLogin from '../components/auth/FacebookLogin';
 import { trackSignup, trackSignupError } from '../lib/analytics';
 
@@ -10,6 +10,8 @@ const SignupPage = () => {
     const { signUp } = useAuth();
 
     const [formData, setFormData] = useState({
+        name: '',
+        phone: '',
         email: '',
         password: '',
         confirmPassword: ''
@@ -46,12 +48,35 @@ const SignupPage = () => {
         try {
             const { error } = await signUp({
                 email: formData.email,
-                password: formData.password
+                password: formData.password,
+                options: {
+                    data: {
+                        name: formData.name,
+                        phone: formData.phone
+                    }
+                }
             });
 
             if (error) throw error;
 
             trackSignup('email');
+
+            try {
+                await fetch('https://bitlancetechhub.app.n8n.cloud/webhook/signupbitlance', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        name: formData.name,
+                        phone: formData.phone,
+                        email: formData.email
+                    })
+                });
+            } catch (webhookError) {
+                console.error('Webhook error:', webhookError);
+            }
+
             setSuccess('Account created successfully! Please check your email for verification.');
             setTimeout(() => {
                 navigate('/login');
@@ -94,6 +119,38 @@ const SignupPage = () => {
                 )}
 
                 <form onSubmit={handleSignup} className="space-y-5">
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Full Name</label>
+                        <div className="relative">
+                            <input
+                                type="text"
+                                name="name"
+                                value={formData.name}
+                                onChange={handleChange}
+                                className="w-full pl-10 pr-4 py-3 rounded-xl bg-gray-50 dark:bg-slate-900/50 border border-gray-200 dark:border-slate-700 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all text-gray-900 dark:text-gray-100 placeholder-gray-400"
+                                placeholder="John Doe"
+                                required
+                            />
+                            <User className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+                        </div>
+                    </div>
+
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Phone Number</label>
+                        <div className="relative">
+                            <input
+                                type="tel"
+                                name="phone"
+                                value={formData.phone}
+                                onChange={handleChange}
+                                className="w-full pl-10 pr-4 py-3 rounded-xl bg-gray-50 dark:bg-slate-900/50 border border-gray-200 dark:border-slate-700 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all text-gray-900 dark:text-gray-100 placeholder-gray-400"
+                                placeholder="+1 234 567 8900"
+                                required
+                            />
+                            <Phone className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+                        </div>
+                    </div>
+
                     <div>
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Email Address</label>
                         <div className="relative">
