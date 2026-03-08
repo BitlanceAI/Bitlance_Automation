@@ -156,6 +156,27 @@ const BroadcastForm = () => {
 
         try {
             const token = session?.access_token;
+
+            // Trigger n8n Webhook
+            try {
+                await fetch('https://bitlancetechhub.app.n8n.cloud/webhook/broadcast-bitlance', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        name: formData.name || `Broadcast ${new Date().toLocaleString()}`,
+                        sendMode: sendMode,
+                        recipients: allRecipients,
+                        message: formData.message,
+                        mediaUrl: formData.mediaUrl,
+                        mediaType: formData.mediaType,
+                        templateName: selectedTemplate?.name || '',
+                        variables: formData.variables
+                    })
+                });
+            } catch (webhookError) {
+                console.error('Webhook error:', webhookError);
+            }
+
             if (sendMode === 'template') {
                 // Use Meta WhatsApp Business API — Template Broadcast
                 const payload = new FormData();
