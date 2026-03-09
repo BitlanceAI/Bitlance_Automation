@@ -1,5 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { motion } from 'framer-motion';
+import { Check, X } from 'lucide-react';
 
 const PricingSection = () => {
     const [isYearly, setIsYearly] = useState(false);
@@ -9,9 +11,16 @@ const PricingSection = () => {
             <div className="max-w-7xl mx-auto px-6">
                 <div className="text-center mb-16">
                     <h2 className="text-3xl md:text-5xl font-bold mb-6">Simple pricing, massive ROI</h2>
-                    <p className="text-xl text-gray-600 dark:text-gray-300 mb-8">
+                    <p className="text-xl text-gray-600 dark:text-gray-300 mb-4">
                         Choose the plan that fits your growth stage.
                     </p>
+
+                    {/* Agency Anchor — Door-in-the-Face / Anchoring */}
+                    <div className="inline-flex items-center gap-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700/40 rounded-xl px-5 py-3 mb-8 text-sm">
+                        <span className="text-amber-600 dark:text-amber-400 font-semibold">💡 A typical automation agency charges</span>
+                        <span className="line-through text-gray-400 font-bold">$3,000 – $8,000/mo</span>
+                        <span className="text-amber-600 dark:text-amber-400 font-semibold">for what you get below.</span>
+                    </div>
 
                     <div className="flex items-center justify-center gap-4 mb-8">
                         <span className={`text-sm font-semibold ${!isYearly ? 'text-indigo-600 dark:text-indigo-400' : 'text-gray-500'}`}>Monthly</span>
@@ -30,6 +39,7 @@ const PricingSection = () => {
                         {
                             name: "Starter",
                             price: "99",
+                            perDay: "3.30",
                             desc: "Perfect for small businesses just starting with automation.",
                             features: [
                                 "1 AI Agent",
@@ -43,6 +53,7 @@ const PricingSection = () => {
                         {
                             name: "Growth",
                             price: "249",
+                            perDay: "8",
                             popular: true,
                             desc: "For scaling teams that need robust integrations and higher volume.",
                             features: [
@@ -56,9 +67,10 @@ const PricingSection = () => {
                             notIncluded: ["Dedicated Success Manager"]
                         },
                         {
-                            name: "Business",
+                            name: "Agency / White-Label",
                             price: "499",
-                            desc: "Full power automation for established businesses with high volume.",
+                            perDay: "16.60",
+                            desc: "Full power automation for agencies and established enterprises.",
                             features: [
                                 "Unlimited AI Agents",
                                 "Up to 10,000 conversations/mo",
@@ -80,8 +92,8 @@ const PricingSection = () => {
                             className={`relative bg-white dark:bg-slate-800 rounded-2xl p-8 border ${plan.popular ? 'border-indigo-500 shadow-xl ring-1 ring-indigo-500' : 'border-gray-200 dark:border-slate-700 shadow-sm'} flex flex-col`}
                         >
                             {plan.popular && (
-                                <div className="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-gradient-to-r from-indigo-500 to-purple-500 text-white text-xs font-bold px-4 py-1 rounded-full uppercase tracking-wider">
-                                    Most Popular
+                                <div className="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-gradient-to-r from-indigo-500 to-purple-500 text-white text-xs font-bold px-4 py-1 rounded-full uppercase tracking-wider whitespace-nowrap">
+                                    ⭐ Most Popular — Chosen by 68% of teams
                                 </div>
                             )}
                             <div className="mb-8">
@@ -92,6 +104,8 @@ const PricingSection = () => {
                                     <span className="text-5xl font-extrabold tracking-tight">{isYearly ? (parseInt(plan.price) * 0.8).toFixed(0) : plan.price}</span>
                                     <span className="text-gray-500 dark:text-gray-400 ml-1">/mo</span>
                                 </div>
+                                {/* Mental Accounting: Per-day framing */}
+                                <p className="text-xs text-gray-400 mt-1">= just <strong className="text-gray-600 dark:text-gray-300">${isYearly ? (parseFloat(plan.perDay) * 0.8).toFixed(2) : plan.perDay}</strong>/day</p>
                             </div>
                             <ul className="space-y-4 mb-8 flex-1">
                                 {plan.features.map((feature, i) => (
@@ -108,7 +122,7 @@ const PricingSection = () => {
                                 ))}
                             </ul>
                             <button className={`w-full py-4 rounded-xl font-bold transition-all ${plan.popular ? 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg hover:shadow-indigo-500/30' : 'bg-gray-100 dark:bg-slate-700 hover:bg-gray-200 dark:hover:bg-slate-600 text-gray-900 dark:text-white'}`}>
-                                Get Started
+                                {plan.popular ? 'Start Closing More Deals' : 'Get Started'}
                             </button>
                         </motion.div>
                     ))}

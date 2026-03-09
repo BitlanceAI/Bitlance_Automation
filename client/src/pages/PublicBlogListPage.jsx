@@ -49,19 +49,33 @@ const PublicBlogListPage = () => {
     return (
         <div className="min-h-screen bg-gray-50 dark:bg-slate-900 pb-20">
             <SEOHead
-                title="Blog"
-                description="Explore our latest articles on AI, automation, and technology. Stay updated with Bitlance insights."
-                canonicalUrl={`${window.location.origin}/blogs`}
+                title="AI & Automation Blog — Expert Insights by Bitlance Tech Hub"
+                description="Expert guides on AI voice agents, automated SEO content, and business automation. Learn how companies use AI to scale lead generation, reduce costs, and automate repetitive workflows."
+                canonicalUrl={`${window.location.origin}/blog`}
+                keywords="AI automation blog, AI voice agent guide, SEO automation, business AI tools, AI agent tutorials"
+                structuredData={{
+                    "@context": "https://schema.org",
+                    "@type": "Blog",
+                    "name": "Bitlance Tech Hub Blog",
+                    "description": "Expert articles on AI voice agents, automated SEO content generation, and AI-driven business automation from the Bitlance Tech Hub team.",
+                    "url": `${window.location.origin}/blog`,
+                    "publisher": {
+                        "@type": "Organization",
+                        "name": "Bitlance Tech Hub",
+                        "url": "https://www.bitlancetechhub.com",
+                        "logo": { "@type": "ImageObject", "url": "https://www.bitlancetechhub.com/favicon.png" }
+                    }
+                }}
             />
 
             {/* Hero Section */}
             <div className="bg-white dark:bg-slate-800 border-b border-gray-200 dark:border-slate-700 py-16 px-6 mb-12">
                 <div className="max-w-7xl mx-auto text-center">
                     <h1 className="text-4xl md:text-5xl font-extrabold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-purple-600 dark:from-indigo-400 dark:to-purple-400">
-                        Our Latest Insights
+                        AI &amp; Automation Blog
                     </h1>
                     <p className="text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
-                        Discover articles on Artificial Intelligence, Automation trends, and how to scale your business with modern technology.
+                        Expert guides on AI voice agents, automated SEO content, and business automation — written by the Bitlance Tech Hub team to help you scale smarter.
                     </p>
                 </div>
             </div>

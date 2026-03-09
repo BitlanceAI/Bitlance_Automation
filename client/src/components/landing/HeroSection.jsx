@@ -1,5 +1,5 @@
 import React, { useRef, useState, useEffect } from 'react';
-import { ArrowRight, Play, Mic, MessageSquare, Edit3, Share2 } from 'lucide-react';
+import { ArrowRight, Play, Mic, MessageSquare, Edit3, Share2, TrendingUp } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const HeroSection = ({ onOpenBooking }) => {
@@ -112,7 +112,7 @@ const HeroSection = ({ onOpenBooking }) => {
                         className="group relative px-8 py-4 rounded-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-bold text-lg shadow-xl shadow-indigo-500/30 overflow-hidden transition-all hover:scale-105 w-full sm:w-auto"
                     >
                         <span className="relative z-10 flex items-center justify-center gap-2">
-                            Book a Live Demo <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
+                            Get Your Free AI Audit <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
                         </span>
                         <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
                     </button>
@@ -122,8 +122,24 @@ const HeroSection = ({ onOpenBooking }) => {
                     </button>
                 </div>
 
-                <div className="mt-8 text-sm text-gray-500 hidden lg:block">
-                    No credit card required · Go live in 48 hours
+                {/* Social Proof Counter Badge - Bandwagon Effect / Mimetic Desire */}
+                <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.8, duration: 0.5 }}
+                    className="mt-6 inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 text-sm text-white/70"
+                >
+                    <span className="relative flex h-2 w-2">
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                        <span className="relative inline-flex rounded-full h-2 w-2 bg-green-400"></span>
+                    </span>
+                    <TrendingUp size={14} className="text-green-400" />
+                    <span><strong className="text-white">47 businesses</strong> deployed an AI agent this week</span>
+                </motion.div>
+
+                {/* Loss Aversion Micro-copy */}
+                <div className="mt-4 text-sm text-amber-400/80 hidden lg:block font-medium">
+                    ⚡ Every day without automation costs you leads. Free setup takes 15 minutes.
                 </div>
 
                 {/* Slider Pagination Dots */}

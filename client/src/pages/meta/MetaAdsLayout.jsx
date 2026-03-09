@@ -25,11 +25,11 @@ export const useMetaAds = () => useContext(MetaAdsContext);
 
 // ─── Navigation config ──────────────────────────────────────────────────────
 const NAV_ITEMS = [
-    { label: 'Overview', path: '/meta-ads-agent', icon: LayoutDashboard },
-    { label: 'Meta Campaigns', path: '/meta-ads-agent/campaigns', icon: Megaphone },
-    { label: 'Scheduled Posts', path: '/meta-ads-agent/posts', icon: CalendarClock },
-    { label: 'Internal Campaigns', path: '/meta-ads-agent/internal', icon: FolderKanban },
-    { label: 'Settings', path: '/meta-ads-agent/settings', icon: Settings2 },
+    { label: 'Overview', path: '/dashboard/agents/meta', icon: LayoutDashboard },
+    { label: 'Meta Campaigns', path: '/dashboard/agents/meta/campaigns', icon: Megaphone },
+    { label: 'Scheduled Posts', path: '/dashboard/agents/meta/posts', icon: CalendarClock },
+    { label: 'Internal Campaigns', path: '/dashboard/agents/meta/internal', icon: FolderKanban },
+    { label: 'Settings', path: '/dashboard/agents/meta/settings', icon: Settings2 },
 ];
 
 // ─── Layout Component ────────────────────────────────────────────────────────
@@ -161,7 +161,7 @@ const MetaAdsLayout = () => {
             if (data.success) {
                 toast.success('Meta account connected via Facebook!');
                 await checkConnection();
-                window.history.replaceState({}, '', '/meta-ads-agent');
+                window.history.replaceState({}, '', '/dashboard/agents/meta');
             } else {
                 toast.error(data.error || 'OAuth connection failed');
             }
@@ -176,7 +176,7 @@ const MetaAdsLayout = () => {
             const { error } = await supabase.auth.linkIdentity({
                 provider: 'facebook',
                 options: {
-                    redirectTo: window.location.origin + '/meta-ads-agent',
+                    redirectTo: window.location.origin + '/dashboard/agents/meta',
                     scopes: 'pages_manage_posts,pages_read_engagement,pages_show_list,ads_management,ads_read,business_management,instagram_basic,instagram_content_publish'
                 }
             });
@@ -184,7 +184,7 @@ const MetaAdsLayout = () => {
                 const { error: signInError } = await supabase.auth.signInWithOAuth({
                     provider: 'facebook',
                     options: {
-                        redirectTo: window.location.origin + '/meta-ads-agent',
+                        redirectTo: window.location.origin + '/dashboard/agents/meta',
                         scopes: 'pages_manage_posts,pages_read_engagement,pages_show_list,ads_management,ads_read,business_management,instagram_basic,instagram_content_publish'
                     }
                 });
@@ -290,7 +290,7 @@ const MetaAdsLayout = () => {
 
     // ── Sidebar active check ──────────────────────────────────────────────────
     const isActive = (path) => {
-        if (path === '/meta-ads-agent') return location.pathname === '/meta-ads-agent';
+        if (path === '/dashboard/agents/meta') return location.pathname === '/dashboard/agents/meta';
         return location.pathname.startsWith(path);
     };
 
@@ -365,8 +365,8 @@ const MetaAdsLayout = () => {
                         {/* Right: status + credits */}
                         <div className="flex items-center gap-3">
                             <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold ${isConnected
-                                    ? 'bg-emerald-500/15 text-emerald-400 ring-1 ring-emerald-500/30'
-                                    : 'bg-slate-700 text-gray-400'
+                                ? 'bg-emerald-500/15 text-emerald-400 ring-1 ring-emerald-500/30'
+                                : 'bg-slate-700 text-gray-400'
                                 }`}>
                                 {isConnected ? <Link2 className="h-3.5 w-3.5" /> : <Unlink className="h-3.5 w-3.5" />}
                                 {isConnected ? 'Connected' : 'Not Connected'}
@@ -390,8 +390,8 @@ const MetaAdsLayout = () => {
                                     key={path}
                                     onClick={() => navigate(path)}
                                     className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150 w-full text-left ${isActive(path)
-                                            ? 'bg-gradient-to-r from-blue-600/80 to-indigo-600/80 text-white shadow-lg shadow-blue-900/40'
-                                            : 'text-slate-400 hover:bg-slate-800/70 hover:text-white'
+                                        ? 'bg-gradient-to-r from-blue-600/80 to-indigo-600/80 text-white shadow-lg shadow-blue-900/40'
+                                        : 'text-slate-400 hover:bg-slate-800/70 hover:text-white'
                                         }`}
                                 >
                                     <Icon className="h-4 w-4 shrink-0" />

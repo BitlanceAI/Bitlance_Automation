@@ -29,11 +29,26 @@ const ProblemSection = () => {
                     </motion.p>
                 </div>
 
+                {/* Quantified Loss Stat — Loss Aversion + Availability Heuristic */}
+                <motion.div
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    whileInView={{ opacity: 1, scale: 1 }}
+                    transition={{ duration: 0.5, delay: 0.3 }}
+                    viewport={{ once: true }}
+                    className="mb-12 mx-auto max-w-3xl flex items-center gap-4 bg-rose-500/10 border border-rose-500/30 rounded-2xl px-6 py-4"
+                >
+                    <div className="flex-shrink-0 w-10 h-10 rounded-full bg-rose-500/20 flex items-center justify-center text-rose-400 font-black text-lg">!</div>
+                    <p className="text-rose-200 text-sm md:text-base leading-relaxed">
+                        <strong className="text-rose-400">Research shows: 78% of leads are lost</strong> if not contacted within the first 5 minutes of enquiring.
+                        The average business responds in <strong className="text-rose-400">over 8 hours</strong>.
+                    </p>
+                </motion.div>
+
                 <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
                     {[
                         { icon: Phone, text: "Still tracking leads in Excel, WhatsApp, and random notebooks?", color: "rose" },
                         { icon: MessageSquare, text: "Are you replying to prospects hours later while your competitors reply in minutes?", color: "blue" },
-                        { icon: Share2, text: "Do you know exactly how many leads turned into meetings and how many just ‘disappeared’?", color: "violet" },
+                        { icon: Share2, text: "Do you know exactly how many leads turned into meetings and how many just 'disappeared'?", color: "violet" },
                         { icon: Users, text: "Is your sales follow-up fully dependent on people remembering, instead of an automated system?", color: "emerald" }
                     ].map((item, idx) => (
                         <TiltCard key={idx} className="h-full">

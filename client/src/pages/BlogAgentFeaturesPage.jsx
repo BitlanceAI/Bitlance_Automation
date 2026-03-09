@@ -4,8 +4,9 @@ import { useNavigate } from 'react-router-dom';
 import Navbar from '../components/layout/Navbar';
 import Footer from '../components/landing/Footer';
 import FinalCtaSection from '../components/landing/FinalCtaSection';
+import SEOHead from '../components/layout/SEOHead';
 import {
-    Edit3, Cpu, Globe, Rocket, ArrowRight, Zap, Target, LineChart, ShieldCheck
+    Edit3, Cpu, Globe, Rocket, ArrowRight, Zap, Target, LineChart, ShieldCheck, ChevronDown
 } from 'lucide-react';
 import ScrollReveal from '../components/ui/ScrollReveal';
 
@@ -76,8 +77,63 @@ const BlogAgentFeaturesPage = () => {
         }
     ];
 
+    const blogAgentSchema = {
+        "@context": "https://schema.org",
+        "@graph": [
+            {
+                "@type": "SoftwareApplication",
+                "name": "Bitlance Blog AI Agent",
+                "applicationCategory": "BusinessApplication",
+                "operatingSystem": "Web",
+                "description": "An autonomous AI agent that researches topics, writes SEO-optimized blog posts, and publishes them directly to your website 24/7 — without any manual writing effort.",
+                "offers": { "@type": "Offer", "url": "https://www.bitlancetechhub.com/apply/real-estate" },
+                "featureList": [
+                    "Automated keyword targeting from Excel uploads",
+                    "Autonomous long-form content generation",
+                    "Direct CMS publishing (WordPress and custom backends)",
+                    "Built-in SEO optimization with meta descriptions",
+                    "Bulk generation and scheduling capability",
+                    "Plagiarism and AI detection safe content"
+                ],
+                "publisher": { "@type": "Organization", "name": "Bitlance Tech Hub", "url": "https://www.bitlancetechhub.com" }
+            },
+            {
+                "@type": "FAQPage",
+                "mainEntity": [
+                    {
+                        "@type": "Question",
+                        "name": "Can AI really write SEO-optimized blog content?",
+                        "acceptedAnswer": { "@type": "Answer", "text": "Yes. Modern large language models, when guided by a structured SEO agent like Bitlance's Blog AI Agent, can produce articles that include proper H1/H2 structure, optimized meta descriptions, natural keyword density, and topical depth — all factors Google's ranking algorithm rewards." }
+                    },
+                    {
+                        "@type": "Question",
+                        "name": "How many blog posts can the Bitlance Blog AI Agent generate per day?",
+                        "acceptedAnswer": { "@type": "Answer", "text": "The Bitlance Blog AI Agent can generate and publish dozens of articles per day depending on your plan. Bulk mode lets you upload an Excel sheet of keywords and schedule an entire content calendar in minutes." }
+                    },
+                    {
+                        "@type": "Question",
+                        "name": "Does the Blog AI Agent post directly to WordPress?",
+                        "acceptedAnswer": { "@type": "Answer", "text": "Yes. The agent can authenticate with your WordPress CMS via the REST API and publish posts directly — including formatting, featured image attachment, category and tag assignment, and meta SEO fields — without you needing to copy-paste anything." }
+                    },
+                    {
+                        "@type": "Question",
+                        "name": "Will AI-generated content pass Google's quality guidelines?",
+                        "acceptedAnswer": { "@type": "Answer", "text": "Google's Helpful Content guidelines focus on whether content is useful to readers, not whether it was written by a human. Bitlance Blog AI Agent is engineered to produce factually grounded, well-structured, and informative content. It also ensures zero plagiarism and passes AI detection checks, maintaining your site's authority." }
+                    }
+                ]
+            }
+        ]
+    };
+
     return (
         <div className="min-h-screen bg-[#030303] text-white selection:bg-orange-500/30">
+            <SEOHead
+                title="AI Blog Writing Agent — Automated SEO Content at Scale"
+                description="The Bitlance Blog AI Agent researches, writes, optimizes, and publishes high-ranking SEO articles to your site 24/7. Stop writing manually. Generate 50+ posts a week automatically."
+                canonicalUrl="https://www.bitlancetechhub.com/features/blog-agent"
+                keywords="AI blog writer, automated SEO content, AI content agent, blog automation, auto-publish WordPress, AI writing tool, SEO content generator"
+                structuredData={blogAgentSchema}
+            />
             <Navbar />
 
             {/* Hero Section */}
@@ -236,6 +292,44 @@ const BlogAgentFeaturesPage = () => {
                         </div>
                     </div>
                 </div>
+            </section>
+
+            {/* FAQ Section */}
+            <section className="py-24 border-t border-white/5 bg-[#030303]">
+                <ScrollReveal className="max-w-4xl mx-auto px-6">
+                    <div className="text-center mb-12">
+                        <h2 className="text-3xl md:text-4xl font-bold mb-4">Frequently Asked Questions</h2>
+                        <p className="text-white/50 text-lg">Common questions about AI-generated SEO content and the Blog AI Agent.</p>
+                    </div>
+                    <div className="space-y-4">
+                        {[
+                            {
+                                q: "Can AI really write SEO-optimized blog content?",
+                                a: "Yes. Modern large language models, when guided by a structured SEO agent like Bitlance's Blog AI Agent, can produce articles that include proper H1/H2 structure, optimized meta descriptions, natural keyword density, and topical depth — all factors Google's ranking algorithm rewards."
+                            },
+                            {
+                                q: "How many blog posts can the Blog AI Agent generate per day?",
+                                a: "The Bitlance Blog AI Agent can generate and publish dozens of articles per day depending on your plan. Bulk mode lets you upload an Excel sheet of keywords and schedule an entire content calendar in minutes."
+                            },
+                            {
+                                q: "Does the Blog AI Agent post directly to WordPress?",
+                                a: "Yes. The agent can authenticate with your WordPress CMS via the REST API and publish posts directly — including formatting, featured image attachment, category and tag assignment, and meta SEO fields — without you needing to copy-paste anything."
+                            },
+                            {
+                                q: "Will AI-generated content pass Google's quality guidelines?",
+                                a: "Google's Helpful Content guidelines focus on whether content is useful to readers, not whether it was written by a human. The Blog AI Agent is engineered to produce factually grounded, well-structured, and informative content. It ensures zero plagiarism and passes AI detection checks, maintaining your site's authority."
+                            }
+                        ].map((item, i) => (
+                            <details key={i} className="group bg-white/5 border border-white/10 rounded-2xl p-6 cursor-pointer open:bg-white/10 transition-colors">
+                                <summary className="flex items-center justify-between font-semibold text-lg text-white list-none">
+                                    {item.q}
+                                    <ChevronDown className="flex-shrink-0 ml-4 text-white/40 group-open:rotate-180 transition-transform" size={20} />
+                                </summary>
+                                <p className="mt-4 text-white/60 leading-relaxed">{item.a}</p>
+                            </details>
+                        ))}
+                    </div>
+                </ScrollReveal>
             </section>
 
             {/* Final CTA */}

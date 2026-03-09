@@ -21,7 +21,6 @@ export const FullScreenSignup = ({
     success
 }: FullScreenSignupProps) => {
     const [showPassword, setShowPassword] = useState(false);
-    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
     return (
         <div className="min-h-screen flex items-center justify-center overflow-hidden p-4 bg-slate-900">
@@ -37,7 +36,7 @@ export const FullScreenSignup = ({
 
                     <div className="relative z-10 p-8 md:p-12 text-white pb-16">
                         <h1 className="text-3xl md:text-4xl font-bold leading-tight tracking-tight text-white shadow-sm">
-                            Automate your workflows with AI agents.
+                            Build AI Agents that Close Deals & Support Customers 24/7.
                         </h1>
                         <p className="mt-4 text-slate-300 text-lg">
                             Bitlance Platform gives you the tools to build, deploy, and scale intelligent automation.
@@ -165,33 +164,7 @@ export const FullScreenSignup = ({
                             </div>
                         </div>
 
-                        {/* Confirm Password Field */}
-                        <div>
-                            <label htmlFor="confirmPassword" className="block text-sm font-medium mb-1.5 text-slate-700">
-                                Confirm password
-                            </label>
-                            <div className="relative">
-                                <input
-                                    type={showConfirmPassword ? 'text' : 'password'}
-                                    id="confirmPassword"
-                                    name="confirmPassword"
-                                    placeholder="••••••••"
-                                    className="w-full pl-10 pr-10 py-2.5 px-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white"
-                                    value={formData.confirmPassword}
-                                    onChange={handleChange}
-                                    required
-                                />
-                                <CheckCircle className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
-                                <button
-                                    type="button"
-                                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
-                                    tabIndex={-1}
-                                >
-                                    {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                                </button>
-                            </div>
-                        </div>
+
 
                         <div className="text-sm text-slate-600 bg-indigo-50/50 p-4 rounded-xl text-center border border-indigo-100 mt-2">
                             🎁 New accounts get <strong className="text-indigo-700">50 free credits</strong> to start!
@@ -202,8 +175,12 @@ export const FullScreenSignup = ({
                             disabled={loading}
                             className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-3 px-4 rounded-lg transition-colors mt-2 shadow-sm disabled:opacity-70 flex justify-center items-center"
                         >
-                            {loading ? 'Creating Account...' : 'Create a new account'}
+                            {loading ? 'Creating Account...' : 'Create Account & Claim 50 Credits'}
                         </button>
+
+                        <div className="text-center text-xs text-slate-500 mt-2">
+                            🔒 100% Free · No credit card required
+                        </div>
 
                         <div className="text-center text-slate-600 text-sm mt-4">
                             Already have an account?{" "}

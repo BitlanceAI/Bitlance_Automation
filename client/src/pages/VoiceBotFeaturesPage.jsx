@@ -2,12 +2,13 @@ import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
     Phone, ArrowLeft, Bot, Calendar, Database,
-    BarChart3, Settings, ShieldCheck, Zap
+    BarChart3, Settings, ShieldCheck, Zap, ChevronDown
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 import TiltCard from '../components/ui/TiltCard';
 import ScrollReveal from '../components/ui/ScrollReveal';
+import SEOHead from '../components/layout/SEOHead';
 
 const FeatureDetail = ({ icon: Icon, title, description, color }) => (
     <div className="flex gap-4 p-6 rounded-2xl bg-white/[0.03] border border-white/10 hover:bg-white/[0.06] transition-colors group">
@@ -68,8 +69,63 @@ const VoiceBotFeaturesPage = () => {
         }
     ];
 
+    const voiceBotSchema = {
+        "@context": "https://schema.org",
+        "@graph": [
+            {
+                "@type": "SoftwareApplication",
+                "name": "Bitlance AI Voice Agent",
+                "applicationCategory": "BusinessApplication",
+                "operatingSystem": "Web",
+                "description": "An autonomous AI voice agent that handles inbound and outbound calls, qualifies leads, books meetings, and syncs data to your CRM 24/7 without human intervention.",
+                "offers": { "@type": "Offer", "url": "https://www.bitlancetechhub.com/apply/real-estate" },
+                "featureList": [
+                    "Human-like natural language conversations",
+                    "Inbound and outbound calling",
+                    "Automated meeting booking via Calendly",
+                    "HubSpot, Salesforce, and Zoho CRM integration",
+                    "Deep call analytics and sentiment analysis",
+                    "Enterprise-grade encrypted calls"
+                ],
+                "publisher": { "@type": "Organization", "name": "Bitlance Tech Hub", "url": "https://www.bitlancetechhub.com" }
+            },
+            {
+                "@type": "FAQPage",
+                "mainEntity": [
+                    {
+                        "@type": "Question",
+                        "name": "What is an AI voice agent?",
+                        "acceptedAnswer": { "@type": "Answer", "text": "An AI voice agent is a software system that uses natural language processing and speech synthesis to conduct real phone conversations autonomously. Unlike a simple IVR, it understands context, handles objections, and completes tasks like booking meetings or qualifying leads without any human operator." }
+                    },
+                    {
+                        "@type": "Question",
+                        "name": "How does the Bitlance AI Voice Agent integrate with my CRM?",
+                        "acceptedAnswer": { "@type": "Answer", "text": "The Bitlance AI Voice Agent natively integrates with HubSpot, Salesforce, and Zoho CRM. After every call, it automatically pushes the call transcript, extracted lead data, and meeting bookings directly to your CRM in real time via API." }
+                    },
+                    {
+                        "@type": "Question",
+                        "name": "Can the AI voice agent handle thousands of calls simultaneously?",
+                        "acceptedAnswer": { "@type": "Answer", "text": "Yes. The Bitlance AI Voice Agent is designed for enterprise-scale concurrency. It can run thousands of parallel outbound campaigns or answer every inbound call simultaneously, with zero wait time for customers." }
+                    },
+                    {
+                        "@type": "Question",
+                        "name": "What industries benefit most from AI voice agents?",
+                        "acceptedAnswer": { "@type": "Answer", "text": "AI voice agents deliver the highest ROI in real estate (lead qualification and site visit booking), insurance (policy renewal and claims intake), e-commerce (order follow-ups), and SaaS (trial-to-paid conversion calls). Any business that relies on high-volume phone outreach benefits significantly." }
+                    }
+                ]
+            }
+        ]
+    };
+
     return (
         <div className="min-h-screen bg-[#030303] text-white">
+            <SEOHead
+                title="AI Voice Agent for Sales & Lead Qualification"
+                description="Deploy a hyper-realistic AI voice agent that handles thousands of concurrent calls, qualifies leads, books meetings, and syncs to your CRM 24/7. No human operators needed."
+                canonicalUrl="https://www.bitlancetechhub.com/features/voice-bot"
+                keywords="AI voice agent, AI calling bot, automated phone calls, AI sales agent, inbound calling AI, outbound calling automation, CRM integration voice bot"
+                structuredData={voiceBotSchema}
+            />
 
             {/* Navigation Bar (Minimal for sub-pages) */}
             <nav className="fixed top-0 w-full z-50 bg-[#030303]/80 backdrop-blur-md border-b border-white/10">
@@ -199,6 +255,44 @@ const VoiceBotFeaturesPage = () => {
                                 </div>
                             </div>
                         </div>
+                    </div>
+                </ScrollReveal>
+            </section>
+
+            {/* FAQ Section */}
+            <section className="py-24 border-t border-white/5 bg-[#030303]">
+                <ScrollReveal className="max-w-4xl mx-auto px-6">
+                    <div className="text-center mb-12">
+                        <h2 className="text-3xl md:text-4xl font-bold mb-4">Frequently Asked Questions</h2>
+                        <p className="text-white/50 text-lg">Everything you need to know before deploying your first AI voice agent.</p>
+                    </div>
+                    <div className="space-y-4">
+                        {[
+                            {
+                                q: "What is an AI voice agent?",
+                                a: "An AI voice agent is a software system that uses natural language processing and speech synthesis to conduct real phone conversations autonomously. Unlike a simple IVR, it understands context, handles objections, and completes tasks like booking meetings or qualifying leads without any human operator."
+                            },
+                            {
+                                q: "How does the Bitlance AI Voice Agent integrate with my CRM?",
+                                a: "The Bitlance AI Voice Agent natively integrates with HubSpot, Salesforce, and Zoho CRM. After every call, it automatically pushes the call transcript, extracted lead data, and meeting bookings directly to your CRM in real time via API."
+                            },
+                            {
+                                q: "Can the AI voice agent handle thousands of calls simultaneously?",
+                                a: "Yes. The Bitlance AI Voice Agent is designed for enterprise-scale concurrency. It can run thousands of parallel outbound campaigns or answer every inbound call simultaneously, with zero wait time for customers."
+                            },
+                            {
+                                q: "What industries benefit most from AI voice agents?",
+                                a: "AI voice agents deliver the highest ROI in real estate (lead qualification and site visit booking), insurance (policy renewal and claims intake), e-commerce (order follow-ups), and SaaS (trial-to-paid conversion calls). Any business that relies on high-volume phone outreach benefits significantly."
+                            }
+                        ].map((item, i) => (
+                            <details key={i} className="group bg-white/5 border border-white/10 rounded-2xl p-6 cursor-pointer open:bg-white/10 transition-colors">
+                                <summary className="flex items-center justify-between font-semibold text-lg text-white list-none">
+                                    {item.q}
+                                    <ChevronDown className="flex-shrink-0 ml-4 text-white/40 group-open:rotate-180 transition-transform" size={20} />
+                                </summary>
+                                <p className="mt-4 text-white/60 leading-relaxed">{item.a}</p>
+                            </details>
+                        ))}
                     </div>
                 </ScrollReveal>
             </section>

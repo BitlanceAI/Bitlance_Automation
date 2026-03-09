@@ -71,7 +71,7 @@ const StatAnimation = ({ type }) => {
     }
 };
 
-const StatCard = ({ delay, value, symbol, text, type, direction = "up", start = 0 }) => {
+const StatCard = ({ delay, value, symbol, text, type, direction = "up", start = 0, contrast }) => {
     const ref = useRef(null);
     const x = useMotionValue(0);
     const y = useMotionValue(0);
@@ -127,6 +127,11 @@ const StatCard = ({ delay, value, symbol, text, type, direction = "up", start = 
             <p style={{ transform: "translateZ(20px)" }} className="relative z-10 text-gray-300 text-center font-medium opacity-80 group-hover:opacity-100 transition-opacity max-w-[200px]">
                 {text}
             </p>
+            {contrast && (
+                <p style={{ transform: "translateZ(15px)" }} className="relative z-10 text-xs text-white/30 text-center mt-1 max-w-[200px]">
+                    {contrast}
+                </p>
+            )}
         </motion.div>
     );
 };
@@ -158,6 +163,7 @@ const SocialProofSection = () => {
                         value={40}
                         symbol="+"
                         text="more enquiries handled without adding staff."
+                        contrast="vs. industry avg of +8%"
                         type="chart"
                     />
                     <StatCard
@@ -165,6 +171,7 @@ const SocialProofSection = () => {
                         value={2}
                         symbol="×"
                         text="increase in booked appointments from same ad spend."
+                        contrast="vs. 1.3× with manual follow-up"
                         type="multiplier"
                     />
                     <StatCard
@@ -172,6 +179,7 @@ const SocialProofSection = () => {
                         value={10}
                         symbol="<"
                         text="response time."
+                        contrast="vs. 8-hour avg human response"
                         start={60}
                         direction="down"
                         type="time"

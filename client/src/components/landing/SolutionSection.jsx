@@ -8,7 +8,7 @@ const SolutionSection = () => {
         <section className="py-24 relative overflow-hidden">
             <ScrollReveal className="max-w-7xl mx-auto px-6">
                 <div className="text-center mb-20">
-                    <span className="text-indigo-400 font-bold tracking-wider uppercase text-sm">Consideration</span>
+                    <span className="text-indigo-400 font-bold tracking-wider uppercase text-sm">The Solution</span>
                     <motion.h2
                         initial={{ opacity: 0, y: 20 }}
                         whileInView={{ opacity: 1, y: 0 }}

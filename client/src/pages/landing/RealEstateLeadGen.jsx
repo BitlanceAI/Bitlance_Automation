@@ -5,6 +5,7 @@ import LeadQualificationForm from '../../components/funnel/LeadQualificationForm
 import DisqualifiedView from '../../components/funnel/DisqualifiedView';
 import CalendarBookingView from '../../components/funnel/CalendarBookingView';
 import { trackLeadQualified, trackLeadDisqualified, trackBookingSuccess } from '../../lib/analytics';
+import SEOHead from '../../components/layout/SEOHead';
 
 const RealEstateLeadGen = () => {
     // view state: 'form', 'qualified', 'disqualified', 'success'
@@ -29,7 +30,11 @@ const RealEstateLeadGen = () => {
 
     return (
         <div className="min-h-screen bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-50 flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8 font-sans">
-
+            <SEOHead
+                title="AI Growth Audit for B2B Founders | Bitlance"
+                description="Apply for an exclusive AI Growth Audit. We help ambitious B2B founders scale with AI-driven lead qualification and automated nurture systems."
+                canonicalUrl="https://www.bitlancetechhub.com/apply/audit"
+            />
             <div className="max-w-3xl mx-auto w-full">
 
                 {/* Header Section */}
@@ -37,13 +42,13 @@ const RealEstateLeadGen = () => {
                     <div className="text-center mb-10">
                         <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-violet-100 dark:bg-violet-900/30 text-violet-700 dark:text-violet-300 text-sm font-medium mb-4">
                             <Sparkles className="w-4 h-4" />
-                            <span>Exclusive Real Estate Program</span>
+                            <span>Exclusive AI Beta Program</span>
                         </div>
                         <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight mb-4 text-slate-900 dark:text-white">
                             Apply for an <span className="text-transparent bg-clip-text bg-gradient-to-r from-violet-600 to-indigo-500">AI Growth Audit</span>
                         </h1>
                         <p className="text-lg text-slate-600 dark:text-slate-400 max-w-2xl mx-auto">
-                            We help ambitious real estate builders scale with AI-driven lead qualification and automated nurture systems. See if you qualify below.
+                            We help visionary businesses scale with AI-driven pipelines and automated nurture systems. See if you qualify below.
                         </p>
                     </div>
                 )}

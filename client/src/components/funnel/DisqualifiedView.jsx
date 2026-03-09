@@ -13,7 +13,7 @@ const DisqualifiedView = () => {
             </h2>
 
             <p className="text-lg text-slate-600 dark:text-slate-400 max-w-lg mx-auto mb-8">
-                Thank you for your interest! Currently, our AI Growth Audit is tailored for real estate builders with a minimum marketing spend of ₹1L/month and requires decision-maker participation to implement the strategies effectively.
+                Thank you for your interest! Currently, our AI Growth Audit is tailored for scaling B2B businesses with a minimum marketing spend of ₹1L/month and requires decision-maker participation to implement the strategies effectively.
             </p>
 
             <div className="bg-violet-50 dark:bg-violet-900/20 rounded-2xl p-6 text-left border border-violet-100 dark:border-violet-800/50 max-w-lg mx-auto">
@@ -21,7 +21,7 @@ const DisqualifiedView = () => {
                     Keep In Touch
                 </h3>
                 <p className="text-sm text-violet-600 dark:text-violet-400">
-                    We frequently release free resources and guides on scaling real estate businesses. We'll keep you on our list for future updates when your scale matches our current AI solutions.
+                    We frequently release free resources and guides on scaling businesses with automation. We'll keep you on our list for future updates when your scale matches our current AI solutions.
                 </p>
             </div>
 

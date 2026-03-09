@@ -413,7 +413,7 @@ const MetaAdsPage = () => {
             const { data, error } = await supabase.auth.linkIdentity({
                 provider: 'facebook',
                 options: {
-                    redirectTo: window.location.origin + '/meta-ads-agent',
+                    redirectTo: window.location.origin + '/dashboard/agents/meta',
                     scopes: 'pages_manage_posts,pages_read_engagement,pages_show_list,ads_management,ads_read,business_management,instagram_basic,instagram_content_publish'
                 }
             });
@@ -424,7 +424,7 @@ const MetaAdsPage = () => {
                 const { error: signInError } = await supabase.auth.signInWithOAuth({
                     provider: 'facebook',
                     options: {
-                        redirectTo: window.location.origin + '/meta-ads-agent',
+                        redirectTo: window.location.origin + '/dashboard/agents/meta',
                         scopes: 'pages_manage_posts,pages_read_engagement,pages_show_list,ads_management,ads_read,business_management,instagram_basic,instagram_content_publish'
                     }
                 });
@@ -459,7 +459,7 @@ const MetaAdsPage = () => {
                 toast.success('Meta account connected via Facebook!');
                 await checkConnection();
                 // Clear the URL to preventing token leakage/re-submission
-                window.history.replaceState({}, '', '/meta-ads-agent');
+                window.history.replaceState({}, '', '/dashboard/agents/meta');
             } else {
                 toast.error(data.error || 'OAuth connection failed');
             }

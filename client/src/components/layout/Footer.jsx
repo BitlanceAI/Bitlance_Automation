@@ -31,11 +31,11 @@ const Footer = () => {
                         <ul className="space-y-3">
                             <FooterLink to="/" label="Home" />
                             <FooterLink to="/agents" label="All AI Agents" />
-                            <FooterLink to="/seo-agent" label="SEO AI Agent" />
-                            <FooterLink to="/meta-ads-agent" label="Meta Ads Automation" />
-                            <FooterLink to="/broadcast" label="Social Media Automation" />
-                            <FooterLink to="/voice-agent" label="AI Voice Agent" />
-                            <FooterLink to="/design-agent" label="Graphic Designer AI" />
+                            <FooterLink to="/dashboard/agents/seo" label="SEO AI Agent" />
+                            <FooterLink to="/dashboard/agents/meta" label="Meta Ads Automation" />
+                            <FooterLink to="/dashboard/agents/social" label="Social Media Automation" />
+                            <FooterLink to="/dashboard/agents/voice" label="AI Voice Agent" />
+                            <FooterLink to="/dashboard/agents/design" label="Graphic Designer AI" />
                         </ul>
                     </div>
 

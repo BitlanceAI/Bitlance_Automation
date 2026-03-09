@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'; // Fixed: Added imports
 import { useParams } from 'react-router-dom';
 import LandingLayout from './LandingLayout'; // Fixed: Default import
 import MetaPixel from '../../utils/MetaPixel'; // Fixed: Default import
+import SEOHead from '../../components/layout/SEOHead';
 
 export const LeadGenLanding = () => {
     const { campaignId } = useParams();
@@ -39,6 +40,10 @@ export const LeadGenLanding = () => {
 
     return (
         <LandingLayout>
+            <SEOHead
+                title="Unlock Exclusive Business Automation Access | Bitlance"
+                description="Join thousands of others getting the best AI automation and growth tips directly in your inbox."
+            />
             <div className="bg-blue-600 py-20 text-white text-center">
                 <h1 className="text-4xl font-bold mb-4">Unlock Exclusive Access</h1>
                 <p className="text-xl opacity-90">Join thousands of others getting the best tips.</p>

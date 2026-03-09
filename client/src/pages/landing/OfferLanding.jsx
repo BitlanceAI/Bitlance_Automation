@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import LandingLayout from './LandingLayout';
 import MetaPixel from '../../utils/MetaPixel';
+import SEOHead from '../../components/layout/SEOHead';
 
 export const OfferLanding = () => {
     const { campaignId } = useParams();
@@ -23,6 +24,10 @@ export const OfferLanding = () => {
 
     return (
         <LandingLayout>
+            <SEOHead
+                title="50% Off Annual Plans | Limited Time Offer | Bitlance"
+                description="Get access to all premium AI automation features for half the price. Claim your limited-time discount today."
+            />
             <div className="bg-indigo-900 text-white min-h-[60vh] flex items-center justify-center relative overflow-hidden">
                 <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10"></div>
                 <div className="text-center p-8 z-10 max-w-2xl">

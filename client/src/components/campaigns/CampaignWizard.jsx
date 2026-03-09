@@ -5,6 +5,7 @@ import StepPromotionType from './steps/StepPromotionType';
 import StepContent from './steps/StepContent';
 import StepBudgetSchedule from './steps/StepBudgetSchedule';
 import StepReview from './steps/StepReview';
+import { trackFeatureUsed } from '../../lib/analytics';
 
 const STEPS = ['Promotion Type', 'Content', 'Budget & Schedule', 'Review'];
 
@@ -74,6 +75,9 @@ const CampaignWizard = () => {
             if (!response.ok) throw new Error('Failed to create campaign');
 
             const result = await response.json();
+
+            trackFeatureUsed('Meta Ads Automation AI', 'Create Campaign');
+
             alert('Campaign created successfully!');
             navigate('/admin/campaigns');
         } catch (error) {

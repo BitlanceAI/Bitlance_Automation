@@ -81,7 +81,7 @@ const BlogEditorPage = () => {
         } catch (error) {
             console.error(error);
             toast.error('Failed to fetch post');
-            navigate('/blogs-manager');
+            navigate('/blog-manager');
         }
     };
 
@@ -134,7 +134,12 @@ const BlogEditorPage = () => {
                 });
                 toast.success('Post created');
             }
-            navigate('/blogs-manager');
+
+            import('../lib/analytics').then(({ trackFeatureUsed }) => {
+                trackFeatureUsed('Blog Manager', id ? 'Edit Post' : 'Create Post');
+            });
+
+            navigate('/blog-manager');
 
         } catch (error) {
             console.error(error);
@@ -149,7 +154,7 @@ const BlogEditorPage = () => {
             <Navbar />
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
                 <div className="flex items-center gap-4 mb-8">
-                    <Link to="/blogs-manager" className="p-2 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-lg text-gray-500">
+                    <Link to="/blog-manager" className="p-2 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-lg text-gray-500">
                         <ArrowLeft className="w-5 h-5" />
                     </Link>
                     <h1 className="text-3xl font-bold text-gray-900 dark:text-white">

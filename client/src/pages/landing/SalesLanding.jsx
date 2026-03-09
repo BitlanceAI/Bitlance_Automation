@@ -2,6 +2,8 @@ import React, { useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import LandingLayout from './LandingLayout';
 import MetaPixel from '../../utils/MetaPixel';
+import { track } from '../../lib/analytics';
+import SEOHead from '../../components/layout/SEOHead';
 
 export const SalesLanding = () => {
     const { campaignId } = useParams();
@@ -26,11 +28,22 @@ export const SalesLanding = () => {
             currency: 'USD',
             num_items: 1
         });
+
+        track('purchase_completed', {
+            value: 49.99,
+            currency: 'USD',
+            transaction_id: `T${Date.now()}`
+        });
+
         alert('Purchase Event Fired! (Simulation)');
     };
 
     return (
         <LandingLayout>
+            <SEOHead
+                title="Premium Solution Pro | Bitlance Automation"
+                description="Get the ultimate solution to your business bottlenecks. High quality, reliable, and efficient automation."
+            />
             <div className="py-16 container mx-auto px-4">
                 <div className="flex flex-col md:flex-row gap-12 items-center">
                     <div className="w-full md:w-1/2">

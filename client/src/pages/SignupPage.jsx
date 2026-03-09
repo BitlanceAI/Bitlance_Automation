@@ -12,8 +12,7 @@ const SignupPage = () => {
         name: '',
         phone: '',
         email: '',
-        password: '',
-        confirmPassword: ''
+        password: ''
     });
 
     const [loading, setLoading] = useState(false);
@@ -29,12 +28,6 @@ const SignupPage = () => {
         setLoading(true);
         setError('');
         setSuccess('');
-
-        if (formData.password !== formData.confirmPassword) {
-            setError('Passwords do not match');
-            setLoading(false);
-            return;
-        }
 
         if (formData.password.length < 6) {
             setError('Password must be at least 6 characters');

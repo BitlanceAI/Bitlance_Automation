@@ -45,6 +45,22 @@ export const trackContactFormSuccess = () =>
 export const trackContactFormError = (errorMessage) =>
     track('contact_form_error', { error_message: errorMessage });
 
+// ─── General Engagement ───────────────────────────────────────────────────────
+
+export const trackCtaClick = (buttonText, location) =>
+    track('cta_clicked', { button_text: buttonText, location });
+
+export const trackFormStart = (formName) =>
+    track('form_started', { form_name: formName });
+
+// ─── In-App Actions ───────────────────────────────────────────────────────────
+
+export const trackFeatureUsed = (agentName, featureName) =>
+    track('feature_used', { agent_name: agentName, feature_name: featureName });
+
+export const trackAppError = (errorType, errorMessage) =>
+    track('error_occurred', { error_type: errorType, error_message: errorMessage });
+
 // ─── Demo / Lead Gen (Real Estate Funnel) ─────────────────────────────────────
 
 export const trackDemoClick = (source = 'unknown') =>

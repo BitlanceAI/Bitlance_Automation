@@ -16,6 +16,7 @@ import Footer from '../components/landing/Footer';
 import ScrollToTopButton from '../components/ui/ScrollToTopButton';
 
 import { ElegantShape } from '../components/ui/shape-landing-hero';
+import SEOHead from '../components/layout/SEOHead';
 
 const LandingPage = () => {
     const { user, loading } = useAuth();
@@ -26,11 +27,16 @@ const LandingPage = () => {
     if (user) return <Navigate to="/home" replace />;
 
     const handleOpenBooking = () => {
-        navigate('/apply/real-estate');
+        navigate('/apply/audit');
     };
 
     return (
         <div className="relative min-h-screen w-full overflow-hidden bg-[#030303] text-white">
+            <SEOHead
+                title="Bitlance Automation | AI Voice Bots & Business Automation"
+                description="Deploy autonomous AI agents, intelligent Voice Bots, and data-driven automation tools to capture leads, book appointments, and scale your business effortlessly."
+                canonicalUrl="https://www.bitlancetechhub.com/"
+            />
             {/* Background Gradients & Shapes */}
             <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/[0.05] via-transparent to-rose-500/[0.05] blur-3xl pointer-events-none" />
 

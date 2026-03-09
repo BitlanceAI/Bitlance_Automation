@@ -111,15 +111,15 @@ function App() {
   const handleAgentSelect = (agent) => {
     trackAgentOpen(agent.title);
     if (agent.title === 'WhatsApp Broadcasting Automation') {
-      navigate('/broadcast');
+      navigate('/dashboard/agents/social');
     } else if (agent.title === 'AI Voice Agent') {
-      navigate('/voice-agent');
+      navigate('/dashboard/agents/voice');
     } else if (agent.title === 'SEO AI Agent') {
-      navigate('/seo-agent');
+      navigate('/dashboard/agents/seo');
     } else if (agent.title === 'Graphic Designer AI') {
-      navigate('/design-agent');
+      navigate('/dashboard/agents/design');
     } else if (agent.title === 'Meta Ads Automation AI') {
-      navigate('/meta-ads-agent');
+      navigate('/dashboard/agents/meta');
     }
   };
 
@@ -127,14 +127,11 @@ function App() {
   const normalizedPath = location.pathname.toLowerCase().replace(/\/$/, "");
   // Add home and other pages to dashboard layout (no public nav/footer)
   const isDashboard = normalizedPath.includes('dashboard') ||
-    normalizedPath.includes('voice-agent') ||
-    normalizedPath.includes('seo-agent') ||
-    normalizedPath.includes('design-agent') ||
-    (normalizedPath.includes('blog') && !normalizedPath.startsWith('/blogs')) ||
-    normalizedPath.includes('settings') ||
-    normalizedPath.includes('broadcast') ||
-    normalizedPath.includes('meta-ads-agent') ||
     normalizedPath.includes('admin') ||
+    normalizedPath.includes('settings') ||
+    normalizedPath.includes('blog-manager') ||
+    (normalizedPath.includes('blog/new') || normalizedPath.includes('blog/edit')) ||
+    normalizedPath.includes('push') ||
     normalizedPath.startsWith('/l/'); // Hide Main Nav for Landing Pages
 
   return (
@@ -157,9 +154,9 @@ function App() {
             <Route path="/terms" element={<TermsPage />} />
             <Route path="/contact" element={<ContactPage />} />
 
-            <Route path="/blogs" element={<PublicBlogListPage />} />
+            <Route path="/blog" element={<PublicBlogListPage />} />
 
-            <Route path="/blogs/:id" element={<PublicArticlePage />} />
+            <Route path="/blog/:id" element={<PublicArticlePage />} />
             <Route path="/login" element={
               <PublicRoute>
                 <LoginPage />
@@ -190,7 +187,7 @@ function App() {
                 <AgentsPage onAgentSelect={handleAgentSelect} />
               </AuthGuard>
             } />
-            <Route path="/broadcast" element={
+            <Route path="/dashboard/agents/social" element={
               <AuthGuard>
                 <BroadcastPage />
               </AuthGuard>
@@ -200,29 +197,29 @@ function App() {
                 <SocialDashboard />
               </AuthGuard>
             } />
-            <Route path="/voice-agent" element={
+            <Route path="/dashboard/agents/voice" element={
               <AuthGuard>
                 <SalesDashboard />
               </AuthGuard>
             } />
-            <Route path="/seo-agent" element={
+            <Route path="/dashboard/agents/seo" element={
               <AuthGuard>
                 <SeoAgentPage />
               </AuthGuard>
             } />
-            <Route path="/blog" element={
+            <Route path="/dashboard/agents/blog" element={
               <AuthGuard>
                 <BlogPage />
               </AuthGuard>
             } />
-            <Route path="/design-agent" element={
+            <Route path="/dashboard/agents/design" element={
               <AuthGuard>
                 <GraphicDesignerPage />
               </AuthGuard>
             } />
             {/* Meta Ads — multipage layout */}
             <Route
-              path="/meta-ads-agent"
+              path="/dashboard/agents/meta"
               element={
                 <AuthGuard>
                   <MetaAdsLayout />
@@ -268,8 +265,8 @@ function App() {
             <Route path="/l/leadgen/:campaignId" element={<LeadGenLanding />} />
             <Route path="/l/sales/:campaignId" element={<SalesLanding />} />
             <Route path="/l/offer/:campaignId" element={<OfferLanding />} />
-            {/* Real Estate Landing Custom Funnel */}
-            <Route path="/apply/real-estate" element={<RealEstateLeadGen />} />
+            {/* General Lead Gen Custom Funnel */}
+            <Route path="/apply/audit" element={<RealEstateLeadGen />} />
             <Route path="/testimonial-demo" element={<TestimonialDemo />} />
             <Route path="/shape-demo" element={<ShapeHeroDemo />} />
             <Route path="/features/voice-bot" element={<VoiceBotFeaturesPage />} />
@@ -289,7 +286,7 @@ function App() {
             } />
 
 
-            <Route path="/blogs-manager" element={
+            <Route path="/blog-manager" element={
               <AuthGuard>
                 <BlogManagerPage />
               </AuthGuard>

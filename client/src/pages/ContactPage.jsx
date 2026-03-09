@@ -7,7 +7,7 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 import ScrollReveal from '../components/ui/ScrollReveal';
 import { supabase } from '../services/supabaseClient';
-import { trackContactFormSubmit, trackContactFormSuccess, trackContactFormError, trackDemoClick, trackSocialClick } from '../lib/analytics';
+import { trackContactFormSubmit, trackContactFormSuccess, trackContactFormError, trackDemoClick, trackSocialClick, trackFormStart } from '../lib/analytics';
 
 /* ─────────────── Contact Info Card ─────────────── */
 const ContactCard = ({ icon: Icon, title, value, sub, color, href }) => (
@@ -69,10 +69,18 @@ const ContactPage = () => {
     const [submitting, setSubmitting] = useState(false);
     const [submitted, setSubmitted] = useState(false);
     const [error, setError] = useState('');
+    const [formStartedTracked, setFormStartedTracked] = useState(false);
 
     useEffect(() => { window.scrollTo(0, 0); }, []);
 
     const handleChange = (e) => setForm(p => ({ ...p, [e.target.name]: e.target.value }));
+
+    const handleFocus = () => {
+        if (!formStartedTracked) {
+            trackFormStart('Contact Form');
+            setFormStartedTracked(true);
+        }
+    };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -300,7 +308,7 @@ const ContactPage = () => {
                                         Thanks for reaching out. We'll be in touch within 24 hours.
                                     </p>
                                     <button
-                                        onClick={() => { setSubmitted(false); setForm({ name: '', email: '', company: '', message: '' }); }}
+                                        onClick={() => { setSubmitted(false); setForm({ name: '', email: '', company: '', message: '' }); setFormStartedTracked(false); }}
                                         className="mt-4 px-6 py-2.5 rounded-xl border border-white/20 text-sm font-medium
                                                    hover:bg-white/10 transition-colors"
                                     >
@@ -319,6 +327,7 @@ const ContactPage = () => {
                                                 name="name"
                                                 value={form.name}
                                                 onChange={handleChange}
+                                                onFocus={handleFocus}
                                                 placeholder="Jane Doe"
                                                 className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white
                                                            placeholder-white/30 focus:outline-none focus:border-violet-500/60

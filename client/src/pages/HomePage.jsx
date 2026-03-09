@@ -117,7 +117,7 @@ const HomePage = () => {
             title: 'Social Media Automation',
             description: 'Automate your social presence with AI-generated content and scheduling.',
             icon: MessageSquare,
-            path: '/broadcast',
+            path: '/dashboard/agents/social',
             color: 'from-blue-500 to-cyan-500',
             stats: 'Active Campaigns'
         },
@@ -125,7 +125,7 @@ const HomePage = () => {
             title: 'AI Voice Agent',
             description: 'Intelligent voice assistants for sales, support, and customer engagement.',
             icon: Phone,
-            path: '/voice-agent',
+            path: '/dashboard/agents/voice',
             color: 'from-purple-500 to-pink-500',
             stats: 'Call Analytics'
         },
@@ -133,7 +133,7 @@ const HomePage = () => {
             title: 'SEO AI Agent',
             description: 'Dominate search rankings with automated content and SEO optimization.',
             icon: Search,
-            path: '/seo-agent',
+            path: '/dashboard/agents/seo',
             color: 'from-amber-500 to-orange-500',
             stats: 'Keyword Rankings'
         }

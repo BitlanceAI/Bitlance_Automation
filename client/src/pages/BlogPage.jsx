@@ -337,7 +337,7 @@ const BlogPage = () => {
                         </button>
 
                         <button
-                            onClick={() => navigate('/voice-agent')}
+                            onClick={() => navigate('/dashboard/agents/voice')}
                             className="w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-700 text-gray-700 dark:text-gray-300 transition-colors text-base font-medium"
                             title="Sales Dashboard"
                         >
@@ -346,7 +346,7 @@ const BlogPage = () => {
                         </button>
 
                         <button
-                            onClick={() => navigate('/seo-agent')}
+                            onClick={() => navigate('/dashboard/agents/seo')}
                             className="w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-700 text-gray-700 dark:text-gray-300 transition-colors text-base font-medium"
                             title="SEO Agent"
                         >
@@ -355,7 +355,7 @@ const BlogPage = () => {
                         </button>
 
                         <button
-                            onClick={() => navigate('/broadcast')}
+                            onClick={() => navigate('/dashboard/agents/social')}
                             className="w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-700 text-gray-700 dark:text-gray-300 transition-colors text-base font-medium"
                             title="Broadcast"
                         >

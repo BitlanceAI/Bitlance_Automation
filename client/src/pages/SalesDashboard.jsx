@@ -439,7 +439,7 @@ const SalesDashboard = () => {
                         icon={<Megaphone size={20} />}
                         label="Ad Campaigns"
                         active={false}
-                        onClick={() => navigate('/meta-ads-agent')}
+                        onClick={() => navigate('/dashboard/agents/meta')}
                     />
 
 

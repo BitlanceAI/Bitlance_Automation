@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import LandingLayout from './LandingLayout';
 import MetaPixel from '../../utils/MetaPixel';
+import SEOHead from '../../components/layout/SEOHead';
 
 export const TrafficLanding = () => {
     const { campaignId } = useParams();
@@ -13,6 +14,10 @@ export const TrafficLanding = () => {
 
     return (
         <LandingLayout>
+            <SEOHead
+                title="10 Ways to Automate Your Business in 2026 | Bitlance Insights"
+                description="Learn how to leverage AI agents and Meta Ads automation to scale your operations and improve ROI."
+            />
             <div className="container mx-auto px-4 py-12 max-w-3xl">
                 <span className="text-blue-600 font-bold tracking-wide uppercase text-sm">Latest Insights</span>
                 <h1 className="text-4xl font-bold mt-2 mb-6 text-gray-900 leading-tight">

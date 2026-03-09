@@ -24,6 +24,47 @@
   <meta property="twitter:description"
     content="Deploy autonomous AI agents, intelligent Voice Bots, and data-driven automation tools to capture leads, book appointments, and scale your business effortlessly." />
   <meta property="twitter:image" content="/og-image.jpg" />
+  <!-- Organization + WebSite Structured Data for AI Entity Recognition -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "Organization",
+        "@id": "https://www.bitlancetechhub.com/#organization",
+        "name": "Bitlance Tech Hub",
+        "url": "https://www.bitlancetechhub.com",
+        "logo": {
+          "@type": "ImageObject",
+          "url": "https://www.bitlancetechhub.com/favicon.png"
+        },
+        "description": "Bitlance Tech Hub builds autonomous AI agents for business automation — including AI voice bots, SEO content agents, and social media automation tools that help companies scale without hiring.",
+        "foundingDate": "2024",
+        "sameAs": [
+          "https://www.linkedin.com/company/bitlance-tech-hub",
+          "https://twitter.com/bitlancetechhub"
+        ]
+      },
+      {
+        "@type": "WebSite",
+        "@id": "https://www.bitlancetechhub.com/#website",
+        "url": "https://www.bitlancetechhub.com",
+        "name": "Bitlance Tech Hub",
+        "publisher": { "@id": "https://www.bitlancetechhub.com/#organization" },
+        "potentialAction": {
+          "@type": "SearchAction",
+          "target": {
+            "@type": "EntryPoint",
+            "urlTemplate": "https://www.bitlancetechhub.com/blog?q={search_term_string}"
+          },
+          "query-input": "required name=search_term_string"
+        }
+      }
+    ]
+  }
+  </script>
+  <!-- End Structured Data -->
+
   <!-- Google Analytics GA4 -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-7WE6LY54CL"></script>
   <script>

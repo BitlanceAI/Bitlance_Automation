@@ -20,7 +20,7 @@ const MetaConnectModal = ({ isOpen, onClose, onSuccess, userToken }) => {
             const { data, error } = await supabase.auth.signInWithOAuth({
                 provider: 'facebook',
                 options: {
-                    redirectTo: window.location.origin + '/meta-ads-agent', // Redirects back to main agent page usually
+                    redirectTo: window.location.origin + '/dashboard/agents/meta', // Redirects back to main agent page usually
                     scopes: 'pages_manage_posts,pages_read_engagement,pages_show_list,ads_management,ads_read,business_management,instagram_basic,instagram_content_publish'
                 }
             });

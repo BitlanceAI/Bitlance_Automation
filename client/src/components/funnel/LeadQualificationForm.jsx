@@ -3,11 +3,11 @@ import { ArrowRight, Activity, IndianRupee, PieChart, Users, Building, ShieldChe
 
 const QA_STEPS = [
     {
-        id: 'real_estate_type',
-        question: 'What type of real estate do you sell?',
-        description: 'Select your primary property focus.',
+        id: 'industry_focus',
+        question: 'What is your primary industry?',
+        description: 'Select the sector that best describes your business.',
         icon: <Building className="w-5 h-5" />,
-        options: ['Residential', 'Commercial', 'Luxury', 'Plots']
+        options: ['E-commerce', 'B2B SaaS', 'Agency', 'Professional Services', 'Real Estate', 'Other']
     },
     {
         id: 'marketing_spend',
@@ -17,30 +17,23 @@ const QA_STEPS = [
         options: ['Below ₹1L', '₹1–5L', '₹5–15L', '₹15L+']
     },
     {
-        id: 'lead_volume',
-        question: 'What is your monthly lead volume?',
-        description: 'Estimated number of leads generated per month.',
-        icon: <Users className="w-5 h-5" />,
-        options: ['Less than 100', '100–500', '500–2000', '2000+']
-    },
-    {
-        id: 'crm',
-        question: 'Which CRM are you currently using?',
-        description: 'Helps us evaluate integration possibilities.',
+        id: 'primary_bottleneck',
+        question: 'What is your primary bottleneck right now?',
+        description: 'What takes up the most time or is preventing growth?',
         icon: <Activity className="w-5 h-5" />,
-        options: ['Salesforce', 'HubSpot', 'Zoho', 'LeadSquared', 'Excel/Sheets', 'Other']
+        options: ['Lead Generation', 'Sales Conversion', 'Customer Support', 'Operations/Fulfillment']
     },
     {
-        id: 'revenue',
-        question: 'What is the average revenue per project?',
-        description: 'Helps gauge the ticket size of your offerings.',
+        id: 'current_setup',
+        question: 'What is your current tech stack?',
+        description: 'Helps us evaluate automation integration possibilities.',
         icon: <PieChart className="w-5 h-5" />,
-        options: ['Under ₹10Cr', '₹10Cr–50Cr', '₹50Cr–100Cr', 'Over ₹100Cr']
+        options: ['HubSpot / Salesforce', 'GoHighLevel / ActiveCampaign', 'Zendesk / Intercom', 'Manual / Spreadsheets']
     },
     {
         id: 'decision_maker',
         question: 'Are you a decision maker at your company?',
-        description: 'We require leadership presence for the audit.',
+        description: 'We require leadership presence for the audit to be actionable.',
         icon: <ShieldCheck className="w-5 h-5" />,
         options: ['Yes, I am a decision maker', 'No, taking info for my team']
     }
@@ -125,8 +118,8 @@ const LeadQualificationForm = ({ onQualify, onDisqualify }) => {
                                 key={idx}
                                 onClick={() => handleSelectOption(option)}
                                 className={`p-4 text-left rounded-xl border-2 transition-all duration-200 ${answers[stepInfo.id] === option
-                                        ? 'border-violet-600 bg-violet-50 dark:bg-violet-900/20 text-violet-700 dark:text-violet-300 shadow-md'
-                                        : 'border-slate-100 dark:border-slate-700 hover:border-violet-300 dark:hover:border-violet-600/50 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200'
+                                    ? 'border-violet-600 bg-violet-50 dark:bg-violet-900/20 text-violet-700 dark:text-violet-300 shadow-md'
+                                    : 'border-slate-100 dark:border-slate-700 hover:border-violet-300 dark:hover:border-violet-600/50 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200'
                                     }`}
                             >
                                 <span className="block font-medium">{option}</span>
