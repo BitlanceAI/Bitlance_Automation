@@ -151,7 +151,7 @@ const PublicArticlePage = () => {
             <div className="min-h-screen flex flex-col justify-center items-center bg-gray-50 dark:bg-slate-900 px-6">
                 <h1 className="text-4xl font-bold text-gray-800 dark:text-gray-200 mb-4">Oops!</h1>
                 <p className="text-lg text-gray-600 dark:text-gray-400 mb-8">{error || 'Article not found'}</p>
-                <Link to="/blog" className="px-6 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors">
+                <Link to="/blogs" className="px-6 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors">
                     Back to Blogs
                 </Link>
             </div>
@@ -205,7 +205,7 @@ const PublicArticlePage = () => {
             {/* Header Image & Title */}
             <div className="bg-white dark:bg-slate-800 border-b border-gray-200 dark:border-slate-700">
                 <div className="max-w-7xl mx-auto px-6 py-12 md:py-20 lg:px-8">
-                    <Link to="/blog" className="inline-flex items-center text-gray-500 hover:text-indigo-600 mb-8 transition-colors">
+                    <Link to="/blogs" className="inline-flex items-center text-gray-500 hover:text-indigo-600 mb-8 transition-colors">
                         <ArrowLeft size={20} className="mr-2" /> Back to Articles
                     </Link>
 

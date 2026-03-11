@@ -48,7 +48,7 @@ const LatestBlogsSection = () => {
                     </div>
 
                     <Link
-                        to="/blog"
+                        to="/blogs"
                         className="hidden md:inline-flex items-center gap-2 text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300 font-semibold group"
                     >
                         View all articles
@@ -70,7 +70,7 @@ const LatestBlogsSection = () => {
 
                 <div className="mt-10 md:hidden flex justify-center">
                     <Link
-                        to="/blog"
+                        to="/blogs"
                         className="inline-flex items-center justify-center gap-2 w-full px-6 py-3 rounded-xl border-2 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 font-semibold hover:border-indigo-500 dark:hover:border-indigo-500 transition-colors"
                     >
                         View all articles

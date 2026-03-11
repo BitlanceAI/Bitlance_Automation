@@ -130,7 +130,7 @@ function App() {
     normalizedPath.includes('admin') ||
     normalizedPath.includes('settings') ||
     normalizedPath.includes('blog-manager') ||
-    (normalizedPath.includes('blog/new') || normalizedPath.includes('blog/edit')) ||
+    (normalizedPath.includes('blogs/new') || normalizedPath.includes('blogs/edit')) ||
     normalizedPath.includes('push') ||
     normalizedPath.startsWith('/l/'); // Hide Main Nav for Landing Pages
 
@@ -154,9 +154,9 @@ function App() {
             <Route path="/terms" element={<TermsPage />} />
             <Route path="/contact" element={<ContactPage />} />
 
-            <Route path="/blog" element={<PublicBlogListPage />} />
+            <Route path="/blogs" element={<PublicBlogListPage />} />
 
-            <Route path="/blog/:id" element={<PublicArticlePage />} />
+            <Route path="/blogs/:id" element={<PublicArticlePage />} />
             <Route path="/login" element={
               <PublicRoute>
                 <LoginPage />
@@ -291,12 +291,12 @@ function App() {
                 <BlogManagerPage />
               </AuthGuard>
             } />
-            <Route path="/blog/new" element={
+            <Route path="/blogs/new" element={
               <AuthGuard>
                 <BlogEditorPage />
               </AuthGuard>
             } />
-            <Route path="/blog/edit/:id" element={
+            <Route path="/blogs/edit/:id" element={
               <AuthGuard>
                 <BlogEditorPage />
               </AuthGuard>
