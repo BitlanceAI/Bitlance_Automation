@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { AlertCircle, CheckCircle2 } from 'lucide-react';
+import API_BASE_URL from '../../config.js';
 
 const CalendarBookingView = ({ leadData, onSuccess }) => {
     const [bookingComplete, setBookingComplete] = useState(false);
@@ -33,7 +34,7 @@ const CalendarBookingView = ({ leadData, onSuccess }) => {
                         }
                     };
 
-                    await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/api/leads/book-audit`, {
+                    await fetch(`${API_BASE_URL}/api/leads/book-audit`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify(payload)

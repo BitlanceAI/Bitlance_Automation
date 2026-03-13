@@ -3,6 +3,7 @@ import { Trash2, Copy, Smartphone, RefreshCw, Plus } from 'lucide-react';
 import axios from 'axios';
 import { toast } from 'react-hot-toast';
 import { useAuth } from '../../context/AuthContext';
+import API_BASE_URL from '../../config.js';
 
 const DeviceTokensPanel = () => {
     const { token } = useAuth();
@@ -13,7 +14,7 @@ const DeviceTokensPanel = () => {
     const fetchTokens = async () => {
         try {
             setLoading(true);
-            const res = await axios.get(`${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/api/push/tokens`, {
+            const res = await axios.get(`${API_BASE_URL}/api/push/tokens`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             if (res.data.success) setTokens(res.data.tokens);
@@ -29,7 +30,7 @@ const DeviceTokensPanel = () => {
 
     const handleToggle = async (id, currentStatus) => {
         try {
-            await axios.put(`${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/api/push/tokens/${id}`,
+            await axios.put(`${API_BASE_URL}/api/push/tokens/${id}`,
                 { isActive: !currentStatus },
                 { headers: { Authorization: `Bearer ${token}` } }
             );
@@ -41,7 +42,7 @@ const DeviceTokensPanel = () => {
     const handleDelete = async (id) => {
         if (!window.confirm('Are you sure?')) return;
         try {
-            await axios.delete(`${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/api/push/tokens/${id}`, {
+            await axios.delete(`${API_BASE_URL}/api/push/tokens/${id}`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             toast.success('Token deleted');
@@ -52,7 +53,7 @@ const DeviceTokensPanel = () => {
     const handleQuickRegister = async (e) => {
         e.preventDefault();
         try {
-            await axios.post(`${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/api/push/tokens/register`, {
+            await axios.post(`${API_BASE_URL}/api/push/tokens/register`, {
                 token: quickToken, platform: 'manual', deviceId: 'manual-entry'
             }, { headers: { Authorization: `Bearer ${token}` } });
             toast.success('Token added successfully');

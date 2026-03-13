@@ -1,6 +1,7 @@
 import { initializeApp } from "firebase/app";
 import { getMessaging, getToken, onMessage } from "firebase/messaging";
 import axios from 'axios';
+import API_BASE_URL from '../config.js';
 
 // Config from existing firebaseBlogs.js (seo-automation-a90f2)
 export const firebaseConfig = {
@@ -78,7 +79,7 @@ const saveTokenToBackend = async (token) => {
 
         // Call backend API
         // Assuming API_BASE_URL handles logic or hardcoded
-        const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+        const API_URL = API_BASE_URL;
 
         await axios.post(`${API_URL}/api/push/tokens/register`, {
             token,

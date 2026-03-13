@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 import { X } from 'lucide-react';
+import API_BASE_URL from '../../config.js';
 
 const BookingModal = ({ isOpen, onClose }) => {
     const [step, setStep] = React.useState(1);
@@ -35,7 +36,7 @@ const BookingModal = ({ isOpen, onClose }) => {
 
         try {
             // Send data to backend
-            const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/api/leads`, {
+            const response = await fetch(`${API_BASE_URL}/api/leads`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'

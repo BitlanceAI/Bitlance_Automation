@@ -5,7 +5,8 @@ import {
     Settings, Plus, Trash2, Clock, RefreshCw, Zap, BarChart2, Timer
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
-const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001';
+import API_BASE_URL from '../../config.js';
+const API_BASE = API_BASE_URL;
 
 const AdminAutoBlog = () => {
     const { user, token } = useAuth();
