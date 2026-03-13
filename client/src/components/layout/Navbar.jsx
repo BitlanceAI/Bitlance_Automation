@@ -45,14 +45,18 @@ const Navbar = () => {
 
     return (
         <nav
-            className={`fixed z-50 transition-all duration-500 ease-in-out ${scrolled
-                ? 'top-4 left-1/2 -translate-x-1/2 w-[92%] max-w-6xl bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl shadow-2xl shadow-black/10 dark:shadow-black/30 py-2.5 rounded-2xl border border-gray-200/50 dark:border-slate-700/50'
-                : "top-0 left-0 right-0 w-full bg-transparent py-5"
+            className={`fixed left-0 right-0 z-50 transition-all duration-500 ease-in-out ${scrolled
+                ? 'top-4 py-2.5'
+                : "top-0 py-5 bg-transparent"
                 }`}
         >
-            <div className="max-w-7xl mx-auto px-6 flex justify-between items-center">
+            <div className={`mx-auto px-6 flex justify-between items-center transition-all duration-500 ${scrolled
+                ? 'w-[92%] max-w-6xl bg-white/80 dark:bg-slate-900/50 backdrop-blur-xl shadow-2xl shadow-black/10 dark:shadow-black/30 rounded-2xl py-2'
+                : 'w-full max-w-7xl px-6'
+                }`}
+            >
                 {/* Logo */}
-                <Link to="/" className="flex items-center gap-2 group">
+                <Link to="/" className="flex items-center mb-3 gap-2 group">
                     <img
                         src={Logo}
                         alt="Bitlance.ai"

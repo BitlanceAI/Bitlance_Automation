@@ -1,6 +1,7 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { ArrowRight, Play, Mic, MessageSquare, Edit3, Share2, TrendingUp } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import ProductDemoAnimation from './ProductDemoAnimation';
 
 const HeroSection = ({ onOpenBooking }) => {
     const [currentSlide, setCurrentSlide] = useState(0);
@@ -43,119 +44,90 @@ const HeroSection = ({ onOpenBooking }) => {
             gradient: "from-pink-400 via-rose-400 to-red-400",
             bgGlow: "bg-pink-600/20",
             icon: <Share2 size={32} className="text-pink-400" />,
-            description: "Maintain a non-stop social presence. From crafting viral tweets to scheduling daily LinkedIn carousel posts, completely hands-free.",
-            features: ["Cross-Platform Posting", "Visual Content Gen", "Engagement Tracking"]
+            description: "Maintain a non-stop social presence. From crafting viral tweets to scheduling daily LinkedIn carousel posts, completely hands-free."
         }
     ];
 
     useEffect(() => {
         const timer = setInterval(() => {
             setCurrentSlide((prev) => (prev + 1) % slides.length);
-        }, 5000);
+        }, 8000); // Slowed down from 5s to 8s
         return () => clearInterval(timer);
     }, [slides.length]);
 
     return (
-        <header className="relative min-h-[90vh] flex items-center pt-24 pb-16 lg:pt-32 lg:pb-24 overflow-hidden perspective-1000">
+        <header className="relative min-h-screen flex items-center pt-24 pb-16 lg:pt-32 lg:pb-24 overflow-visible perspective-1000">
             {/* Dynamic Background Glow based on active slide */}
             <div className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] ${slides[currentSlide].bgGlow} rounded-full blur-[150px] pointer-events-none transition-colors duration-1000`} />
+            
+            {/* Bottom black gradient blend */}
+            <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-[#030303] to-transparent pointer-events-none z-0" />
 
-            <div className="max-w-7xl mx-auto px-6 relative z-10 w-full text-center flex flex-col items-center">
+            <div className="max-w-7xl mx-auto px-6 relative z-10 w-full grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
 
-                <AnimatePresence mode="wait">
-                    <motion.div
-                        key={currentSlide}
-                        initial={{ opacity: 0, y: 20, scale: 0.95 }}
-                        animate={{ opacity: 1, y: 0, scale: 1 }}
-                        exit={{ opacity: 0, y: -20, scale: 0.95 }}
-                        transition={{ duration: 0.6, ease: "easeOut" }}
-                        className="flex flex-col items-center max-w-4xl"
-                    >
-                        {/* Agent Icon Badge */}
-                        <div className="mb-8 p-4 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-md shadow-2xl inline-block">
-                            {slides[currentSlide].icon}
-                        </div>
+                <div className="flex flex-col items-start text-left">
+                    <AnimatePresence mode="wait">
+                        <motion.div
+                            key={currentSlide}
+                            initial={{ opacity: 0, x: -20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            exit={{ opacity: 0, x: 20 }}
+                            transition={{ duration: 0.6, ease: "easeOut" }}
+                            className="flex flex-col items-start w-full"
+                        >
 
-                        {/* Main Heading (SEO Valid H1) */}
-                        <h1 className="sr-only">
-                            Bitlance Automation | AI Voice Bots & Business Automation Services
-                        </h1>
+                            {/* Main Heading (SEO Valid H1) */}
+                            <h1 className="sr-only">
+                                Bitlance Automation | AI Voice Bots & Business Automation Services
+                            </h1>
 
-                        {/* Visual Rotating Heading */}
-                        <h2 className="text-4xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight mb-8 leading-tight text-white">
-                            {slides[currentSlide].title1} <br className="hidden md:block" />
-                            <span className={`bg-clip-text text-transparent bg-gradient-to-r ${slides[currentSlide].gradient} relative inline-block`}>
-                                {slides[currentSlide].title2}
-                            </span>
-                        </h2>
-
-                        {/* Subheading */}
-                        <p className="text-lg md:text-xl text-white/70 mb-10 max-w-2xl mx-auto leading-relaxed h-[80px] sm:h-[60px] flex items-center justify-center">
-                            {slides[currentSlide].description}
-                        </p>
-
-                        {/* Features List */}
-                        <div className="flex flex-wrap justify-center gap-3 mb-12">
-                            {slides[currentSlide].features.map((feat, idx) => (
-                                <span key={idx} className="px-4 py-2 rounded-full bg-white/5 border border-white/10 text-sm font-medium text-white/80">
-                                    ✓ {feat}
+                            {/* Visual Rotating Heading */}
+                            <h2 className="text-4xl sm:text-5xl lg:text-5xl font-extrabold tracking-tight mb-6 leading-tight text-white">
+                                {slides[currentSlide].title1} <br />
+                                <span className={`bg-clip-text text-transparent bg-gradient-to-r ${slides[currentSlide].gradient} relative inline-block`}>
+                                    {slides[currentSlide].title2}
                                 </span>
-                            ))}
-                        </div>
-                    </motion.div>
-                </AnimatePresence>
+                            </h2>
 
-                {/* Buttons (Static below slider) */}
-                <div className="flex flex-col sm:flex-row justify-center gap-4 items-center w-full z-20">
-                    <button
-                        onClick={onOpenBooking}
-                        className="group relative px-8 py-4 rounded-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-bold text-lg shadow-xl shadow-indigo-500/30 overflow-hidden transition-all hover:scale-105 w-full sm:w-auto"
-                    >
-                        <span className="relative z-10 flex items-center justify-center gap-2">
-                            Get Your Free AI Audit <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
-                        </span>
-                        <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
-                    </button>
+                            {/* Subheading */}
+                            <p className="text-lg md:text-xl text-white/70 mb-8 max-w-xl leading-relaxed">
+                                {slides[currentSlide].description}
+                            </p>
 
-                    <button className="px-8 py-4 rounded-full bg-white/10 text-white backdrop-blur-md font-semibold border border-white/20 hover:bg-white/20 transition-all flex items-center justify-center gap-2 w-full sm:w-auto">
-                        <Play size={16} className="fill-current" /> Watch Overview
-                    </button>
+
+                        </motion.div>
+                    </AnimatePresence>
+
+                    {/* Buttons (Static below slider) */}
+                    <div className="flex flex-col sm:flex-row gap-4 items-center w-full sm:w-auto z-20">
+                        <button
+                            onClick={onOpenBooking}
+                            className="group relative px-8 py-4 rounded-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-bold text-lg shadow-xl shadow-indigo-500/30 overflow-hidden transition-all hover:scale-105 w-full sm:w-auto"
+                        >
+                            <span className="relative z-10 flex items-center justify-center gap-2">
+                                Get Your Free AI Audit <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
+                            </span>
+                            <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
+                        </button>
+
+                        <button className="px-8 py-4 rounded-full bg-white/10 text-white backdrop-blur-md font-semibold border border-white/20 hover:bg-white/20 transition-all flex items-center justify-center gap-2 w-full sm:w-auto">
+                            <Play size={16} className="fill-current" /> Watch Overview
+                        </button>
+                    </div>
+
                 </div>
 
-                {/* Social Proof Counter Badge - Bandwagon Effect / Mimetic Desire */}
+                {/* Right Column: High-Fidelity Pipeline Animation */}
                 <motion.div
-                    initial={{ opacity: 0, y: 10 }}
+                    initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.8, duration: 0.5 }}
-                    className="mt-6 inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 text-sm text-white/70"
+                    transition={{ duration: 1, delay: 0.5 }}
+                    className="relative w-full order-first lg:order-last flex justify-center lg:justify-end"
                 >
-                    <span className="relative flex h-2 w-2">
-                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-                        <span className="relative inline-flex rounded-full h-2 w-2 bg-green-400"></span>
-                    </span>
-                    <TrendingUp size={14} className="text-green-400" />
-                    <span><strong className="text-white">47 businesses</strong> deployed an AI agent this week</span>
+                    <div className="absolute -inset-10 bg-indigo-500/10 blur-[100px] rounded-full opacity-50" />
+                    <ProductDemoAnimation />
                 </motion.div>
 
-                {/* Loss Aversion Micro-copy */}
-                <div className="mt-4 text-sm text-amber-400/80 hidden lg:block font-medium">
-                    ⚡ Every day without automation costs you leads. Free setup takes 15 minutes.
-                </div>
-
-                {/* Slider Pagination Dots */}
-                <div className="mt-16 flex gap-3">
-                    {slides.map((_, index) => (
-                        <button
-                            key={index}
-                            onClick={() => setCurrentSlide(index)}
-                            className={`transition-all duration-300 rounded-full ${currentSlide === index
-                                ? 'w-10 h-2 bg-indigo-500'
-                                : 'w-2 h-2 bg-white/30 hover:bg-white/50'
-                                }`}
-                            aria-label={`Go to slide ${index + 1}`}
-                        />
-                    ))}
-                </div>
             </div>
         </header>
     );

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Sparkles, Calendar, XCircle, CheckCircle2, ChevronRight, ArrowRight, Building2, TrendingUp, Users } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Sparkles, Calendar, XCircle, CheckCircle2, ChevronRight, ArrowRight, Building2, TrendingUp, Users, Home } from 'lucide-react';
 import LeadQualificationForm from '../../components/funnel/LeadQualificationForm';
 import DisqualifiedView from '../../components/funnel/DisqualifiedView';
 import CalendarBookingView from '../../components/funnel/CalendarBookingView';
@@ -8,9 +9,19 @@ import { trackLeadQualified, trackLeadDisqualified, trackBookingSuccess } from '
 import SEOHead from '../../components/layout/SEOHead';
 
 const RealEstateLeadGen = () => {
-    // view state: 'form', 'qualified', 'disqualified', 'success'
     const [view, setView] = useState('form');
     const [leadData, setLeadData] = useState(null);
+    const navigate = useNavigate();
+
+    // Redirect to home after success
+    React.useEffect(() => {
+        if (view === 'success') {
+            const timer = setTimeout(() => {
+                navigate('/');
+            }, 8000); // 8 seconds to read success info
+            return () => clearTimeout(timer);
+        }
+    }, [view, navigate]);
 
     const handleQualify = (data) => {
         setLeadData(data);
@@ -120,6 +131,16 @@ const RealEstateLeadGen = () => {
                                         <li>3. Bring your current lead cost metrics to the call.</li>
                                     </ul>
                                 </div>
+
+                                <button
+                                    onClick={() => navigate('/')}
+                                    className="mt-8 flex items-center justify-center gap-2 text-violet-600 dark:text-violet-400 font-bold hover:gap-3 transition-all mx-auto"
+                                >
+                                    <Home className="w-4 h-4" />
+                                    <span>Return to Home</span>
+                                </button>
+                                
+                                <p className="text-[10px] text-slate-400 mt-4 uppercase tracking-widest">Redirecting in 8 seconds...</p>
                             </motion.div>
                         )}
 

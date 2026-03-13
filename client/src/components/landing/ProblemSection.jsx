@@ -1,62 +1,75 @@
 import React from 'react';
-import { Phone, MessageSquare, Share2, Users } from 'lucide-react';
+import { Database, Clock, Zap, BarChart3 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import TiltCard from '../ui/TiltCard';
 import ScrollReveal from '../ui/ScrollReveal';
 
 const ProblemSection = () => {
+    const problems = [
+        {
+            title: "Manual Work",
+            description: "Leads tracked across spreadsheets, WhatsApp, and scattered tools.",
+            icon: <Database className="text-rose-400" size={24} />,
+            color: "rose"
+        },
+        {
+            title: "Slow Responses",
+            description: "Leads often wait hours before receiving a response, killing interest.",
+            icon: <Clock className="text-amber-400" size={24} />,
+            color: "amber"
+        },
+        {
+            title: "Lost Opportunities",
+            description: "Hot leads go cold without consistent, immediate follow-ups.",
+            icon: <Zap className="text-blue-400" size={24} />,
+            color: "blue"
+        },
+        {
+            title: "No Visibility",
+            description: "Lack of a centralized place to track conversations and lead status.",
+            icon: <BarChart3 className="text-indigo-400" size={24} />,
+            color: "indigo"
+        }
+    ];
+
     return (
-        <section className="py-20 relative overflow-hidden">
+        <section className="py-24 relative overflow-hidden bg-[#030303]">
             <ScrollReveal className="max-w-7xl mx-auto px-6">
-                <div className="text-center mb-16">
+                <div className="text-center mb-20">
                     <motion.h2
                         initial={{ opacity: 0, y: 20 }}
                         whileInView={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.5 }}
                         viewport={{ once: true }}
-                        className="text-3xl md:text-5xl font-bold mb-6 text-white"
+                        className="text-3xl md:text-5xl font-black mb-6 text-white uppercase tracking-tighter"
                     >
-                        How many leads did you collect last month that nobody ever called or messaged back?
+                        Most Businesses Lose Leads <br />
+                        <span className="text-rose-500">Before They Even Respond</span>
                     </motion.h2>
                     <motion.p
                         initial={{ opacity: 0, y: 20 }}
                         whileInView={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.5, delay: 0.2 }}
                         viewport={{ once: true }}
-                        className="text-lg text-white/60 max-w-3xl mx-auto leading-relaxed"
+                        className="text-lg text-white/40 max-w-2xl mx-auto font-medium"
                     >
-                        If your best lead was called right now, would your team actually capture and track it properly?
+                        Traditional lead management is broken. Every minute you wait, your prospect is already talking to your competitor.
                     </motion.p>
                 </div>
 
-                {/* Quantified Loss Stat — Loss Aversion + Availability Heuristic */}
-                <motion.div
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    whileInView={{ opacity: 1, scale: 1 }}
-                    transition={{ duration: 0.5, delay: 0.3 }}
-                    viewport={{ once: true }}
-                    className="mb-12 mx-auto max-w-3xl flex items-center gap-4 bg-rose-500/10 border border-rose-500/30 rounded-2xl px-6 py-4"
-                >
-                    <div className="flex-shrink-0 w-10 h-10 rounded-full bg-rose-500/20 flex items-center justify-center text-rose-400 font-black text-lg">!</div>
-                    <p className="text-rose-200 text-sm md:text-base leading-relaxed">
-                        <strong className="text-rose-400">Research shows: 78% of leads are lost</strong> if not contacted within the first 5 minutes of enquiring.
-                        The average business responds in <strong className="text-rose-400">over 8 hours</strong>.
-                    </p>
-                </motion.div>
-
-                <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
-                    {[
-                        { icon: Phone, text: "Still tracking leads in Excel, WhatsApp, and random notebooks?", color: "rose" },
-                        { icon: MessageSquare, text: "Are you replying to prospects hours later while your competitors reply in minutes?", color: "blue" },
-                        { icon: Share2, text: "Do you know exactly how many leads turned into meetings and how many just 'disappeared'?", color: "violet" },
-                        { icon: Users, text: "Is your sales follow-up fully dependent on people remembering, instead of an automated system?", color: "emerald" }
-                    ].map((item, idx) => (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    {problems.map((problem, idx) => (
                         <TiltCard key={idx} className="h-full">
-                            <div className="bg-white/5 p-6 rounded-xl shadow-sm border border-white/10 flex flex-col items-center text-center hover:bg-white/10 transition-all h-full transform-style-3d backdrop-blur-sm">
-                                <div className={`p-4 bg-${item.color}-500/20 text-${item.color}-400 rounded-full mb-6 transform translate-z-10 shadow-sm ring-1 ring-${item.color}-500/30`}>
-                                    <item.icon size={28} />
+                            <div className="bg-white/[0.02] border border-white/10 p-8 rounded-[2rem] h-full flex flex-col items-start hover:bg-white/[0.04] transition-all duration-500 group">
+                                <div className={`w-12 h-12 rounded-2xl bg-${problem.color}-500/10 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-500`}>
+                                    {problem.icon}
                                 </div>
-                                <p className="font-medium text-gray-200 transform translate-z-5">{item.text}</p>
+                                <h3 className="text-xl font-bold text-white mb-3 tracking-tight">
+                                    {problem.title}
+                                </h3>
+                                <p className="text-sm text-white/40 leading-relaxed font-medium">
+                                    {problem.description}
+                                </p>
                             </div>
                         </TiltCard>
                     ))}
