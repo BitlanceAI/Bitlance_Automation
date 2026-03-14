@@ -72,7 +72,7 @@ const Carousel = ({ items, initialScroll = 0 }: iCarouselProps) => {
 
     const handleCardClose = (index: number) => {
         if (carouselRef.current) {
-            const cardWidth = isMobile() ? 230 : 384;
+            const cardWidth = isMobile() ? 288 : 320;
             const gap = isMobile() ? 4 : 8;
             const scrollPosition = (cardWidth + gap) * (index + 1);
             carouselRef.current.scrollTo({
@@ -271,7 +271,7 @@ const TestimonialCard = ({
             >
                 <div
                     className={`${index % 2 === 0 ? "rotate-0" : "-rotate-0"
-                        } rounded-3xl bg-gradient-to-b from-[#f2f0eb] to-[#fff9eb] h-[500px] md:h-[550px] w-80 md:w-96 overflow-hidden flex flex-col items-center justify-center relative z-10 shadow-md`}
+                        } rounded-3xl bg-gradient-to-b from-[#f2f0eb] to-[#fff9eb] h-[420px] md:h-[480px] w-72 md:w-80 overflow-hidden flex flex-col items-center justify-center relative z-10 shadow-md`}
                 >
                     <div className="absolute opacity-30" style={{ inset: "-1px 0 0" }}>
                         <div className="absolute inset-0">
@@ -315,7 +315,7 @@ const ProfileImage = ({ src, alt, ...rest }: React.ImgHTMLAttributes<HTMLImageEl
     const [isLoading, setLoading] = useState(true);
 
     return (
-        <div className="w-[90px] h-[90px] md:w-[150px] md:h-[150px] opacity-80 overflow-hidden rounded-[1000px] border-[3px] border-solid border-[rgba(59,59,59,0.6)] aspect-[1/1] flex-none saturate-[0.2] sepia-[0.46] relative">
+        <div className="w-[80px] h-[80px] md:w-[120px] md:h-[120px] opacity-80 overflow-hidden rounded-[1000px] border-[3px] border-solid border-[rgba(59,59,59,0.6)] aspect-[1/1] flex-none saturate-[0.2] sepia-[0.46] relative">
             <img
                 className={cn(
                     "transition duration-300 absolute top-0 inset-0 rounded-inherit object-cover z-50 w-full h-full",

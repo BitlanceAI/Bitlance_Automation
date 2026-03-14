@@ -8,9 +8,9 @@ const WhyBitlanceSection = () => {
         <section className="py-24 relative overflow-hidden bg-[#030303]">
             <ScrollReveal className="max-w-7xl mx-auto px-6">
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center border border-white/5 bg-white/[0.01] rounded-[3rem] p-8 lg:p-16">
-                    
+
                     {/* Left: Content */}
-                    <div className="space-y-8">
+                    <div className="space-y-8 order-2 lg:order-1">
                         <div>
                             <h2 className="text-4xl lg:text-5xl font-black text-white uppercase tracking-tighter mb-6 leading-tight">
                                 Why Bitlance Technology?
@@ -44,12 +44,12 @@ const WhyBitlanceSection = () => {
                     </div>
 
                     {/* Right: Video Player Placeholder */}
-                    <div className="relative group cursor-pointer">
+                    <div className="relative group cursor-pointer order-1 lg:order-2">
                         <div className="aspect-video w-full rounded-[2rem] overflow-hidden bg-white/5 border border-white/10 relative">
                             {/* Placeholder Aesthetic */}
                             <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/20 via-transparent to-rose-500/20" />
                             <div className="absolute inset-0 flex items-center justify-center">
-                                <motion.div 
+                                <motion.div
                                     whileHover={{ scale: 1.1 }}
                                     className="w-20 h-20 rounded-full bg-white flex items-center justify-center shadow-2xl shadow-indigo-500/20"
                                 >

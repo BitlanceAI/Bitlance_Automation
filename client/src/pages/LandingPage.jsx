@@ -88,12 +88,12 @@ const LandingPage = () => {
                 <HeroSection onOpenBooking={handleOpenBooking} />
                 <ProblemSection />
                 <WhyBitlanceSection />
+                <TestimonialsSection />
                 <VoiceBotSection onOpenBooking={handleOpenBooking} />
                 <BlogAgentSection onOpenBooking={handleOpenBooking} />
                 <UseCasesSection />
                 <HowItWorksSection />
                 <SocialProofSection />
-                <TestimonialsSection />
                 <FinalCtaSection onOpenBooking={handleOpenBooking} />
                 <LatestBlogsSection />
                 <Footer />
