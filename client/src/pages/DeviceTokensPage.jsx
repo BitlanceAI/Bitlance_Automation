@@ -4,6 +4,7 @@ import { Trash2, Copy, Check, X, Smartphone, RefreshCw, Plus } from 'lucide-reac
 import axios from 'axios';
 import { toast } from 'react-hot-toast';
 import { useAuth } from '../context/AuthContext';
+import API_BASE_URL from '../config.js';
 
 const DeviceTokensPage = () => {
     const { token } = useAuth();
@@ -14,7 +15,7 @@ const DeviceTokensPage = () => {
     const fetchTokens = async () => {
         try {
             setLoading(true);
-            const res = await axios.get(`${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/api/push/tokens`, {
+            const res = await axios.get(`${API_BASE_URL}/api/push/tokens`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             if (res.data.success) {
@@ -34,7 +35,7 @@ const DeviceTokensPage = () => {
 
     const handleToggle = async (id, currentStatus) => {
         try {
-            await axios.put(`${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/api/push/tokens/${id}`,
+            await axios.put(`${API_BASE_URL}/api/push/tokens/${id}`,
                 { isActive: !currentStatus },
                 { headers: { Authorization: `Bearer ${token}` } }
             );
@@ -48,7 +49,7 @@ const DeviceTokensPage = () => {
     const handleDelete = async (id) => {
         if (!window.confirm('Are you sure?')) return;
         try {
-            await axios.delete(`${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/api/push/tokens/${id}`, {
+            await axios.delete(`${API_BASE_URL}/api/push/tokens/${id}`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             toast.success('Token deleted');
@@ -61,7 +62,7 @@ const DeviceTokensPage = () => {
     const handleQuickRegister = async (e) => {
         e.preventDefault();
         try {
-            await axios.post(`${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/api/push/tokens/register`, {
+            await axios.post(`${API_BASE_URL}/api/push/tokens/register`, {
                 token: quickToken,
                 platform: 'manual',
                 deviceId: 'manual-entry'
@@ -154,8 +155,8 @@ const DeviceTokensPage = () => {
                                             </td>
                                             <td className="px-6 py-4">
                                                 <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${t.platform === 'ios' ? 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200' :
-                                                        t.platform === 'android' ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300' :
-                                                            'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-300'
+                                                    t.platform === 'android' ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300' :
+                                                        'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-300'
                                                     }`}>
                                                     {t.platform}
                                                 </span>
@@ -164,8 +165,8 @@ const DeviceTokensPage = () => {
                                                 <button
                                                     onClick={() => handleToggle(t.id || t.token, t.isActive)}
                                                     className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium transition-colors ${t.isActive
-                                                            ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400 hover:bg-green-200'
-                                                            : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400 hover:bg-red-200'
+                                                        ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400 hover:bg-green-200'
+                                                        : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400 hover:bg-red-200'
                                                         }`}
                                                 >
                                                     {t.isActive ? 'Active' : 'Inactive'}

@@ -46,8 +46,8 @@ const LatestBlogsSection = () => {
                     </div>
 
                     <Link
-                        to="/blog"
-                        className="hidden md:inline-flex items-center gap-2 text-white/60 hover:text-white font-bold text-sm uppercase tracking-widest transition-colors group"
+                        to="/blogs"
+                        className="hidden md:inline-flex items-center gap-2 text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300 font-semibold group"
                     >
                         View all articles
                         <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
@@ -68,8 +68,8 @@ const LatestBlogsSection = () => {
 
                 <div className="mt-12 md:hidden">
                     <Link
-                        to="/blog"
-                        className="flex items-center justify-center gap-2 w-full px-8 py-4 rounded-full border border-white/10 text-white font-bold text-sm uppercase tracking-widest hover:bg-white/5 transition-all"
+                        to="/blogs"
+                        className="inline-flex items-center justify-center gap-2 w-full px-6 py-3 rounded-xl border-2 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 font-semibold hover:border-indigo-500 dark:hover:border-indigo-500 transition-colors"
                     >
                         View all articles
                         <ArrowRight className="w-4 h-4" />

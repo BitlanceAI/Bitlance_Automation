@@ -3,6 +3,7 @@ import { Send, Smartphone, RefreshCw } from 'lucide-react';
 import axios from 'axios';
 import { toast } from 'react-hot-toast';
 import { useAuth } from '../../context/AuthContext';
+import API_BASE_URL from '../../config.js';
 
 const PushNotificationPanel = () => {
     const { token } = useAuth();
@@ -32,7 +33,7 @@ const PushNotificationPanel = () => {
                 return;
             }
             const payload = { ...formData, data: parsedData };
-            await axios.post(`${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/api/push/send`, payload, {
+            await axios.post(`${API_BASE_URL}/api/push/send`, payload, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             toast.success('Notification sent successfully!');

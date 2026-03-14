@@ -23,7 +23,20 @@ const app = express();
 const PORT = process.env.PORT || 3001;
 
 // Middleware
-app.use(cors());
+// ── CORS ── allow origins from env var (comma-separated) or localhost in dev
+const allowedOrigins = process.env.ALLOWED_ORIGINS
+    ? process.env.ALLOWED_ORIGINS.split(',')
+    : ['http://localhost:5173', 'http://localhost:3000'];
+
+app.use(cors({
+    origin: (origin, callback) => {
+        // Allow requests with no origin (mobile apps, curl, Postman)
+        if (!origin) return callback(null, true);
+        if (allowedOrigins.includes(origin)) return callback(null, true);
+        return callback(new Error(`CORS: origin ${origin} not allowed`));
+    },
+    credentials: true,
+}));
 app.use(express.json());
 
 // Routes will be imported here
@@ -91,14 +104,31 @@ app.get('/health', (req, res) => {
     res.json({ status: 'ok', timestamp: new Date() });
 });
 
-// Serve static files from the client build directory
-const clientBuildPath = path.join(__dirname, '../../client/dist');
-app.use(express.static(clientBuildPath));
+// Serve built React assets and root files if enabled
+const serveFrontend = process.env.SERVE_FRONTEND !== 'false';
 
-// Handle React routing, return all requests to React app
-app.get('*', (req, res) => {
-    res.sendFile(path.join(clientBuildPath, 'index.html'));
-});
+if (serveFrontend) {
+    const distPath = path.join(__dirname, '../../client/dist');
+    app.use(express.static(distPath));
+    app.use('/assets', express.static(path.join(distPath, 'assets')));
+
+    // The "catchall" handler: for any request that doesn't
+    // match one above, send back React's index.html file.
+    app.get('*', (req, res) => {
+        const indexPath = path.join(__dirname, '../../client/dist/index.html');
+        res.sendFile(indexPath, (err) => {
+            if (err) {
+                console.error('Error sending index.html:', err.message);
+                res.status(500).send('Frontend build not found. Please run "npm run build" in the root directory.');
+            }
+        });
+    });
+} else {
+    // API fallback for standalone backend
+    app.use((req, res) => {
+        res.status(404).json({ error: 'Not Found' });
+    });
+}
 
 // Start server
 import { startPostScheduler } from './services/scheduler.js';

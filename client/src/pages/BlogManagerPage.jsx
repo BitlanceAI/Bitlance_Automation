@@ -99,7 +99,7 @@ const BlogManagerPage = () => {
         setSendingNotifId(post.id);
         try {
             await axios.post(
-                `${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/api/push/send`,
+                `${API_BASE_URL}/api/push/send`,
                 {
                     title,
                     body,

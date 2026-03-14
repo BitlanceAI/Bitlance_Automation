@@ -9,6 +9,7 @@ import { motion } from 'framer-motion';
 import TiltCard from '../components/ui/TiltCard';
 import ScrollReveal from '../components/ui/ScrollReveal';
 import SEOHead from '../components/layout/SEOHead';
+import CRMDashboardAnimation from '../components/landing/CRMDashboardAnimation';
 
 const FeatureDetail = ({ icon: Icon, title, description, color }) => (
     <div className="flex gap-4 p-6 rounded-2xl bg-white/[0.03] border border-white/10 hover:bg-white/[0.06] transition-colors group">
@@ -182,6 +183,14 @@ const VoiceBotFeaturesPage = () => {
                         >
                             Deploy hyper-realistic AI voice agents that can handle thousands of concurrent calls, book meetings, qualify leads, and sync with your CRM—24/7.
                         </motion.p>
+
+                        <motion.div
+                            initial={{ opacity: 0, y: 40 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.7, delay: 0.4 }}
+                        >
+                            <CRMDashboardAnimation />
+                        </motion.div>
                     </div>
                 </div>
             </section>

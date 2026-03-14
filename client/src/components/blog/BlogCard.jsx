@@ -57,7 +57,7 @@ const BlogCard = ({ article }) => {
                 )}
 
                 {/* Title */}
-                <Link to={article.slug ? `/blog/${article.slug}` : `/blog/${article.id}`} className="block mb-3">
+                <Link to={article.slug ? `/blogs/${article.slug}` : `/blogs/${article.id}`} className="block mb-3">
                     <h3 className="text-xl font-bold text-gray-900 dark:text-white line-clamp-2 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
                         {article.seo_title || article.topic}
                     </h3>
@@ -74,7 +74,7 @@ const BlogCard = ({ article }) => {
                         {article.estimated_read_time ? `${article.estimated_read_time} min read` : (article.length || 'Article')}
                     </span>
                     <Link
-                        to={article.slug ? `/blog/${article.slug}` : `/blog/${article.id}`}
+                        to={article.slug ? `/blogs/${article.slug}` : `/blogs/${article.id}`}
                         className="flex items-center gap-1 text-sm font-semibold text-indigo-600 dark:text-indigo-400 hover:gap-2 transition-all"
                     >
                         Read More <ArrowRight size={16} />
