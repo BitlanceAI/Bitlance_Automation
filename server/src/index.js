@@ -104,14 +104,31 @@ app.get('/health', (req, res) => {
     res.json({ status: 'ok', timestamp: new Date() });
 });
 
-// Serve static files from the React frontend relative to this file
-app.use(express.static(path.join(__dirname, '../../client/dist')));
+// Serve built React assets and root files if enabled
+const serveFrontend = process.env.SERVE_FRONTEND !== 'false';
 
-// The "catchall" handler: for any request that doesn't
-// match one above, send back React's index.html file.
-app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, '../../client/dist/index.html'));
-});
+if (serveFrontend) {
+    const distPath = path.join(__dirname, '../../client/dist');
+    app.use(express.static(distPath));
+    app.use('/assets', express.static(path.join(distPath, 'assets')));
+
+    // The "catchall" handler: for any request that doesn't
+    // match one above, send back React's index.html file.
+    app.get('*', (req, res) => {
+        const indexPath = path.join(__dirname, '../../client/dist/index.html');
+        res.sendFile(indexPath, (err) => {
+            if (err) {
+                console.error('Error sending index.html:', err.message);
+                res.status(500).send('Frontend build not found. Please run "npm run build" in the root directory.');
+            }
+        });
+    });
+} else {
+    // API fallback for standalone backend
+    app.use((req, res) => {
+        res.status(404).json({ error: 'Not Found' });
+    });
+}
 
 // Start server
 import { startPostScheduler } from './services/scheduler.js';
