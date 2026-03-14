@@ -150,8 +150,8 @@ function App() {
           <Routes>
             {/* Public Routes */}
             <Route path="/" element={<RootRedirect />} />
-            <Route path="/privacy" element={<PrivacyPolicy />} />
-            <Route path="/terms" element={<TermsPage />} />
+            <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+            <Route path="/terms-policy" element={<TermsPage />} />
             <Route path="/contact" element={<ContactPage />} />
 
             <Route path="/blogs" element={<PublicBlogListPage />} />

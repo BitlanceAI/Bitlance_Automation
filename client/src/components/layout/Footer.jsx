@@ -66,8 +66,8 @@ const Footer = () => {
                         © {new Date().getFullYear()} Bitlance Automation. All rights reserved.
                     </p>
                     <div className="flex gap-6 text-sm text-slate-500">
-                        <Link to="/privacy" className="hover:text-white transition-colors">Privacy Policy</Link>
-                        <Link to="/terms" className="hover:text-white transition-colors">Terms of Service</Link>
+                        <Link to="/privacy-policy" className="hover:text-white transition-colors">Privacy Policy</Link>
+                        <Link to="/terms-policy" className="hover:text-white transition-colors">Terms of Service</Link>
                     </div>
                 </div>
             </div>

@@ -104,7 +104,14 @@ app.get('/health', (req, res) => {
     res.json({ status: 'ok', timestamp: new Date() });
 });
 
-// Frontend is hosted separately on Vercel — no static serving needed here.
+// Serve static files from the React frontend relative to this file
+app.use(express.static(path.join(__dirname, '../../client/dist')));
+
+// The "catchall" handler: for any request that doesn't
+// match one above, send back React's index.html file.
+app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, '../../client/dist/index.html'));
+});
 
 // Start server
 import { startPostScheduler } from './services/scheduler.js';
