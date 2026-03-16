@@ -105,7 +105,7 @@ app.get('/health', (req, res) => {
 });
 
 // Serve built React assets and root files if enabled
-const serveFrontend = process.env.SERVE_FRONTEND !== 'false';
+const serveFrontend = process.env.SERVE_FRONTEND === 'true';
 
 if (serveFrontend) {
     const distPath = path.join(__dirname, '../../client/dist');
