@@ -132,7 +132,8 @@ function App() {
     normalizedPath.includes('blog-manager') ||
     (normalizedPath.includes('blogs/new') || normalizedPath.includes('blogs/edit')) ||
     normalizedPath.includes('push') ||
-    normalizedPath.startsWith('/l/'); // Hide Main Nav for Landing Pages
+    normalizedPath.startsWith('/l/') ||
+    normalizedPath.includes('/apply/audit'); // Hide Main Nav for Landing Pages and Audit Funnel
 
   return (
     <ThemeProvider>

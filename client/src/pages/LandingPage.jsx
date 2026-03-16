@@ -3,7 +3,6 @@ import { Navigate, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import HeroSection from '../components/landing/HeroSection';
 import ProblemSection from '../components/landing/ProblemSection';
-import SolutionSection from '../components/landing/SolutionSection';
 import VoiceBotSection from '../components/landing/VoiceBotSection';
 import UseCasesSection from '../components/landing/UseCasesSection';
 import HowItWorksSection from '../components/landing/HowItWorksSection';
@@ -12,6 +11,7 @@ import TestimonialsSection from '../components/landing/TestimonialsSection';
 import FinalCtaSection from '../components/landing/FinalCtaSection';
 import LatestBlogsSection from '../components/landing/LatestBlogsSection';
 import BlogAgentSection from '../components/landing/BlogAgentSection';
+import WhyBitlanceSection from '../components/landing/WhyBitlanceSection';
 import Footer from '../components/landing/Footer';
 import ScrollToTopButton from '../components/ui/ScrollToTopButton';
 
@@ -87,13 +87,13 @@ const LandingPage = () => {
             <div className="relative z-10">
                 <HeroSection onOpenBooking={handleOpenBooking} />
                 <ProblemSection />
-                <SolutionSection />
+                <WhyBitlanceSection />
+                <TestimonialsSection />
                 <VoiceBotSection onOpenBooking={handleOpenBooking} />
                 <BlogAgentSection onOpenBooking={handleOpenBooking} />
                 <UseCasesSection />
                 <HowItWorksSection />
                 <SocialProofSection />
-                <TestimonialsSection />
                 <FinalCtaSection onOpenBooking={handleOpenBooking} />
                 <LatestBlogsSection />
                 <Footer />

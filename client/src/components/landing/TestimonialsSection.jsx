@@ -1,13 +1,11 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Carousel, TestimonialCard } from '../ui/retro-testimonial';
-import ScrollReveal from '../ui/ScrollReveal';
-
 import imgTejaunsh from '../../assets/testimonals/tejaunsh_nyati.jpeg';
 import imgSuyash from '../../assets/testimonals/suyash_nyati.jpeg';
 import imgDeepak from '../../assets/testimonals/deepak_chaudhari.jpeg';
 import imgAkshay from '../../assets/testimonals/akshay_lakde.jpeg';
 import imgsahil from '../../assets/testimonals/sahil_guhane.jpeg';
+import { Quote } from 'lucide-react';
 
 const testimonials = [
     {
@@ -40,29 +38,17 @@ const testimonials = [
         description: "I was skeptical about AI integration, but the onboarding was seamless. It feels like having a dedicated assistant who knows our technical stack inside out.",
         profileImage: imgsahil,
     }
-    // },
-    // {
-    //     name: "Alok Kumar",
-    //     designation: "Lotlite Real Estate",
-    //     description: "Managing ads across multiple platforms was a nightmare. This system automates the entire lifecycle. Our ROI on ad spend improved by 40% in the first month alone.",
-    //     profileImage: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?q=80&w=1888&auto=format&fit=crop",
-    // }
 ];
 
 const TestimonialsSection = () => {
-    const cards = testimonials.map((testimonial, index) => (
-        <TestimonialCard
-            key={testimonial.name}
-            testimonial={testimonial}
-            index={index}
-        // backgroundImage={`https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=2072&auto=format&fit=crop`}
-        />
-    ));
+    // Duplicate the list so we can have a seamless infinite loop
+    const doubledTestimonials = [...testimonials, ...testimonials];
 
     return (
-        <section className="py-24 relative overflow-hidden bg-gradient-to-br from-gray-900 via-slate-900 to-black">
-            {/* Background pattern */}
-            <div className="absolute inset-0 opacity-10 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-indigo-900 via-gray-900 to-black pointer-events-none" />
+        <section className="py-24 relative overflow-hidden bg-[#030303]">
+            {/* Seamless Background Blending */}
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(139,92,246,0.05),transparent_50%)] pointer-events-none" />
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_100%,rgba(99,102,241,0.05),transparent_50%)] pointer-events-none" />
 
             <div className="max-w-7xl mx-auto px-6 mb-16 text-center">
                 <motion.h2
@@ -85,11 +71,52 @@ const TestimonialsSection = () => {
                 </motion.p>
             </div>
 
-            <ScrollReveal className="max-w-7xl mx-auto px-6">
-                <div className="w-full">
-                    <Carousel items={cards} />
-                </div>
-            </ScrollReveal>
+            <div className="w-full overflow-hidden relative group">
+                {/* Left/Right fading edges */}
+                <div className="absolute top-0 bottom-0 left-0 w-32 bg-gradient-to-r from-[#030303] to-transparent z-10 pointer-events-none" />
+                <div className="absolute top-0 bottom-0 right-0 w-32 bg-gradient-to-l from-[#030303] to-transparent z-10 pointer-events-none" />
+
+                <motion.div
+                    className="flex gap-6 w-max py-8 pr-6"
+                    animate={{
+                        x: ['0%', '-50%']
+                    }}
+                    transition={{
+                        repeat: Infinity,
+                        ease: "linear",
+                        duration: 35, // Adjust speed by changing duration
+                    }}
+                >
+                    {doubledTestimonials.map((testimonial, index) => (
+                        <div
+                            key={index}
+                            className="w-[320px] md:w-[420px] bg-white/[0.02] border border-white/10 hover:border-indigo-500/30 hover:bg-white/[0.04] transition-colors rounded-3xl p-8 flex flex-col shrink-0 gap-6"
+                        >
+                            <Quote size={32} className="text-white/20" />
+
+                            <p className="text-white/90 leading-relaxed text-base italic flex-grow">
+                                "{testimonial.description}"
+                            </p>
+
+                            <div className="flex items-center gap-4 mt-auto">
+                                <img
+                                    src={testimonial.profileImage}
+                                    alt={testimonial.name}
+                                    className="w-12 h-12 rounded-full object-cover border border-white/20"
+                                />
+                                <div>
+                                    <h4 className="text-white font-bold text-sm tracking-wide">
+                                        {testimonial.name}
+                                    </h4>
+                                    <p className="text-indigo-400/80 text-xs mt-0.5">
+                                        {testimonial.designation}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    ))}
+                </motion.div>
+            </div>
         </section>
     );
 };

@@ -1,62 +1,109 @@
 import React from 'react';
-import { Phone, MessageSquare, Share2, Users } from 'lucide-react';
+import { Database, Clock, Zap, BarChart3, ArrowDown } from 'lucide-react';
 import { motion } from 'framer-motion';
 import TiltCard from '../ui/TiltCard';
 import ScrollReveal from '../ui/ScrollReveal';
 
 const ProblemSection = () => {
+    const problems = [
+        {
+            icon: <Database className="text-rose-400" size={24} />,
+            color: "rose",
+            manualTitle: "Manual Work",
+            manualDesc: "Leads tracked across spreadsheets, WhatsApp, and scattered tools.",
+            autoTitle: "Automated System",
+            autoDesc: "AI instantly captures and syncs every lead straight into your CRM."
+        },
+        {
+            icon: <Clock className="text-amber-400" size={24} />,
+            color: "amber",
+            manualTitle: "Slow Responses",
+            manualDesc: "Leads often wait hours before receiving a response, killing interest.",
+            autoTitle: "Instant Speed",
+            autoDesc: "Our system engages and qualifies new leads within 0.4s, 24/7."
+        },
+        {
+            icon: <Zap className="text-blue-400" size={24} />,
+            color: "blue",
+            manualTitle: "Lost Opportunities",
+            manualDesc: "Hot leads go cold without consistent, immediate follow-ups.",
+            autoTitle: "Won Deals",
+            autoDesc: "Relentless, automated follow-up sequences until they book."
+        },
+        {
+            icon: <BarChart3 className="text-indigo-400" size={24} />,
+            color: "indigo",
+            manualTitle: "No Visibility",
+            manualDesc: "Lack of a centralized place to track conversations and lead status.",
+            autoTitle: "Full Visibility",
+            autoDesc: "A centralized, real-time dashboard of every AI conversation."
+        }
+    ];
+
     return (
-        <section className="py-20 relative overflow-hidden">
+        <section className="py-24 relative overflow-hidden bg-[#030303]">
             <ScrollReveal className="max-w-7xl mx-auto px-6">
-                <div className="text-center mb-16">
+                <div className="text-center mb-20">
                     <motion.h2
                         initial={{ opacity: 0, y: 20 }}
                         whileInView={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.5 }}
                         viewport={{ once: true }}
-                        className="text-3xl md:text-5xl font-bold mb-6 text-white"
+                        className="text-3xl md:text-5xl font-black mb-6 text-white uppercase tracking-tighter"
                     >
-                        How many leads did you collect last month that nobody ever called or messaged back?
+                        From Manual Grind <br />
+                        <span className="text-indigo-500">To Autonomous Systems</span>
                     </motion.h2>
                     <motion.p
                         initial={{ opacity: 0, y: 20 }}
                         whileInView={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.5, delay: 0.2 }}
                         viewport={{ once: true }}
-                        className="text-lg text-white/60 max-w-3xl mx-auto leading-relaxed"
+                        className="text-lg text-white/40 max-w-2xl mx-auto font-medium"
                     >
-                        If your best lead was called right now, would your team actually capture and track it properly?
+                        Traditional lead management is broken. Discover how we replace your manual bottlenecks with seamless, automated workflows.
                     </motion.p>
                 </div>
 
-                {/* Quantified Loss Stat — Loss Aversion + Availability Heuristic */}
-                <motion.div
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    whileInView={{ opacity: 1, scale: 1 }}
-                    transition={{ duration: 0.5, delay: 0.3 }}
-                    viewport={{ once: true }}
-                    className="mb-12 mx-auto max-w-3xl flex items-center gap-4 bg-rose-500/10 border border-rose-500/30 rounded-2xl px-6 py-4"
-                >
-                    <div className="flex-shrink-0 w-10 h-10 rounded-full bg-rose-500/20 flex items-center justify-center text-rose-400 font-black text-lg">!</div>
-                    <p className="text-rose-200 text-sm md:text-base leading-relaxed">
-                        <strong className="text-rose-400">Research shows: 78% of leads are lost</strong> if not contacted within the first 5 minutes of enquiring.
-                        The average business responds in <strong className="text-rose-400">over 8 hours</strong>.
-                    </p>
-                </motion.div>
-
-                <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
-                    {[
-                        { icon: Phone, text: "Still tracking leads in Excel, WhatsApp, and random notebooks?", color: "rose" },
-                        { icon: MessageSquare, text: "Are you replying to prospects hours later while your competitors reply in minutes?", color: "blue" },
-                        { icon: Share2, text: "Do you know exactly how many leads turned into meetings and how many just 'disappeared'?", color: "violet" },
-                        { icon: Users, text: "Is your sales follow-up fully dependent on people remembering, instead of an automated system?", color: "emerald" }
-                    ].map((item, idx) => (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    {problems.map((problem, idx) => (
                         <TiltCard key={idx} className="h-full">
-                            <div className="bg-white/5 p-6 rounded-xl shadow-sm border border-white/10 flex flex-col items-center text-center hover:bg-white/10 transition-all h-full transform-style-3d backdrop-blur-sm">
-                                <div className={`p-4 bg-${item.color}-500/20 text-${item.color}-400 rounded-full mb-6 transform translate-z-10 shadow-sm ring-1 ring-${item.color}-500/30`}>
-                                    <item.icon size={28} />
+                            <div className="bg-white/[0.02] border border-white/10 p-6 md:p-8 rounded-[2rem] h-full flex flex-col hover:bg-white/[0.04] transition-all duration-500 group">
+                                <div className="flex-1">
+                                    {/* Manual State */}
+                                    <div className="mb-4">
+                                        <h4 className="text-xs font-bold text-white/40 uppercase tracking-wider mb-2 line-through decoration-rose-500/50">
+                                            {problem.manualTitle}
+                                        </h4>
+                                        <p className="text-sm text-white/40 line-through decoration-rose-500/50 font-medium">
+                                            {problem.manualDesc}
+                                        </p>
+                                    </div>
+
+                                    {/* Separator / Arrow */}
+                                    <div className="flex items-center gap-4 my-6 opacity-50">
+                                        <div className="h-px bg-white/10 flex-1"></div>
+                                        <div className="w-8 h-8 rounded-full border border-white/10 flex items-center justify-center bg-white/5">
+                                            <ArrowDown className="text-indigo-400" size={14} />
+                                        </div>
+                                        <div className="h-px bg-white/10 flex-1"></div>
+                                    </div>
+
+                                    {/* Automated State */}
+                                    <div>
+                                        <div className="flex items-center gap-3 mb-3">
+                                            <div className={`w-8 h-8 rounded-lg bg-${problem.color}-500/10 flex items-center justify-center group-hover:scale-110 transition-transform`}>
+                                                {React.cloneElement(problem.icon, { size: 16 })}
+                                            </div>
+                                            <h4 className={`text-xs font-bold text-${problem.color}-400 uppercase tracking-wider`}>
+                                                {problem.autoTitle}
+                                            </h4>
+                                        </div>
+                                        <p className="text-sm text-white/90 font-medium leading-relaxed">
+                                            {problem.autoDesc}
+                                        </p>
+                                    </div>
                                 </div>
-                                <p className="font-medium text-gray-200 transform translate-z-5">{item.text}</p>
                             </div>
                         </TiltCard>
                     ))}
