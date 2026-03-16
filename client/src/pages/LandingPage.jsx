@@ -17,6 +17,8 @@ import ScrollToTopButton from '../components/ui/ScrollToTopButton';
 
 import { ElegantShape } from '../components/ui/shape-landing-hero';
 import SEOHead from '../components/layout/SEOHead';
+import LoginReminderPopup from '../components/ui/LoginReminderPopup';
+import BitlanceChatbot from '../components/ui/BitlanceChatbot';
 
 const LandingPage = () => {
     const { user, loading } = useAuth();
@@ -100,6 +102,8 @@ const LandingPage = () => {
             </div>
 
             <ScrollToTopButton />
+            <LoginReminderPopup />
+            <BitlanceChatbot />
         </div>
     );
 };

@@ -67,7 +67,7 @@ const ProblemSection = () => {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                     {problems.map((problem, idx) => (
-                        <TiltCard key={idx} className="h-full">
+                        <TiltCard key={idx} className={`h-full ${idx === 3 ? 'hidden md:block' : ''}`}>
                             <div className="bg-white/[0.02] border border-white/10 p-6 md:p-8 rounded-[2rem] h-full flex flex-col hover:bg-white/[0.04] transition-all duration-500 group">
                                 <div className="flex-1">
                                     {/* Manual State */}

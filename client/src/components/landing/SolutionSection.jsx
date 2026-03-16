@@ -1,4 +1,3 @@
-import React from 'react';
 import { MessageCircle, Check, Calendar, Globe } from 'lucide-react';
 import { motion } from 'framer-motion';
 import ScrollReveal from '../ui/ScrollReveal';
