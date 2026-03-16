@@ -3,6 +3,7 @@ import AwarenessBanner from './AwarenessBanner';
 import TrafficCard from './TrafficCard';
 import EngagementWidget from './EngagementWidget';
 import LeadForm from './LeadForm';
+import API_BASE_URL from '../../config';
 
 // Mapping campaign types to components
 const ComponentMap = {
@@ -26,7 +27,7 @@ const PromotionRenderer = ({ context = 'default', type }) => {
                     ...(type && { type })
                 });
 
-                const res = await fetch(`/api/campaigns/serve?${queryParams}`);
+                const res = await fetch(`${API_BASE_URL}/api/campaigns/serve?${queryParams}`);
                 const data = await res.json();
 
                 if (data.success && data.campaign) {
@@ -45,7 +46,7 @@ const PromotionRenderer = ({ context = 'default', type }) => {
     const handleImpression = async () => {
         if (!campaign) return;
         try {
-            await fetch('/api/campaigns/track', {
+            await fetch(`${API_BASE_URL}/api/campaigns/track`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -62,7 +63,7 @@ const PromotionRenderer = ({ context = 'default', type }) => {
     const handleInteraction = async (actionType, data) => {
         if (!campaign) return;
         try {
-            await fetch('/api/campaigns/track', {
+            await fetch(`${API_BASE_URL}/api/campaigns/track`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({

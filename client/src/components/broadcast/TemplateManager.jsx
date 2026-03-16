@@ -3,6 +3,7 @@ import { useAuth } from "../../context/AuthContext";
 import axios from 'axios';
 import { Plus, Search, FileText, CheckCircle, XCircle, Clock, RefreshCw } from "lucide-react";
 import toast from "react-hot-toast";
+import API_BASE_URL from '../../config';
 
 const TemplateManager = () => {
     const { session } = useAuth();
@@ -30,7 +31,7 @@ const TemplateManager = () => {
             const token = session?.access_token;
             if (!token) return;
 
-            const response = await axios.get('/api/whatsapp/templates', {
+            const response = await axios.get(`${API_BASE_URL}/api/whatsapp/templates`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             setTemplates(response.data);
@@ -48,7 +49,7 @@ const TemplateManager = () => {
             const token = session?.access_token;
             if (!token) return;
 
-            await axios.post('/api/whatsapp/templates', newTemplate, {
+            await axios.post(`${API_BASE_URL}/api/whatsapp/templates`, newTemplate, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             toast.success('Template submitted for approval');
@@ -74,7 +75,7 @@ const TemplateManager = () => {
             const token = session?.access_token;
             if (!token) return;
 
-            const response = await axios.post('/api/whatsapp/sync-templates', {}, {
+            const response = await axios.post(`${API_BASE_URL}/api/whatsapp/sync-templates`, {}, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             toast.success(response.data.message || 'Templates synced!');

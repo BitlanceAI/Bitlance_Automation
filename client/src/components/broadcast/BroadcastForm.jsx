@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from "../../context/AuthContext";
 import axios from "axios";
+import API_BASE_URL from '../../config';
 import {
     Send,
     Upload,
@@ -53,7 +54,7 @@ const BroadcastForm = () => {
             const token = session?.access_token;
             if (!token) return;
 
-            const response = await axios.get('/api/whatsapp/templates', {
+            const response = await axios.get(`${API_BASE_URL}/api/whatsapp/templates`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             setTemplates(response.data || []);

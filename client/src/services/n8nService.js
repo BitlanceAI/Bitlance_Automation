@@ -2,8 +2,10 @@
  * Service to handle interactions with n8n webhooks
  */
 
-// Use relative path for proxy to handle CORS
-const N8N_WEBHOOK_URL = '/api/n8n/webhook/broadcast-bitlance';
+import API_BASE_URL from '../config';
+
+// Use absolute path using API_BASE_URL to handle CORS
+const N8N_WEBHOOK_URL = `${API_BASE_URL}/api/n8n/webhook/broadcast-bitlance`;
 
 export const n8nService = {
     /**

@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { supabase } from "../../lib/supabase";
 import { RetellWebClient } from "retell-client-js-sdk";
+import API_BASE_URL from '../../config';
 import { Mic, PhoneOff, Activity, Wifi, Volume2, Loader } from "lucide-react";
 
 const VoiceAgentInterface = () => {
@@ -74,7 +75,7 @@ const VoiceAgentInterface = () => {
                     const { data: { session } } = await supabase.auth.getSession();
                     const token = session?.access_token;
 
-                    const response = await fetch('/api/create-phone-call', {
+                    const response = await fetch(`${API_BASE_URL}/api/create-phone-call`, {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
@@ -101,7 +102,7 @@ const VoiceAgentInterface = () => {
                 const { data: { session } } = await supabase.auth.getSession();
                 const token = session?.access_token;
 
-                const response = await fetch('/api/create-web-call', {
+                const response = await fetch(`${API_BASE_URL}/api/create-web-call`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',

@@ -3,6 +3,8 @@
  * Handles client-side tracking and server-side event forwarding
  */
 
+import API_BASE_URL from '../config';
+
 // Your Meta Pixel ID
 const PIXEL_ID = '916142120954550';
 
@@ -37,7 +39,7 @@ export const MetaPixel = {
             const fbc = getCookie('_fbc');
             const fbp = getCookie('_fbp');
 
-            await fetch('/api/track', {
+            await fetch(`${API_BASE_URL}/api/track`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({

@@ -8,12 +8,7 @@ import imgsahil from '../../assets/testimonals/sahil_guhane.jpeg';
 import { Quote } from 'lucide-react';
 
 const testimonials = [
-    {
-        name: "Tejaunsh S Nyati",
-        designation: "CEO at Nyati Technologies",
-        description: "We used to miss 20–30% calls during peak time. After adding the AI agent, every lead is answered and pre‑qualified before it reaches our sales team. It's been a game changer for our weekend closings.",
-        profileImage: imgTejaunsh,
-    },
+
     {
         name: "Suyash Nyati",
         designation: "Director at Nyati Technologies Pvt Ltd",
@@ -25,6 +20,12 @@ const testimonials = [
         designation: "FinTech | Business Development",
         description: "The AI automation didn't just streamline our workflow; it understood our niche requirements perfectly. We've seen a significant increase in client engagement without expanding our team.",
         profileImage: imgDeepak,
+    },
+    {
+        name: "Tejaunsh S Nyati",
+        designation: "CEO at Nyati Technologies",
+        description: "We used to miss 20–30% calls during peak time. After adding the AI agent, every lead is answered and pre‑qualified before it reaches our sales team. It's been a game changer for our weekend closings.",
+        profileImage: imgTejaunsh,
     },
     {
         name: "Akshay Lakade",

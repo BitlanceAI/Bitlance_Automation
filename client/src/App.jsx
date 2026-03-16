@@ -45,6 +45,7 @@ import TestimonialDemo from './pages/TestimonialDemo';
 import VoiceBotFeaturesPage from './pages/VoiceBotFeaturesPage';
 import BlogAgentFeaturesPage from './pages/BlogAgentFeaturesPage';
 import ContactPage from './pages/ContactPage';
+import ChatWidget from './components/ui/ChatWidget';
 
 
 
@@ -304,6 +305,7 @@ function App() {
             } />
           </Routes>
           {!isDashboard && location.pathname !== '/' && <Footer />}
+          {!isDashboard && <ChatWidget />}
         </div>
       </AuthProvider>
     </ThemeProvider >

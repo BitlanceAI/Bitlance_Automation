@@ -3,6 +3,7 @@ import { useAuth } from "../../context/AuthContext";
 import { Save, AlertCircle, Loader2, Send, CheckCircle2, XCircle } from 'lucide-react';
 import toast from "react-hot-toast";
 import axios from "axios";
+import API_BASE_URL from '../../config';
 
 const BroadcastSettings = () => {
     const { session } = useAuth();
@@ -28,7 +29,7 @@ const BroadcastSettings = () => {
             const token = session?.access_token;
             if (!token) return;
 
-            const response = await axios.get('/api/meta/connection', {
+            const response = await axios.get(`${API_BASE_URL}/api/meta/connection`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
 
@@ -55,7 +56,7 @@ const BroadcastSettings = () => {
                 return;
             }
 
-            await axios.post('/api/whatsapp/config', config, {
+            await axios.post(`${API_BASE_URL}/api/whatsapp/config`, config, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             toast.success('Configuration saved successfully!');
@@ -72,7 +73,7 @@ const BroadcastSettings = () => {
         setTestResult(null);
         try {
             const token = session?.access_token;
-            const response = await axios.post("/api/whatsapp/test-send",
+            const response = await axios.post(`${API_BASE_URL}/api/whatsapp/test-send`,
                 { to: testPhone, message: testMessage },
                 { headers: { Authorization: `Bearer ${token}` } }
             );
