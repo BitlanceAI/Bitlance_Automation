@@ -59,7 +59,7 @@ const HeroSection = ({ onOpenBooking }) => {
         <header className="relative min-h-screen flex items-center pt-24 pb-16 lg:pt-32 lg:pb-24 overflow-visible perspective-1000">
             {/* Dynamic Background Glow based on active slide */}
             <div className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] ${slides[currentSlide].bgGlow} rounded-full blur-[150px] pointer-events-none transition-colors duration-1000`} />
-            
+
             {/* Bottom black gradient blend */}
             <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-[#030303] to-transparent pointer-events-none z-0" />
 
@@ -110,9 +110,6 @@ const HeroSection = ({ onOpenBooking }) => {
                             <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
                         </button>
 
-                        <button className="px-8 py-4 rounded-full bg-white/10 text-white backdrop-blur-md font-semibold border border-white/20 hover:bg-white/20 transition-all flex items-center justify-center gap-2 w-full sm:w-auto">
-                            <Play size={16} className="fill-current" /> Watch Overview
-                        </button>
                     </div>
 
                 </div>

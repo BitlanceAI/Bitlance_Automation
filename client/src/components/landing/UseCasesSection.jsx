@@ -1,5 +1,5 @@
-import React from 'react';
-import { Layout, Users, Zap, PenTool } from 'lucide-react';
+import { Layout, Users, Zap, PenTool, Sparkles, ArrowRight } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import TiltCard from '../ui/TiltCard';
 import ScrollReveal from '../ui/ScrollReveal';
@@ -48,6 +48,52 @@ const UseCasesSection = () => {
                             </div>
                         </TiltCard>
                     ))}
+                </div>
+
+                {/* Shimmer Glass CTA */}
+                <div className="mt-20 text-center relative z-10">
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.6, delay: 0.3 }}
+                        viewport={{ once: true }}
+                        className="inline-block"
+                    >
+                        <Link
+                            to="/apply/audit"
+                            className="group relative inline-flex items-center gap-4 px-10 py-5 rounded-2xl bg-white/5 backdrop-blur-xl border border-white/10 text-white font-black uppercase tracking-[0.2em] text-sm overflow-hidden transition-all hover:scale-105 active:scale-95"
+                        >
+                            {/* Animated Gradient Border Overlay */}
+                            <div className="absolute inset-0 p-[1px] rounded-2xl bg-gradient-to-r from-indigo-500 via-purple-500 to-indigo-500 opacity-20 group-hover:opacity-100 transition-opacity -z-10 animate-gradient-x" />
+
+                            {/* Shimmer Sweep Effect */}
+                            <motion.div
+                                animate={{
+                                    x: ['-200%', '200%'],
+                                }}
+                                transition={{
+                                    duration: 3,
+                                    repeat: Infinity,
+                                    ease: "linear",
+                                    repeatDelay: 1,
+                                }}
+                                className="absolute inset-y-0 w-32 bg-gradient-to-r from-transparent via-white/10 to-transparent skew-x-[-20deg] pointer-events-none"
+                            />
+
+                            <Sparkles className="w-5 h-5 text-indigo-400 group-hover:rotate-12 transition-transform" />
+                            <span>Claim My Free AI Audit</span>
+                            <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform opacity-50 group-hover:opacity-100" />
+
+                            {/* Inner Glow */}
+                            <div className="absolute inset-0 bg-indigo-500/5 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
+                        </Link>
+
+                        <div className="mt-6 flex items-center justify-center gap-4 text-white/20">
+                            <span className="w-8 h-[1px] bg-current" />
+                            <span className="text-[10px] font-bold uppercase tracking-[0.3em]">Built For High Performance</span>
+                            <span className="w-8 h-[1px] bg-current" />
+                        </div>
+                    </motion.div>
                 </div>
             </ScrollReveal>
         </section>

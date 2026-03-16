@@ -1,6 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Play, CheckCircle2 } from 'lucide-react';
+import { Play, CheckCircle2, Sparkles } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import ScrollReveal from '../ui/ScrollReveal';
 
 const WhyBitlanceSection = () => {
@@ -36,11 +37,6 @@ const WhyBitlanceSection = () => {
                             ))}
                         </div>
 
-                        <div className="pt-4">
-                            <button className="px-8 py-4 rounded-full bg-white text-black font-bold text-sm tracking-tight hover:bg-white/90 transition-all">
-                                Learn More About Us
-                            </button>
-                        </div>
                     </div>
 
                     {/* Right: Video Player Placeholder */}
@@ -68,6 +64,26 @@ const WhyBitlanceSection = () => {
                         <div className="absolute -inset-4 bg-indigo-500/10 blur-2xl rounded-full -z-10 group-hover:bg-indigo-500/20 transition-all duration-500" />
                     </div>
 
+                </div>
+
+                {/* Centered Large CTA */}
+                <div className="mt-20 text-center relative z-10">
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.5, delay: 0.2 }}
+                        viewport={{ once: true }}
+                    >
+                        <Link
+                            to="/apply/audit"
+                            className="inline-flex items-center gap-3 bg-white/5 border border-white/10 px-10 py-5 rounded-2xl text-white font-black uppercase tracking-widest text-base hover:bg-white/10 transition-all group relative overflow-hidden"
+                        >
+                            <Sparkles className="w-6 h-6 text-indigo-400 group-hover:rotate-12 transition-transform" />
+                            Claim My Free AI Audit
+                            <div className="absolute inset-0 bg-indigo-500/20 blur-3xl opacity-0 group-hover:opacity-100 transition-opacity" />
+                        </Link>
+                        <p className="text-white/30 text-xs mt-4 font-medium uppercase tracking-widest">Takes less than 2 minutes • No card required</p>
+                    </motion.div>
                 </div>
             </ScrollReveal>
         </section>
