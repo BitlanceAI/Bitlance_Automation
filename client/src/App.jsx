@@ -304,7 +304,7 @@ function App() {
             } />
           </Routes>
           {!isDashboard && location.pathname !== '/' && <Footer />}
-          {!isDashboard && <ChatWidget />}
+
         </div>
       </AuthProvider>
     </ThemeProvider >
