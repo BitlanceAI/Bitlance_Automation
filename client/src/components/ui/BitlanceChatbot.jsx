@@ -369,10 +369,15 @@ function BookingConfirmedCard({ email }) {
 // ─────────────────────────────────────────────────────────────────────────────
 // 🤖  MAIN CHATBOT COMPONENT
 // ─────────────────────────────────────────────────────────────────────────────
-export default function BitlanceChatbot() {
+export default function BitlanceChatbot({ isOpen: externalIsOpen, onToggle }) {
 
   // ── UI state ───────────────────────────────────────────────────────────────
-  const [isOpen, setIsOpen] = useState(false);   // widget open/closed
+  const [internalIsOpen, setInternalIsOpen] = useState(false);   // local open state
+  const isOpen = externalIsOpen !== undefined ? externalIsOpen : internalIsOpen;
+  const setIsOpen = (next) => {
+    if (onToggle) onToggle(next);
+    setInternalIsOpen(next);
+  };
   const [hasOpened, setHasOpened] = useState(false);   // first open flag
   const [isTyping, setIsTyping] = useState(false);   // show typing dots
   const [progress, setProgress] = useState(0);       // 0–100 top bar
@@ -416,19 +421,16 @@ export default function BitlanceChatbot() {
   // ── Auto-open after 5 seconds if not already opened ─────────────────────
   useEffect(() => {
     const timer = setTimeout(() => {
-      setIsOpen((currentlyOpen) => {
-        if (!currentlyOpen && !hasOpened) {
-          setHasOpened(true);
-          setShowNotif(false);
-          // TIME: +400ms → fire startConversation after widget opens
-          setTimeout(startConversation, 400);
-          return true;
-        }
-        return currentlyOpen;
-      });
+      if (!isOpen && !hasOpened) {
+        setHasOpened(true);
+        setShowNotif(false);
+        setIsOpen(true);
+        // TIME: +400ms → fire startConversation after widget opens
+        setTimeout(startConversation, 400);
+      }
     }, 5000);
     return () => clearTimeout(timer);
-  }, [hasOpened]); // Run once or whenever hasOpened changes (though it should only run once)
+  }, [hasOpened, isOpen, setIsOpen]); // Run once or whenever hasOpened changes
 
   // ── Add a single message to the list ─────────────────────────────────────
   const addMsg = useCallback((msg) => {
@@ -694,6 +696,24 @@ export default function BitlanceChatbot() {
     <>
       {/* ── CSS keyframe animations injected once ── */}
       <style>{`
+        :root {
+          --cb-bubble-bottom: 28px;
+          --cb-bubble-right: 28px;
+          --cb-widget-bottom: 104px;
+          --cb-widget-right: 28px;
+          --cb-widget-width: 390px;
+          --cb-widget-max-height: 625px;
+        }
+        @media (max-width: 480px) {
+          :root {
+            --cb-bubble-bottom: 20px;
+            --cb-bubble-right: 20px;
+            --cb-widget-bottom: 85px;
+            --cb-widget-right: 15px;
+            --cb-widget-width: calc(100% - 30px);
+            --cb-widget-max-height: calc(100svh - 105px);
+          }
+        }
         @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap');
         @keyframes bubbleIn   { from{transform:scale(0);opacity:0} to{transform:scale(1);opacity:1} }
         @keyframes pulse      { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.5;transform:scale(1.4)} }
@@ -865,7 +885,7 @@ const C = {
 const styles = {
   // ── Bubble ──
   bubble: {
-    position: "fixed", bottom: 28, right: 28,
+    position: "fixed", bottom: "var(--cb-bubble-bottom)", right: "var(--cb-bubble-right)",
     width: 62, height: 62, borderRadius: "50%",
     background: `linear-gradient(135deg, ${C.brand}, ${C.brandDark})`,
     boxShadow: `0 8px 32px ${C.brandGlow}, 0 2px 8px rgba(0,0,0,0.4)`,
@@ -880,8 +900,8 @@ const styles = {
   },
   // ── Widget ──
   widget: {
-    position: "fixed", bottom: 104, right: 28,
-    width: 390, maxHeight: 625,
+    position: "fixed", bottom: "var(--cb-widget-bottom)", right: "var(--cb-widget-right)",
+    width: "var(--cb-widget-width)", maxHeight: "var(--cb-widget-max-height)",
     background: C.surface, border: `1px solid ${C.border}`,
     borderRadius: 18,
     boxShadow: "0 24px 80px rgba(0,0,0,0.6), 0 0 0 1px rgba(91,79,232,0.1)",

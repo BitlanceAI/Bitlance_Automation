@@ -3,7 +3,7 @@ import { ArrowRight, Play, Mic, MessageSquare, Edit3, Share2, TrendingUp } from 
 import { motion, AnimatePresence } from 'framer-motion';
 import ProductDemoAnimation from './ProductDemoAnimation';
 
-const HeroSection = ({ onOpenBooking }) => {
+const HeroSection = ({ onOpenBooking, onOpenVideo }) => {
     const [currentSlide, setCurrentSlide] = useState(0);
 
     const slides = [
@@ -108,6 +108,16 @@ const HeroSection = ({ onOpenBooking }) => {
                                 Get Your Free AI Audit <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
                             </span>
                             <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
+                        </button>
+
+                        <button
+                            onClick={onOpenVideo}
+                            className="group flex items-center justify-center gap-3 px-8 py-4 rounded-full bg-white/5 border border-white/10 text-white font-bold text-lg hover:bg-white/10 transition-all w-full sm:w-auto"
+                        >
+                            <div className="w-10 h-10 rounded-full bg-indigo-500/20 flex items-center justify-center group-hover:scale-110 transition-transform">
+                                <Play size={16} className="text-indigo-400 fill-indigo-400" />
+                            </div>
+                            Watch Overview
                         </button>
 
                     </div>

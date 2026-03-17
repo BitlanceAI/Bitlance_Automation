@@ -3,8 +3,18 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { X, Sparkles, LogIn } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
-const LoginReminderPopup = () => {
+const LoginReminderPopup = ({ chatbotOpen }) => {
     const [isVisible, setIsVisible] = useState(false);
+    const [isSmallScreen, setIsSmallScreen] = useState(false);
+
+    useEffect(() => {
+        const checkScreenSize = () => {
+            setIsSmallScreen(window.innerWidth <= 780);
+        };
+        checkScreenSize();
+        window.addEventListener('resize', checkScreenSize);
+        return () => window.removeEventListener('resize', checkScreenSize);
+    }, []);
 
     useEffect(() => {
         // Check if user has already closed the reminder
@@ -26,16 +36,25 @@ const LoginReminderPopup = () => {
         localStorage.setItem('login_reminder_closed', 'true');
     };
 
+    // On mobile/tablet, if the chatbot is open, hide the popup
+    const shouldShow = isVisible && !(isSmallScreen && chatbotOpen);
+
     return (
         <AnimatePresence>
-            {isVisible && (
+            {shouldShow && (
                 <motion.div
                     initial={{ opacity: 0, y: 50, scale: 0.9, x: -50 }}
                     animate={{ opacity: 1, y: 0, scale: 1, x: 0 }}
                     exit={{ opacity: 0, y: 20, scale: 0.9, transition: { duration: 0.2 } }}
-                    className="fixed bottom-8 left-8 z-[100] w-full max-w-[320px]"
+                    className={`fixed z-[100] transition-all duration-300 ${
+                        isSmallScreen 
+                        ? "bottom-4 left-4 right-4 w-auto" 
+                        : "bottom-8 left-8 right-auto w-full max-w-[320px]"
+                    }`}
                 >
-                    <div className="relative bg-[#151515]/80 backdrop-blur-2xl border border-white/10 rounded-2xl p-6 shadow-[0_20px_50px_rgba(0,0,0,0.5)] overflow-hidden">
+                    <div className={`relative bg-[#151515]/80 backdrop-blur-2xl border border-white/10 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] overflow-hidden ${
+                        isSmallScreen ? "p-5" : "p-6"
+                    }`}>
                         {/* Background subtle glow */}
                         <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/10 blur-[50px] pointer-events-none" />
 

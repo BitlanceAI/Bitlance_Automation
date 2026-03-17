@@ -1,27 +1,69 @@
-import React from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Play, CheckCircle2, Sparkles } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import ScrollReveal from '../ui/ScrollReveal';
 
 const WhyBitlanceSection = () => {
+    const videoRef = useRef(null);
+    const [isManuallyPaused, setIsManuallyPaused] = useState(false);
+
+    useEffect(() => {
+        const video = videoRef.current;
+        if (!video) return;
+
+        const observer = new IntersectionObserver(
+            ([entry]) => {
+                if (entry.isIntersecting) {
+                    if (!isManuallyPaused) {
+                        video.play().catch(err => console.log("Autoplay blocked:", err));
+                    }
+                } else {
+                    video.pause();
+                }
+            },
+            { threshold: 0.5 }
+        );
+
+        observer.observe(video);
+        return () => {
+            if (video) observer.unobserve(video);
+        };
+    }, [isManuallyPaused]);
+
+    const handlePlay = () => {
+        setIsManuallyPaused(false);
+    };
+
+    const handlePause = () => {
+        // If the video is paused and it's not due to scrolling away 
+        // We set manually paused to true if the pause event fires while the video is still in view
+        if (videoRef.current) {
+            // Check if element is still in viewport when pause is triggered
+            const rect = videoRef.current.getBoundingClientRect();
+            const isInView = rect.top >= 0 && rect.bottom <= window.innerHeight;
+            if (isInView) {
+                setIsManuallyPaused(true);
+            }
+        }
+    };
     return (
         <section className="py-24 relative overflow-hidden bg-[#030303]">
-            <ScrollReveal className="max-w-7xl mx-auto px-6">
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center border border-white/5 bg-white/[0.01] rounded-[3rem] p-8 lg:p-16">
+            <ScrollReveal className="max-w-7xl mx-auto px-4 sm:px-6">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16 items-center border border-white/5 bg-white/[0.01] rounded-2xl sm:rounded-[3rem] p-4 sm:p-8 lg:p-16">
 
                     {/* Left: Content */}
                     <div className="space-y-8 order-2 lg:order-1">
                         <div>
-                            <h2 className="text-4xl lg:text-5xl font-black text-white uppercase tracking-tighter mb-6 leading-tight">
+                            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black text-white uppercase tracking-tighter mb-4 sm:mb-6 leading-tight">
                                 Why Bitlance Technology?
                             </h2>
-                            <p className="text-lg text-white/50 font-medium leading-relaxed max-w-lg">
+                            <p className="text-base sm:text-lg text-white/50 font-medium leading-relaxed max-w-lg">
                                 We don't just provide tools. We build autonomous systems that handle the heavy lifting of lead engagement and sales follow-up, so you can focus on closing deals.
                             </p>
                         </div>
 
-                        <div className="space-y-4">
+                        <div className="space-y-3 sm:space-y-4">
                             {[
                                 "Native AI Voice Integration",
                                 "Custom Trained for Your Data",
@@ -39,25 +81,21 @@ const WhyBitlanceSection = () => {
 
                     </div>
 
-                    {/* Right: Video Player Placeholder */}
-                    <div className="relative group cursor-pointer order-1 lg:order-2">
-                        <div className="aspect-video w-full rounded-[2rem] overflow-hidden bg-white/5 border border-white/10 relative">
-                            {/* Placeholder Aesthetic */}
-                            <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/20 via-transparent to-rose-500/20" />
-                            <div className="absolute inset-0 flex items-center justify-center">
-                                <motion.div
-                                    whileHover={{ scale: 1.1 }}
-                                    className="w-20 h-20 rounded-full bg-white flex items-center justify-center shadow-2xl shadow-indigo-500/20"
-                                >
-                                    <Play size={24} className="text-black ml-1 fill-black" />
-                                </motion.div>
-                            </div>
-
-                            {/* Info Overlay */}
-                            <div className="absolute bottom-6 left-6 text-left">
-                                <p className="text-xs font-mono text-white/40 uppercase tracking-widest mb-1">Founder Intro</p>
-                                <p className="text-sm font-bold text-white">Watch how we automate sales</p>
-                            </div>
+                    {/* Right: Video Player */}
+                    <div className="relative group order-1 lg:order-2 w-full">
+                        <div className="aspect-video w-full rounded-xl sm:rounded-[2rem] overflow-hidden bg-white/5 border border-white/10 relative shadow-2xl shadow-indigo-500/10">
+                            <video
+                                ref={videoRef}
+                                src="/why_bitlance.mp4"
+                                className="w-full h-full object-cover"
+                                controls
+                                loop
+                                playsInline
+                                onPlay={handlePlay}
+                                onPause={handlePause}
+                            />
+                            {/* Subtle Overlay to maintain text readability if needed, though here it's just a player */}
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent pointer-events-none" />
                         </div>
 
                         {/* Ambient Glow */}

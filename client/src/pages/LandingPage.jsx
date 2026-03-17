@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import HeroSection from '../components/landing/HeroSection';
@@ -19,6 +19,7 @@ import { ElegantShape } from '../components/ui/shape-landing-hero';
 import SEOHead from '../components/layout/SEOHead';
 import LoginReminderPopup from '../components/ui/LoginReminderPopup';
 import BitlanceChatbot from '../components/ui/BitlanceChatbot';
+import VideoModal from '../components/ui/VideoModal';
 
 const LandingPage = () => {
     const { user, loading } = useAuth();
@@ -31,6 +32,9 @@ const LandingPage = () => {
     const handleOpenBooking = () => {
         navigate('/apply/audit');
     };
+
+    const [isChatbotOpen, setIsChatbotOpen] = useState(false);
+    const [isVideoModalOpen, setIsVideoModalOpen] = useState(false);
 
     return (
         <div className="relative min-h-screen w-full overflow-hidden bg-[#030303] text-white">
@@ -87,7 +91,10 @@ const LandingPage = () => {
 
             {/* Content Wrapper */}
             <div className="relative z-10">
-                <HeroSection onOpenBooking={handleOpenBooking} />
+                <HeroSection 
+                    onOpenBooking={handleOpenBooking} 
+                    onOpenVideo={() => setIsVideoModalOpen(true)}
+                />
                 <ProblemSection />
                 <WhyBitlanceSection />
                 <TestimonialsSection />
@@ -102,8 +109,14 @@ const LandingPage = () => {
             </div>
 
             <ScrollToTopButton />
-            <LoginReminderPopup />
-            <BitlanceChatbot />
+            <LoginReminderPopup chatbotOpen={isChatbotOpen} />
+            <BitlanceChatbot isOpen={isChatbotOpen} onToggle={setIsChatbotOpen} />
+            
+            <VideoModal 
+                isOpen={isVideoModalOpen} 
+                onClose={() => setIsVideoModalOpen(false)} 
+                videoSrc="/why_bitlance.mp4" 
+            />
         </div>
     );
 };
