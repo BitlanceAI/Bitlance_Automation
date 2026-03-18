@@ -5,6 +5,7 @@ import AdminUsers from '../components/admin/AdminUsers';
 import AdminRemarketing from '../components/admin/AdminRemarketing';
 import AdminLogs from '../components/admin/AdminLogs';
 import AdminAutoBlog from '../components/admin/AdminAutoBlog';
+import AdminLeads from '../components/admin/AdminLeads';
 import { useAuth } from '../context/AuthContext';
 import {
     LayoutDashboard,
@@ -19,7 +20,8 @@ import {
     CheckCircle,
     Mail,
     Terminal,
-    FileText
+    FileText,
+    TrendingUp
 } from 'lucide-react';
 
 // Custom NavItem component similar to SalesDashboard
@@ -379,6 +381,12 @@ const AdminDashboard = () => {
                         onClick={() => setCurrentView('autoblog')}
                     />
                     <NavItem
+                        icon={<TrendingUp size={20} />}
+                        label="Leads"
+                        active={currentView === 'leads'}
+                        onClick={() => setCurrentView('leads')}
+                    />
+                    <NavItem
                         icon={<Megaphone size={20} />}
                         label="Campaigns"
                         active={false}
@@ -416,6 +424,7 @@ const AdminDashboard = () => {
                                 {currentView === 'remarketing' && <AdminRemarketing />}
                                 {currentView === 'logs' && <AdminLogs />}
                                 {currentView === 'autoblog' && <AdminAutoBlog />}
+                                {currentView === 'leads' && <AdminLeads />}
                             </>
                         )}
                     </div>

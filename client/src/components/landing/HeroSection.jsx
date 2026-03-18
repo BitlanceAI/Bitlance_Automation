@@ -1,10 +1,11 @@
 import React, { useRef, useState, useEffect } from 'react';
-import { ArrowRight, Play, Mic, MessageSquare, Edit3, Share2, TrendingUp } from 'lucide-react';
+import { ArrowRight, Mic, MessageSquare, Edit3, Share2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import ProductDemoAnimation from './ProductDemoAnimation';
 
-const HeroSection = ({ onOpenBooking, onOpenVideo }) => {
+const HeroSection = ({ onOpenBooking }) => {
     const [currentSlide, setCurrentSlide] = useState(0);
+    const videoRef = useRef(null);
+    const [isManuallyPaused, setIsManuallyPaused] = useState(false);
 
     const slides = [
         {
@@ -48,23 +49,56 @@ const HeroSection = ({ onOpenBooking, onOpenVideo }) => {
         }
     ];
 
+    // Rotate slides every 8 seconds
     useEffect(() => {
         const timer = setInterval(() => {
             setCurrentSlide((prev) => (prev + 1) % slides.length);
-        }, 8000); // Slowed down from 5s to 8s
+        }, 8000);
         return () => clearInterval(timer);
     }, [slides.length]);
 
+    // Autoplay video when in viewport — pause when scrolled away
+    useEffect(() => {
+        const video = videoRef.current;
+        if (!video) return;
+
+        const observer = new IntersectionObserver(
+            ([entry]) => {
+                if (entry.isIntersecting) {
+                    if (!isManuallyPaused) {
+                        video.play().catch(err => console.log("Autoplay blocked:", err));
+                    }
+                } else {
+                    video.pause();
+                }
+            },
+            { threshold: 0.4 }
+        );
+
+        observer.observe(video);
+        return () => { if (video) observer.unobserve(video); };
+    }, [isManuallyPaused]);
+
+    const handlePlay = () => setIsManuallyPaused(false);
+    const handlePause = () => {
+        if (videoRef.current) {
+            const rect = videoRef.current.getBoundingClientRect();
+            const isInView = rect.top >= 0 && rect.bottom <= window.innerHeight;
+            if (isInView) setIsManuallyPaused(true);
+        }
+    };
+
     return (
         <header className="relative min-h-screen flex items-center pt-24 pb-16 lg:pt-32 lg:pb-24 overflow-visible perspective-1000">
-            {/* Dynamic Background Glow based on active slide */}
+            {/* Dynamic Background Glow */}
             <div className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] ${slides[currentSlide].bgGlow} rounded-full blur-[150px] pointer-events-none transition-colors duration-1000`} />
 
-            {/* Bottom black gradient blend */}
+            {/* Bottom fade */}
             <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-[#030303] to-transparent pointer-events-none z-0" />
 
             <div className="max-w-7xl mx-auto px-6 relative z-10 w-full grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
 
+                {/* Left — Text + CTA */}
                 <div className="flex flex-col items-start text-left">
                     <AnimatePresence mode="wait">
                         <motion.div
@@ -75,13 +109,12 @@ const HeroSection = ({ onOpenBooking, onOpenVideo }) => {
                             transition={{ duration: 0.6, ease: "easeOut" }}
                             className="flex flex-col items-start w-full"
                         >
-
-                            {/* Main Heading (SEO Valid H1) */}
+                            {/* SEO H1 */}
                             <h1 className="sr-only">
-                                Bitlance Automation | AI Voice Bots & Business Automation Services
+                                Bitlance Automation | AI Voice Bots &amp; Business Automation Services
                             </h1>
 
-                            {/* Visual Rotating Heading */}
+                            {/* Visual rotating heading */}
                             <h2 className="text-4xl sm:text-5xl lg:text-5xl font-extrabold tracking-tight mb-6 leading-tight text-white">
                                 {slides[currentSlide].title1} <br />
                                 <span className={`bg-clip-text text-transparent bg-gradient-to-r ${slides[currentSlide].gradient} relative inline-block`}>
@@ -89,16 +122,13 @@ const HeroSection = ({ onOpenBooking, onOpenVideo }) => {
                                 </span>
                             </h2>
 
-                            {/* Subheading */}
                             <p className="text-lg md:text-xl text-white/70 mb-8 max-w-xl leading-relaxed">
                                 {slides[currentSlide].description}
                             </p>
-
-
                         </motion.div>
                     </AnimatePresence>
 
-                    {/* Buttons (Static below slider) */}
+                    {/* CTA */}
                     <div className="flex flex-col sm:flex-row gap-4 items-center w-full sm:w-auto z-20">
                         <button
                             onClick={onOpenBooking}
@@ -109,30 +139,33 @@ const HeroSection = ({ onOpenBooking, onOpenVideo }) => {
                             </span>
                             <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
                         </button>
-
-                        <button
-                            onClick={onOpenVideo}
-                            className="group flex items-center justify-center gap-3 px-8 py-4 rounded-full bg-white/5 border border-white/10 text-white font-bold text-lg hover:bg-white/10 transition-all w-full sm:w-auto"
-                        >
-                            <div className="w-10 h-10 rounded-full bg-indigo-500/20 flex items-center justify-center group-hover:scale-110 transition-transform">
-                                <Play size={16} className="text-indigo-400 fill-indigo-400" />
-                            </div>
-                            Watch Overview
-                        </button>
-
                     </div>
-
                 </div>
 
-                {/* Right Column: High-Fidelity Pipeline Animation */}
+                {/* Right — Video (same style as WhyBitlance) */}
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 1, delay: 0.5 }}
-                    className="relative w-full order-first lg:order-last flex justify-center lg:justify-end"
+                    className="relative w-full order-first lg:order-last group"
                 >
-                    <div className="absolute -inset-10 bg-indigo-500/10 blur-[100px] rounded-full opacity-50" />
-                    <ProductDemoAnimation />
+                    {/* Ambient glow */}
+                    <div className="absolute -inset-4 bg-indigo-500/10 blur-2xl rounded-full -z-10 group-hover:bg-indigo-500/20 transition-all duration-500" />
+
+                    <div className="aspect-video w-full rounded-xl sm:rounded-[2rem] overflow-hidden bg-white/5 border border-white/10 relative shadow-2xl shadow-indigo-500/10">
+                        <video
+                            ref={videoRef}
+                            src="/why_bitlance.mp4"
+                            className="w-full h-full object-cover"
+                            controls
+                            loop
+                            playsInline
+                            onPlay={handlePlay}
+                            onPause={handlePause}
+                        />
+                        {/* Bottom overlay */}
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent pointer-events-none" />
+                    </div>
                 </motion.div>
 
             </div>

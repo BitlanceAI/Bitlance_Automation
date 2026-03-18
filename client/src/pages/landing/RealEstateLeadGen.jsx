@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useNavigate } from 'react-router-dom';
-import { Sparkles, Calendar, XCircle, CheckCircle2, ChevronRight, ArrowRight, Building2, TrendingUp, Users, Home } from 'lucide-react';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { Sparkles, XCircle, CheckCircle2, ArrowRight, Users, Home } from 'lucide-react';
 import LeadQualificationForm from '../../components/funnel/LeadQualificationForm';
 import DisqualifiedView from '../../components/funnel/DisqualifiedView';
 import CalendarBookingView from '../../components/funnel/CalendarBookingView';
@@ -11,7 +11,59 @@ import SEOHead from '../../components/layout/SEOHead';
 const RealEstateLeadGen = () => {
     const [view, setView] = useState('form');
     const [leadData, setLeadData] = useState(null);
+    const [prefillData, setPrefillData] = useState({});
     const navigate = useNavigate();
+    const location = useLocation();
+
+    // Read prefill data from localStorage (saved when ad lands on /)
+    // Also falls back to URL params if user navigated directly to /apply/audit
+    useEffect(() => {
+        // 1. Try localStorage first (set by LandingPage on ad redirect)
+        const stored = localStorage.getItem('adPrefillData');
+        if (stored) {
+            try {
+                const parsed = JSON.parse(stored);
+                if (parsed.name || parsed.email || parsed.phone) {
+                    setPrefillData(parsed);
+                    return; // We have what we need
+                }
+            } catch (_) {}
+        }
+
+        // 2. Fallback: check URL params (direct navigation to /apply/audit with params)
+        const params = new URLSearchParams(location.search);
+        const name = params.get('name') || params.get('fn') || '';
+        const email = params.get('email') || '';
+        const phone = params.get('phone') || params.get('phoneno') || params.get('ph') || '';
+        const lid = params.get('lid') || '';
+
+        if (name || email || phone) {
+            setPrefillData({ name, email, phone });
+
+            // Also save UTMs if present
+            const utm = {
+                utmSource: params.get('utm_source') || '',
+                utmMedium: params.get('utm_medium') || '',
+                utmCampaign: params.get('utm_campaign') || '',
+                utmContent: params.get('utm_content') || '',
+                utmTerm: params.get('utm_term') || '',
+                fbclid: params.get('fbclid') || '',
+                referrer: document.referrer || 'Direct',
+            };
+            localStorage.setItem('utmData', JSON.stringify(utm));
+
+            // 3. If user arrived via reminder email link, track the click in the DB
+            if (email) {
+                fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001'}/api/leads/track-click`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, name, phone, lid }),
+                }).catch(err => console.warn('track-click failed (non-blocking):', err));
+            }
+        }
+    }, [location.search]);
+
+
 
     // Redirect to home after success
     React.useEffect(() => {
@@ -113,7 +165,7 @@ const RealEstateLeadGen = () => {
                                     transition={{ duration: 0.3 }}
                                     className="p-8 md:p-12"
                                 >
-                                    <LeadQualificationForm onQualify={handleQualify} onDisqualify={handleDisqualify} />
+                                    <LeadQualificationForm onQualify={handleQualify} onDisqualify={handleDisqualify} prefillData={prefillData} />
                                 </motion.div>
                             )}
 

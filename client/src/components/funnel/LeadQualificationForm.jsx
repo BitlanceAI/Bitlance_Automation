@@ -1,7 +1,9 @@
 import React, { useState, useCallback, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Activity, IndianRupee, PieChart, Building, ShieldCheck } from 'lucide-react';
+import { Activity, IndianRupee, PieChart, Building, ShieldCheck, User, Mail, Phone, Loader2, Download } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import API_BASE_URL from '../../config.js';
 
 const QA_STEPS = [
     {
@@ -42,13 +44,13 @@ const QA_STEPS = [
 ];
 
 const OPTION_EMOJIS = {
-    'E-commerce': ['🛍️', 'WOW!', '�', '✨', 'Nice!'],
+    'E-commerce': ['🛍️', 'WOW!', '🎯', '✨', 'Nice!'],
     'B2B SaaS': ['🚀', 'LFG!', '⚡', '🌟', 'Epic!'],
     'Agency': ['🤝', 'YES!', '🏆', '✨', 'Solid!'],
     'Professional Services': ['💼', 'Smart!', '📊', '✨', 'Pro!'],
-    'Real Estate': ['�', 'WOW!', '🔑', '✨', 'Nice!'],
+    'Real Estate': ['🏠', 'WOW!', '🔑', '✨', 'Nice!'],
     'Other': ['✨', 'Ooh!', '💡', '🌟', 'Cool!'],
-    'Below ₹1L': ['🌱', 'Start!', '🌿', '�', 'Go!'],
+    'Below ₹1L': ['🌱', 'Start!', '🌿', '📊', 'Go!'],
     '₹1–5L': ['📈', 'Nice!', '💹', '⬆️', 'Up!'],
     '₹5–15L': ['🔥', 'HOT!', '🔥', '💰', 'Fire!'],
     '₹15L+': ['💰', 'WOW!', '🏆', '👑', 'Elite!'],
@@ -59,11 +61,10 @@ const OPTION_EMOJIS = {
     'HubSpot / Salesforce': ['🏢', 'Nice!', '📊', '✅', 'Pro!'],
     'GoHighLevel / ActiveCampaign': ['🎯', 'Fire!', '🔥', '🚀', 'LFG!'],
     'Zendesk / Intercom': ['💬', 'Smart!', '🤖', '✨', 'Cool!'],
-    'Manual / Spreadsheets': ['�', 'WOW!', '�', '⚡', 'Big!'],
+    'Manual / Spreadsheets': ['📋', 'WOW!', '📊', '⚡', 'Big!'],
     'Yes, I am a decision maker': ['👑', 'YES!', '🚀', '🌟', 'Boss!'],
     'No, taking info for my team': ['📝', 'Sure!', '📋', '✅', 'OK!'],
 };
-
 
 const OPTION_FEEDBACK = {
     'E-commerce': 'High-growth sector! AI can drastically cut your cart abandonment.',
@@ -180,7 +181,6 @@ function ToastPortal({ toast }) {
                         maxWidth: '90vw',
                     }}
                 >
-                    {/* Outer glow ring */}
                     <div style={{
                         background: 'linear-gradient(135deg, rgba(99,102,241,0.18) 0%, rgba(168,85,247,0.12) 100%)',
                         border: '1px solid rgba(99,102,241,0.4)',
@@ -199,7 +199,6 @@ function ToastPortal({ toast }) {
                             padding: '10px 20px 10px 14px',
                             whiteSpace: 'nowrap',
                         }}>
-                            {/* Animated dot */}
                             <motion.div
                                 animate={{ scale: [1, 1.4, 1] }}
                                 transition={{ repeat: Infinity, duration: 1.2, ease: 'easeInOut' }}
@@ -223,7 +222,6 @@ function ToastPortal({ toast }) {
                             </span>
                         </div>
                     </div>
-                    {/* Progress bar */}
                     <motion.div
                         initial={{ scaleX: 1 }}
                         animate={{ scaleX: 0 }}
@@ -246,8 +244,117 @@ function ToastPortal({ toast }) {
     );
 }
 
+/* ─── Contact Info Step ─── */
+function ContactInfoStep({ prefillData, onSubmit, onDownload, loading }) {
+    const [form, setForm] = useState({
+        name: prefillData?.name || '',
+        email: prefillData?.email || '',
+        phone: prefillData?.phone || '',
+    });
+    const [errors, setErrors] = useState({});
+
+    const validate = () => {
+        const e = {};
+        if (!form.name.trim()) e.name = 'Name is required';
+        if (!form.email.trim() || !/^\S+@\S+\.\S+$/.test(form.email)) e.email = 'Valid email is required';
+        if (!form.phone.trim()) e.phone = 'Phone number is required';
+        setErrors(e);
+        return Object.keys(e).length === 0;
+    };
+
+    const handleChange = (field, value) => {
+        setForm(prev => ({ ...prev, [field]: value }));
+        if (errors[field]) setErrors(prev => ({ ...prev, [field]: null }));
+    };
+
+    const inputClass = (field) =>
+        `w-full bg-[#121212] border ${errors[field] ? 'border-red-500' : 'border-white/10'} rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500/50 transition-all font-medium placeholder:text-slate-600`;
+
+    return (
+        <div className="p-6 md:p-8">
+            <div className="mb-6">
+                <span className="text-[10px] font-bold text-indigo-400 tracking-widest uppercase">Almost There</span>
+                <h2 className="text-2xl font-extrabold text-white leading-tight mt-1 mb-1">
+                    Where should we send your audit results?
+                </h2>
+                <p className="text-sm text-slate-400">Your info is kept private. No spam, ever.</p>
+            </div>
+
+            <div className="space-y-4">
+                {/* Name */}
+                <div>
+                    <label className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
+                        <User className="w-3.5 h-3.5" /> Full Name
+                    </label>
+                    <input
+                        type="text"
+                        placeholder="Jane Doe"
+                        value={form.name}
+                        onChange={e => handleChange('name', e.target.value)}
+                        className={inputClass('name')}
+                    />
+                    {errors.name && <p className="text-red-400 text-xs mt-1">{errors.name}</p>}
+                </div>
+
+                {/* Email */}
+                <div>
+                    <label className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
+                        <Mail className="w-3.5 h-3.5" /> Work Email
+                    </label>
+                    <input
+                        type="email"
+                        placeholder="jane@company.com"
+                        value={form.email}
+                        onChange={e => handleChange('email', e.target.value)}
+                        className={inputClass('email')}
+                    />
+                    {errors.email && <p className="text-red-400 text-xs mt-1">{errors.email}</p>}
+                </div>
+
+                {/* Phone */}
+                <div>
+                    <label className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
+                        <Phone className="w-3.5 h-3.5" /> Phone / WhatsApp
+                    </label>
+                    <input
+                        type="tel"
+                        placeholder="+91 98765 43210"
+                        value={form.phone}
+                        onChange={e => handleChange('phone', e.target.value)}
+                        className={inputClass('phone')}
+                    />
+                    {errors.phone && <p className="text-red-400 text-xs mt-1">{errors.phone}</p>}
+                </div>
+
+                {/* Book CTA */}
+                <button
+                    onClick={() => { if (validate()) onSubmit(form, 'book'); }}
+                    disabled={loading}
+                    className="w-full flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed text-white px-6 py-4 rounded-xl font-bold transition-all mt-2 shadow-[0_0_30px_-5px_rgba(99,102,241,0.5)]"
+                >
+                    {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Book My Free AI Audit →'}
+                </button>
+
+                {/* Download CTA */}
+                <button
+                    onClick={() => { if (validate()) onDownload(form); }}
+                    disabled={loading}
+                    className="w-full flex items-center justify-center gap-2 text-sm font-medium text-slate-400 hover:text-white transition-colors disabled:opacity-50 mt-1 py-2"
+                >
+                    <Download className="w-4 h-4" />
+                    Just download the Blueprint PDF instead
+                </button>
+
+                <p className="text-center text-[11px] text-slate-600 mt-2">
+                    🔒 Your information is 100% secure. No spam ever.
+                </p>
+            </div>
+        </div>
+    );
+}
+
 /* ─── Main Form Component ─── */
-const LeadQualificationForm = ({ onQualify, onDisqualify }) => {
+const LeadQualificationForm = ({ onQualify, onDisqualify, prefillData }) => {
     const [currentStep, setCurrentStep] = useState(0);
     const [answers, setAnswers] = useState({});
     const [loading, setLoading] = useState(false);
@@ -256,10 +363,11 @@ const LeadQualificationForm = ({ onQualify, onDisqualify }) => {
     const toastTimerRef = useRef(null);
     const particleTimerRef = useRef(null);
 
-    const stepInfo = QA_STEPS[currentStep];
-    const isLastStep = currentStep === QA_STEPS.length - 1;
+    const totalSteps = QA_STEPS.length + 1; // +1 for contact step
+    const isContactStep = currentStep === QA_STEPS.length;
+    const stepInfo = !isContactStep ? QA_STEPS[currentStep] : null;
+    const isLastQAStep = currentStep === QA_STEPS.length - 1;
 
-    // Cleanup timers on unmount
     useEffect(() => {
         return () => {
             if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
@@ -271,7 +379,6 @@ const LeadQualificationForm = ({ onQualify, onDisqualify }) => {
         const newAnswers = { ...answers, [stepInfo.id]: value };
         setAnswers(newAnswers);
 
-        // ── Spawn livestream-style emoji burst at click position ──
         const clickX = e?.clientX ?? window.innerWidth / 2;
         const clickY = e?.clientY ?? window.innerHeight / 2;
         const emojiSet = OPTION_EMOJIS[value] ?? ['✨', '🌟', '✨', '⚡'];
@@ -281,15 +388,15 @@ const LeadQualificationForm = ({ onQualify, onDisqualify }) => {
             emoji,
             x: clickX,
             y: clickY,
-            dx: (Math.random() - 0.5) * 120,           // wider horizontal spread
-            rise: 130 + Math.random() * 80,             // varied rise height
-            initialScale: 0.5 + Math.random() * 0.4,   // varied starting size
-            peakScale: 1.4 + Math.random() * 1.0,      // varied peak size
-            size: `${1.3 + Math.random() * 0.8}rem`,   // font-size variation
+            dx: (Math.random() - 0.5) * 120,
+            rise: 130 + Math.random() * 80,
+            initialScale: 0.5 + Math.random() * 0.4,
+            peakScale: 1.4 + Math.random() * 1.0,
+            size: `${1.3 + Math.random() * 0.8}rem`,
             initialRotate: (Math.random() - 0.5) * 20,
-            finalRotate: (Math.random() - 0.5) * 40,   // gentle spin while rising
-            duration: 0.85 + Math.random() * 0.4,      // varied speed
-            delay: i * 0.06,                            // stagger
+            finalRotate: (Math.random() - 0.5) * 40,
+            duration: 0.85 + Math.random() * 0.4,
+            delay: i * 0.06,
         }));
         setParticles(prev => [...prev, ...newParticles]);
 
@@ -298,134 +405,184 @@ const LeadQualificationForm = ({ onQualify, onDisqualify }) => {
             setParticles(prev => prev.filter(p => !newParticles.some(np => np.id === p.id)));
         }, 1400);
 
-        // ── Show toast (no emoji inside — just the text message) ──
         const text = OPTION_FEEDBACK[value] ?? 'Great choice! Moving forward...';
         setToast({ id: Date.now(), text });
 
         if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
         toastTimerRef.current = setTimeout(() => setToast(null), 5000);
 
-        // ── Advance step ──
+        // Advance step: check disqualification on last QA step, else progress
         setTimeout(() => {
-            if (!isLastStep) {
-                setCurrentStep(prev => prev + 1);
+            if (isLastQAStep) {
+                const spend = newAnswers.marketing_spend;
+                const decisionMaker = newAnswers.decision_maker;
+                if (spend === 'Below ₹1L' || decisionMaker === 'No, taking info for my team') {
+                    onDisqualify();
+                } else {
+                    setCurrentStep(QA_STEPS.length); // go to contact step
+                }
             } else {
-                submitForm(newAnswers);
+                setCurrentStep(prev => prev + 1);
             }
         }, 650);
-    }, [answers, isLastStep, stepInfo]);
+    }, [answers, isLastQAStep, stepInfo, onDisqualify]);
 
-    const submitForm = (finalAnswers) => {
+    const navigate = useNavigate();
+
+    // ─── Save lead to DB and qualify ───
+    const handleContactSubmit = async (contactData, action) => {
         setLoading(true);
-        setTimeout(() => {
-            setLoading(false);
-            const spend = finalAnswers.marketing_spend;
-            const decisionMaker = finalAnswers.decision_maker;
-            if (spend === 'Below ₹1L' || decisionMaker === 'No, taking info for my team') {
-                onDisqualify();
-            } else {
-                onQualify(finalAnswers);
+        try {
+            const storedUtm = JSON.parse(localStorage.getItem('utmData') || '{}');
+
+            const payload = {
+                name: contactData.name,
+                email: contactData.email,
+                phone: contactData.phone,
+                businessType: answers.industry_focus,
+                monthlyBudget: answers.marketing_spend,
+                readyToAutomate: answers.decision_maker === 'Yes, I am a decision maker' ? 'yes' : 'no',
+                action, // 'book' or 'download'
+                ...storedUtm,
+            };
+
+            const res = await fetch(`${API_BASE_URL}/api/leads`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload),
+            });
+
+            const data = await res.json();
+
+            const fullLeadData = {
+                ...answers,
+                ...contactData,
+                id: data?.data?.id,
+                action,
+            };
+
+            if (typeof window !== 'undefined' && window.fbq) {
+                window.fbq('track', 'Lead');
             }
-        }, 1200);
+
+            if (action === 'download') {
+                navigate('/thank-you');
+                return;
+            }
+
+            onQualify(fullLeadData);
+        } catch (err) {
+            console.error('Lead submission error:', err);
+            // Don't block user flow on API error
+            onQualify({ ...answers, ...contactData, action });
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (
         <>
-            {/* These render directly into document.body via portals */}
             <EmojiParticles particles={particles} />
             <ToastPortal toast={toast} />
 
             <div className="w-full">
-                <div className="p-6 md:p-8">
-                    {/* Step Header */}
-                    <div className="mb-5">
-                        <div className="flex items-center justify-between mb-5">
-                            <span className="text-[10px] font-bold text-indigo-400 tracking-widest uppercase">
-                                Step {currentStep + 1} of {QA_STEPS.length}
-                            </span>
-                            <div className="flex gap-1.5">
-                                {QA_STEPS.map((_, i) => (
-                                    <div
-                                        key={i}
-                                        className={`h-1.5 rounded-full transition-all duration-300 ${i === currentStep ? 'w-6 bg-indigo-500' : 'w-3 bg-white/10'
-                                            }`}
-                                    />
-                                ))}
+                {isContactStep ? (
+                    <ContactInfoStep
+                        prefillData={prefillData}
+                        onSubmit={handleContactSubmit}
+                        onDownload={(data) => handleContactSubmit(data, 'download')}
+                        loading={loading}
+                    />
+                ) : (
+                    <div className="p-6 md:p-8">
+                        {/* Step Header */}
+                        <div className="mb-5">
+                            <div className="flex items-center justify-between mb-5">
+                                <span className="text-[10px] font-bold text-indigo-400 tracking-widest uppercase">
+                                    Step {currentStep + 1} of {totalSteps}
+                                </span>
+                                <div className="flex gap-1.5">
+                                    {Array.from({ length: totalSteps }).map((_, i) => (
+                                        <div
+                                            key={i}
+                                            className={`h-1.5 rounded-full transition-all duration-300 ${i === currentStep ? 'w-6 bg-indigo-500' : 'w-3 bg-white/10'}`}
+                                        />
+                                    ))}
+                                </div>
                             </div>
-                        </div>
 
-                        <AnimatePresence mode="wait">
-                            <motion.div
-                                key={currentStep + '-header'}
-                                initial={{ opacity: 0, y: 6 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                exit={{ opacity: 0, y: -6 }}
-                                transition={{ duration: 0.2 }}
-                            >
-                                <h2 className="text-2xl font-extrabold text-white leading-tight mb-1.5">
-                                    {currentStep === 0 ? "Let's customize your growth plan." : stepInfo.question}
-                                </h2>
-                                <p className="text-sm text-slate-400">
-                                    {currentStep === 0 ? stepInfo.question : stepInfo.description}
-                                </p>
-                            </motion.div>
-                        </AnimatePresence>
-                    </div>
-
-                    {loading ? (
-                        <div className="py-16 text-center">
-                            <div className="w-10 h-10 border-4 border-white/10 border-t-indigo-500 rounded-full animate-spin mx-auto mb-4" />
-                            <h3 className="text-lg font-bold text-white mb-2">Analyzing Responses...</h3>
-                            <p className="text-sm text-slate-400">Checking eligibility for the AI Audit</p>
-                        </div>
-                    ) : (
-                        <div>
                             <AnimatePresence mode="wait">
                                 <motion.div
-                                    key={currentStep}
-                                    initial={{ opacity: 0, x: 20 }}
-                                    animate={{ opacity: 1, x: 0 }}
-                                    exit={{ opacity: 0, x: -20 }}
-                                    transition={{ duration: 0.22 }}
-                                    className="flex flex-col gap-2.5"
+                                    key={currentStep + '-header'}
+                                    initial={{ opacity: 0, y: 6 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    exit={{ opacity: 0, y: -6 }}
+                                    transition={{ duration: 0.2 }}
                                 >
-                                    {stepInfo.options.map((option, idx) => {
-                                        const isSelected = answers[stepInfo.id] === option;
-                                        return (
-                                            <button
-                                                key={idx}
-                                                onClick={(e) => handleSelectOption(option, e)}
-                                                className={`w-full px-4 py-3 text-left rounded-xl border transition-all duration-200 flex items-center gap-3 group ${isSelected
-                                                    ? 'border-indigo-500 bg-indigo-500/10'
-                                                    : 'border-white/10 bg-[#121212] hover:bg-[#1a1a1a] hover:border-white/20'
-                                                    }`}
-                                            >
-                                                <div className={`flex-shrink-0 w-4 h-4 rounded-full border-2 flex items-center justify-center transition-colors ${isSelected ? 'border-indigo-500' : 'border-slate-600 group-hover:border-slate-400'
-                                                    }`}>
-                                                    {isSelected && <div className="w-2 h-2 rounded-full bg-indigo-500" />}
-                                                </div>
-                                                <span className={`font-medium text-[15px] ${isSelected ? 'text-white' : 'text-slate-300'}`}>
-                                                    {option}
-                                                </span>
-                                            </button>
-                                        );
-                                    })}
+                                    <h2 className="text-2xl font-extrabold text-white leading-tight mb-1.5">
+                                        {currentStep === 0 ? "Let's customize your growth plan." : stepInfo.question}
+                                    </h2>
+                                    <p className="text-sm text-slate-400">
+                                        {currentStep === 0 ? stepInfo.question : stepInfo.description}
+                                    </p>
                                 </motion.div>
                             </AnimatePresence>
-
-                            {currentStep > 0 && (
-                                <div className="mt-5 pt-4 border-t border-white/5">
-                                    <button
-                                        onClick={() => setCurrentStep(prev => prev - 1)}
-                                        className="text-xs font-medium text-slate-500 hover:text-white transition-colors"
-                                    >
-                                        ← Back to previous question
-                                    </button>
-                                </div>
-                            )}
                         </div>
-                    )}
-                </div>
+
+                        {loading ? (
+                            <div className="py-16 text-center">
+                                <div className="w-10 h-10 border-4 border-white/10 border-t-indigo-500 rounded-full animate-spin mx-auto mb-4" />
+                                <h3 className="text-lg font-bold text-white mb-2">Analyzing Responses...</h3>
+                                <p className="text-sm text-slate-400">Checking eligibility for the AI Audit</p>
+                            </div>
+                        ) : (
+                            <div>
+                                <AnimatePresence mode="wait">
+                                    <motion.div
+                                        key={currentStep}
+                                        initial={{ opacity: 0, x: 20 }}
+                                        animate={{ opacity: 1, x: 0 }}
+                                        exit={{ opacity: 0, x: -20 }}
+                                        transition={{ duration: 0.22 }}
+                                        className="flex flex-col gap-2.5"
+                                    >
+                                        {stepInfo.options.map((option, idx) => {
+                                            const isSelected = answers[stepInfo.id] === option;
+                                            return (
+                                                <button
+                                                    key={idx}
+                                                    onClick={(e) => handleSelectOption(option, e)}
+                                                    className={`w-full px-4 py-3 text-left rounded-xl border transition-all duration-200 flex items-center gap-3 group ${isSelected
+                                                        ? 'border-indigo-500 bg-indigo-500/10'
+                                                        : 'border-white/10 bg-[#121212] hover:bg-[#1a1a1a] hover:border-white/20'
+                                                        }`}
+                                                >
+                                                    <div className={`flex-shrink-0 w-4 h-4 rounded-full border-2 flex items-center justify-center transition-colors ${isSelected ? 'border-indigo-500' : 'border-slate-600 group-hover:border-slate-400'}`}>
+                                                        {isSelected && <div className="w-2 h-2 rounded-full bg-indigo-500" />}
+                                                    </div>
+                                                    <span className={`font-medium text-[15px] ${isSelected ? 'text-white' : 'text-slate-300'}`}>
+                                                        {option}
+                                                    </span>
+                                                </button>
+                                            );
+                                        })}
+                                    </motion.div>
+                                </AnimatePresence>
+
+                                {currentStep > 0 && (
+                                    <div className="mt-5 pt-4 border-t border-white/5">
+                                        <button
+                                            onClick={() => setCurrentStep(prev => prev - 1)}
+                                            className="text-xs font-medium text-slate-500 hover:text-white transition-colors"
+                                        >
+                                            ← Back to previous question
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
+                        )}
+                    </div>
+                )}
             </div>
         </>
     );

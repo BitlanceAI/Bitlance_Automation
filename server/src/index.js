@@ -135,6 +135,7 @@ import { startPostScheduler } from './services/scheduler.js';
 
 // Start Scheduler Service
 import SchedulerService from './services/scheduler/SchedulerService.js';
+import { startReminderCron } from './services/reminderCron.js';
 // Pass a default MetaService or handle inside Scheduler
 const scheduler = new SchedulerService();
 scheduler.start();
@@ -144,6 +145,9 @@ app.listen(PORT, () => {
 
     // Start the background scheduler
     startPostScheduler();
+
+    // Start 24h reminder cron
+    startReminderCron();
 });
 
 export default app;

@@ -24,6 +24,15 @@ export default defineConfig(({ mode }) => {
         },
       },
     },
+    optimizeDeps: {
+      include: [
+        '@fullcalendar/core',
+        '@fullcalendar/react',
+        '@fullcalendar/daygrid',
+        '@fullcalendar/timegrid',
+        '@fullcalendar/interaction',
+      ],
+    },
     build: {
       chunkSizeWarningLimit: 1000,
       rollupOptions: {
@@ -31,7 +40,8 @@ export default defineConfig(({ mode }) => {
           manualChunks: {
             vendor: ['react', 'react-dom'],
             charts: ['recharts'],
-            ui: ['lucide-react', 'framer-motion']
+            ui: ['lucide-react', 'framer-motion'],
+            calendar: ['@fullcalendar/react', '@fullcalendar/daygrid', '@fullcalendar/timegrid', '@fullcalendar/interaction'],
           }
         }
       }

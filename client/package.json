@@ -10,6 +10,11 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@fullcalendar/core": "^6.1.20",
+    "@fullcalendar/daygrid": "^6.1.20",
+    "@fullcalendar/interaction": "^6.1.20",
+    "@fullcalendar/react": "^6.1.20",
+    "@fullcalendar/timegrid": "^6.1.20",
     "@splinetool/react-spline": "^4.1.0",
     "@splinetool/runtime": "^1.12.58",
     "@supabase/supabase-js": "^2.91.1",
@@ -22,6 +27,7 @@
     "lucide-react": "^0.562.0",
     "node-fetch": "^3.3.2",
     "react": "^19.2.0",
+    "react-calendly": "^4.4.0",
     "react-dom": "^19.2.0",
     "react-ga4": "^2.1.0",
     "react-helmet-async": "^2.0.5",
