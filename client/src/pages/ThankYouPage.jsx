@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { CheckCircle, Calendar, ArrowLeft } from 'lucide-react';
 
 const REDIRECT_DELAY = 10; // seconds
 
 const ThankYouPage = () => {
     const navigate = useNavigate();
+    const location = useLocation();
     const [countdown, setCountdown] = useState(REDIRECT_DELAY);
     const [paused, setPaused] = useState(false);
 
@@ -23,7 +24,23 @@ const ThankYouPage = () => {
 
     const handleBookDemo = () => {
         setPaused(true);
-        navigate('/apply/audit');
+        // Pull any lead data passed via location.state or URL params so we can
+        // skip straight to the Calendly booking step on /apply/audit
+        const state = location.state || {};
+        const params = new URLSearchParams(location.search);
+        const email = state.email || params.get('email') || '';
+        const name  = state.name  || params.get('name')  || '';
+        const phone = state.phone || params.get('phoneno') || params.get('phone') || '';
+        const lid   = state.lid   || params.get('lid')   || '';
+
+        const qs = new URLSearchParams();
+        if (email) qs.set('email', email);
+        if (name)  qs.set('name',  name);
+        if (phone) qs.set('phoneno', phone);
+        if (lid)   qs.set('lid',   lid);
+
+        const target = qs.toString() ? `/apply/audit?${qs.toString()}` : '/apply/audit';
+        navigate(target);
     };
 
     const handleGoHome = () => {

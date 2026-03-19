@@ -9,68 +9,52 @@ import { trackLeadQualified, trackLeadDisqualified, trackBookingSuccess } from '
 import SEOHead from '../../components/layout/SEOHead';
 
 const RealEstateLeadGen = () => {
-    const [view, setView] = useState('form');
-    const [leadData, setLeadData] = useState(null);
-    const [prefillData, setPrefillData] = useState({});
     const navigate = useNavigate();
     const location = useLocation();
 
-    // Read prefill data from localStorage (saved when ad lands on /)
-    // Also falls back to URL params if user navigated directly to /apply/audit
+    // ── Direct booking shortcut ──────────────────────────────────────────────
+    // When the URL carries lead params (e.g. from a reminder email), parse them
+    // synchronously so we can render CalendarBookingView immediately on first paint.
+    const urlParams = new URLSearchParams(location.search);
+    const directEmail = urlParams.get('email') || '';
+    const directName  = urlParams.get('name')  || urlParams.get('fn') || '';
+    const directPhone = urlParams.get('phoneno') || urlParams.get('phone') || urlParams.get('ph') || '';
+    const directLid   = urlParams.get('lid') || '';
+    const isDirectBooking = !!(directEmail || directName || directPhone);
+
+    // Fire track-click once on mount when arriving via direct link
     useEffect(() => {
-        // 1. Try localStorage first (set by LandingPage on ad redirect)
+        if (!isDirectBooking) return;
+        if (directEmail) {
+            fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:4000'}/api/leads/track-click`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email: directEmail, name: directName, phone: directPhone, lid: directLid }),
+            }).catch(err => console.warn('track-click failed:', err));
+        }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
+    // ── Normal funnel state (only used when NOT a direct booking) ────────────
+    const [view, setView] = useState('form');
+    const [leadData, setLeadData] = useState(null);
+    const [prefillData, setPrefillData] = useState({});
+
+    useEffect(() => {
+        if (isDirectBooking) return; // Handled above
         const stored = localStorage.getItem('adPrefillData');
         if (stored) {
             try {
                 const parsed = JSON.parse(stored);
-                if (parsed.name || parsed.email || parsed.phone) {
-                    setPrefillData(parsed);
-                    return; // We have what we need
-                }
+                if (parsed.name || parsed.email || parsed.phone) setPrefillData(parsed);
             } catch (_) {}
         }
-
-        // 2. Fallback: check URL params (direct navigation to /apply/audit with params)
-        const params = new URLSearchParams(location.search);
-        const name = params.get('name') || params.get('fn') || '';
-        const email = params.get('email') || '';
-        const phone = params.get('phone') || params.get('phoneno') || params.get('ph') || '';
-        const lid = params.get('lid') || '';
-
-        if (name || email || phone) {
-            setPrefillData({ name, email, phone });
-
-            // Also save UTMs if present
-            const utm = {
-                utmSource: params.get('utm_source') || '',
-                utmMedium: params.get('utm_medium') || '',
-                utmCampaign: params.get('utm_campaign') || '',
-                utmContent: params.get('utm_content') || '',
-                utmTerm: params.get('utm_term') || '',
-                fbclid: params.get('fbclid') || '',
-                referrer: document.referrer || 'Direct',
-            };
-            localStorage.setItem('utmData', JSON.stringify(utm));
-
-            // 3. If user arrived via reminder email link, track the click in the DB
-            if (email) {
-                fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001'}/api/leads/track-click`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email, name, phone, lid }),
-                }).catch(err => console.warn('track-click failed (non-blocking):', err));
-            }
-        }
-    }, [location.search]);
-
-
+    }, [isDirectBooking]);
 
     // Redirect to home after success
-    React.useEffect(() => {
+    useEffect(() => {
         if (view === 'success') {
-            const timer = setTimeout(() => {
-                navigate('/');
-            }, 8000); // 8 seconds to read success info
+            const timer = setTimeout(() => navigate('/'), 8000);
             return () => clearTimeout(timer);
         }
     }, [view, navigate]);
@@ -90,6 +74,32 @@ const RealEstateLeadGen = () => {
         setView('success');
         trackBookingSuccess();
     };
+
+    // ── SHORT-CIRCUIT: render booking calendar directly if URL has lead params ─
+    if (isDirectBooking) {
+        const directLeadData = {
+            name: directName,
+            email: directEmail,
+            phone: directPhone,
+            whatsapp: directPhone,
+            id: directLid,
+        };
+        return (
+            <div className="min-h-screen bg-[#0a0a0a] text-slate-50 flex flex-col justify-center py-6 md:py-8 px-4 sm:px-6 lg:px-8 font-sans">
+                <SEOHead
+                    title="Book Your Free AI Audit | Bitlance"
+                    description="Pick a time for your personalised AI Growth Audit with the Bitlance team."
+                    canonicalUrl="https://www.bitlancetechhub.com/apply/audit"
+                />
+                <div className="max-w-[700px] mx-auto w-full">
+                    <CalendarBookingView
+                        leadData={directLeadData}
+                        onSuccess={() => navigate('/')}
+                    />
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="min-h-screen bg-[#0a0a0a] text-slate-50 flex flex-col justify-center py-6 md:py-8 px-4 sm:px-6 lg:px-8 font-sans">

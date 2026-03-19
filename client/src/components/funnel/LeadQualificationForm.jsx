@@ -466,7 +466,14 @@ const LeadQualificationForm = ({ onQualify, onDisqualify, prefillData }) => {
             }
 
             if (action === 'download') {
-                navigate('/thank-you');
+                navigate('/thank-you', {
+                    state: {
+                        email: contactData.email,
+                        name:  contactData.name,
+                        phone: contactData.phone,
+                        lid:   data?.data?.id || '',
+                    }
+                });
                 return;
             }
 
