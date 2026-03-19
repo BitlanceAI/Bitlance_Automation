@@ -9,7 +9,7 @@ import { trackFeatureUsed } from '../../lib/analytics';
 
 const STEPS = ['Promotion Type', 'Content', 'Budget & Schedule', 'Review'];
 
-const API_BASE = import.meta.env.VITE_API_URL || '';
+import API_BASE_URL from '../../config';
 
 const CampaignWizard = () => {
     const navigate = useNavigate();
@@ -63,7 +63,7 @@ const CampaignWizard = () => {
     const handleSubmit = async () => {
         setIsSubmitting(true);
         try {
-            const response = await fetch(`${API_BASE}/api/campaigns`, {
+            const response = await fetch(`${API_BASE_URL}/api/campaigns`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

@@ -3,7 +3,7 @@ import { X, Key, Globe, Loader2, CheckCircle2 } from 'lucide-react';
 import { supabase } from '../../services/supabaseClient';
 // import { toast } from 'react-hot-toast'; // Assuming it's available globally or passed
 
-const API_BASE = import.meta.env.VITE_API_URL || '';
+import API_BASE_URL from '../../config';
 
 const MetaConnectModal = ({ isOpen, onClose, onSuccess, userToken }) => {
     const [method, setMethod] = useState('oauth'); // oauth, api-key
@@ -44,7 +44,7 @@ const MetaConnectModal = ({ isOpen, onClose, onSuccess, userToken }) => {
         }
 
         try {
-            const response = await fetch(`${API_BASE}/api/meta/connect-api-key`, {
+            const response = await fetch(`${API_BASE_URL}/api/meta/connect-api-key`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

@@ -109,6 +109,18 @@ function App() {
     ReactGA.send({ hitType: 'pageview', page: location.pathname + location.search });
   }, [location]);
 
+  // Highlight "Free AI Audit" CTAs 5s after route change
+  useEffect(() => {
+    document.documentElement.classList.remove('audit-highlight');
+    const t = window.setTimeout(() => {
+      document.documentElement.classList.add('audit-highlight');
+    }, 5000);
+    return () => {
+      window.clearTimeout(t);
+      document.documentElement.classList.remove('audit-highlight');
+    };
+  }, [location.pathname, location.search]);
+
   const handleAgentSelect = (agent) => {
     trackAgentOpen(agent.title);
     if (agent.title === 'WhatsApp Broadcasting Automation') {

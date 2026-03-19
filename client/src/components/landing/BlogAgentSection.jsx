@@ -153,7 +153,7 @@ const BlogAgentSection = ({ onOpenBooking }) => {
                 >
                     <button
                         onClick={() => navigate('/features/blog-agent')}
-                        className="inline-flex items-center justify-center gap-2 bg-white text-black hover:bg-gray-200 px-8 py-3.5 rounded-full font-bold transition-all hover:scale-105 shadow-[0_0_20px_rgba(255,255,255,0.2)]"
+                        className="btn-primary inline-flex items-center justify-center gap-2 px-8 py-3.5 rounded-full font-bold transition-all hover:scale-105"
                     >
                         See the Blog Agent in Action <ArrowRight size={18} />
                     </button>

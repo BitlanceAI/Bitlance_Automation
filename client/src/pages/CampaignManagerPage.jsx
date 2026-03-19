@@ -12,7 +12,7 @@ import { useAuth } from '../context/AuthContext';
 import MetaConnectModal from '../components/meta/MetaConnectModal';
 import { toast } from 'react-hot-toast';
 
-const API_BASE = import.meta.env.VITE_API_URL || '';
+import API_BASE_URL from '../config';
 
 const CampaignManagerPage = ({ embedded = false }) => {
     const { user, session } = useAuth();
@@ -92,7 +92,7 @@ const CampaignManagerPage = ({ embedded = false }) => {
 
     const checkMetaConnection = async () => {
         try {
-            const res = await fetch(`${API_BASE}/api/meta/connection`, {
+            const res = await fetch(`${API_BASE_URL}/api/meta/connection`, {
                 headers: getAuthHeaders()
             });
             const data = await res.json();
@@ -110,7 +110,7 @@ const CampaignManagerPage = ({ embedded = false }) => {
 
     const fetchCampaigns = async () => {
         try {
-            const res = await fetch(`${API_BASE}/api/campaigns`, {
+            const res = await fetch(`${API_BASE_URL}/api/campaigns`, {
                 headers: getAuthHeaders()
             });
             const data = await res.json();
@@ -130,7 +130,7 @@ const CampaignManagerPage = ({ embedded = false }) => {
         setShowStatsModal(true);
         setStatsLoading(true);
         try {
-            const res = await fetch(`${API_BASE}/api/campaigns/${campaign.id}/stats`, {
+            const res = await fetch(`${API_BASE_URL}/api/campaigns/${campaign.id}/stats`, {
                 headers: getAuthHeaders()
             });
             const data = await res.json();
@@ -154,7 +154,7 @@ const CampaignManagerPage = ({ embedded = false }) => {
     const handleDeleteCampaign = async (id) => {
         if (!window.confirm('Are you sure you want to delete this campaign?')) return;
         try {
-            const res = await fetch(`${API_BASE}/api/campaigns/${id}`, {
+            const res = await fetch(`${API_BASE_URL}/api/campaigns/${id}`, {
                 method: 'DELETE',
                 headers: getAuthHeaders()
             });
@@ -174,7 +174,7 @@ const CampaignManagerPage = ({ embedded = false }) => {
     const handleCreateSubmit = async (e) => {
         e.preventDefault();
         try {
-            const res = await fetch(`${API_BASE}/api/campaigns`, {
+            const res = await fetch(`${API_BASE_URL}/api/campaigns`, {
                 method: 'POST',
                 headers: getAuthHeaders(),
                 body: JSON.stringify(formData)
@@ -221,7 +221,7 @@ const CampaignManagerPage = ({ embedded = false }) => {
         try {
             setGraphicsLoading(true);
             const token = session?.access_token || user?.token;
-            const res = await fetch(`${API_BASE}/api/design/jobs`, {
+            const res = await fetch(`${API_BASE_URL}/api/design/jobs`, {
                 headers: {
                     'Authorization': `Bearer ${token}`
                 }

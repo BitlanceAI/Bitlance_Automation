@@ -3,7 +3,7 @@ import React, { useState, useRef } from 'react';
 import { Upload, X, Image as ImageIcon, Film, Link, Loader2 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
-const API_BASE = import.meta.env.VITE_API_URL || '';
+import API_BASE_URL from '../../config';
 
 const FileUpload = ({ onUpload, type = 'image', currentUrl, onClear, label }) => {
     const { session, user } = useAuth();
@@ -59,7 +59,7 @@ const FileUpload = ({ onUpload, type = 'image', currentUrl, onClear, label }) =>
 
         try {
             const token = session?.access_token || user?.token;
-            const res = await fetch(`${API_BASE}/api/campaigns/upload`, {
+            const res = await fetch(`${API_BASE_URL}/api/campaigns/upload`, {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${token}`

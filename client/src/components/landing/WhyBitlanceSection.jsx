@@ -114,7 +114,7 @@ const WhyBitlanceSection = () => {
                     >
                         <Link
                             to="/apply/audit"
-                            className="inline-flex items-center gap-3 bg-white/5 border border-white/10 px-10 py-5 rounded-2xl text-white font-black uppercase tracking-widest text-base hover:bg-white/10 transition-all group relative overflow-hidden"
+                            className="audit-cta inline-flex items-center gap-3 bg-white/5 border border-white/10 px-10 py-5 rounded-2xl text-white font-black uppercase tracking-widest text-base hover:bg-white/10 transition-all group relative overflow-hidden"
                         >
                             <Sparkles className="w-6 h-6 text-indigo-400 group-hover:rotate-12 transition-transform" />
                             Claim My Free AI Audit

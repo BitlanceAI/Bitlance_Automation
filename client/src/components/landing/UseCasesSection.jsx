@@ -61,7 +61,7 @@ const UseCasesSection = () => {
                     >
                         <Link
                             to="/apply/audit"
-                            className="group relative inline-flex items-center gap-4 px-10 py-5 rounded-2xl bg-white/5 backdrop-blur-xl border border-white/10 text-white font-black uppercase tracking-[0.2em] text-sm overflow-hidden transition-all hover:scale-105 active:scale-95"
+                            className="audit-cta group relative inline-flex items-center gap-4 px-10 py-5 rounded-2xl bg-white/5 backdrop-blur-xl border border-white/10 text-white font-black uppercase tracking-[0.2em] text-sm overflow-hidden transition-all hover:scale-105 active:scale-95"
                         >
                             {/* Animated Gradient Border Overlay */}
                             <div className="absolute inset-0 p-[1px] rounded-2xl bg-gradient-to-r from-indigo-500 via-purple-500 to-indigo-500 opacity-20 group-hover:opacity-100 transition-opacity -z-10 animate-gradient-x" />

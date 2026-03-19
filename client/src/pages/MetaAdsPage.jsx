@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../services/supabaseClient';
@@ -53,7 +53,7 @@ import {
     StepReview
 } from '../components/meta';
 
-const API_BASE = import.meta.env.VITE_API_URL || '';
+import API_BASE_URL from '../config';
 
 import CampaignManagerPage from './CampaignManagerPage';
 
@@ -139,7 +139,7 @@ const MetaAdsPage = () => {
     const loadGeneratedGraphics = async () => {
         setLoadingGraphics(true);
         try {
-            const response = await fetch(`${API_BASE}/api/design/jobs`, {
+            const response = await fetch(`${API_BASE_URL}/api/design/jobs`, {
                 headers: getAuthHeaders()
             });
             const data = await response.json();
@@ -268,7 +268,7 @@ const MetaAdsPage = () => {
     const checkConnection = async () => {
         try {
             setLoading(true);
-            const response = await fetch(`${API_BASE}/api/meta/connection`, {
+            const response = await fetch(`${API_BASE_URL}/api/meta/connection`, {
                 headers: getAuthHeaders()
             });
             const data = await response.json();
@@ -309,7 +309,7 @@ const MetaAdsPage = () => {
 
     const loadCampaigns = async () => {
         try {
-            const response = await fetch(`${API_BASE}/api/meta/campaigns`, {
+            const response = await fetch(`${API_BASE_URL}/api/meta/campaigns`, {
                 headers: getAuthHeaders()
             });
             const data = await response.json();
@@ -326,7 +326,7 @@ const MetaAdsPage = () => {
 
     const loadScheduledPosts = async () => {
         try {
-            const response = await fetch(`${API_BASE}/api/meta/posts/scheduled`, {
+            const response = await fetch(`${API_BASE_URL}/api/meta/posts/scheduled`, {
                 headers: getAuthHeaders()
             });
             const data = await response.json();
@@ -343,7 +343,7 @@ const MetaAdsPage = () => {
 
     const loadInsights = async () => {
         try {
-            const response = await fetch(`${API_BASE}/api/meta/insights`, {
+            const response = await fetch(`${API_BASE_URL}/api/meta/insights`, {
                 headers: getAuthHeaders()
             });
             const data = await response.json();
@@ -360,7 +360,7 @@ const MetaAdsPage = () => {
 
     const loadAdAccountBalance = async () => {
         try {
-            const response = await fetch(`${API_BASE}/api/meta/account-balance`, {
+            const response = await fetch(`${API_BASE_URL}/api/meta/account-balance`, {
                 headers: getAuthHeaders()
             });
             const data = await response.json();
@@ -381,7 +381,7 @@ const MetaAdsPage = () => {
 
         setConnecting(true);
         try {
-            const response = await fetch(`${API_BASE}/api/meta/connect-api-key`, {
+            const response = await fetch(`${API_BASE_URL}/api/meta/connect-api-key`, {
                 method: 'POST',
                 headers: getAuthHeaders(),
                 body: JSON.stringify(apiKeyForm)
@@ -447,7 +447,7 @@ const MetaAdsPage = () => {
         if (authToken) authTokenRef.current = authToken;
         try {
             console.log('[Meta OAuth] Completing connection with auth token:', authToken ? 'present' : 'missing');
-            const response = await fetch(`${API_BASE}/api/meta/connect-api-key`, {
+            const response = await fetch(`${API_BASE_URL}/api/meta/connect-api-key`, {
                 method: 'POST',
                 headers: getAuthHeaders(authToken),
                 body: JSON.stringify({ accessToken: providerToken })
@@ -475,7 +475,7 @@ const MetaAdsPage = () => {
         if (!confirm('Are you sure you want to disconnect your Meta account?')) return;
 
         try {
-            const response = await fetch(`${API_BASE}/api/meta/disconnect`, {
+            const response = await fetch(`${API_BASE_URL}/api/meta/disconnect`, {
                 method: 'DELETE',
                 headers: getAuthHeaders()
             });
@@ -497,7 +497,7 @@ const MetaAdsPage = () => {
         setRefreshing(true);
         try {
             await Promise.all([
-                fetch(`${API_BASE}/api/meta/refresh-accounts`, {
+                fetch(`${API_BASE_URL}/api/meta/refresh-accounts`, {
                     method: 'POST',
                     headers: getAuthHeaders()
                 }),
@@ -538,7 +538,7 @@ const MetaAdsPage = () => {
                 const headers = getAuthHeaders();
                 if (headers['Content-Type']) delete headers['Content-Type'];
 
-                const uploadRes = await fetch(`${API_BASE}/api/meta/posts/upload-media`, {
+                const uploadRes = await fetch(`${API_BASE_URL}/api/meta/posts/upload-media`, {
                     method: 'POST',
                     headers: headers,
                     body: formData
@@ -560,7 +560,7 @@ const MetaAdsPage = () => {
             const localDate = new Date(scheduleFormData.scheduledTime);
             const utcScheduledTime = localDate.toISOString();
 
-            const response = await fetch(`${API_BASE}/api/meta/posts/schedule`, {
+            const response = await fetch(`${API_BASE_URL}/api/meta/posts/schedule`, {
                 method: 'POST',
                 headers: getAuthHeaders(),
                 body: JSON.stringify({
@@ -604,7 +604,7 @@ const MetaAdsPage = () => {
         if (!confirm('Delete this scheduled post?')) return;
 
         try {
-            await fetch(`${API_BASE}/api/meta/posts/${postId}`, {
+            await fetch(`${API_BASE_URL}/api/meta/posts/${postId}`, {
                 method: 'DELETE',
                 headers: getAuthHeaders()
             });
@@ -1321,7 +1321,7 @@ const MetaAdsPage = () => {
                         onLinkChange={(linkUrl) => updateScheduleForm({ linkUrl })}
                         onMediaUpdate={(updates) => updateScheduleForm(updates)}
                         getAuthHeaders={getAuthHeaders}
-                        apiBase={API_BASE}
+                        apiBase={API_BASE_URL}
                     />
                 )}
 

@@ -19,7 +19,7 @@ const FinalCtaSection = ({ onOpenBooking }) => {
                 <div className="flex flex-col items-center gap-8">
                     <button
                         onClick={onOpenBooking}
-                        className="px-12 py-5 rounded-full bg-white text-black font-black text-xl hover:bg-gray-100 transition-all shadow-2xl transform hover:-translate-y-1 w-full sm:w-auto uppercase tracking-tighter"
+                        className="audit-cta btn-primary px-12 py-5 rounded-full font-black text-xl transition-all shadow-2xl transform hover:-translate-y-1 w-full sm:w-auto uppercase tracking-tighter"
                     >
                         Claim My Free AI Audit
                     </button>

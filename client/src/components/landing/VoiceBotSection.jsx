@@ -46,7 +46,7 @@ const VoiceBotSection = ({ onOpenBooking }) => {
                                 transition={{ duration: 0.5, delay: 0.2 }}
                                 viewport={{ once: true }}
                                 onClick={() => navigate('/features/voice-bot')}
-                                className="inline-flex items-center justify-center gap-2 bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white px-8 py-4 rounded-full font-bold transition-all hover:scale-105 shadow-[0_0_20px_rgba(139,92,246,0.3)]"
+                                className="btn-primary inline-flex items-center justify-center gap-2 px-8 py-4 rounded-full font-bold transition-all hover:scale-105"
                             >
                                 Get Started <ArrowRight size={18} />
                             </motion.button>
@@ -101,9 +101,10 @@ const VoiceBotSection = ({ onOpenBooking }) => {
                                     <video 
                                         src="/ai_voice_agent.mp4" 
                                         autoPlay 
-                                        muted 
+                                        unmuted 
                                         loop 
                                         playsInline
+                                        controls
                                         className="w-full h-full object-cover"
                                     />
                                     

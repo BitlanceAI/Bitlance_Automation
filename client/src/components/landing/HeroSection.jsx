@@ -132,7 +132,7 @@ const HeroSection = ({ onOpenBooking }) => {
                     <div className="flex flex-col sm:flex-row gap-4 items-center w-full sm:w-auto z-20">
                         <button
                             onClick={onOpenBooking}
-                            className="group relative px-8 py-4 rounded-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-bold text-lg shadow-xl shadow-indigo-500/30 overflow-hidden transition-all hover:scale-105 w-full sm:w-auto"
+                            className="audit-cta btn-primary group relative px-8 py-4 rounded-full font-bold text-lg overflow-hidden transition-all duration-300 hover:scale-105 hover:-translate-y-0.5 w-full sm:w-auto"
                         >
                             <span className="relative z-10 flex items-center justify-center gap-2">
                                 Get Your Free AI Audit <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
