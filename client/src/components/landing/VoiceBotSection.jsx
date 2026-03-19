@@ -101,9 +101,10 @@ const VoiceBotSection = ({ onOpenBooking }) => {
                                     <video 
                                         src="/ai_voice_agent.mp4" 
                                         autoPlay 
-                                        muted 
+                                        unmuted 
                                         loop 
                                         playsInline
+                                        controls
                                         className="w-full h-full object-cover"
                                     />
                                     
