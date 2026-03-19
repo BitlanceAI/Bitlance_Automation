@@ -1,7 +1,9 @@
 import React, { useState, useCallback, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Activity, IndianRupee, PieChart, Building, ShieldCheck } from 'lucide-react';
+import { Activity, IndianRupee, PieChart, Building, ShieldCheck, User, Mail, Phone, Loader2, ArrowRight } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import API_BASE_URL from '../../config.js';
 
 const QA_STEPS = [
     {
@@ -42,13 +44,13 @@ const QA_STEPS = [
 ];
 
 const OPTION_EMOJIS = {
-    'E-commerce': ['🛍️', 'WOW!', '�', '✨', 'Nice!'],
+    'E-commerce': ['🛍️', 'WOW!', '🎯', '✨', 'Nice!'],
     'B2B SaaS': ['🚀', 'LFG!', '⚡', '🌟', 'Epic!'],
     'Agency': ['🤝', 'YES!', '🏆', '✨', 'Solid!'],
     'Professional Services': ['💼', 'Smart!', '📊', '✨', 'Pro!'],
-    'Real Estate': ['�', 'WOW!', '🔑', '✨', 'Nice!'],
+    'Real Estate': ['🏠', 'WOW!', '🔑', '✨', 'Nice!'],
     'Other': ['✨', 'Ooh!', '💡', '🌟', 'Cool!'],
-    'Below ₹1L': ['🌱', 'Start!', '🌿', '�', 'Go!'],
+    'Below ₹1L': ['🌱', 'Start!', '🌿', '📊', 'Go!'],
     '₹1–5L': ['📈', 'Nice!', '💹', '⬆️', 'Up!'],
     '₹5–15L': ['🔥', 'HOT!', '🔥', '💰', 'Fire!'],
     '₹15L+': ['💰', 'WOW!', '🏆', '👑', 'Elite!'],
@@ -59,11 +61,10 @@ const OPTION_EMOJIS = {
     'HubSpot / Salesforce': ['🏢', 'Nice!', '📊', '✅', 'Pro!'],
     'GoHighLevel / ActiveCampaign': ['🎯', 'Fire!', '🔥', '🚀', 'LFG!'],
     'Zendesk / Intercom': ['💬', 'Smart!', '🤖', '✨', 'Cool!'],
-    'Manual / Spreadsheets': ['�', 'WOW!', '�', '⚡', 'Big!'],
+    'Manual / Spreadsheets': ['📋', 'WOW!', '📊', '⚡', 'Big!'],
     'Yes, I am a decision maker': ['👑', 'YES!', '🚀', '🌟', 'Boss!'],
     'No, taking info for my team': ['📝', 'Sure!', '📋', '✅', 'OK!'],
 };
-
 
 const OPTION_FEEDBACK = {
     'E-commerce': 'High-growth sector! AI can drastically cut your cart abandonment.',
@@ -180,7 +181,6 @@ function ToastPortal({ toast }) {
                         maxWidth: '90vw',
                     }}
                 >
-                    {/* Outer glow ring */}
                     <div style={{
                         background: 'linear-gradient(135deg, rgba(99,102,241,0.18) 0%, rgba(168,85,247,0.12) 100%)',
                         border: '1px solid rgba(99,102,241,0.4)',
@@ -199,7 +199,6 @@ function ToastPortal({ toast }) {
                             padding: '10px 20px 10px 14px',
                             whiteSpace: 'nowrap',
                         }}>
-                            {/* Animated dot */}
                             <motion.div
                                 animate={{ scale: [1, 1.4, 1] }}
                                 transition={{ repeat: Infinity, duration: 1.2, ease: 'easeInOut' }}
@@ -223,7 +222,6 @@ function ToastPortal({ toast }) {
                             </span>
                         </div>
                     </div>
-                    {/* Progress bar */}
                     <motion.div
                         initial={{ scaleX: 1 }}
                         animate={{ scaleX: 0 }}
@@ -246,20 +244,182 @@ function ToastPortal({ toast }) {
     );
 }
 
+/* ─── Contact Info Step (now FIRST step) ─── */
+function ContactInfoStep({ prefillData, onNext, loading }) {
+    const [form, setForm] = useState({
+        name: prefillData?.name || '',
+        email: prefillData?.email || '',
+        phone: prefillData?.phone || '',
+    });
+    const [errors, setErrors] = useState({});
+
+    const validate = () => {
+        const e = {};
+        if (!form.name.trim()) e.name = 'Name is required';
+        if (!form.email.trim() || !/^\S+@\S+\.\S+$/.test(form.email)) e.email = 'Valid email is required';
+        if (!form.phone.trim()) e.phone = 'Phone number is required';
+        setErrors(e);
+        return Object.keys(e).length === 0;
+    };
+
+    const handleChange = (field, value) => {
+        setForm(prev => ({ ...prev, [field]: value }));
+        if (errors[field]) setErrors(prev => ({ ...prev, [field]: null }));
+    };
+
+    const inputClass = (field) =>
+        `w-full bg-[#121212] border ${errors[field] ? 'border-red-500' : 'border-white/10'} rounded-xl px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500/50 transition-all font-medium placeholder:text-slate-600`;
+
+    return (
+        <div className="p-6 md:p-8">
+            <div className="mb-6">
+                <span className="text-[10px] font-bold text-indigo-400 tracking-widest uppercase">Step 1 of 6</span>
+                <h2 className="text-2xl font-extrabold text-white leading-tight mt-1 mb-1">
+                    Let's personalise your audit
+                </h2>
+                <p className="text-sm text-slate-400">Quick intro — so we can tailor the next questions to your business.</p>
+            </div>
+
+            <div className="space-y-4">
+                {/* Name */}
+                <div>
+                    <label className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
+                        <User className="w-3.5 h-3.5" /> Full Name
+                    </label>
+                    <input
+                        type="text"
+                        placeholder="Jane Doe"
+                        value={form.name}
+                        onChange={e => handleChange('name', e.target.value)}
+                        className={inputClass('name')}
+                    />
+                    {errors.name && <p className="text-red-400 text-xs mt-1">{errors.name}</p>}
+                </div>
+
+                {/* Email */}
+                <div>
+                    <label className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
+                        <Mail className="w-3.5 h-3.5" /> Work Email
+                    </label>
+                    <input
+                        type="email"
+                        placeholder="jane@company.com"
+                        value={form.email}
+                        onChange={e => handleChange('email', e.target.value)}
+                        className={inputClass('email')}
+                    />
+                    {errors.email && <p className="text-red-400 text-xs mt-1">{errors.email}</p>}
+                </div>
+
+                {/* Phone */}
+                <div>
+                    <label className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
+                        <Phone className="w-3.5 h-3.5" /> Phone / WhatsApp
+                    </label>
+                    <input
+                        type="tel"
+                        placeholder="+91 98765 43210"
+                        value={form.phone}
+                        onChange={e => handleChange('phone', e.target.value)}
+                        className={inputClass('phone')}
+                    />
+                    {errors.phone && <p className="text-red-400 text-xs mt-1">{errors.phone}</p>}
+                </div>
+
+                {/* Continue CTA */}
+                <button
+                    onClick={() => { if (validate()) onNext(form); }}
+                    disabled={loading}
+                    className="w-full flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed text-white px-6 py-4 rounded-xl font-bold transition-all mt-2 shadow-[0_0_30px_-5px_rgba(99,102,241,0.5)]"
+                >
+                    {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Start My Free Audit →'}
+                </button>
+
+                <p className="text-center text-[11px] text-slate-600 mt-2">
+                    🔒 Your information is 100% secure. No spam ever.
+                </p>
+            </div>
+        </div>
+    );
+}
+
+/* ─── Success Choice Step (New) ─── */
+function SuccessStep({ onChoice, loading }) {
+    return (
+        <div className="p-6 md:p-8 text-center">
+            <div className="mb-8">
+                <div className="w-16 h-16 bg-emerald-500/20 rounded-full flex items-center justify-center mx-auto mb-4 border border-emerald-500/30">
+                    <ShieldCheck className="w-8 h-8 text-emerald-400" />
+                </div>
+                <h2 className="text-2xl md:text-3xl font-extrabold text-white leading-tight mb-2">
+                    Your Audit is Ready!
+                </h2>
+                <p className="text-slate-400 text-sm max-w-xs mx-auto">
+                    We've analyzed your responses. How would you like to receive your results?
+                </p>
+            </div>
+
+            <div className="space-y-4">
+                {/* Book Option */}
+                <button
+                    onClick={() => onChoice('book')}
+                    disabled={loading}
+                    className="w-full group relative overflow-hidden bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white px-6 py-5 rounded-2xl font-bold transition-all shadow-[0_0_40px_-10px_rgba(99,102,241,0.5)]"
+                >
+                    <div className="relative z-10 flex items-center justify-center gap-2">
+                        <span>Book My Free AI Audit Call</span>
+                        <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                    </div>
+                </button>
+
+                <div className="relative py-2">
+                    <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-white/5"></div></div>
+                    <div className="relative flex justify-center text-xs uppercase"><span className="bg-[#0A0A0A] px-2 text-slate-500 font-bold tracking-widest">or</span></div>
+                </div>
+
+                {/* Download Option */}
+                <button
+                    onClick={() => onChoice('download')}
+                    disabled={loading}
+                    className="w-full flex items-center justify-center gap-2 bg-white/[0.03] hover:bg-white/[0.08] border border-white/10 text-white px-6 py-4 rounded-2xl font-bold transition-all"
+                >
+                    {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : (
+                        <>
+                            <Activity className="w-5 h-5 text-indigo-400" />
+                            Just Download the Blueprint PDF
+                        </>
+                    )}
+                </button>
+
+                <p className="text-[11px] text-slate-600 pt-2 italic">
+                    Majority of our clients choose the Audit Call for 10x faster results.
+                </p>
+            </div>
+        </div>
+    );
+}
+
 /* ─── Main Form Component ─── */
-const LeadQualificationForm = ({ onQualify, onDisqualify }) => {
+const LeadQualificationForm = ({ onQualify, onDisqualify, prefillData }) => {
     const [currentStep, setCurrentStep] = useState(0);
+    const [contactData, setContactData] = useState(null);
     const [answers, setAnswers] = useState({});
+    const [showSuccessStep, setShowSuccessStep] = useState(false);
     const [loading, setLoading] = useState(false);
+    const [lid, setLid] = useState(null); // Track lead ID to prevent duplicates
     const [particles, setParticles] = useState([]);
     const [toast, setToast] = useState(null);
     const toastTimerRef = useRef(null);
     const particleTimerRef = useRef(null);
 
-    const stepInfo = QA_STEPS[currentStep];
-    const isLastStep = currentStep === QA_STEPS.length - 1;
+    const totalSteps = QA_STEPS.length + 1; // 1 contact + 5 QA
+    const isContactStep = currentStep === 0;
+    const qaStepIndex = currentStep - 1; // which QA step we're on (0-indexed)
+    const stepInfo = !isContactStep ? QA_STEPS[qaStepIndex] : null;
+    const isLastQAStep = currentStep === QA_STEPS.length; // step 5 = last QA
 
-    // Cleanup timers on unmount
+    const navigate = useNavigate();
+
     useEffect(() => {
         return () => {
             if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
@@ -267,11 +427,17 @@ const LeadQualificationForm = ({ onQualify, onDisqualify }) => {
         };
     }, []);
 
+    // ─── Step 0: handle contact form submission → move to QA ───
+    const handleContactNext = (data) => {
+        setContactData(data);
+        setCurrentStep(1);
+    };
+
+    // ─── Steps 1-5: handle QA option selection ───
     const handleSelectOption = useCallback((value, e) => {
         const newAnswers = { ...answers, [stepInfo.id]: value };
         setAnswers(newAnswers);
 
-        // ── Spawn livestream-style emoji burst at click position ──
         const clickX = e?.clientX ?? window.innerWidth / 2;
         const clickY = e?.clientY ?? window.innerHeight / 2;
         const emojiSet = OPTION_EMOJIS[value] ?? ['✨', '🌟', '✨', '⚡'];
@@ -281,15 +447,15 @@ const LeadQualificationForm = ({ onQualify, onDisqualify }) => {
             emoji,
             x: clickX,
             y: clickY,
-            dx: (Math.random() - 0.5) * 120,           // wider horizontal spread
-            rise: 130 + Math.random() * 80,             // varied rise height
-            initialScale: 0.5 + Math.random() * 0.4,   // varied starting size
-            peakScale: 1.4 + Math.random() * 1.0,      // varied peak size
-            size: `${1.3 + Math.random() * 0.8}rem`,   // font-size variation
+            dx: (Math.random() - 0.5) * 120,
+            rise: 130 + Math.random() * 80,
+            initialScale: 0.5 + Math.random() * 0.4,
+            peakScale: 1.4 + Math.random() * 1.0,
+            size: `${1.3 + Math.random() * 0.8}rem`,
             initialRotate: (Math.random() - 0.5) * 20,
-            finalRotate: (Math.random() - 0.5) * 40,   // gentle spin while rising
-            duration: 0.85 + Math.random() * 0.4,      // varied speed
-            delay: i * 0.06,                            // stagger
+            finalRotate: (Math.random() - 0.5) * 40,
+            duration: 0.85 + Math.random() * 0.4,
+            delay: i * 0.06,
         }));
         setParticles(prev => [...prev, ...newParticles]);
 
@@ -298,134 +464,240 @@ const LeadQualificationForm = ({ onQualify, onDisqualify }) => {
             setParticles(prev => prev.filter(p => !newParticles.some(np => np.id === p.id)));
         }, 1400);
 
-        // ── Show toast (no emoji inside — just the text message) ──
         const text = OPTION_FEEDBACK[value] ?? 'Great choice! Moving forward...';
         setToast({ id: Date.now(), text });
 
         if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
         toastTimerRef.current = setTimeout(() => setToast(null), 5000);
 
-        // ── Advance step ──
-        setTimeout(() => {
-            if (!isLastStep) {
-                setCurrentStep(prev => prev + 1);
+        setTimeout(async () => {
+            if (isLastQAStep) {
+                const spend = newAnswers.marketing_spend;
+                const decisionMaker = newAnswers.decision_maker;
+                const isDisqualified = spend === 'Below ₹1L' || decisionMaker === 'No, taking info for my team';
+
+                if (isDisqualified) {
+                    setLoading(true);
+                    await saveLead(newAnswers, 'disqualified');
+                    setLoading(false);
+                    onDisqualify();
+                } else {
+                    // Temporarily save as 'pending' so we capture the data even if they drop off
+                    await saveLead(newAnswers, 'pending');
+                    setShowSuccessStep(true);
+                }
             } else {
-                submitForm(newAnswers);
+                setCurrentStep(prev => prev + 1);
             }
         }, 650);
-    }, [answers, isLastStep, stepInfo]);
+    }, [answers, isLastQAStep, stepInfo, onDisqualify, contactData]);
 
-    const submitForm = (finalAnswers) => {
-        setLoading(true);
-        setTimeout(() => {
-            setLoading(false);
-            const spend = finalAnswers.marketing_spend;
-            const decisionMaker = finalAnswers.decision_maker;
-            if (spend === 'Below ₹1L' || decisionMaker === 'No, taking info for my team') {
-                onDisqualify();
-            } else {
-                onQualify(finalAnswers);
-            }
-        }, 1200);
+    const handleChoice = async (choice) => {
+        if (choice === 'download') {
+            await handleDownload();
+        } else {
+            // Finalize as 'book'
+            await saveLead(answers, 'book');
+        }
     };
+
+    // ─── Save lead to DB — used for both qualified and disqualified ───
+    const saveLead = async (finalAnswers, action) => {
+        setLoading(true);
+        try {
+            const storedUtm = JSON.parse(localStorage.getItem('utmData') || '{}');
+            const payload = {
+                name:  contactData?.name,
+                email: contactData?.email,
+                phone: contactData?.phone,
+                businessType: finalAnswers.industry_focus,
+                monthlyBudget: finalAnswers.marketing_spend,
+                readyToAutomate: finalAnswers.decision_maker === 'Yes, I am a decision maker' ? 'yes' : 'no',
+                action,
+                ...storedUtm,
+            };
+
+            const res = await fetch(`${API_BASE_URL}/api/leads`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload),
+            });
+            const data = await res.json();
+            
+            if (data?.data?.id) {
+                setLid(data.data.id);
+            }
+
+            if (typeof window !== 'undefined' && window.fbq) {
+                window.fbq('track', 'Lead');
+            }
+
+            if (action !== 'disqualified' && action !== 'pending') {
+                const fullLeadData = {
+                    ...finalAnswers,
+                    ...contactData,
+                    id: data?.data?.id || lid,
+                    action,
+                };
+                onQualify(fullLeadData);
+            }
+
+            return data?.data?.id; 
+        } catch (err) {
+            console.error('Lead submission error:', err);
+            if (action !== 'disqualified') {
+                onQualify({ ...finalAnswers, ...contactData, action });
+            }
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    // ─── Download flow (still available at the end if user opts in) ───
+    const handleDownload = async () => {
+        setLoading(true);
+        try {
+            const storedUtm = JSON.parse(localStorage.getItem('utmData') || '{}');
+            const payload = {
+                name:  contactData?.name,
+                email: contactData?.email,
+                phone: contactData?.phone,
+                businessType: answers.industry_focus,
+                monthlyBudget: answers.marketing_spend,
+                readyToAutomate: 'no',
+                action: 'download',
+                ...storedUtm,
+            };
+            const res = await fetch(`${API_BASE_URL}/api/leads`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload),
+            });
+            const data = await res.json();
+            navigate('/thank-you', {
+                state: {
+                    email: contactData?.email,
+                    name:  contactData?.name,
+                    phone: contactData?.phone,
+                    lid:   data?.data?.id || '',
+                }
+            });
+        } catch (err) {
+            console.error('Download flow error:', err);
+            navigate('/thank-you');
+        } finally {
+            setLoading(false);
+        }
+    };
+
 
     return (
         <>
-            {/* These render directly into document.body via portals */}
             <EmojiParticles particles={particles} />
             <ToastPortal toast={toast} />
 
             <div className="w-full">
-                <div className="p-6 md:p-8">
-                    {/* Step Header */}
-                    <div className="mb-5">
-                        <div className="flex items-center justify-between mb-5">
-                            <span className="text-[10px] font-bold text-indigo-400 tracking-widest uppercase">
-                                Step {currentStep + 1} of {QA_STEPS.length}
-                            </span>
-                            <div className="flex gap-1.5">
-                                {QA_STEPS.map((_, i) => (
-                                    <div
-                                        key={i}
-                                        className={`h-1.5 rounded-full transition-all duration-300 ${i === currentStep ? 'w-6 bg-indigo-500' : 'w-3 bg-white/10'
-                                            }`}
-                                    />
-                                ))}
+                {showSuccessStep ? (
+                    <SuccessStep
+                        onChoice={handleChoice}
+                        loading={loading}
+                    />
+                ) : isContactStep ? (
+                    <ContactInfoStep
+                        prefillData={prefillData}
+                        onNext={handleContactNext}
+                        loading={loading}
+                    />
+                ) : (
+                    <div className="p-6 md:p-8">
+                        {/* Step Header */}
+                        <div className="mb-5">
+                            <div className="flex items-center justify-between mb-5">
+                                <span className="text-[10px] font-bold text-indigo-400 tracking-widest uppercase">
+                                    Step {currentStep + 1} of {totalSteps}
+                                </span>
+                                <div className="flex gap-1.5">
+                                    {Array.from({ length: totalSteps }).map((_, i) => (
+                                        <div
+                                            key={i}
+                                            className={`h-1.5 rounded-full transition-all duration-300 ${i === currentStep ? 'w-6 bg-indigo-500' : i < currentStep ? 'w-3 bg-indigo-500/40' : 'w-3 bg-white/10'}`}
+                                        />
+                                    ))}
+                                </div>
                             </div>
-                        </div>
 
-                        <AnimatePresence mode="wait">
-                            <motion.div
-                                key={currentStep + '-header'}
-                                initial={{ opacity: 0, y: 6 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                exit={{ opacity: 0, y: -6 }}
-                                transition={{ duration: 0.2 }}
-                            >
-                                <h2 className="text-2xl font-extrabold text-white leading-tight mb-1.5">
-                                    {currentStep === 0 ? "Let's customize your growth plan." : stepInfo.question}
-                                </h2>
-                                <p className="text-sm text-slate-400">
-                                    {currentStep === 0 ? stepInfo.question : stepInfo.description}
-                                </p>
-                            </motion.div>
-                        </AnimatePresence>
-                    </div>
-
-                    {loading ? (
-                        <div className="py-16 text-center">
-                            <div className="w-10 h-10 border-4 border-white/10 border-t-indigo-500 rounded-full animate-spin mx-auto mb-4" />
-                            <h3 className="text-lg font-bold text-white mb-2">Analyzing Responses...</h3>
-                            <p className="text-sm text-slate-400">Checking eligibility for the AI Audit</p>
-                        </div>
-                    ) : (
-                        <div>
                             <AnimatePresence mode="wait">
                                 <motion.div
-                                    key={currentStep}
-                                    initial={{ opacity: 0, x: 20 }}
-                                    animate={{ opacity: 1, x: 0 }}
-                                    exit={{ opacity: 0, x: -20 }}
-                                    transition={{ duration: 0.22 }}
-                                    className="flex flex-col gap-2.5"
+                                    key={currentStep + '-header'}
+                                    initial={{ opacity: 0, y: 6 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    exit={{ opacity: 0, y: -6 }}
+                                    transition={{ duration: 0.2 }}
                                 >
-                                    {stepInfo.options.map((option, idx) => {
-                                        const isSelected = answers[stepInfo.id] === option;
-                                        return (
-                                            <button
-                                                key={idx}
-                                                onClick={(e) => handleSelectOption(option, e)}
-                                                className={`w-full px-4 py-3 text-left rounded-xl border transition-all duration-200 flex items-center gap-3 group ${isSelected
-                                                    ? 'border-indigo-500 bg-indigo-500/10'
-                                                    : 'border-white/10 bg-[#121212] hover:bg-[#1a1a1a] hover:border-white/20'
-                                                    }`}
-                                            >
-                                                <div className={`flex-shrink-0 w-4 h-4 rounded-full border-2 flex items-center justify-center transition-colors ${isSelected ? 'border-indigo-500' : 'border-slate-600 group-hover:border-slate-400'
-                                                    }`}>
-                                                    {isSelected && <div className="w-2 h-2 rounded-full bg-indigo-500" />}
-                                                </div>
-                                                <span className={`font-medium text-[15px] ${isSelected ? 'text-white' : 'text-slate-300'}`}>
-                                                    {option}
-                                                </span>
-                                            </button>
-                                        );
-                                    })}
+                                    <h2 className="text-2xl font-extrabold text-white leading-tight mb-1.5">
+                                        {currentStep === 1 ? "Let's customize your growth plan." : stepInfo.question}
+                                    </h2>
+                                    <p className="text-sm text-slate-400">
+                                        {currentStep === 1 ? stepInfo.question : stepInfo.description}
+                                    </p>
                                 </motion.div>
                             </AnimatePresence>
-
-                            {currentStep > 0 && (
-                                <div className="mt-5 pt-4 border-t border-white/5">
-                                    <button
-                                        onClick={() => setCurrentStep(prev => prev - 1)}
-                                        className="text-xs font-medium text-slate-500 hover:text-white transition-colors"
-                                    >
-                                        ← Back to previous question
-                                    </button>
-                                </div>
-                            )}
                         </div>
-                    )}
-                </div>
+
+                        {loading ? (
+                            <div className="py-16 text-center">
+                                <div className="w-10 h-10 border-4 border-white/10 border-t-indigo-500 rounded-full animate-spin mx-auto mb-4" />
+                                <h3 className="text-lg font-bold text-white mb-2">Analyzing Responses...</h3>
+                                <p className="text-sm text-slate-400">Checking eligibility for the AI Audit</p>
+                            </div>
+                        ) : (
+                            <div>
+                                <AnimatePresence mode="wait">
+                                    <motion.div
+                                        key={currentStep}
+                                        initial={{ opacity: 0, x: 20 }}
+                                        animate={{ opacity: 1, x: 0 }}
+                                        exit={{ opacity: 0, x: -20 }}
+                                        transition={{ duration: 0.22 }}
+                                        className="flex flex-col gap-2.5"
+                                    >
+                                        {stepInfo.options.map((option, idx) => {
+                                            const isSelected = answers[stepInfo.id] === option;
+                                            return (
+                                                <button
+                                                    key={idx}
+                                                    onClick={(e) => handleSelectOption(option, e)}
+                                                    className={`w-full px-4 py-3 text-left rounded-xl border transition-all duration-200 flex items-center gap-3 group ${isSelected
+                                                        ? 'border-indigo-500 bg-indigo-500/10'
+                                                        : 'border-white/10 bg-[#121212] hover:bg-[#1a1a1a] hover:border-white/20'
+                                                        }`}
+                                                >
+                                                    <div className={`flex-shrink-0 w-4 h-4 rounded-full border-2 flex items-center justify-center transition-colors ${isSelected ? 'border-indigo-500' : 'border-slate-600 group-hover:border-slate-400'}`}>
+                                                        {isSelected && <div className="w-2 h-2 rounded-full bg-indigo-500" />}
+                                                    </div>
+                                                    <span className={`font-medium text-[15px] ${isSelected ? 'text-white' : 'text-slate-300'}`}>
+                                                        {option}
+                                                    </span>
+                                                </button>
+                                            );
+                                        })}
+                                    </motion.div>
+                                </AnimatePresence>
+
+                                {currentStep > 1 && (
+                                    <div className="mt-5 pt-4 border-t border-white/5">
+                                        <button
+                                            onClick={() => setCurrentStep(prev => prev - 1)}
+                                            className="text-xs font-medium text-slate-500 hover:text-white transition-colors"
+                                        >
+                                            ← Back to previous question
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
+                        )}
+                    </div>
+                )}
             </div>
         </>
     );

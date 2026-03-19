@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Navigate, useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Navigate, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import HeroSection from '../components/landing/HeroSection';
 import ProblemSection from '../components/landing/ProblemSection';
@@ -19,11 +19,47 @@ import { ElegantShape } from '../components/ui/shape-landing-hero';
 import SEOHead from '../components/layout/SEOHead';
 import LoginReminderPopup from '../components/ui/LoginReminderPopup';
 import BitlanceChatbot from '../components/ui/BitlanceChatbot';
-import VideoModal from '../components/ui/VideoModal';
 
 const LandingPage = () => {
     const { user, loading } = useAuth();
     const navigate = useNavigate();
+    const location = useLocation();
+
+    // Capture ad redirect params (name, email, phone, UTMs) and persist to localStorage
+    // so they're available when the user navigates to /apply/audit later
+    useEffect(() => {
+        const params = new URLSearchParams(location.search);
+        const hasTrackingParam = ['name', 'fn', 'email', 'phone', 'phoneno', 'ph',
+            'utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term', 'fbclid'
+        ].some(k => params.has(k));
+
+        if (hasTrackingParam) {
+            // Save contact prefill data
+            const contact = {
+                name: params.get('name') || params.get('fn') || '',
+                email: params.get('email') || '',
+                phone: params.get('phone') || params.get('phoneno') || params.get('ph') || '',
+            };
+            localStorage.setItem('adPrefillData', JSON.stringify(contact));
+
+            // Save UTM data
+            const utm = {
+                utmSource: params.get('utm_source') || '',
+                utmMedium: params.get('utm_medium') || '',
+                utmCampaign: params.get('utm_campaign') || '',
+                utmContent: params.get('utm_content') || '',
+                utmTerm: params.get('utm_term') || '',
+                fbclid: params.get('fbclid') || '',
+                referrer: document.referrer || 'Direct',
+            };
+            localStorage.setItem('utmData', JSON.stringify(utm));
+
+            console.log('[Landing] Ad params saved:', { contact, utm });
+        } else if (!localStorage.getItem('utmData')) {
+            // Fallback: at least save the referrer
+            localStorage.setItem('utmData', JSON.stringify({ referrer: document.referrer || 'Direct' }));
+        }
+    }, [location.search]);
 
     // Redirect if logged in
     if (loading) return null;
@@ -34,7 +70,6 @@ const LandingPage = () => {
     };
 
     const [isChatbotOpen, setIsChatbotOpen] = useState(false);
-    const [isVideoModalOpen, setIsVideoModalOpen] = useState(false);
 
     return (
         <div className="relative min-h-screen w-full overflow-hidden bg-[#030303] text-white">
@@ -91,10 +126,8 @@ const LandingPage = () => {
 
             {/* Content Wrapper */}
             <div className="relative z-10">
-                <HeroSection 
-                    onOpenBooking={handleOpenBooking} 
-                    onOpenVideo={() => setIsVideoModalOpen(true)}
-                />
+                <HeroSection onOpenBooking={handleOpenBooking} />
+
                 <ProblemSection />
                 <WhyBitlanceSection />
                 <TestimonialsSection />
@@ -112,11 +145,7 @@ const LandingPage = () => {
             <LoginReminderPopup chatbotOpen={isChatbotOpen} />
             <BitlanceChatbot isOpen={isChatbotOpen} onToggle={setIsChatbotOpen} />
             
-            <VideoModal 
-                isOpen={isVideoModalOpen} 
-                onClose={() => setIsVideoModalOpen(false)} 
-                videoSrc="/why_bitlance.mp4" 
-            />
+
         </div>
     );
 };

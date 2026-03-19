@@ -1,65 +1,79 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { AlertCircle, CheckCircle2 } from 'lucide-react';
+import { InlineWidget, useCalendlyEventListener } from 'react-calendly';
 import API_BASE_URL from '../../config.js';
+
+const CALENDLY_URL = "https://calendly.com/bitlanceai/task-regarding";
 
 const CalendarBookingView = ({ leadData, onSuccess }) => {
     const [bookingComplete, setBookingComplete] = useState(false);
     const [loading, setLoading] = useState(false);
 
-    // Replace this with your actual Calendly URL
-    const CALENDLY_URL = "https://calendly.com/bitlanceai/task-regarding";
+    useCalendlyEventListener({
+        onEventScheduled: async (e) => {
+            console.log('📅 [CalendarBookingView] calendly.event_scheduled fired!');
+            console.log('📅 [CalendarBookingView] Raw payload:', e.data.payload);
 
-    useEffect(() => {
-        // Listen for messages from the Calendly iframe to know when a booking is completed
-        const handleCalendlyEvent = async (e) => {
-            if (e.data.event && e.data.event === 'calendly.event_scheduled') {
-                console.log("Calendly booking completed:", e.data.payload);
+            const eventUri = e.data?.payload?.event?.uri || null;
+            const inviteeUri = e.data?.payload?.invitee?.uri || null;
+            const email = leadData?.email || null;
 
-                // We don't have the exact selected time/date from the Calendly widget payload easily
-                // depending on the Calendly plan/API, but we know it was booked.
-                // We'll set a default next-day time for the nurture sequence trigger 
-                // or just trigger the immediate emails.
-                const simulatedDate = new Date();
-                simulatedDate.setDate(simulatedDate.getDate() + 1);
+            console.log('[CalendarBookingView] eventUri:', eventUri);
+            console.log('[CalendarBookingView] inviteeUri:', inviteeUri);
+            console.log('[CalendarBookingView] leadData.email:', email);
+            console.log('[CalendarBookingView] leadData.id:', leadData?.id);
 
-                setLoading(true);
+            setLoading(true);
+
+            // ── 1. confirm-booking — save booked status + booking times ──
+            if (email) {
                 try {
-                    // Still ping our backend to trigger the Nurture sequence
-                    const payload = {
-                        leadData: { ...leadData },
-                        booking: {
-                            date: simulatedDate.toISOString(),
-                            time: "10:00 AM", // Fallback, real time is in Calendly
-                            source: 'calendly'
-                        }
-                    };
-
-                    await fetch(`${API_BASE_URL}/api/leads/book-audit`, {
+                    console.log('[CalendarBookingView] Calling /api/leads/confirm-booking...');
+                    const res = await fetch(`${API_BASE_URL}/api/leads/confirm-booking`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(payload)
+                        body: JSON.stringify({ email, eventUri })
                     });
-
-                    setBookingComplete(true);
-                    // Tell parent container we succeeded after a short delay
-                    setTimeout(() => {
-                        onSuccess();
-                    }, 2000);
-
+                    const data = await res.json();
+                    console.log('[CalendarBookingView] confirm-booking response:', data);
                 } catch (err) {
-                    console.error('Error triggering nurture sequence:', err);
-                    // Even if our backend fails, Calendly succeeded. Let them proceed.
-                    setBookingComplete(true);
-                    setTimeout(() => onSuccess(), 2000);
-                } finally {
-                    setLoading(false);
+                    console.error('[CalendarBookingView] confirm-booking error:', err);
                 }
+            } else {
+                console.warn('[CalendarBookingView] ⚠️ No email in leadData, skipping confirm-booking');
             }
-        };
 
-        window.addEventListener('message', handleCalendlyEvent);
-        return () => window.removeEventListener('message', handleCalendlyEvent);
-    }, [leadData, onSuccess]);
+            // ── 2. book-audit — trigger WhatsApp + email nurture ──
+            try {
+                console.log('[CalendarBookingView] Calling /api/leads/book-audit...');
+                const res = await fetch(`${API_BASE_URL}/api/leads/book-audit`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        leadData: { ...leadData },
+                        booking: {
+                            date: new Date().toISOString(),
+                            time: '10:00 AM',
+                            source: 'calendly',
+                        }
+                    })
+                });
+                const data = await res.json();
+                console.log('[CalendarBookingView] book-audit response:', data);
+            } catch (err) {
+                console.error('[CalendarBookingView] book-audit error (non-fatal):', err);
+            }
+
+            // Meta Pixel
+            if (typeof window !== 'undefined' && window.fbq) {
+                window.fbq('track', 'CompleteRegistration');
+            }
+
+            setLoading(false);
+            setBookingComplete(true);
+            setTimeout(() => { onSuccess(); }, 2000);
+        },
+    });
 
     if (bookingComplete) {
         return (
@@ -77,7 +91,7 @@ const CalendarBookingView = ({ leadData, onSuccess }) => {
 
     return (
         <div className="flex flex-col h-[750px] bg-white dark:bg-slate-900">
-            {/* Header info */}
+            {/* Header */}
             <div className="p-6 md:px-10 border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/30 shrink-0 flex flex-col items-center text-center">
                 <div className="inline-flex items-center gap-2 px-3 py-1 bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 text-xs font-bold uppercase tracking-wider rounded-full mb-3">
                     <AlertCircle className="w-3.5 h-3.5" />
@@ -89,20 +103,12 @@ const CalendarBookingView = ({ leadData, onSuccess }) => {
                 </p>
             </div>
 
-            {/* Calendly Embed */}
-            <div className="flex-1 w-full relative">
-                {/* 
-                   Pass lead data into Calendly URL params to prefill the form if possible.
-                   Calendly accepts: name, email, a1 (custom answer 1), etc.
-                 */}
-                <iframe
-                    src={`${CALENDLY_URL}?name=${encodeURIComponent(leadData?.name || '')}&email=${encodeURIComponent(leadData?.email || '')}`}
-                    width="100%"
-                    height="100%"
-                    frameBorder="0"
-                    title="Calendly Scheduling Page"
-                    className="absolute inset-0"
-                ></iframe>
+            {/* Calendly InlineWidget (official react-calendly component) */}
+            <div className="flex-1 w-full overflow-hidden bg-white">
+                <InlineWidget
+                    url={`${CALENDLY_URL}?name=${encodeURIComponent(leadData?.name || '')}&email=${encodeURIComponent(leadData?.email || '')}`}
+                    styles={{ height: '100%', width: '100%', minHeight: '650px' }}
+                />
             </div>
         </div>
     );
