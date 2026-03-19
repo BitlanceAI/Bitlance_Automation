@@ -16,6 +16,30 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+@keyframes auditPulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.0), 0 0 0 0 rgba(168, 85, 247, 0.0);
+    transform: translateZ(0) scale(1);
+  }
+  35% {
+    box-shadow: 0 0 0 10px rgba(99, 102, 241, 0.18), 0 0 32px 0 rgba(168, 85, 247, 0.22);
+    transform: translateZ(0) scale(1.03);
+  }
+  100% {
+    box-shadow: 0 0 0 22px rgba(99, 102, 241, 0.0), 0 0 0 0 rgba(168, 85, 247, 0.0);
+    transform: translateZ(0) scale(1);
+  }
+}
+
+.audit-highlight .audit-cta {
+  animation: auditPulse 1.6s ease-in-out infinite;
+  will-change: transform, box-shadow;
+}
+
+.audit-highlight .audit-cta:focus-visible {
+  animation: none;
+}
+
 @keyframes fadeInUp {
   from {
     opacity: 0;
@@ -35,6 +59,26 @@ body {
 .glass-nav {
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
+}
+
+/* Primary button style (matches Hero CTA) */
+.btn-primary {
+  background-image: linear-gradient(to right, rgb(79 70 229), rgb(124 58 237), rgb(147 51 234));
+  color: #fff;
+  box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.0), 0 22px 60px -20px rgba(99, 102, 241, 0.55);
+}
+
+.btn-primary:hover {
+  box-shadow: 0 0 40px rgba(99, 102, 241, 0.55), 0 22px 60px -20px rgba(99, 102, 241, 0.55);
+}
+
+.btn-primary:active {
+  transform: scale(0.99);
+}
+
+.btn-primary:focus-visible {
+  outline: 2px solid rgba(167, 139, 250, 0.9);
+  outline-offset: 3px;
 }
 
 @keyframes gradient-x {

@@ -143,7 +143,7 @@ const VoiceBotFeaturesPage = () => {
                     </div>
                     <button
                         onClick={() => navigate('/apply/real-estate')}
-                        className="px-6 py-2.5 bg-white text-black font-semibold rounded-full hover:bg-gray-200 transition-colors text-sm"
+                        className="btn-primary px-6 py-2.5 font-semibold rounded-full transition-colors text-sm"
                     >
                         Book Demo
                     </button>
@@ -315,7 +315,7 @@ const VoiceBotFeaturesPage = () => {
                     <p className="text-xl text-white/60 mb-10">Stop losing leads to missed calls and slow follow-ups. See the Bitlance AI Voice Bot in action today.</p>
                     <button
                         onClick={() => navigate('/apply/real-estate')}
-                        className="inline-flex items-center gap-2 bg-white text-black px-10 py-4 rounded-full font-bold text-lg hover:scale-105 transition-transform"
+                        className="btn-primary inline-flex items-center gap-2 px-10 py-4 rounded-full font-bold text-lg hover:scale-105 transition-transform"
                     >
                         Book Your Live Demo <ArrowLeft size={20} className="rotate-180" />
                     </button>

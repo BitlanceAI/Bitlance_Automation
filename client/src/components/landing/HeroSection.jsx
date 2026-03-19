@@ -1,7 +1,6 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { ArrowRight, Play, Mic, MessageSquare, Edit3, Share2, TrendingUp } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import ProductDemoAnimation from './ProductDemoAnimation';
 
 const HeroSection = ({ onOpenBooking, onOpenVideo }) => {
     const [currentSlide, setCurrentSlide] = useState(0);
@@ -102,29 +101,20 @@ const HeroSection = ({ onOpenBooking, onOpenVideo }) => {
                     <div className="flex flex-col sm:flex-row gap-4 items-center w-full sm:w-auto z-20">
                         <button
                             onClick={onOpenBooking}
-                            className="group relative px-8 py-4 rounded-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-bold text-lg shadow-xl shadow-indigo-500/30 overflow-hidden transition-all hover:scale-105 w-full sm:w-auto"
+                            className="audit-cta btn-primary group relative px-8 py-4 rounded-full font-bold text-lg overflow-hidden transition-all duration-300 hover:scale-105 hover:-translate-y-0.5 w-full sm:w-auto"
                         >
                             <span className="relative z-10 flex items-center justify-center gap-2">
                                 Get Your Free AI Audit <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
                             </span>
-                            <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300"></div>
-                        </button>
-
-                        <button
-                            onClick={onOpenVideo}
-                            className="group flex items-center justify-center gap-3 px-8 py-4 rounded-full bg-white/5 border border-white/10 text-white font-bold text-lg hover:bg-white/10 transition-all w-full sm:w-auto"
-                        >
-                            <div className="w-10 h-10 rounded-full bg-indigo-500/20 flex items-center justify-center group-hover:scale-110 transition-transform">
-                                <Play size={16} className="text-indigo-400 fill-indigo-400" />
-                            </div>
-                            Watch Overview
+                            <div className="absolute inset-0 bg-gradient-to-r from-white/20 via-white/5 to-transparent -translate-x-full group-hover:translate-x-0 transition-transform duration-500" />
+                            <div className="absolute -inset-px rounded-full border border-white/20 group-hover:border-white/40 transition-colors duration-300" />
                         </button>
 
                     </div>
 
                 </div>
 
-                {/* Right Column: High-Fidelity Pipeline Animation */}
+                {/* Right Column: Product Video */}
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -132,7 +122,17 @@ const HeroSection = ({ onOpenBooking, onOpenVideo }) => {
                     className="relative w-full order-first lg:order-last flex justify-center lg:justify-end"
                 >
                     <div className="absolute -inset-10 bg-indigo-500/10 blur-[100px] rounded-full opacity-50" />
-                    <ProductDemoAnimation />
+                    <div className="w-full max-w-[620px] rounded-2xl border border-white/10 bg-white/5 p-2 shadow-2xl shadow-indigo-500/20">
+                        <video
+                            src="/why_bitlance.mp4"
+                            className="w-full h-full rounded-xl object-cover"
+                            autoPlay
+                            muted
+                            loop
+                            playsInline
+                            controls
+                        />
+                    </div>
                 </motion.div>
 
             </div>
