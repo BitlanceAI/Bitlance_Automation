@@ -172,15 +172,38 @@ export const createLead = async (req, res) => {
             referrer
         };
 
-        const { data: lead, error } = await supabaseAdmin
+        // Manual Upsert: Check if lead exists by email
+        const { data: existingLead } = await supabaseAdmin
             .from('leads')
-            .insert([insertData])
-            .select()
-            .single();
+            .select('id')
+            .eq('email', email)
+            .maybeSingle();
+
+        let lead, error;
+        if (existingLead) {
+            // Update existing record
+            const { data, error: updateError } = await supabaseAdmin
+                .from('leads')
+                .update(insertData)
+                .eq('id', existingLead.id)
+                .select()
+                .single();
+            lead = data;
+            error = updateError;
+        } else {
+            // Insert new record
+            const { data, error: insertError } = await supabaseAdmin
+                .from('leads')
+                .insert([insertData])
+                .select()
+                .single();
+            lead = data;
+            error = insertError;
+        }
 
         if (error) {
-            console.error('Supabase insert error:', error);
-            return res.status(500).json({ success: false, message: 'Failed to create lead' });
+            console.error('Supabase save error:', error);
+            return res.status(500).json({ success: false, message: 'Failed to save lead' });
         }
 
         // Trigger PDF Delivery Immediately if Path A (download)
