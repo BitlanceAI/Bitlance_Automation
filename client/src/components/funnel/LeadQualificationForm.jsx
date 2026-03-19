@@ -1,7 +1,7 @@
 import React, { useState, useCallback, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Activity, IndianRupee, PieChart, Building, ShieldCheck, User, Mail, Phone, Loader2, Download } from 'lucide-react';
+import { Activity, IndianRupee, PieChart, Building, ShieldCheck, User, Mail, Phone, Loader2, ArrowRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import API_BASE_URL from '../../config.js';
 
@@ -244,8 +244,8 @@ function ToastPortal({ toast }) {
     );
 }
 
-/* ─── Contact Info Step ─── */
-function ContactInfoStep({ prefillData, onSubmit, onDownload, loading }) {
+/* ─── Contact Info Step (now FIRST step) ─── */
+function ContactInfoStep({ prefillData, onNext, loading }) {
     const [form, setForm] = useState({
         name: prefillData?.name || '',
         email: prefillData?.email || '',
@@ -273,11 +273,11 @@ function ContactInfoStep({ prefillData, onSubmit, onDownload, loading }) {
     return (
         <div className="p-6 md:p-8">
             <div className="mb-6">
-                <span className="text-[10px] font-bold text-indigo-400 tracking-widest uppercase">Almost There</span>
+                <span className="text-[10px] font-bold text-indigo-400 tracking-widest uppercase">Step 1 of 6</span>
                 <h2 className="text-2xl font-extrabold text-white leading-tight mt-1 mb-1">
-                    Where should we send your audit results?
+                    Let's personalise your audit
                 </h2>
-                <p className="text-sm text-slate-400">Your info is kept private. No spam, ever.</p>
+                <p className="text-sm text-slate-400">Quick intro — so we can tailor the next questions to your business.</p>
             </div>
 
             <div className="space-y-4">
@@ -326,23 +326,13 @@ function ContactInfoStep({ prefillData, onSubmit, onDownload, loading }) {
                     {errors.phone && <p className="text-red-400 text-xs mt-1">{errors.phone}</p>}
                 </div>
 
-                {/* Book CTA */}
+                {/* Continue CTA */}
                 <button
-                    onClick={() => { if (validate()) onSubmit(form, 'book'); }}
+                    onClick={() => { if (validate()) onNext(form); }}
                     disabled={loading}
                     className="w-full flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed text-white px-6 py-4 rounded-xl font-bold transition-all mt-2 shadow-[0_0_30px_-5px_rgba(99,102,241,0.5)]"
                 >
-                    {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Book My Free AI Audit →'}
-                </button>
-
-                {/* Download CTA */}
-                <button
-                    onClick={() => { if (validate()) onDownload(form); }}
-                    disabled={loading}
-                    className="w-full flex items-center justify-center gap-2 text-sm font-medium text-slate-400 hover:text-white transition-colors disabled:opacity-50 mt-1 py-2"
-                >
-                    <Download className="w-4 h-4" />
-                    Just download the Blueprint PDF instead
+                    {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Start My Free Audit →'}
                 </button>
 
                 <p className="text-center text-[11px] text-slate-600 mt-2">
@@ -353,20 +343,82 @@ function ContactInfoStep({ prefillData, onSubmit, onDownload, loading }) {
     );
 }
 
+/* ─── Success Choice Step (New) ─── */
+function SuccessStep({ onChoice, loading }) {
+    return (
+        <div className="p-6 md:p-8 text-center">
+            <div className="mb-8">
+                <div className="w-16 h-16 bg-emerald-500/20 rounded-full flex items-center justify-center mx-auto mb-4 border border-emerald-500/30">
+                    <ShieldCheck className="w-8 h-8 text-emerald-400" />
+                </div>
+                <h2 className="text-2xl md:text-3xl font-extrabold text-white leading-tight mb-2">
+                    Your Audit is Ready!
+                </h2>
+                <p className="text-slate-400 text-sm max-w-xs mx-auto">
+                    We've analyzed your responses. How would you like to receive your results?
+                </p>
+            </div>
+
+            <div className="space-y-4">
+                {/* Book Option */}
+                <button
+                    onClick={() => onChoice('book')}
+                    disabled={loading}
+                    className="w-full group relative overflow-hidden bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white px-6 py-5 rounded-2xl font-bold transition-all shadow-[0_0_40px_-10px_rgba(99,102,241,0.5)]"
+                >
+                    <div className="relative z-10 flex items-center justify-center gap-2">
+                        <span>Book My Free AI Audit Call</span>
+                        <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                    </div>
+                </button>
+
+                <div className="relative py-2">
+                    <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-white/5"></div></div>
+                    <div className="relative flex justify-center text-xs uppercase"><span className="bg-[#0A0A0A] px-2 text-slate-500 font-bold tracking-widest">or</span></div>
+                </div>
+
+                {/* Download Option */}
+                <button
+                    onClick={() => onChoice('download')}
+                    disabled={loading}
+                    className="w-full flex items-center justify-center gap-2 bg-white/[0.03] hover:bg-white/[0.08] border border-white/10 text-white px-6 py-4 rounded-2xl font-bold transition-all"
+                >
+                    {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : (
+                        <>
+                            <Activity className="w-5 h-5 text-indigo-400" />
+                            Just Download the Blueprint PDF
+                        </>
+                    )}
+                </button>
+
+                <p className="text-[11px] text-slate-600 pt-2 italic">
+                    Majority of our clients choose the Audit Call for 10x faster results.
+                </p>
+            </div>
+        </div>
+    );
+}
+
 /* ─── Main Form Component ─── */
 const LeadQualificationForm = ({ onQualify, onDisqualify, prefillData }) => {
     const [currentStep, setCurrentStep] = useState(0);
+    const [contactData, setContactData] = useState(null);
     const [answers, setAnswers] = useState({});
+    const [showSuccessStep, setShowSuccessStep] = useState(false);
     const [loading, setLoading] = useState(false);
+    const [lid, setLid] = useState(null); // Track lead ID to prevent duplicates
     const [particles, setParticles] = useState([]);
     const [toast, setToast] = useState(null);
     const toastTimerRef = useRef(null);
     const particleTimerRef = useRef(null);
 
-    const totalSteps = QA_STEPS.length + 1; // +1 for contact step
-    const isContactStep = currentStep === QA_STEPS.length;
-    const stepInfo = !isContactStep ? QA_STEPS[currentStep] : null;
-    const isLastQAStep = currentStep === QA_STEPS.length - 1;
+    const totalSteps = QA_STEPS.length + 1; // 1 contact + 5 QA
+    const isContactStep = currentStep === 0;
+    const qaStepIndex = currentStep - 1; // which QA step we're on (0-indexed)
+    const stepInfo = !isContactStep ? QA_STEPS[qaStepIndex] : null;
+    const isLastQAStep = currentStep === QA_STEPS.length; // step 5 = last QA
+
+    const navigate = useNavigate();
 
     useEffect(() => {
         return () => {
@@ -375,6 +427,13 @@ const LeadQualificationForm = ({ onQualify, onDisqualify, prefillData }) => {
         };
     }, []);
 
+    // ─── Step 0: handle contact form submission → move to QA ───
+    const handleContactNext = (data) => {
+        setContactData(data);
+        setCurrentStep(1);
+    };
+
+    // ─── Steps 1-5: handle QA option selection ───
     const handleSelectOption = useCallback((value, e) => {
         const newAnswers = { ...answers, [stepInfo.id]: value };
         setAnswers(newAnswers);
@@ -411,38 +470,50 @@ const LeadQualificationForm = ({ onQualify, onDisqualify, prefillData }) => {
         if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
         toastTimerRef.current = setTimeout(() => setToast(null), 5000);
 
-        // Advance step: check disqualification on last QA step, else progress
-        setTimeout(() => {
+        setTimeout(async () => {
             if (isLastQAStep) {
                 const spend = newAnswers.marketing_spend;
                 const decisionMaker = newAnswers.decision_maker;
-                if (spend === 'Below ₹1L' || decisionMaker === 'No, taking info for my team') {
+                const isDisqualified = spend === 'Below ₹1L' || decisionMaker === 'No, taking info for my team';
+
+                if (isDisqualified) {
+                    setLoading(true);
+                    await saveLead(newAnswers, 'disqualified');
+                    setLoading(false);
                     onDisqualify();
                 } else {
-                    setCurrentStep(QA_STEPS.length); // go to contact step
+                    // Temporarily save as 'pending' so we capture the data even if they drop off
+                    await saveLead(newAnswers, 'pending');
+                    setShowSuccessStep(true);
                 }
             } else {
                 setCurrentStep(prev => prev + 1);
             }
         }, 650);
-    }, [answers, isLastQAStep, stepInfo, onDisqualify]);
+    }, [answers, isLastQAStep, stepInfo, onDisqualify, contactData]);
 
-    const navigate = useNavigate();
+    const handleChoice = async (choice) => {
+        if (choice === 'download') {
+            await handleDownload();
+        } else {
+            // Finalize as 'book'
+            await saveLead(answers, 'book');
+        }
+    };
 
-    // ─── Save lead to DB and qualify ───
-    const handleContactSubmit = async (contactData, action) => {
+    // ─── Save lead to DB — used for both qualified and disqualified ───
+    const saveLead = async (finalAnswers, action) => {
         setLoading(true);
         try {
             const storedUtm = JSON.parse(localStorage.getItem('utmData') || '{}');
-
             const payload = {
-                name: contactData.name,
-                email: contactData.email,
-                phone: contactData.phone,
-                businessType: answers.industry_focus,
-                monthlyBudget: answers.marketing_spend,
-                readyToAutomate: answers.decision_maker === 'Yes, I am a decision maker' ? 'yes' : 'no',
-                action, // 'book' or 'download'
+                name:  contactData?.name,
+                email: contactData?.email,
+                phone: contactData?.phone,
+                businessType: finalAnswers.industry_focus,
+                monthlyBudget: finalAnswers.marketing_spend,
+                readyToAutomate: finalAnswers.decision_maker === 'Yes, I am a decision maker' ? 'yes' : 'no',
+                action,
                 ...storedUtm,
             };
 
@@ -451,41 +522,74 @@ const LeadQualificationForm = ({ onQualify, onDisqualify, prefillData }) => {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload),
             });
-
             const data = await res.json();
-
-            const fullLeadData = {
-                ...answers,
-                ...contactData,
-                id: data?.data?.id,
-                action,
-            };
+            
+            if (data?.data?.id) {
+                setLid(data.data.id);
+            }
 
             if (typeof window !== 'undefined' && window.fbq) {
                 window.fbq('track', 'Lead');
             }
 
-            if (action === 'download') {
-                navigate('/thank-you', {
-                    state: {
-                        email: contactData.email,
-                        name:  contactData.name,
-                        phone: contactData.phone,
-                        lid:   data?.data?.id || '',
-                    }
-                });
-                return;
+            if (action !== 'disqualified' && action !== 'pending') {
+                const fullLeadData = {
+                    ...finalAnswers,
+                    ...contactData,
+                    id: data?.data?.id || lid,
+                    action,
+                };
+                onQualify(fullLeadData);
             }
 
-            onQualify(fullLeadData);
+            return data?.data?.id; 
         } catch (err) {
             console.error('Lead submission error:', err);
-            // Don't block user flow on API error
-            onQualify({ ...answers, ...contactData, action });
+            if (action !== 'disqualified') {
+                onQualify({ ...finalAnswers, ...contactData, action });
+            }
         } finally {
             setLoading(false);
         }
     };
+
+    // ─── Download flow (still available at the end if user opts in) ───
+    const handleDownload = async () => {
+        setLoading(true);
+        try {
+            const storedUtm = JSON.parse(localStorage.getItem('utmData') || '{}');
+            const payload = {
+                name:  contactData?.name,
+                email: contactData?.email,
+                phone: contactData?.phone,
+                businessType: answers.industry_focus,
+                monthlyBudget: answers.marketing_spend,
+                readyToAutomate: 'no',
+                action: 'download',
+                ...storedUtm,
+            };
+            const res = await fetch(`${API_BASE_URL}/api/leads`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload),
+            });
+            const data = await res.json();
+            navigate('/thank-you', {
+                state: {
+                    email: contactData?.email,
+                    name:  contactData?.name,
+                    phone: contactData?.phone,
+                    lid:   data?.data?.id || '',
+                }
+            });
+        } catch (err) {
+            console.error('Download flow error:', err);
+            navigate('/thank-you');
+        } finally {
+            setLoading(false);
+        }
+    };
+
 
     return (
         <>
@@ -493,11 +597,15 @@ const LeadQualificationForm = ({ onQualify, onDisqualify, prefillData }) => {
             <ToastPortal toast={toast} />
 
             <div className="w-full">
-                {isContactStep ? (
+                {showSuccessStep ? (
+                    <SuccessStep
+                        onChoice={handleChoice}
+                        loading={loading}
+                    />
+                ) : isContactStep ? (
                     <ContactInfoStep
                         prefillData={prefillData}
-                        onSubmit={handleContactSubmit}
-                        onDownload={(data) => handleContactSubmit(data, 'download')}
+                        onNext={handleContactNext}
                         loading={loading}
                     />
                 ) : (
@@ -512,7 +620,7 @@ const LeadQualificationForm = ({ onQualify, onDisqualify, prefillData }) => {
                                     {Array.from({ length: totalSteps }).map((_, i) => (
                                         <div
                                             key={i}
-                                            className={`h-1.5 rounded-full transition-all duration-300 ${i === currentStep ? 'w-6 bg-indigo-500' : 'w-3 bg-white/10'}`}
+                                            className={`h-1.5 rounded-full transition-all duration-300 ${i === currentStep ? 'w-6 bg-indigo-500' : i < currentStep ? 'w-3 bg-indigo-500/40' : 'w-3 bg-white/10'}`}
                                         />
                                     ))}
                                 </div>
@@ -527,10 +635,10 @@ const LeadQualificationForm = ({ onQualify, onDisqualify, prefillData }) => {
                                     transition={{ duration: 0.2 }}
                                 >
                                     <h2 className="text-2xl font-extrabold text-white leading-tight mb-1.5">
-                                        {currentStep === 0 ? "Let's customize your growth plan." : stepInfo.question}
+                                        {currentStep === 1 ? "Let's customize your growth plan." : stepInfo.question}
                                     </h2>
                                     <p className="text-sm text-slate-400">
-                                        {currentStep === 0 ? stepInfo.question : stepInfo.description}
+                                        {currentStep === 1 ? stepInfo.question : stepInfo.description}
                                     </p>
                                 </motion.div>
                             </AnimatePresence>
@@ -576,7 +684,7 @@ const LeadQualificationForm = ({ onQualify, onDisqualify, prefillData }) => {
                                     </motion.div>
                                 </AnimatePresence>
 
-                                {currentStep > 0 && (
+                                {currentStep > 1 && (
                                     <div className="mt-5 pt-4 border-t border-white/5">
                                         <button
                                             onClick={() => setCurrentStep(prev => prev - 1)}

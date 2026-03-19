@@ -149,6 +149,8 @@ export const createLead = async (req, res) => {
         let tag = 'New Lead';
         if (action === 'download') tag = 'Downloaded Guide';
         else if (action === 'book') tag = 'Booked Demo';
+        else if (action === 'disqualified') tag = 'Not Eligible';
+        else if (action === 'pending') tag = 'Audit Started';
 
         const insertData = {
             name,
