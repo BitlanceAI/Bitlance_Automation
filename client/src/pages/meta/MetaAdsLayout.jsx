@@ -17,7 +17,7 @@ import {
     Settings2,
 } from 'lucide-react';
 
-const API_BASE = import.meta.env.VITE_API_URL || '';
+import API_BASE_URL from '../../config';
 
 // ─── Context ────────────────────────────────────────────────────────────────
 export const MetaAdsContext = createContext(null);
@@ -82,7 +82,7 @@ const MetaAdsLayout = () => {
     // ── Data Fetchers ─────────────────────────────────────────────────────────
     const loadCampaigns = async () => {
         try {
-            const res = await fetch(`${API_BASE}/api/meta/campaigns`, { headers: getAuthHeaders() });
+            const res = await fetch(`${API_BASE_URL}/api/meta/campaigns`, { headers: getAuthHeaders() });
             const data = await res.json();
             if (handleAuthError(res.status, data)) return;
             if (data.success) setCampaigns(data.campaigns || []);
@@ -91,7 +91,7 @@ const MetaAdsLayout = () => {
 
     const loadScheduledPosts = async () => {
         try {
-            const res = await fetch(`${API_BASE}/api/meta/posts/scheduled`, { headers: getAuthHeaders() });
+            const res = await fetch(`${API_BASE_URL}/api/meta/posts/scheduled`, { headers: getAuthHeaders() });
             const data = await res.json();
             if (handleAuthError(res.status, data)) return;
             if (data.success) setScheduledPosts(data.posts || []);
@@ -100,7 +100,7 @@ const MetaAdsLayout = () => {
 
     const loadInsights = async () => {
         try {
-            const res = await fetch(`${API_BASE}/api/meta/insights`, { headers: getAuthHeaders() });
+            const res = await fetch(`${API_BASE_URL}/api/meta/insights`, { headers: getAuthHeaders() });
             const data = await res.json();
             if (handleAuthError(res.status, data)) return;
             if (data.success) setInsights(data.insights || {});
@@ -109,7 +109,7 @@ const MetaAdsLayout = () => {
 
     const loadAdAccountBalance = async () => {
         try {
-            const res = await fetch(`${API_BASE}/api/meta/account-balance`, { headers: getAuthHeaders() });
+            const res = await fetch(`${API_BASE_URL}/api/meta/account-balance`, { headers: getAuthHeaders() });
             const data = await res.json();
             if (data.success && data.accounts?.length > 0) setAdAccountBalance(data.accounts[0]);
         } catch (e) { console.error('loadAdAccountBalance', e); }
@@ -118,7 +118,7 @@ const MetaAdsLayout = () => {
     const checkConnection = async () => {
         try {
             setLoading(true);
-            const res = await fetch(`${API_BASE}/api/meta/connection`, { headers: getAuthHeaders() });
+            const res = await fetch(`${API_BASE_URL}/api/meta/connection`, { headers: getAuthHeaders() });
             const data = await res.json();
             if (data.connected && data.isValid) {
                 setIsConnected(true);
@@ -152,7 +152,7 @@ const MetaAdsLayout = () => {
         setConnecting(true);
         if (authToken) authTokenRef.current = authToken;
         try {
-            const res = await fetch(`${API_BASE}/api/meta/connect-api-key`, {
+            const res = await fetch(`${API_BASE_URL}/api/meta/connect-api-key`, {
                 method: 'POST',
                 headers: getAuthHeaders(authToken),
                 body: JSON.stringify({ accessToken: providerToken })
@@ -201,7 +201,7 @@ const MetaAdsLayout = () => {
         if (!apiKeyForm.accessToken) { toast.error('Access token is required'); return; }
         setConnecting(true);
         try {
-            const res = await fetch(`${API_BASE}/api/meta/connect-api-key`, {
+            const res = await fetch(`${API_BASE_URL}/api/meta/connect-api-key`, {
                 method: 'POST',
                 headers: getAuthHeaders(),
                 body: JSON.stringify(apiKeyForm)
@@ -222,7 +222,7 @@ const MetaAdsLayout = () => {
     const handleDisconnect = async () => {
         if (!confirm('Are you sure you want to disconnect your Meta account?')) return;
         try {
-            const res = await fetch(`${API_BASE}/api/meta/disconnect`, { method: 'DELETE', headers: getAuthHeaders() });
+            const res = await fetch(`${API_BASE_URL}/api/meta/disconnect`, { method: 'DELETE', headers: getAuthHeaders() });
             if (res.ok) {
                 toast.success('Meta account disconnected');
                 setIsConnected(false);
@@ -239,7 +239,7 @@ const MetaAdsLayout = () => {
         setRefreshing(true);
         try {
             await Promise.all([
-                fetch(`${API_BASE}/api/meta/refresh-accounts`, { method: 'POST', headers: getAuthHeaders() }),
+                fetch(`${API_BASE_URL}/api/meta/refresh-accounts`, { method: 'POST', headers: getAuthHeaders() }),
                 loadCampaigns(),
                 loadScheduledPosts(),
                 loadInsights(),
@@ -319,7 +319,7 @@ const MetaAdsLayout = () => {
         handleConnectApiKey, handleOAuthConnect,
         loadCampaigns, loadScheduledPosts, loadInsights, loadAdAccountBalance,
         checkConnection,
-        API_BASE,
+        API_BASE: API_BASE_URL,
     };
 
     if (loading) {
