@@ -42,13 +42,12 @@ import CampaignWizard from './components/campaigns/CampaignWizard';
 import PrivacyPolicy from './pages/PrivacyPolicy';
 import TermsPage from './pages/TermsPage';
 import TestimonialDemo from './pages/TestimonialDemo';
+import ThankYouPage from './pages/ThankYouPage';
 import VoiceBotFeaturesPage from './pages/VoiceBotFeaturesPage';
 import BlogAgentFeaturesPage from './pages/BlogAgentFeaturesPage';
 import ContactPage from './pages/ContactPage';
-
-
-
-// ... existing imports
+import TextGeneratorPage from './pages/TextGeneratorPage';
+import EmailGeneratorPage from './pages/EmailGeneratorPage';// ... existing imports
 
 
 
