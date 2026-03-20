@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 
 import API_BASE_URL from '../../config';
+import SEOHead from '../../components/layout/SEOHead';
 
 // ─── Context ────────────────────────────────────────────────────────────────
 export const MetaAdsContext = createContext(null);
@@ -336,6 +337,7 @@ const MetaAdsLayout = () => {
     return (
         <MetaAdsContext.Provider value={ctx}>
             <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-blue-950/20 flex flex-col">
+                <SEOHead canonicalUrl="https://www.bitlancetechhub.com/dashboard/agents/meta" noIndex={true} />
 
                 {/* ── Sticky Header ── */}
                 <header className="sticky top-0 z-50 backdrop-blur-xl bg-slate-900/80 border-b border-slate-700/50">

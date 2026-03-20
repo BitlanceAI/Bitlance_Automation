@@ -11,6 +11,7 @@
         "build": "echo 'No build necessary for backend'"
     },
     "dependencies": {
+        "@google/generative-ai": "^0.24.1",
         "@onesignal/node-onesignal": "^5.3.1-beta1",
         "@supabase/supabase-js": "^2.39.0",
         "axios": "^1.13.3",

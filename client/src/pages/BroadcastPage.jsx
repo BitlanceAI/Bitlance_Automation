@@ -4,6 +4,7 @@ import TemplateManager from '../components/broadcast/TemplateManager';
 import BroadcastHistory from '../components/broadcast/BroadcastHistory';
 import BroadcastSettings from '../components/broadcast/BroadcastSettings';
 import Navbar from '../components/layout/Navbar';
+import SEOHead from '../components/layout/SEOHead';
 import { Radio, FileText, Clock, Send, Zap, Settings } from 'lucide-react';
 
 const BroadcastPage = () => {
@@ -24,6 +25,7 @@ const BroadcastPage = () => {
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-indigo-50 dark:from-slate-950 dark:via-slate-900 dark:to-indigo-950 pt-24 pb-12 px-4 sm:px-6 lg:px-8">
+            <SEOHead canonicalUrl="https://www.bitlancetechhub.com/dashboard/agents/social" noIndex={true} />
             <Navbar />
             <div className="max-w-5xl mx-auto">
                 {/* Header */}

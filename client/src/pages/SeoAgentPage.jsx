@@ -30,7 +30,7 @@ import ProfileSelection from '../components/dashboard/ProfileSelection';
 import PushNotificationPanel from '../components/seo/PushNotificationPanel';
 
 import BlogManagerPanel from '../components/seo/BlogManagerPanel';
-
+import SEOHead from '../components/layout/SEOHead';
 
 const SeoAgentPage = () => {
     const navigate = useNavigate();
@@ -414,6 +414,7 @@ const SeoAgentPage = () => {
 
     return (
         <div className="min-h-screen bg-gray-50 dark:bg-slate-900 text-gray-900 dark:text-gray-100 font-sans transition-colors duration-300">
+            <SEOHead canonicalUrl="https://www.bitlancetechhub.com/dashboard/agents/seo" noIndex={true} />
 
             {/* Header / Navbar */}
             <header className="bg-white dark:bg-slate-800 border-b border-gray-200 dark:border-slate-700 sticky top-0 z-10 transition-colors duration-300">

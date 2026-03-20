@@ -1,9 +1,11 @@
 import React from 'react';
 import { Mail, MapPin, Phone, FileText, CheckCircle, AlertTriangle, Shield, RefreshCw } from 'lucide-react';
+import SEOHead from '../components/layout/SEOHead';
 
 const TermsPage = () => {
     return (
         <div className="min-h-screen bg-gray-50 dark:bg-slate-900 pt-24 pb-12 px-4 sm:px-6 lg:px-8 transition-colors duration-300">
+            <SEOHead canonicalUrl="https://www.bitlancetechhub.com/terms-policy" />
             <div className="max-w-4xl mx-auto bg-white dark:bg-slate-800 rounded-2xl shadow-xl overflow-hidden">
                 <div className="bg-gradient-to-r from-blue-700 to-indigo-800 px-8 py-10 text-white">
                     <h1 className="text-3xl md:text-4xl font-bold mb-2 flex items-center gap-3">
