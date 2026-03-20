@@ -29,3 +29,6 @@ export const authenticateUser = async (req, res, next) => {
         res.status(500).json({ success: false, error: 'Authentication failed' });
     }
 };
+
+// Alias for route compatibility
+export const protect = authenticateUser;

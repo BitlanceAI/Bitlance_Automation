@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useNavigate } from 'react-router-dom';
-import { Sparkles, Calendar, XCircle, CheckCircle2, ChevronRight, ArrowRight, Building2, TrendingUp, Users, Home } from 'lucide-react';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { Sparkles, XCircle, CheckCircle2, ArrowRight, Users, Home } from 'lucide-react';
 import LeadQualificationForm from '../../components/funnel/LeadQualificationForm';
 import DisqualifiedView from '../../components/funnel/DisqualifiedView';
 import CalendarBookingView from '../../components/funnel/CalendarBookingView';
@@ -9,16 +9,52 @@ import { trackLeadQualified, trackLeadDisqualified, trackBookingSuccess } from '
 import SEOHead from '../../components/layout/SEOHead';
 
 const RealEstateLeadGen = () => {
+    const navigate = useNavigate();
+    const location = useLocation();
+
+    // ── Direct booking shortcut ──────────────────────────────────────────────
+    // When the URL carries lead params (e.g. from a reminder email), parse them
+    // synchronously so we can render CalendarBookingView immediately on first paint.
+    const urlParams = new URLSearchParams(location.search);
+    const directEmail = urlParams.get('email') || '';
+    const directName  = urlParams.get('name')  || urlParams.get('fn') || '';
+    const directPhone = urlParams.get('phoneno') || urlParams.get('phone') || urlParams.get('ph') || '';
+    const directLid   = urlParams.get('lid') || '';
+    const isDirectBooking = !!(directEmail || directName || directPhone);
+
+    // Fire track-click once on mount when arriving via direct link
+    useEffect(() => {
+        if (!isDirectBooking) return;
+        if (directEmail) {
+            fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:4000'}/api/leads/track-click`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email: directEmail, name: directName, phone: directPhone, lid: directLid }),
+            }).catch(err => console.warn('track-click failed:', err));
+        }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
+    // ── Normal funnel state (only used when NOT a direct booking) ────────────
     const [view, setView] = useState('form');
     const [leadData, setLeadData] = useState(null);
-    const navigate = useNavigate();
+    const [prefillData, setPrefillData] = useState({});
+
+    useEffect(() => {
+        if (isDirectBooking) return; // Handled above
+        const stored = localStorage.getItem('adPrefillData');
+        if (stored) {
+            try {
+                const parsed = JSON.parse(stored);
+                if (parsed.name || parsed.email || parsed.phone) setPrefillData(parsed);
+            } catch (_) {}
+        }
+    }, [isDirectBooking]);
 
     // Redirect to home after success
-    React.useEffect(() => {
+    useEffect(() => {
         if (view === 'success') {
-            const timer = setTimeout(() => {
-                navigate('/');
-            }, 8000); // 8 seconds to read success info
+            const timer = setTimeout(() => navigate('/'), 8000);
             return () => clearTimeout(timer);
         }
     }, [view, navigate]);
@@ -38,6 +74,32 @@ const RealEstateLeadGen = () => {
         setView('success');
         trackBookingSuccess();
     };
+
+    // ── SHORT-CIRCUIT: render booking calendar directly if URL has lead params ─
+    if (isDirectBooking) {
+        const directLeadData = {
+            name: directName,
+            email: directEmail,
+            phone: directPhone,
+            whatsapp: directPhone,
+            id: directLid,
+        };
+        return (
+            <div className="min-h-screen bg-[#0a0a0a] text-slate-50 flex flex-col justify-center py-6 md:py-8 px-4 sm:px-6 lg:px-8 font-sans">
+                <SEOHead
+                    title="Book Your Free AI Audit | Bitlance"
+                    description="Pick a time for your personalised AI Growth Audit with the Bitlance team."
+                    canonicalUrl="https://www.bitlancetechhub.com/apply/audit"
+                />
+                <div className="max-w-[700px] mx-auto w-full">
+                    <CalendarBookingView
+                        leadData={directLeadData}
+                        onSuccess={() => navigate('/')}
+                    />
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="min-h-screen bg-[#0a0a0a] text-slate-50 flex flex-col justify-center py-6 md:py-8 px-4 sm:px-6 lg:px-8 font-sans">
@@ -113,7 +175,7 @@ const RealEstateLeadGen = () => {
                                     transition={{ duration: 0.3 }}
                                     className="p-8 md:p-12"
                                 >
-                                    <LeadQualificationForm onQualify={handleQualify} onDisqualify={handleDisqualify} />
+                                    <LeadQualificationForm onQualify={handleQualify} onDisqualify={handleDisqualify} prefillData={prefillData} />
                                 </motion.div>
                             )}
 

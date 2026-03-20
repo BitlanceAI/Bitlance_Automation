@@ -45,8 +45,10 @@ import TestimonialDemo from './pages/TestimonialDemo';
 import VoiceBotFeaturesPage from './pages/VoiceBotFeaturesPage';
 import BlogAgentFeaturesPage from './pages/BlogAgentFeaturesPage';
 import ContactPage from './pages/ContactPage';
-import TextGeneratorPage from './pages/TextGeneratorPage';
-import EmailGeneratorPage from './pages/EmailGeneratorPage';// ... existing imports
+
+
+
+// ... existing imports
 
 
 
@@ -280,6 +282,8 @@ function App() {
             <Route path="/l/offer/:campaignId" element={<OfferLanding />} />
             {/* General Lead Gen Custom Funnel */}
             <Route path="/apply/audit" element={<RealEstateLeadGen />} />
+            <Route path="/thank-you" element={<ThankYouPage />} />
+
             <Route path="/testimonial-demo" element={<TestimonialDemo />} />
             <Route path="/shape-demo" element={<ShapeHeroDemo />} />
             <Route path="/features/voice-bot" element={<VoiceBotFeaturesPage />} />

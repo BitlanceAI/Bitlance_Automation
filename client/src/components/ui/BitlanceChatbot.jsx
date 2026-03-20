@@ -428,7 +428,7 @@ export default function BitlanceChatbot({ isOpen: externalIsOpen, onToggle }) {
         // TIME: +400ms → fire startConversation after widget opens
         setTimeout(startConversation, 400);
       }
-    }, 5000);
+    }, 9000);
     return () => clearTimeout(timer);
   }, [hasOpened, isOpen, setIsOpen]); // Run once or whenever hasOpened changes
 

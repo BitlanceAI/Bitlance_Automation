@@ -14,7 +14,7 @@ const VoiceBotSection = ({ onOpenBooking }) => {
 
             <ScrollReveal className="max-w-7xl mx-auto px-6 relative z-10">
                 <div className="grid lg:grid-cols-2 gap-16 items-center">
-                    
+
                     {/* Left Column: Content & Features */}
                     <div className="space-y-12">
                         <div className="text-left">
@@ -37,7 +37,7 @@ const VoiceBotSection = ({ onOpenBooking }) => {
                                 viewport={{ once: true }}
                                 className="text-xl text-white/60 mb-8 max-w-xl"
                             >
-                                Scale your business with AI agents that handle leads and 
+                                Scale your business with AI agents that handle leads and
                                 bookings 24/7 with human-level accuracy.
                             </motion.p>
                             <motion.button
@@ -60,7 +60,7 @@ const VoiceBotSection = ({ onOpenBooking }) => {
                                 { icon: Maximize, title: "Rapid Scale", desc: "10,000+ simultaneous calls.", color: "from-blue-400 to-cyan-500" },
                                 { icon: Target, title: "Smart Logic", desc: "Niche-specific custom training.", color: "from-emerald-400 to-teal-500" }
                             ].map((feature, idx) => (
-                                <motion.div 
+                                <motion.div
                                     key={idx}
                                     initial={{ opacity: 0, scale: 0.95 }}
                                     whileInView={{ opacity: 1, scale: 1 }}
@@ -84,9 +84,9 @@ const VoiceBotSection = ({ onOpenBooking }) => {
                         <div className="relative group w-full max-w-2xl">
                             {/* Decorative Background Elements */}
                             <div className="absolute -inset-10 bg-indigo-500/10 rounded-full blur-[120px] -z-10 group-hover:bg-indigo-500/20 transition-all duration-700" />
-                            
+
                             {/* Main Display Container (Desktop/Laptop Style) */}
-                            <motion.div 
+                            <motion.div
                                 initial={{ opacity: 0, x: 50, rotateY: -10 }}
                                 whileInView={{ opacity: 1, x: 0, rotateY: 0 }}
                                 transition={{ duration: 1, ease: "easeOut" }}
@@ -97,17 +97,17 @@ const VoiceBotSection = ({ onOpenBooking }) => {
                                 <div className="relative aspect-video bg-[#0A0A0A] rounded-xl overflow-hidden border-[6px] border-[#1A1A1A] shadow-[0_30px_60px_-15px_rgba(0,0,0,0.5),0_0_40px_rgba(139,92,246,0.2)]">
                                     {/* Camera dot */}
                                     <div className="absolute top-1.5 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-white/10 z-20" />
-                                    
-                                    <video 
-                                        src="/ai_voice_agent.mp4" 
-                                        autoPlay 
-                                        unmuted 
-                                        loop 
+
+                                    <video
+                                        src="/ai_voice_agent.mp4"
+                                        autoPlay
+                                        muted
+                                        loop
                                         playsInline
                                         controls
                                         className="w-full h-full object-cover"
                                     />
-                                    
+
                                     {/* Screen Glare */}
                                     <div className="absolute inset-0 bg-gradient-to-tr from-white/5 via-transparent to-transparent pointer-events-none" />
                                 </div>
@@ -118,7 +118,7 @@ const VoiceBotSection = ({ onOpenBooking }) => {
                             </motion.div>
 
                             {/* Floating Analytics Card */}
-                            <motion.div 
+                            <motion.div
                                 initial={{ opacity: 0, scale: 0.8, y: 20 }}
                                 whileInView={{ opacity: 1, scale: 1, y: 0 }}
                                 transition={{ delay: 0.5 }}
