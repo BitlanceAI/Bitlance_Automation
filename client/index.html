@@ -100,6 +100,10 @@
     OneSignalDeferred.push(async function (OneSignal) {
       await OneSignal.init({
         appId: "b8119755-1466-495a-a428-2259043b9ed9",
+        safari_web_id: "web.onesignal.auto.6401d2fc-b951-4213-a02c-03159c046b78",
+        notifyButton: {
+          enable: true,
+        },
       });
       // Explicitly trigger the Slidedown Prompt
       OneSignal.Slidedown.promptPush();
