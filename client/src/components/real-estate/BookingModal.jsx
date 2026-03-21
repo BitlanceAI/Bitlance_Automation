@@ -2,6 +2,35 @@ import React, { useEffect } from 'react';
 import { X } from 'lucide-react';
 import API_BASE_URL from '../../config.js';
 
+async function makeOutboundCall(phoneNumber, name, instructions, firstLine) {
+    const AGENT_API_URL = "http://pua3ipajtt6cplmdwh7z79eo.187.127.133.164.sslip.io/api/call/outbound";
+
+    try {
+        const response = await fetch(AGENT_API_URL, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                phone_number: phoneNumber,
+                name: name,
+                instructions: instructions,
+                first_line: firstLine
+            })
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+            console.log("Demo booking call initiated successfully!", data);
+        } else {
+            console.error("Failed to initiate demo booking call:", data.detail);
+        }
+    } catch (error) {
+        console.error("Network error on demo booking call:", error);
+    }
+}
+
 const BookingModal = ({ isOpen, onClose }) => {
     const [step, setStep] = React.useState(1);
     const [loading, setLoading] = React.useState(false);
@@ -45,6 +74,15 @@ const BookingModal = ({ isOpen, onClose }) => {
             });
 
             if (response.ok) {
+                // Trigger outbound call 20 seconds after demo booking
+                setTimeout(() => {
+                    makeOutboundCall(
+                        formData.phone,
+                        formData.name,
+                        "You are the Bitlance demo booking assistant AI. The user just booked a demo with Bitlance. Call them to confirm their demo booking, thank them for their interest, and ask if they have any immediate questions about the platform before their scheduled demo.",
+                        `Hi ${formData.name}, this is the Bitlance assistant! Thanks for booking a demo with us. I'm calling to confirm your booking and see if you have any questions.`
+                    );
+                }, 20000);
                 setStep(2);
             } else {
                 console.error('Failed to submit lead');
