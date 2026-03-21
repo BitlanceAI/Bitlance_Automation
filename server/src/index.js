@@ -58,6 +58,7 @@ import adminRoutes from './routes/adminRoutes.js';
 import profileRoutes from './routes/profileRoutes.js';
 import authRoutes from './routes/authRoutes.js';
 import metaRoutes from './routes/metaRoutes.js';
+import linkedinRoutes from './routes/linkedinRoutes.js';
 import articleRoutes from './routes/articleRoutes.js';
 import geminiRoutes from './routes/gemini.js';
 
@@ -77,6 +78,7 @@ app.use('/api/track', trackingRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/profiles', profileRoutes);
 app.use('/api/meta', metaRoutes);
+app.use('/api/linkedin', linkedinRoutes);
 app.use('/api', articleRoutes); // blog generation + CRUD + public blog routes
 app.use('/api/gemini', geminiRoutes); // Gemini AI endpoints
 

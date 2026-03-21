@@ -206,7 +206,7 @@ function App() {
                 <BroadcastPage />
               </AuthGuard>
             } />
-            <Route path="/dashboard" element={
+            <Route path="/SocialDashboard" element={
               <AuthGuard>
                 <SocialDashboard />
               </AuthGuard>
