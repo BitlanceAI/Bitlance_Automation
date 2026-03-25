@@ -62,6 +62,7 @@ import BlogEditorPage from './pages/BlogEditorPage';
 
 import CookieDemoPage from './pages/CookieDemoPage';
 import { AuthProvider, useAuth } from './context/AuthContext';
+import { WorkspaceProvider } from './context/WorkspaceContext';
 import AuthGuard from './components/auth/AuthGuard';
 import AdminGuard from './components/admin/AdminGuard';
 import { Toaster } from 'react-hot-toast';
@@ -149,6 +150,7 @@ function App() {
   return (
     <ThemeProvider>
       <AuthProvider>
+        <WorkspaceProvider>
         <Toaster position="top-right" reverseOrder={false} />
         <div className={isDashboard ? 'bg-gray-50 dark:bg-slate-900 min-h-screen transition-colors duration-300' : 'bg-gray-50 dark:bg-slate-900 min-h-screen transition-colors duration-300'}>
 
@@ -321,6 +323,7 @@ function App() {
           {!isDashboard && location.pathname !== '/' && <Footer />}
 
         </div>
+        </WorkspaceProvider>
       </AuthProvider>
     </ThemeProvider >
   );

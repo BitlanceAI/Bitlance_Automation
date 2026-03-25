@@ -30,7 +30,7 @@ const PORT = process.env.PORT || 3001;
 // ── CORS ── allow origins from env var (comma-separated) or localhost in dev
 const allowedOrigins = process.env.ALLOWED_ORIGINS
     ? process.env.ALLOWED_ORIGINS.split(',')
-    : ['http://localhost:5173', 'http://localhost:3000', 'https://automation-dashboard-ten.vercel.app'];
+    : ['http://localhost:5173', 'http://localhost:5174', 'http://localhost:5176', 'http://localhost:3000', 'https://automation-dashboard-ten.vercel.app'];
 
 app.use(cors({
     origin: (origin, callback) => {
@@ -79,6 +79,9 @@ app.use('/api/admin', adminRoutes);
 app.use('/api/profiles', profileRoutes);
 app.use('/api/meta', metaRoutes);
 app.use('/api/linkedin', linkedinRoutes);
+
+import twitterRoutes from './routes/twitterRoutes.js';
+app.use('/api/twitter', twitterRoutes);
 app.use('/api', articleRoutes); // blog generation + CRUD + public blog routes
 app.use('/api/gemini', geminiRoutes); // Gemini AI endpoints
 
@@ -92,6 +95,9 @@ app.use('/api/admin/auto-blog', autoBlogRoutes);
 
 import whatsappRoutes from './routes/whatsappRoutes.js';
 app.use('/api/whatsapp', whatsappRoutes);
+
+import workspaceRoutes from './routes/workspaceRoutes.js';
+app.use('/api/workspaces', workspaceRoutes);
 
 import leadsRoutes from './routes/leadsRoutes.js';
 app.use('/api/leads', leadsRoutes);

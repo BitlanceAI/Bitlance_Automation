@@ -1,6 +1,8 @@
 import express from 'express';
 import { supabase } from '../config/supabaseClient.js';
 import crypto from 'crypto';
+import LinkedinService from '../services/linkedinService.js';
+import { decryptData } from '../utils/encryption.js';
 
 const router = express.Router();
 
@@ -27,20 +29,23 @@ function verifyMetaSignature(req) {
 
 /**
  * Webhook Verification (GET) - Required by Meta
+ * Handles both /webhooks/meta/ and /webhooks/meta/whatsapp
  */
-router.get('/', (req, res) => {
+function handleVerification(req, res) {
     const mode = req.query['hub.mode'];
     const token = req.query['hub.verify_token'];
     const challenge = req.query['hub.challenge'];
 
-    // Verify token should match your configured VERIFY_TOKEN
     if (mode === 'subscribe' && token === process.env.META_VERIFY_TOKEN) {
         console.log('[Webhook] Verified');
         res.status(200).send(challenge);
     } else {
         res.sendStatus(403);
     }
-});
+}
+
+router.get('/', handleVerification);
+router.get('/whatsapp', handleVerification);
 
 /**
  * POST /webhooks/meta/leads
@@ -153,6 +158,115 @@ router.post('/conversions', async (req, res) => {
     } catch (error) {
         console.error('[Webhook] Conversion processing error:', error);
         res.sendStatus(500);
+    }
+});
+
+/**
+ * POST /webhooks/meta/whatsapp
+ * Receive incoming WhatsApp messages (button replies for LinkedIn post approval)
+ */
+router.post('/whatsapp', async (req, res) => {
+    // Respond 200 immediately — Meta requires a fast acknowledgement
+    res.sendStatus(200);
+
+    try {
+        const entry = req.body.entry?.[0];
+        if (!entry) return;
+
+        const change = entry.changes?.[0];
+        if (change?.field !== 'messages') return;
+
+        const messages = change.value?.messages;
+        if (!messages?.length) return;
+
+        for (const message of messages) {
+            if (message.type !== 'button') continue;
+
+            const fromPhone = message.from; // e.g. "919876543210"
+            const payload = message.button?.payload; // 'APPROVED' or 'DISAPPROVED'
+
+            if (!['APPROVED', 'DISAPPROVED'].includes(payload)) continue;
+
+            console.log(`[WA Approval] ${payload} from ${fromPhone}`);
+
+            // Find the most recent pending approval for this phone
+            const { data: pending, error: fetchErr } = await supabase
+                .from('linkedin_pending_approvals')
+                .select('*')
+                .eq('approver_phone', fromPhone)
+                .eq('status', 'pending')
+                .order('created_at', { ascending: false })
+                .limit(1)
+                .single();
+
+            if (fetchErr || !pending) {
+                console.warn('[WA Approval] No pending approval found for', fromPhone);
+                continue;
+            }
+
+            if (payload === 'APPROVED') {
+                // Fetch LinkedIn credentials for this user + profile
+                const { data: connection } = await supabase
+                    .from('linkedin_connections')
+                    .select('access_token')
+                    .eq('user_id', pending.user_id)
+                    .eq('profile_id', pending.profile_id)
+                    .eq('is_active', true)
+                    .single();
+
+                if (connection) {
+                    try {
+                        const accessToken = decryptData(connection.access_token);
+                        const linkedinService = new LinkedinService(accessToken);
+                        const media = pending.asset_urn && pending.media_category
+                            ? { assetUrn: pending.asset_urn, mediaCategory: pending.media_category }
+                            : null;
+
+                        const result = await linkedinService.createPost(
+                            pending.profile_id,
+                            pending.text,
+                            pending.visibility,
+                            media
+                        );
+
+                        if (result.success) {
+                            console.log('[WA Approval] Auto-posted to LinkedIn:', result.postId);
+                            // Record in post history
+                            await supabase.from('linkedin_posts').insert({
+                                user_id: pending.user_id,
+                                profile_id: pending.profile_id,
+                                post_id: result.postId,
+                                text: pending.text,
+                                media_category: pending.media_category || null,
+                                visibility: pending.visibility,
+                                created_at: new Date().toISOString()
+                            });
+                        } else {
+                            console.error('[WA Approval] LinkedIn post failed:', result.error);
+                        }
+                    } catch (postErr) {
+                        console.error('[WA Approval] Error posting to LinkedIn:', postErr.message);
+                    }
+                } else {
+                    console.warn('[WA Approval] LinkedIn connection not found for user', pending.user_id);
+                }
+
+                await supabase
+                    .from('linkedin_pending_approvals')
+                    .update({ status: 'approved', updated_at: new Date().toISOString() })
+                    .eq('id', pending.id);
+
+            } else {
+                await supabase
+                    .from('linkedin_pending_approvals')
+                    .update({ status: 'disapproved', updated_at: new Date().toISOString() })
+                    .eq('id', pending.id);
+
+                console.log('[WA Approval] Post disapproved for user', pending.user_id);
+            }
+        }
+    } catch (err) {
+        console.error('[WA Approval] Webhook error:', err.message);
     }
 });
 

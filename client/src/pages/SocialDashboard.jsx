@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import {
     Send,
     Calendar,
@@ -23,12 +23,24 @@ import {
     CalendarCheck,
     Star,
     CalendarDays,
-    X
+    X,
+    ImageIcon,
+    FileText,
+    Film,
+    Paperclip,
+    MessageCircle,
+    Link2,
+    Copy,
+    Check,
+    ExternalLink,
+    LogOut
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { useWorkspace } from '../context/WorkspaceContext';
 import { useNavigate } from 'react-router-dom';
 import Logo from '../assets/logo.webp';
 import API_BASE_URL from '../config.js';
+import WorkspaceSwitcher from '../components/workspace/WorkspaceSwitcher';
 
 const XIcon = ({ className }) => (
     <svg viewBox="0 0 24 24" aria-hidden="true" className={className} fill="currentColor">
@@ -38,6 +50,7 @@ const XIcon = ({ className }) => (
 
 const SocialDashboard = () => {
     const { user, session } = useAuth();
+    const { workspaceHeaders, loading: workspaceLoading, activeWorkspace } = useWorkspace();
     const navigate = useNavigate();
     const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
     const [isShareMenuOpen, setIsShareMenuOpen] = useState(false);
@@ -46,38 +59,109 @@ const SocialDashboard = () => {
     const [isLoadingProfiles, setIsLoadingProfiles] = useState(true);
     const [activeView, setActiveView] = useState('share'); // 'share' or 'profiles'
 
+    // Post composer state
+    const [postText, setPostText] = useState('');
+    const [selectedProfileIds, setSelectedProfileIds] = useState([]);
+    const [postVisibility, setPostVisibility] = useState('PUBLIC');
+    const [isPosting, setIsPosting] = useState(false);
+    const [postStatus, setPostStatus] = useState(null); // { type: 'success'|'error', message: string }
+    const [isPreviewOpen, setIsPreviewOpen] = useState(false);
+    const [previewStep, setPreviewStep] = useState(1); // 1 = platform select, 2 = preview
+    const [postTargets, setPostTargets] = useState([]); // profiles chosen in step 1
+
+    // WhatsApp share (Step 1 optional section)
+    const [waShare, setWaShare] = useState({ enabled: false, mode: 'link', phone: '', sending: false, sent: false, copied: false, opened: false, error: null });
+    // Media attachment: { file: File, preview: string|null, mediaCategory: 'IMAGE'|'VIDEO'|'DOCUMENT' }
+    const [mediaAttachment, setMediaAttachment] = useState(null);
+    const fileInputRef = useRef(null);
+
+    // Recent posts
+    const [recentPosts, setRecentPosts] = useState([]);
+    const [stats, setStats] = useState(null);
+    const [statsDays, setStatsDays] = useState(7);
+
+    // AI Write
+    const [isAiWriteOpen, setIsAiWriteOpen] = useState(false);
+    const [aiPrompt, setAiPrompt] = useState('');
+    const [aiTone, setAiTone] = useState('professional');
+    const [isAiLoading, setIsAiLoading] = useState(false);
+    const [aiError, setAiError] = useState(null);
+
     const authToken = session?.access_token;
 
     // Fetch existing connections and handle OAuth callback
     React.useEffect(() => {
-        if (!authToken) return;
+        if (!authToken || workspaceLoading) return;
+
+        // Build headers inline — avoids any stale closure on workspaceHeaders
+        const wsId = activeWorkspace?.id ?? null;
+        const authHeaders = {
+            'Authorization': `Bearer ${authToken}`,
+            ...(wsId ? { 'x-workspace-id': wsId } : {})
+        };
 
         const fetchConnections = async () => {
             try {
-                const response = await fetch(`${API_BASE_URL}/api/linkedin/connection`, {
-                    headers: { 'Authorization': `Bearer ${authToken}` }
-                });
-                const data = await response.json();
-                if (data.connected && data.profiles) {
-                    const mappedProfiles = data.profiles.map(p => ({
+                const [liRes, twRes] = await Promise.all([
+                    fetch(`${API_BASE_URL}/api/linkedin/connection`, { headers: authHeaders }),
+                    fetch(`${API_BASE_URL}/api/twitter/connection`, { headers: authHeaders }),
+                ]);
+                const [liData, twData] = await Promise.all([liRes.json(), twRes.json()]);
+
+                const profiles = [];
+
+                if (liData.connected && liData.profiles?.length > 0) {
+                    profiles.push(...liData.profiles.map(p => ({
                         platform: 'linkedin',
                         profileId: p.profileId,
                         name: p.name,
                         type: 'LinkedIn Profile',
                         followers: 'Connected',
-                        avatar: p.profilePicture
-                    }));
-                    setConnectedProfiles(prev => {
-                        const others = prev.filter(p => p.platform !== 'linkedin');
-                        return [...others, ...mappedProfiles];
-                    });
+                        avatar: p.profilePicture,
+                    })));
                 }
+
+                if (twData.connected && twData.profiles?.length > 0) {
+                    profiles.push(...twData.profiles.map(p => ({
+                        platform: 'twitter',
+                        profileId: p.twitterUserId,
+                        twitterUserId: p.twitterUserId,
+                        name: p.name,
+                        type: '@' + p.username,
+                        followers: 'Connected',
+                        avatar: p.profilePicture,
+                    })));
+                }
+
+                setConnectedProfiles(profiles);
             } catch (error) {
                 console.error('Error fetching connections:', error);
             } finally {
                 setIsLoadingProfiles(false);
             }
         };
+
+        const fetchRecentPosts = async () => {
+            try {
+                const res = await fetch(`${API_BASE_URL}/api/linkedin/posts?limit=5`, {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                const data = await res.json();
+                if (data.success) setRecentPosts(data.posts);
+            } catch { /* non-critical */ }
+        };
+
+        const fetchStats = async (days = 7) => {
+            try {
+                const res = await fetch(`${API_BASE_URL}/api/linkedin/stats?days=${days}`, {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                const data = await res.json();
+                if (data.success) setStats(data.stats);
+            } catch { /* non-critical */ }
+        };
+        window._fetchLinkedInStats = fetchStats;
+        fetchStats(7);
 
         const handleOAuthCallback = async () => {
             const urlParams = new URLSearchParams(window.location.search);
@@ -91,10 +175,7 @@ const SocialDashboard = () => {
                 try {
                     const response = await fetch(`${API_BASE_URL}/api/linkedin/connect`, {
                         method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Authorization': `Bearer ${authToken}`
-                        },
+                        headers: { 'Content-Type': 'application/json', ...authHeaders },
                         body: JSON.stringify({ code })
                     });
                     const data = await response.json();
@@ -110,15 +191,192 @@ const SocialDashboard = () => {
                     alert('Error connecting LinkedIn account');
                     fetchConnections();
                 }
+            } else if (code && state && state.startsWith('twitter_connect')) {
+                window.history.replaceState({}, document.title, window.location.pathname);
+                setIsLoadingProfiles(true);
+
+                try {
+                    const response = await fetch(`${API_BASE_URL}/api/twitter/connect`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', ...authHeaders },
+                        body: JSON.stringify({ code, state })
+                    });
+                    const data = await response.json();
+                    if (data.success) {
+                        await fetchConnections();
+                        setIsAddProfileModalOpen(false);
+                    } else {
+                        alert(`Twitter Connection Failed: ${data.error}`);
+                        fetchConnections();
+                    }
+                } catch (error) {
+                    console.error('Error connecting twitter:', error);
+                    alert('Error connecting Twitter/X account');
+                    fetchConnections();
+                }
             } else {
                 fetchConnections();
             }
         };
 
         handleOAuthCallback();
-    }, [authToken]);
+        fetchRecentPosts();
+    }, [authToken, workspaceLoading, activeWorkspace?.id]);
+
+    // Clear profiles instantly when workspace changes so stale data doesn't linger
+    React.useEffect(() => {
+        setConnectedProfiles([]);
+        setSelectedProfileIds([]);
+    }, [activeWorkspace?.id]);
+
+    // Default all connected profiles as post targets when they load
+    React.useEffect(() => {
+        setPostTargets(connectedProfiles);
+    }, [connectedProfiles]);
 
     const userName = user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'User';
+
+    const linkedinProfiles = connectedProfiles.filter(p => p.platform === 'linkedin');
+
+    const toggleProfileSelection = (profileId) => {
+        setSelectedProfileIds(prev =>
+            prev.includes(profileId) ? prev.filter(id => id !== profileId) : [...prev, profileId]
+        );
+    };
+
+    const togglePostTarget = (profile) => {
+        const key = profile.profileId || profile.name;
+        setPostTargets(prev => {
+            const exists = prev.find(p => (p.profileId || p.name) === key);
+            return exists ? prev.filter(p => (p.profileId || p.name) !== key) : [...prev, profile];
+        });
+    };
+
+    const isPostTarget = (profile) => {
+        const key = profile.profileId || profile.name;
+        return postTargets.some(p => (p.profileId || p.name) === key);
+    };
+
+    const handleFileSelect = (e) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        let mediaCategory = 'IMAGE';
+        if (file.type.startsWith('video/')) mediaCategory = 'VIDEO';
+        else if (file.type === 'application/pdf') mediaCategory = 'DOCUMENT';
+
+        const preview = (mediaCategory === 'IMAGE') ? URL.createObjectURL(file) : null;
+        setMediaAttachment({ file, preview, mediaCategory });
+        // reset input so same file can be re-selected
+        e.target.value = '';
+    };
+
+    const removeAttachment = () => {
+        if (mediaAttachment?.preview) URL.revokeObjectURL(mediaAttachment.preview);
+        setMediaAttachment(null);
+    };
+
+    const handleAiWrite = async () => {
+        if (!aiPrompt.trim() && !postText.trim()) return;
+        setIsAiLoading(true);
+        setAiError(null);
+        try {
+            const body = aiPrompt.trim()
+                ? { prompt: aiPrompt, tone: aiTone }
+                : { existingText: postText, tone: aiTone };
+
+            const res = await fetch(`${API_BASE_URL}/api/linkedin/ai-write`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${authToken}` },
+                body: JSON.stringify(body),
+            });
+            const data = await res.json();
+            if (!data.success) throw new Error(data.error || 'AI write failed');
+            setPostText(data.text);
+            setIsAiWriteOpen(false);
+            setAiPrompt('');
+        } catch (err) {
+            setAiError(err.message);
+        } finally {
+            setIsAiLoading(false);
+        }
+    };
+
+    const handlePublish = async () => {
+        if (!postText.trim()) return;
+        const liTargets = postTargets.filter(p => p.platform === 'linkedin');
+        const twTargets = postTargets.filter(p => p.platform === 'twitter');
+
+        if (liTargets.length === 0 && twTargets.length === 0) {
+            setPostStatus({ type: 'error', message: 'No profile selected.' });
+            return;
+        }
+
+        setIsPosting(true);
+        setPostStatus(null);
+
+        try {
+            const results = await Promise.all([
+                // LinkedIn posts (with optional media upload)
+                ...liTargets.map(async (profile) => {
+                    let assetUrn = null;
+                    let mediaCategory = null;
+
+                    if (mediaAttachment) {
+                        const formData = new FormData();
+                        formData.append('file', mediaAttachment.file);
+                        formData.append('profileId', profile.profileId);
+                        formData.append('mediaCategory', mediaAttachment.mediaCategory);
+
+                        const uploadRes = await fetch(`${API_BASE_URL}/api/linkedin/upload-media`, {
+                            method: 'POST',
+                            headers: { 'Authorization': `Bearer ${authToken}`, ...workspaceHeaders },
+                            body: formData,
+                        }).then(r => r.json());
+
+                        if (!uploadRes.success) return { success: false, error: uploadRes.error };
+                        assetUrn = uploadRes.assetUrn;
+                        mediaCategory = uploadRes.mediaCategory;
+                    }
+
+                    return fetch(`${API_BASE_URL}/api/linkedin/post`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${authToken}`, ...workspaceHeaders },
+                        body: JSON.stringify({ profileId: profile.profileId, text: postText, visibility: postVisibility, assetUrn, mediaCategory, title: mediaAttachment?.file?.name }),
+                    }).then(r => r.json());
+                }),
+                // Twitter posts (text only, max 280 chars)
+                ...twTargets.map(profile =>
+                    fetch(`${API_BASE_URL}/api/twitter/post`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${authToken}`, ...workspaceHeaders },
+                        body: JSON.stringify({ twitterUserId: profile.twitterUserId, text: postText }),
+                    }).then(r => r.json())
+                ),
+            ]);
+
+            setIsPosting(false);
+
+            const failed = results.filter(r => !r.success);
+            if (failed.length === 0) {
+                const total = postTargets.length;
+                setPostStatus({ type: 'success', message: `Post published to ${total} profile${total > 1 ? 's' : ''}!` });
+                setPostText('');
+                setSelectedProfileIds([]);
+                removeAttachment();
+                if (liTargets.length > 0) {
+                    fetch(`${API_BASE_URL}/api/linkedin/posts?limit=5`, { headers: { 'Authorization': `Bearer ${authToken}` } })
+                        .then(r => r.json()).then(d => { if (d.success) setRecentPosts(d.posts); }).catch(() => {});
+                }
+                setTimeout(() => { setIsPreviewOpen(false); setPostStatus(null); }, 1800);
+            } else {
+                setPostStatus({ type: 'error', message: failed[0].error || 'Failed to publish post.' });
+            }
+        } catch (err) {
+            setIsPosting(false);
+            setPostStatus({ type: 'error', message: err.message || 'Unexpected error.' });
+        }
+    };
 
     const sidebarItems = [
         { icon: Send, label: 'Share a post', view: 'share', path: '/dashboard' },
@@ -147,6 +405,20 @@ const SocialDashboard = () => {
         { icon: AlertCircle, label: 'Report an Issue', path: '#' },
     ];
 
+    // ─── Disconnect a profile ────────────────────────────────────────────────
+    const handleDisconnect = async (profile) => {
+        if (!confirm(`Disconnect ${profile.name}?`)) return;
+        try {
+            const endpoint = profile.platform === 'twitter'
+                ? `${API_BASE_URL}/api/twitter/disconnect/${profile.twitterUserId}`
+                : `${API_BASE_URL}/api/linkedin/disconnect/${profile.profileId}`;
+            await fetch(endpoint, { method: 'DELETE', headers: { 'Authorization': `Bearer ${authToken}`, ...workspaceHeaders } });
+            setConnectedProfiles(prev => prev.filter(p => p.profileId !== profile.profileId));
+        } catch (err) {
+            console.error('Disconnect error:', err);
+        }
+    };
+
     // ─── Reusable profile card (list style, used in Profiles view) ───────────
     const ProfileListCard = ({ profile }) => (
         <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 flex items-center gap-5 hover:border-slate-700 transition-colors">
@@ -158,8 +430,8 @@ const SocialDashboard = () => {
                         {profile.name?.charAt(0)}
                     </div>
                 )}
-                <div className={`absolute -bottom-1 -right-1 w-6 h-6 rounded-full flex items-center justify-center text-white shadow-md border-2 border-slate-900 ${profile.platform === 'linkedin' ? 'bg-[#0A66C2]' : 'bg-blue-600'}`}>
-                    {profile.platform === 'linkedin' ? <Linkedin className="w-3 h-3 fill-current" /> : <Facebook className="w-3 h-3 fill-current" />}
+                <div className={`absolute -bottom-1 -right-1 w-6 h-6 rounded-full flex items-center justify-center text-white shadow-md border-2 border-slate-900 ${profile.platform === 'linkedin' ? 'bg-[#0A66C2]' : profile.platform === 'twitter' ? 'bg-black' : 'bg-blue-600'}`}>
+                    {profile.platform === 'linkedin' ? <Linkedin className="w-3 h-3 fill-current" /> : profile.platform === 'twitter' ? <XIcon className="w-3 h-3" /> : <Facebook className="w-3 h-3 fill-current" />}
                 </div>
             </div>
             <div className="flex-1">
@@ -167,7 +439,7 @@ const SocialDashboard = () => {
                 <p className="text-slate-500 text-[13px] mt-0.5">{profile.type}</p>
                 <div className="flex items-center gap-4 mt-2">
                     <span className="text-[12px] text-slate-400 flex items-center gap-1.5 bg-slate-800 rounded-full px-2.5 py-1">
-                        {profile.platform === 'linkedin' ? <Linkedin className="w-3 h-3" /> : <Facebook className="w-3 h-3" />}
+                        {profile.platform === 'linkedin' ? <Linkedin className="w-3 h-3" /> : profile.platform === 'twitter' ? <XIcon className="w-3 h-3" /> : <Facebook className="w-3 h-3" />}
                         {profile.followers}
                     </span>
                     <span className="text-[12px] text-emerald-400 flex items-center gap-1">
@@ -176,8 +448,8 @@ const SocialDashboard = () => {
                     </span>
                 </div>
             </div>
-            <button className="text-slate-500 hover:text-red-400 p-2 transition-colors cursor-pointer rounded-lg hover:bg-red-500/10" title="Disconnect">
-                <MoreVertical className="w-5 h-5" />
+            <button onClick={() => handleDisconnect(profile)} className="text-slate-500 hover:text-red-400 p-2 transition-colors cursor-pointer rounded-lg hover:bg-red-500/10" title="Disconnect">
+                <LogOut className="w-4 h-4" />
             </button>
         </div>
     );
@@ -192,8 +464,8 @@ const SocialDashboard = () => {
                         : profile.name.charAt(0)
                     }
                 </div>
-                <div className={`absolute -bottom-1 -right-1 w-5 h-5 rounded flex items-center justify-center text-white shadow-md border-2 border-slate-900 ${profile.platform === 'linkedin' ? 'bg-[#0A66C2]' : 'bg-blue-600'}`}>
-                    {profile.platform === 'linkedin' ? <Linkedin className="w-2.5 h-2.5 fill-current" /> : <Facebook className="w-2.5 h-2.5 fill-current" />}
+                <div className={`absolute -bottom-1 -right-1 w-5 h-5 rounded flex items-center justify-center text-white shadow-md border-2 border-slate-900 ${profile.platform === 'linkedin' ? 'bg-[#0A66C2]' : profile.platform === 'twitter' ? 'bg-black' : 'bg-blue-600'}`}>
+                    {profile.platform === 'linkedin' ? <Linkedin className="w-2.5 h-2.5 fill-current" /> : profile.platform === 'twitter' ? <XIcon className="w-2.5 h-2.5" /> : <Facebook className="w-2.5 h-2.5 fill-current" />}
                 </div>
             </div>
             <div className="flex-1 overflow-hidden">
@@ -205,8 +477,8 @@ const SocialDashboard = () => {
                     </span>
                 </div>
             </div>
-            <button className="text-slate-500 hover:text-white p-1 ml-auto shrink-0 transition-colors cursor-pointer">
-                <MoreVertical className="w-4 h-4" />
+            <button onClick={() => handleDisconnect(profile)} className="text-slate-500 hover:text-red-400 p-1 ml-auto shrink-0 transition-colors cursor-pointer rounded-lg hover:bg-red-500/10" title="Disconnect">
+                <LogOut className="w-4 h-4" />
             </button>
         </div>
     );
@@ -359,6 +631,11 @@ const SocialDashboard = () => {
                 {/* ── Main content ─────────────────────────────────────────── */}
                 <main className="flex-1 flex flex-col relative w-full h-full overflow-y-auto bg-slate-950">
 
+                    {/* Workspace switcher bar */}
+                    <div className="flex items-center justify-end px-5 py-2.5 border-b border-slate-800 bg-slate-900/60 shrink-0">
+                        <WorkspaceSwitcher />
+                    </div>
+
                     {activeView === 'profiles' ? (
                         /* ── PROFILES VIEW ─────────────────────────────────── */
                         <div className="flex-1 p-8 bg-slate-950 overflow-y-auto w-full">
@@ -448,25 +725,206 @@ const SocialDashboard = () => {
                                         <Sparkles className="w-5 h-5 text-indigo-400" />
                                         Create a new post
                                     </h2>
+
+                                    {/* Profile selector */}
+                                    {linkedinProfiles.length > 1 && (
+                                        <div className="mb-4 flex flex-wrap gap-2">
+                                            {linkedinProfiles.map(profile => {
+                                                const isSelected = selectedProfileIds.length === 0 || selectedProfileIds.includes(profile.profileId);
+                                                return (
+                                                    <button
+                                                        key={profile.profileId}
+                                                        onClick={() => toggleProfileSelection(profile.profileId)}
+                                                        className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-[13px] font-medium border transition-all cursor-pointer ${isSelected ? 'bg-[#0A66C2]/20 border-[#0A66C2]/50 text-blue-300' : 'bg-slate-800 border-slate-700 text-slate-400'}`}
+                                                    >
+                                                        <Linkedin className="w-3.5 h-3.5" />
+                                                        {profile.name}
+                                                    </button>
+                                                );
+                                            })}
+                                        </div>
+                                    )}
+
                                     <div className="border border-slate-700 bg-slate-950/50 rounded-xl p-4 focus-within:border-indigo-500/50 focus-within:bg-slate-900/80 transition-all shadow-inner">
                                         <textarea
+                                            value={postText}
+                                            onChange={e => { setPostText(e.target.value); setPostStatus(null); }}
                                             placeholder="What do you want to share with your audience?"
                                             className="w-full bg-transparent border-none text-slate-200 resize-none focus:outline-none min-h-[120px] text-[15px] placeholder:text-slate-600"
                                         />
-                                        <div className="flex justify-between items-center mt-3 pt-3 border-t border-slate-800/80">
-                                            <div className="flex gap-2">
-                                                <button className="p-2 text-slate-400 hover:text-indigo-400 hover:bg-indigo-500/10 rounded-lg transition-colors cursor-pointer flex items-center gap-1.5 text-sm font-medium">
-                                                    <Sparkles className="w-4 h-4" /> AI Rewrite
-                                                </button>
-                                                <button className="p-2 text-slate-400 hover:text-indigo-400 hover:bg-slate-800 rounded-lg transition-colors cursor-pointer">
-                                                    <Layers className="w-5 h-5" />
+
+                                        {/* Attachment preview */}
+                                        {mediaAttachment && (
+                                            <div className="mt-3 relative inline-flex items-center gap-2 bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 max-w-full">
+                                                {mediaAttachment.mediaCategory === 'IMAGE' && mediaAttachment.preview ? (
+                                                    <img src={mediaAttachment.preview} alt="preview" className="w-12 h-12 rounded object-cover shrink-0" />
+                                                ) : mediaAttachment.mediaCategory === 'VIDEO' ? (
+                                                    <Film className="w-8 h-8 text-purple-400 shrink-0" />
+                                                ) : (
+                                                    <FileText className="w-8 h-8 text-orange-400 shrink-0" />
+                                                )}
+                                                <div className="flex-1 min-w-0">
+                                                    <p className="text-slate-200 text-[13px] font-medium truncate">{mediaAttachment.file.name}</p>
+                                                    <p className="text-slate-500 text-[11px]">{mediaAttachment.mediaCategory} · {(mediaAttachment.file.size / 1024 / 1024).toFixed(1)} MB</p>
+                                                </div>
+                                                <button onClick={removeAttachment} className="ml-1 text-slate-500 hover:text-red-400 transition-colors shrink-0 cursor-pointer">
+                                                    <X className="w-4 h-4" />
                                                 </button>
                                             </div>
-                                            <button className="bg-indigo-600 hover:bg-indigo-500 text-white px-5 py-2.5 rounded-lg text-sm font-medium flex items-center transition-all cursor-pointer shadow-lg shadow-indigo-500/20 active:scale-95">
-                                                <Send className="w-4 h-4 mr-2" /> Publish Now
+                                        )}
+
+                                        {/* AI Write panel */}
+                                        {isAiWriteOpen && (
+                                            <div className="mt-3 p-3 bg-indigo-950/40 border border-indigo-500/20 rounded-xl space-y-3">
+                                                <div className="flex items-center gap-2 text-indigo-300 text-[13px] font-medium">
+                                                    <Sparkles className="w-3.5 h-3.5" />
+                                                    {postText.trim() ? 'Rewrite with AI' : 'Generate with AI'}
+                                                </div>
+
+                                                {!postText.trim() && (
+                                                    <textarea
+                                                        value={aiPrompt}
+                                                        onChange={e => setAiPrompt(e.target.value)}
+                                                        placeholder="What do you want to post about? (e.g. product launch, industry insight, career win…)"
+                                                        className="w-full bg-slate-900 border border-slate-700 text-slate-200 rounded-lg p-2.5 text-[13px] resize-none focus:outline-none focus:border-indigo-500 min-h-[72px] placeholder:text-slate-600"
+                                                    />
+                                                )}
+                                                {postText.trim() && (
+                                                    <p className="text-[12px] text-slate-400">Your current draft will be improved and rewritten.</p>
+                                                )}
+
+                                                <div className="flex items-center gap-2">
+                                                    <span className="text-[12px] text-slate-400 shrink-0">Tone:</span>
+                                                    {['professional', 'casual', 'inspiring', 'witty'].map(t => (
+                                                        <button
+                                                            key={t}
+                                                            onClick={() => setAiTone(t)}
+                                                            className={`px-2.5 py-1 rounded-full text-[11px] font-medium border transition-all cursor-pointer capitalize ${aiTone === t ? 'bg-indigo-500/20 border-indigo-500/50 text-indigo-300' : 'border-slate-700 text-slate-400 hover:border-slate-600'}`}
+                                                        >
+                                                            {t}
+                                                        </button>
+                                                    ))}
+                                                </div>
+
+                                                {aiError && (
+                                                    <p className="text-[12px] text-red-400">✕ {aiError}</p>
+                                                )}
+
+                                                <div className="flex gap-2 justify-end">
+                                                    <button
+                                                        onClick={() => { setIsAiWriteOpen(false); setAiPrompt(''); setAiError(null); }}
+                                                        className="px-3 py-1.5 text-[13px] text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 transition-colors cursor-pointer"
+                                                    >
+                                                        Cancel
+                                                    </button>
+                                                    <button
+                                                        onClick={handleAiWrite}
+                                                        disabled={isAiLoading || (!aiPrompt.trim() && !postText.trim())}
+                                                        className="px-4 py-1.5 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed text-white text-[13px] font-medium rounded-lg flex items-center gap-1.5 transition-colors cursor-pointer"
+                                                    >
+                                                        {isAiLoading ? (
+                                                            <><span className="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin" /> Generating...</>
+                                                        ) : (
+                                                            <><Sparkles className="w-3.5 h-3.5" /> Generate</>
+                                                        )}
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        {/* Twitter char counter */}
+                                        {connectedProfiles.some(p => p.platform === 'twitter') && (
+                                            <div className={`mt-2 text-right text-[12px] font-mono ${postText.length > 280 ? 'text-red-400' : postText.length > 240 ? 'text-amber-400' : 'text-slate-600'}`}>
+                                                <XIcon className="inline w-3 h-3 mr-1 opacity-70" />
+                                                {postText.length}/280{postText.length > 280 && ' · over limit for tweet'}
+                                            </div>
+                                        )}
+
+                                        <div className="flex justify-between items-center mt-3 pt-3 border-t border-slate-800/80">
+                                            <div className="flex gap-1 items-center">
+                                                <button
+                                                    onClick={() => { setIsAiWriteOpen(v => !v); setAiError(null); }}
+                                                    className={`p-2 rounded-lg transition-colors cursor-pointer flex items-center gap-1.5 text-sm font-medium ${isAiWriteOpen ? 'bg-indigo-500/20 text-indigo-300' : 'text-slate-400 hover:text-indigo-400 hover:bg-indigo-500/10'}`}
+                                                >
+                                                    <Sparkles className="w-4 h-4" /> AI Write
+                                                </button>
+
+                                                {/* Attach file button */}
+                                                <input
+                                                    ref={fileInputRef}
+                                                    type="file"
+                                                    accept="image/jpeg,image/png,image/gif,image/webp,video/mp4,video/quicktime,application/pdf"
+                                                    className="hidden"
+                                                    onChange={handleFileSelect}
+                                                />
+                                                <button
+                                                    onClick={() => fileInputRef.current?.click()}
+                                                    title="Attach image, video or PDF"
+                                                    className="p-2 text-slate-400 hover:text-indigo-400 hover:bg-slate-800 rounded-lg transition-colors cursor-pointer flex items-center gap-1.5 text-sm font-medium"
+                                                >
+                                                    <Paperclip className="w-4 h-4" />
+                                                </button>
+
+                                                {/* Visibility toggle */}
+                                                <select
+                                                    value={postVisibility}
+                                                    onChange={e => setPostVisibility(e.target.value)}
+                                                    className="bg-slate-800 border border-slate-700 text-slate-300 text-xs rounded-lg px-2.5 py-1.5 focus:outline-none focus:border-indigo-500 cursor-pointer"
+                                                >
+                                                    <option value="PUBLIC">Public</option>
+                                                    <option value="CONNECTIONS">Connections only</option>
+                                                </select>
+                                            </div>
+                                            <button
+                                                onClick={() => {
+                                                    setPostStatus(null);
+                                                    setPreviewStep(1);
+                                                    setWaShare({ enabled: false, mode: 'link', phone: '', sending: false, sent: false, copied: false, opened: false, error: null });
+                                                    setIsPreviewOpen(true);
+                                                }}
+                                                disabled={!postText.trim() || postTargets.length === 0}
+                                                className="bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed text-white px-5 py-2.5 rounded-lg text-sm font-medium flex items-center transition-all cursor-pointer shadow-lg shadow-indigo-500/20 active:scale-95"
+                                            >
+                                                <Send className="w-4 h-4 mr-2" /> Preview & Publish
                                             </button>
                                         </div>
                                     </div>
+
+                                    {/* Platform / profile selection */}
+                                    <div className="mt-4 flex flex-wrap items-center gap-2">
+                                        <span className="text-[12px] text-slate-500 shrink-0">Post to:</span>
+                                        {connectedProfiles.map(profile => {
+                                            const selected = isPostTarget(profile);
+                                            const platformStyles = {
+                                                linkedin: selected ? 'bg-[#0A66C2]/20 border-[#0A66C2]/50 text-blue-300' : 'bg-slate-800/40 border-slate-700 text-slate-500',
+                                                twitter:  selected ? 'bg-slate-700 border-slate-500 text-white' : 'bg-slate-800/40 border-slate-700 text-slate-500',
+                                                facebook: selected ? 'bg-blue-700/20 border-blue-600/50 text-blue-300' : 'bg-slate-800/40 border-slate-700 text-slate-500',
+                                            };
+                                            return (
+                                                <button
+                                                    key={profile.profileId || profile.name}
+                                                    onClick={() => togglePostTarget(profile)}
+                                                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[12px] font-medium border transition-all cursor-pointer ${platformStyles[profile.platform] || platformStyles.facebook}`}
+                                                >
+                                                    {profile.platform === 'linkedin' && <Linkedin className="w-3 h-3" />}
+                                                    {profile.platform === 'twitter' && <XIcon className="w-3 h-3" />}
+                                                    {profile.platform === 'facebook' && <Facebook className="w-3 h-3" />}
+                                                    <span className="truncate max-w-[100px]">{profile.name}</span>
+                                                    {selected && <Check className="w-3 h-3 shrink-0" />}
+                                                </button>
+                                            );
+                                        })}
+                                        {postTargets.length === 0 && (
+                                            <span className="text-[11px] text-amber-400">Select at least one profile</span>
+                                        )}
+                                    </div>
+
+                                    {/* Status message */}
+                                    {postStatus && (
+                                        <div className={`mt-3 px-4 py-3 rounded-lg text-sm font-medium flex items-center gap-2 ${postStatus.type === 'success' ? 'bg-emerald-500/10 border border-emerald-500/30 text-emerald-400' : 'bg-red-500/10 border border-red-500/30 text-red-400'}`}>
+                                            {postStatus.type === 'success' ? '✓' : '✕'} {postStatus.message}
+                                        </div>
+                                    )}
                                 </div>
 
                                 {/* Stats grid */}
@@ -478,41 +936,122 @@ const SocialDashboard = () => {
                                             </h3>
                                             <button className="text-[13px] text-indigo-400 hover:text-indigo-300 font-medium cursor-pointer">View all</button>
                                         </div>
-                                        <div className="space-y-4">
-                                            {[1, 2].map(i => (
-                                                <div key={i} className="flex gap-4 p-4 rounded-xl border border-slate-800/60 bg-slate-950/30">
-                                                    <div className="w-12 h-12 rounded bg-slate-800 shrink-0 border border-slate-700/50" />
-                                                    <div className="flex-1 space-y-2 py-1">
-                                                        <div className="h-3.5 bg-slate-800 rounded-full w-3/4" />
-                                                        <div className="h-3.5 bg-slate-800 rounded-full w-1/2" />
-                                                    </div>
+                                        {recentPosts.length === 0 ? (
+                                            <div className="flex flex-col items-center justify-center py-8 text-center">
+                                                <div className="w-10 h-10 bg-slate-800 rounded-full flex items-center justify-center mb-3">
+                                                    <Send className="w-4 h-4 text-slate-500" />
                                                 </div>
-                                            ))}
-                                        </div>
+                                                <p className="text-[13px] text-slate-500">No posts yet. Publish your first post above.</p>
+                                            </div>
+                                        ) : (
+                                            <div className="space-y-3">
+                                                {recentPosts.map((post) => (
+                                                    <div key={post.id} className="flex gap-3 p-3.5 rounded-xl border border-slate-800/60 bg-slate-950/30 hover:border-slate-700 transition-colors">
+                                                        <div className={`w-9 h-9 rounded-lg shrink-0 flex items-center justify-center text-white ${post.media_category === 'IMAGE' ? 'bg-indigo-600/30' : post.media_category === 'VIDEO' ? 'bg-purple-600/30' : post.media_category === 'DOCUMENT' ? 'bg-orange-600/30' : 'bg-[#0A66C2]/30'}`}>
+                                                            {post.media_category === 'VIDEO' ? <Film className="w-4 h-4 text-purple-400" /> : post.media_category === 'DOCUMENT' ? <FileText className="w-4 h-4 text-orange-400" /> : post.media_category === 'IMAGE' ? <ImageIcon className="w-4 h-4 text-indigo-400" /> : <Linkedin className="w-4 h-4 text-[#0A66C2]" />}
+                                                        </div>
+                                                        <div className="flex-1 min-w-0">
+                                                            <p className="text-[13px] text-slate-200 leading-snug line-clamp-2">{post.text}</p>
+                                                            <div className="flex items-center gap-2 mt-1.5">
+                                                                <span className="text-[11px] text-slate-500">{new Date(post.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
+                                                                <span className="text-slate-700">·</span>
+                                                                <span className={`text-[11px] ${post.visibility === 'PUBLIC' ? 'text-emerald-500' : 'text-slate-400'}`}>{post.visibility === 'PUBLIC' ? '🌐 Public' : '🔒 Connections'}</span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        )}
                                     </div>
 
                                     <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6">
-                                        <div className="flex items-center justify-between mb-6">
+                                        <div className="flex items-center justify-between mb-5">
                                             <h3 className="text-[15px] font-medium text-white flex items-center gap-2">
                                                 <BarChart2 className="w-4 h-4 text-slate-400" /> Performance Overview
                                             </h3>
-                                            <select className="bg-slate-950 border border-slate-800 text-slate-300 text-xs rounded-lg px-2.5 py-1.5 focus:outline-none focus:border-indigo-500 cursor-pointer">
-                                                <option>Last 7 days</option>
-                                                <option>Last 30 days</option>
+                                            <select
+                                                value={statsDays}
+                                                onChange={e => {
+                                                    const d = Number(e.target.value);
+                                                    setStatsDays(d);
+                                                    window._fetchLinkedInStats?.(d);
+                                                }}
+                                                className="bg-slate-950 border border-slate-800 text-slate-300 text-xs rounded-lg px-2.5 py-1.5 focus:outline-none focus:border-indigo-500 cursor-pointer"
+                                            >
+                                                <option value={7}>Last 7 days</option>
+                                                <option value={30}>Last 30 days</option>
                                             </select>
                                         </div>
-                                        <div className="grid grid-cols-2 gap-4">
-                                            <div className="p-4 rounded-xl border border-slate-800/60 bg-slate-950/30">
-                                                <div className="text-[12px] text-slate-400 font-medium mb-1">Total Impressions</div>
-                                                <div className="text-xl font-bold text-white mb-2">0</div>
-                                                <div className="flex items-center text-xs text-emerald-400"><TrendingUp className="w-3 h-3 mr-1" /> --%</div>
+
+                                        {!stats ? (
+                                            <div className="grid grid-cols-2 gap-4 animate-pulse">
+                                                {[1,2,3,4].map(i => <div key={i} className="h-20 bg-slate-800/50 rounded-xl" />)}
                                             </div>
-                                            <div className="p-4 rounded-xl border border-slate-800/60 bg-slate-950/30">
-                                                <div className="text-[12px] text-slate-400 font-medium mb-1">Total Engagements</div>
-                                                <div className="text-xl font-bold text-white mb-2">0</div>
-                                                <div className="flex items-center text-xs text-emerald-400"><TrendingUp className="w-3 h-3 mr-1" /> --%</div>
-                                            </div>
-                                        </div>
+                                        ) : (
+                                            <>
+                                                <div className="grid grid-cols-2 gap-3 mb-4">
+                                                    {/* Posts this period */}
+                                                    <div className="p-4 rounded-xl border border-slate-800/60 bg-slate-950/30">
+                                                        <div className="text-[11px] text-slate-400 font-medium mb-1">Posts Published</div>
+                                                        <div className="text-2xl font-bold text-white">{stats.periodPosts}</div>
+                                                        <div className={`flex items-center text-[11px] mt-1 ${stats.periodPct === null ? 'text-slate-500' : stats.periodPct >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                                                            <TrendingUp className="w-3 h-3 mr-1" />
+                                                            {stats.periodPct === null ? 'No previous data' : `${stats.periodPct > 0 ? '+' : ''}${stats.periodPct}% vs prev period`}
+                                                        </div>
+                                                    </div>
+                                                    {/* Total all time */}
+                                                    <div className="p-4 rounded-xl border border-slate-800/60 bg-slate-950/30">
+                                                        <div className="text-[11px] text-slate-400 font-medium mb-1">Total Posts</div>
+                                                        <div className="text-2xl font-bold text-white">{stats.totalPosts}</div>
+                                                        <div className="text-[11px] text-slate-500 mt-1">All time</div>
+                                                    </div>
+                                                    {/* Public vs Connections */}
+                                                    <div className="p-4 rounded-xl border border-slate-800/60 bg-slate-950/30">
+                                                        <div className="text-[11px] text-slate-400 font-medium mb-2">Visibility</div>
+                                                        <div className="flex items-center gap-2">
+                                                            <span className="text-[12px] text-emerald-400 font-semibold">🌐 {stats.publicPosts}</span>
+                                                            <span className="text-slate-600">·</span>
+                                                            <span className="text-[12px] text-slate-400 font-semibold">🔒 {stats.connectionPosts}</span>
+                                                        </div>
+                                                        <div className="text-[11px] text-slate-500 mt-1">Public · Connections</div>
+                                                    </div>
+                                                    {/* Media vs text */}
+                                                    <div className="p-4 rounded-xl border border-slate-800/60 bg-slate-950/30">
+                                                        <div className="text-[11px] text-slate-400 font-medium mb-2">Post Type</div>
+                                                        <div className="flex items-center gap-2">
+                                                            <span className="text-[12px] text-indigo-400 font-semibold">📎 {stats.withMedia}</span>
+                                                            <span className="text-slate-600">·</span>
+                                                            <span className="text-[12px] text-slate-400 font-semibold">📝 {stats.textOnly}</span>
+                                                        </div>
+                                                        <div className="text-[11px] text-slate-500 mt-1">With media · Text only</div>
+                                                    </div>
+                                                </div>
+
+                                                {/* Spark bar chart */}
+                                                {stats.byDay?.length > 0 && (
+                                                    <div>
+                                                        <div className="text-[11px] text-slate-500 mb-2">Posts per day</div>
+                                                        <div className="flex items-end gap-1 h-10">
+                                                            {stats.byDay.map(({ date, count }) => {
+                                                                const max = Math.max(...stats.byDay.map(d => d.count), 1);
+                                                                const h = Math.max((count / max) * 100, count > 0 ? 15 : 4);
+                                                                return (
+                                                                    <div key={date} className="flex-1 flex flex-col items-center gap-0.5 group relative">
+                                                                        <div
+                                                                            className={`w-full rounded-sm transition-all ${count > 0 ? 'bg-indigo-500 group-hover:bg-indigo-400' : 'bg-slate-800'}`}
+                                                                            style={{ height: `${h}%` }}
+                                                                        />
+                                                                        <div className="absolute -top-6 left-1/2 -translate-x-1/2 bg-slate-800 text-slate-200 text-[10px] px-1.5 py-0.5 rounded opacity-0 group-hover:opacity-100 whitespace-nowrap pointer-events-none z-10">
+                                                                            {date.slice(5)}: {count}
+                                                                        </div>
+                                                                    </div>
+                                                                );
+                                                            })}
+                                                        </div>
+                                                    </div>
+                                                )}
+                                            </>
+                                        )}
                                     </div>
                                 </div>
 
@@ -595,10 +1134,428 @@ const SocialDashboard = () => {
                                 </div>
                                 <Plus className="w-5 h-5 text-slate-500 group-hover:text-blue-400" />
                             </button>
+
+                            {/* X (Twitter) */}
+                            <button
+                                onClick={async () => {
+                                    try {
+                                        const response = await fetch(`${API_BASE_URL}/api/twitter/oauth/url`, {
+                                            headers: { 'Authorization': `Bearer ${authToken}` }
+                                        });
+                                        const data = await response.json();
+                                        if (data.success && data.url) {
+                                            window.location.href = data.url;
+                                        } else {
+                                            alert(data.error || 'Failed to get Twitter auth URL');
+                                        }
+                                    } catch (err) {
+                                        console.error('Twitter connect init error:', err);
+                                        alert('Failed to initiate Twitter/X connection');
+                                    }
+                                }}
+                                className="w-full flex items-center gap-4 p-4 rounded-xl border border-slate-800 bg-slate-950/50 hover:bg-slate-800/40 hover:border-slate-600/50 transition-all group cursor-pointer text-left"
+                            >
+                                <div className="w-10 h-10 rounded-full bg-black flex items-center justify-center text-white shrink-0 shadow-lg">
+                                    <XIcon className="w-5 h-5" />
+                                </div>
+                                <div className="flex-1">
+                                    <div className="text-[15px] text-slate-200 font-medium group-hover:text-white">X (Twitter)</div>
+                                    <div className="text-[13px] text-slate-400 mt-0.5">Connect your X account</div>
+                                </div>
+                                <Plus className="w-5 h-5 text-slate-500 group-hover:text-slate-300" />
+                            </button>
                         </div>
                     </div>
                 </div>
             )}
+
+            {/* ── Post Modal (2-step) ───────────────────────────────────────── */}
+            {isPreviewOpen && (() => {
+                const platformMeta = {
+                    linkedin: { label: 'LinkedIn', color: '#0A66C2', bg: 'bg-[#0A66C2]', ring: 'ring-[#0A66C2]/40', icon: <Linkedin className="w-4 h-4 fill-current" /> },
+                    facebook: { label: 'Facebook', color: '#1877F2', bg: 'bg-[#1877F2]', ring: 'ring-[#1877F2]/40', icon: <Facebook className="w-4 h-4 fill-current" /> },
+                    twitter: { label: 'X (Twitter)', color: '#000000', bg: 'bg-black', ring: 'ring-black/40', icon: <XIcon className="w-4 h-4" /> },
+                };
+
+                const toggleTarget = togglePostTarget;
+                const isTargeted = (profile) => {
+                    const key = profile.profileId || profile.name;
+                    return postTargets.some(p => (p.profileId || p.name) === key);
+                };
+
+                const grouped = connectedProfiles.reduce((acc, p) => {
+                    (acc[p.platform] = acc[p.platform] || []).push(p);
+                    return acc;
+                }, {});
+
+                const previewProfile = postTargets.find(p => p.platform === 'linkedin') || postTargets.find(p => p.platform === 'twitter') || linkedinProfiles[0];
+                const formatText = (text) => {
+                    const MAX = 280;
+                    const display = text.length > MAX ? text.slice(0, MAX) : text;
+                    return display.split('\n').map((line, i) => (
+                        <span key={i}>{line}{i < display.split('\n').length - 1 && <br />}</span>
+                    ));
+                };
+
+                return (
+                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+                        <div className="absolute inset-0 bg-slate-950/80 backdrop-blur-sm" onClick={() => !isPosting && setIsPreviewOpen(false)} />
+                        <div className="relative z-10 w-full max-w-lg flex flex-col gap-4 animate-in fade-in zoom-in-95 duration-200">
+
+                            {/* Header */}
+                            <div className="flex items-center gap-3 px-1">
+                                {previewStep === 2 && (
+                                    <button onClick={() => setPreviewStep(1)} className="text-slate-400 hover:text-white bg-slate-800 hover:bg-slate-700 rounded-full p-1.5 transition-colors shrink-0">
+                                        <ChevronLeft className="w-4 h-4" />
+                                    </button>
+                                )}
+                                <div className="flex-1">
+                                    <h3 className="text-white font-semibold text-[16px]">
+                                        {previewStep === 1 ? 'Where do you want to post?' : 'Post Preview'}
+                                    </h3>
+                                    <div className="flex items-center gap-1.5 mt-1">
+                                        {[1, 2].map(s => (
+                                            <div key={s} className={`h-1 rounded-full transition-all ${s === previewStep ? 'w-6 bg-indigo-400' : 'w-3 bg-slate-700'}`} />
+                                        ))}
+                                        <span className="text-[11px] text-slate-500 ml-1">Step {previewStep} of 2</span>
+                                    </div>
+                                </div>
+                                <button onClick={() => !isPosting && setIsPreviewOpen(false)} className="text-slate-400 hover:text-white bg-slate-800 hover:bg-slate-700 rounded-full p-1.5 transition-colors shrink-0">
+                                    <X className="w-4 h-4" />
+                                </button>
+                            </div>
+
+                            {previewStep === 1 ? (
+                                /* ── Step 1: Platform / Profile selection ── */
+                                <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden">
+                                    <div className="p-5 space-y-5">
+                                        {Object.entries(grouped).map(([platform, profiles]) => {
+                                            const meta = platformMeta[platform] || platformMeta.linkedin;
+                                            return (
+                                                <div key={platform}>
+                                                    <div className="flex items-center gap-2 mb-3">
+                                                        <div className={`w-5 h-5 rounded flex items-center justify-center text-white ${meta.bg}`}>
+                                                            {meta.icon}
+                                                        </div>
+                                                        <span className="text-[13px] font-semibold text-slate-300 uppercase tracking-wider">{meta.label}</span>
+                                                        <span className="text-[11px] text-slate-500">{profiles.length} profile{profiles.length > 1 ? 's' : ''}</span>
+                                                    </div>
+                                                    <div className="space-y-2">
+                                                        {profiles.map((profile, idx) => {
+                                                            const selected = isTargeted(profile);
+                                                            return (
+                                                                <button
+                                                                    key={idx}
+                                                                    onClick={() => toggleTarget(profile)}
+                                                                    className={`w-full flex items-center gap-3 p-3 rounded-xl border transition-all cursor-pointer text-left ${selected ? `border-[${meta.color}]/40 bg-[${meta.color}]/10 ring-1 ${meta.ring}` : 'border-slate-800 bg-slate-950/50 hover:border-slate-700'}`}
+                                                                >
+                                                                    <div className="relative shrink-0">
+                                                                        {profile.avatar ? (
+                                                                            <img src={profile.avatar} alt={profile.name} className="w-10 h-10 rounded-full object-cover" />
+                                                                        ) : (
+                                                                            <div className={`w-10 h-10 rounded-full ${meta.bg} flex items-center justify-center text-white font-bold`}>
+                                                                                {profile.name?.charAt(0)}
+                                                                            </div>
+                                                                        )}
+                                                                        <div className={`absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full ${meta.bg} flex items-center justify-center border-2 border-slate-900`}>
+                                                                            {meta.icon}
+                                                                        </div>
+                                                                    </div>
+                                                                    <div className="flex-1 min-w-0">
+                                                                        <p className="text-[14px] text-slate-200 font-medium truncate">{profile.name}</p>
+                                                                        <p className="text-[12px] text-slate-500">{profile.type}</p>
+                                                                    </div>
+                                                                    <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-all ${selected ? 'border-indigo-400 bg-indigo-500' : 'border-slate-600'}`}>
+                                                                        {selected && <svg className="w-2.5 h-2.5 text-white" fill="none" viewBox="0 0 12 12"><path d="M2 6l3 3 5-5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>}
+                                                                    </div>
+                                                                </button>
+                                                            );
+                                                        })}
+                                                    </div>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+
+                                    {/* ── Optional WhatsApp share ── */}
+                                    <div className="mx-5 mb-4 border border-slate-800 rounded-xl overflow-hidden">
+                                        <button
+                                            onClick={() => setWaShare(s => ({ ...s, enabled: !s.enabled, error: null }))}
+                                            className="w-full flex items-center gap-3 px-4 py-3 hover:bg-slate-800/50 transition-colors cursor-pointer"
+                                        >
+                                            <div className="w-7 h-7 rounded-full bg-[#25D366]/15 flex items-center justify-center shrink-0">
+                                                <MessageCircle className="w-4 h-4 text-[#25D366]" />
+                                            </div>
+                                            <div className="flex-1 text-left">
+                                                <p className="text-[13px] text-slate-300 font-medium">Share to WhatsApp first</p>
+                                                <p className="text-[11px] text-slate-500">Optional · via link or Business API</p>
+                                            </div>
+                                            <div className={`w-8 h-4 rounded-full transition-colors relative ${waShare.enabled ? 'bg-[#25D366]' : 'bg-slate-700'}`}>
+                                                <div className={`absolute top-0.5 w-3 h-3 rounded-full bg-white shadow transition-all ${waShare.enabled ? 'left-4' : 'left-0.5'}`} />
+                                            </div>
+                                        </button>
+
+                                        {waShare.enabled && (
+                                            <div className="border-t border-slate-800 p-4 space-y-3 bg-slate-950/40">
+                                                {/* Mode tabs */}
+                                                <div className="flex gap-1 bg-slate-900 rounded-lg p-1">
+                                                    {[{ id: 'link', icon: Link2, label: 'Share Link' }, { id: 'api', icon: MessageCircle, label: 'Send via API' }].map(({ id, icon: Icon, label }) => (
+                                                        <button
+                                                            key={id}
+                                                            onClick={() => setWaShare(s => ({ ...s, mode: id, error: null, sent: false }))}
+                                                            className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-md text-[12px] font-medium transition-all cursor-pointer ${waShare.mode === id ? 'bg-slate-700 text-white' : 'text-slate-400 hover:text-slate-300'}`}
+                                                        >
+                                                            <Icon className="w-3.5 h-3.5" />{label}
+                                                        </button>
+                                                    ))}
+                                                </div>
+
+                                                {waShare.mode === 'link' ? (
+                                                    /* Share Link mode */
+                                                    <div className="space-y-2">
+                                                        <p className="text-[11px] text-slate-400">Opens WhatsApp with your post pre-filled. Works without any API setup.</p>
+                                                        <div className="flex gap-2">
+                                                            <button
+                                                                onClick={() => {
+                                                                    const url = `https://wa.me/?text=${encodeURIComponent(postText)}`;
+                                                                    navigator.clipboard.writeText(url);
+                                                                    setWaShare(s => ({ ...s, copied: true, opened: true }));
+                                                                    setTimeout(() => setWaShare(s => ({ ...s, copied: false })), 2000);
+                                                                }}
+                                                                className="flex-1 flex items-center justify-center gap-1.5 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 text-[12px] font-medium rounded-lg transition-colors cursor-pointer"
+                                                            >
+                                                                {waShare.copied ? <><Check className="w-3.5 h-3.5 text-emerald-400" /> Copied!</> : <><Copy className="w-3.5 h-3.5" /> Copy Link</>}
+                                                            </button>
+                                                            <a
+                                                                href={`https://wa.me/?text=${encodeURIComponent(postText)}`}
+                                                                target="_blank"
+                                                                rel="noopener noreferrer"
+                                                                onClick={() => setWaShare(s => ({ ...s, opened: true }))}
+                                                                className="flex-1 flex items-center justify-center gap-1.5 py-2 bg-[#25D366]/20 hover:bg-[#25D366]/30 text-[#25D366] text-[12px] font-medium rounded-lg transition-colors cursor-pointer border border-[#25D366]/30"
+                                                            >
+                                                                <ExternalLink className="w-3.5 h-3.5" /> Open WhatsApp
+                                                            </a>
+                                                        </div>
+                                                    </div>
+                                                ) : (
+                                                    /* Send via API mode — uses 'acknowledgement' template */
+                                                    <div className="space-y-2">
+                                                        <p className="text-[11px] text-slate-400">Sends a post preview with <span className="text-emerald-400 font-medium">✓ Approve</span> / <span className="text-red-400 font-medium">✗ Disapprove</span> buttons via WhatsApp template.</p>
+                                                        <input
+                                                            type="text"
+                                                            value={waShare.recipientName || ''}
+                                                            onChange={e => setWaShare(s => ({ ...s, recipientName: e.target.value, error: null }))}
+                                                            placeholder="Recipient name (e.g. Rahul)"
+                                                            className="w-full bg-slate-800 border border-slate-700 text-slate-200 text-[13px] rounded-lg px-3 py-2 focus:outline-none focus:border-[#25D366]/50 placeholder:text-slate-600"
+                                                        />
+                                                        <div className="flex gap-2">
+                                                            <input
+                                                                type="tel"
+                                                                value={waShare.phone}
+                                                                onChange={e => setWaShare(s => ({ ...s, phone: e.target.value, error: null }))}
+                                                                placeholder="Phone (e.g. 9876543210)"
+                                                                className="flex-1 bg-slate-800 border border-slate-700 text-slate-200 text-[13px] rounded-lg px-3 py-2 focus:outline-none focus:border-[#25D366]/50 placeholder:text-slate-600"
+                                                            />
+                                                            <button
+                                                                onClick={async () => {
+                                                                    if (!waShare.phone.trim()) return;
+                                                                    setWaShare(s => ({ ...s, sending: true, error: null }));
+                                                                    try {
+                                                                        const res = await fetch(`${API_BASE_URL}/api/linkedin/whatsapp-share`, {
+                                                                            method: 'POST',
+                                                                            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${authToken}` },
+                                                                            body: JSON.stringify({
+                                                                                phone: waShare.phone,
+                                                                                name: waShare.recipientName || waShare.phone,
+                                                                                text: postText,
+                                                                                title: postText.split('\n')[0].slice(0, 60) || 'LinkedIn Post',
+                                                                                niche: mediaAttachment?.mediaCategory || 'General',
+                                                                                profileId: selectedProfileIds[0] || null,
+                                                                                visibility: postVisibility,
+                                                                                assetUrn: mediaAttachment?.assetUrn || null,
+                                                                                mediaCategory: mediaAttachment?.mediaCategory || null,
+                                                                            }),
+                                                                        }).then(r => r.json());
+                                                                        if (!res.success) throw new Error(res.error);
+                                                                        setWaShare(s => ({ ...s, sending: false, sent: true }));
+                                                                    } catch (err) {
+                                                                        setWaShare(s => ({ ...s, sending: false, error: err.message }));
+                                                                    }
+                                                                }}
+                                                                disabled={waShare.sending || !waShare.phone.trim() || waShare.sent}
+                                                                className="px-3 py-2 bg-[#25D366]/20 hover:bg-[#25D366]/30 disabled:opacity-50 disabled:cursor-not-allowed text-[#25D366] text-[12px] font-medium rounded-lg border border-[#25D366]/30 flex items-center gap-1.5 transition-colors cursor-pointer whitespace-nowrap"
+                                                            >
+                                                                {waShare.sending ? <span className="w-3 h-3 border-2 border-[#25D366]/30 border-t-[#25D366] rounded-full animate-spin" /> : waShare.sent ? <><Check className="w-3.5 h-3.5" /> Sent!</> : <><MessageCircle className="w-3.5 h-3.5" /> Send</>}
+                                                            </button>
+                                                        </div>
+                                                        {waShare.error && <p className="text-[11px] text-red-400">✕ {waShare.error}</p>}
+                                                    </div>
+                                                )}
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    <div className="px-5 pb-5 flex gap-3">
+                                        <button onClick={() => setIsPreviewOpen(false)} className="flex-1 px-4 py-2.5 rounded-lg border border-slate-700 text-slate-300 hover:bg-slate-800 text-sm font-medium transition-colors cursor-pointer">
+                                            Cancel
+                                        </button>
+                                        <button
+                                            onClick={() => setPreviewStep(2)}
+                                            disabled={postTargets.length === 0}
+                                            className="flex-1 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed text-white px-4 py-2.5 rounded-lg text-sm font-medium flex items-center justify-center gap-2 transition-colors cursor-pointer"
+                                        >
+                                            Preview Post →
+                                        </button>
+                                    </div>
+                                </div>
+
+                            ) : (
+                                /* ── Step 2: Preview ── */
+                                <>
+                                    <div className="bg-white rounded-xl overflow-hidden shadow-2xl">
+                                        <div className="px-4 pt-4 pb-3">
+                                            <div className="flex items-start gap-3">
+                                                <div className="relative shrink-0">
+                                                    {previewProfile?.avatar ? (
+                                                        <img src={previewProfile.avatar} alt={previewProfile?.name} className="w-12 h-12 rounded-full object-cover border border-gray-200" />
+                                                    ) : (
+                                                        <div className="w-12 h-12 rounded-full bg-[#0A66C2] flex items-center justify-center text-white font-bold text-lg">
+                                                            {previewProfile?.name?.charAt(0) || 'U'}
+                                                        </div>
+                                                    )}
+                                                </div>
+                                                <div className="flex-1 min-w-0">
+                                                    <div className="font-semibold text-[14px] text-gray-900 leading-tight">{previewProfile?.name || userName}</div>
+                                                    <div className="text-[12px] text-gray-500 mt-0.5">LinkedIn Member</div>
+                                                    <div className="flex items-center gap-1 mt-0.5">
+                                                        <span className="text-[11px] text-gray-400">Just now ·</span>
+                                                        {postVisibility === 'PUBLIC'
+                                                            ? <svg className="w-3 h-3 text-gray-400" fill="currentColor" viewBox="0 0 16 16"><path d="M8 0a8 8 0 100 16A8 8 0 008 0zM1.07 9h2.93a13.07 13.07 0 00.39 2.65A7.02 7.02 0 011.07 9zM4 7H1.07A7.02 7.02 0 013.39 4.35 13.07 13.07 0 004 7zm1 2h6a11.09 11.09 0 01-.43 2.81A11.1 11.1 0 018 12.99a11.1 11.1 0 01-2.57-.18A11.09 11.09 0 015 9zm0-2a11.09 11.09 0 01.43-2.81A11.1 11.1 0 018 3.01a11.1 11.1 0 012.57.18A11.09 11.09 0 0111 7H5zm7 2h2.93a7.02 7.02 0 01-2.32 2.65A13.07 13.07 0 0012 9zm0-2a13.07 13.07 0 00-.39-2.65A7.02 7.02 0 0113.93 7H12z"/></svg>
+                                                            : <svg className="w-3 h-3 text-gray-400" fill="currentColor" viewBox="0 0 16 16"><path d="M13 6a5 5 0 00-10 0v1H2a1 1 0 00-1 1v6a1 1 0 001 1h12a1 1 0 001-1V8a1 1 0 00-1-1h-1V6zm-7 0a3 3 0 016 0v1H6V6zm3 5.5a1 1 0 110-2 1 1 0 010 2z"/></svg>
+                                                        }
+                                                    </div>
+                                                </div>
+                                                <svg className="w-6 h-6 shrink-0" viewBox="0 0 24 24" fill="#0A66C2"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+                                            </div>
+                                        </div>
+
+                                        <div className="px-4 pb-3 text-[14px] text-gray-800 leading-[1.5] whitespace-pre-wrap">
+                                            {formatText(postText)}
+                                            {postText.length > 280 && <span className="text-[#0A66C2] font-medium cursor-pointer"> …see more</span>}
+                                        </div>
+
+                                        {mediaAttachment && (
+                                            <div className="mx-4 mb-3 rounded-lg overflow-hidden border border-gray-200 bg-gray-50">
+                                                {mediaAttachment.mediaCategory === 'IMAGE' && mediaAttachment.preview
+                                                    ? <img src={mediaAttachment.preview} alt="attachment" className="w-full max-h-72 object-cover" />
+                                                    : mediaAttachment.mediaCategory === 'VIDEO'
+                                                        ? <div className="flex items-center gap-3 p-3"><div className="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center"><Film className="w-5 h-5 text-purple-600" /></div><div><p className="text-[13px] font-medium text-gray-800 truncate">{mediaAttachment.file.name}</p><p className="text-[11px] text-gray-400">Video · {(mediaAttachment.file.size / 1024 / 1024).toFixed(1)} MB</p></div></div>
+                                                        : <div className="flex items-center gap-3 p-3"><div className="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center"><FileText className="w-5 h-5 text-orange-600" /></div><div><p className="text-[13px] font-medium text-gray-800 truncate">{mediaAttachment.file.name}</p><p className="text-[11px] text-gray-400">Document · {(mediaAttachment.file.size / 1024 / 1024).toFixed(1)} MB</p></div></div>
+                                                }
+                                            </div>
+                                        )}
+
+                                        <div className="border-t border-gray-200 px-4 py-1 flex items-center justify-between">
+                                            {[{ label: 'Like', icon: '👍' }, { label: 'Comment', icon: '💬' }, { label: 'Repost', icon: '🔁' }, { label: 'Send', icon: '✉️' }].map(({ label, icon }) => (
+                                                <button key={label} className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-gray-500 hover:bg-gray-100 text-[13px] font-medium transition-colors cursor-default">
+                                                    <span className="text-base leading-none">{icon}</span>{label}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+
+                                    {/* Publishing to summary */}
+                                    <div className="bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 flex flex-wrap gap-2 items-center">
+                                        <span className="text-[12px] text-slate-500 shrink-0">Publishing to:</span>
+                                        {postTargets.map((p, i) => {
+                                            const meta = platformMeta[p.platform] || platformMeta.linkedin;
+                                            return (
+                                                <span key={i} className="flex items-center gap-1.5 text-[12px] text-slate-300 bg-slate-800 px-2.5 py-1 rounded-full">
+                                                    <span className={`w-3.5 h-3.5 rounded flex items-center justify-center text-white ${meta.bg}`} style={{ fontSize: 8 }}>{meta.icon}</span>
+                                                    {p.name}
+                                                </span>
+                                            );
+                                        })}
+                                        <span className="ml-auto text-[12px] text-slate-400">{postVisibility === 'PUBLIC' ? '🌐 Public' : '🔒 Connections'}</span>
+                                    </div>
+
+                                    {/* WhatsApp gate / status */}
+                                    {waShare.enabled && (() => {
+                                        // Approved if: sent successfully, OR send was attempted but failed (they tried)
+                                        const waApproved = waShare.mode === 'api'
+                                            ? (waShare.sent || !!waShare.error)
+                                            : waShare.opened;
+
+                                        if (!waApproved) {
+                                            // Not attempted yet — block and prompt
+                                            return (
+                                                <div className="flex items-center gap-2.5 px-4 py-3 bg-[#25D366]/10 border border-[#25D366]/25 rounded-xl">
+                                                    <MessageCircle className="w-4 h-4 text-[#25D366] shrink-0" />
+                                                    <p className="text-[12px] text-slate-300">
+                                                        {waShare.mode === 'api'
+                                                            ? 'Send the WhatsApp message first — go back to Step 1.'
+                                                            : 'Open or copy the WhatsApp link first — go back to Step 1.'}
+                                                    </p>
+                                                    <button onClick={() => setPreviewStep(1)} className="ml-auto text-[12px] text-[#25D366] font-medium hover:underline cursor-pointer whitespace-nowrap">
+                                                        ← Back
+                                                    </button>
+                                                </div>
+                                            );
+                                        }
+
+                                        if (waShare.mode === 'api' && waShare.error) {
+                                            // Attempted but failed — warn but allow publish
+                                            return (
+                                                <div className="flex items-start gap-2.5 px-4 py-3 bg-amber-500/10 border border-amber-500/25 rounded-xl">
+                                                    <MessageCircle className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
+                                                    <div className="flex-1 min-w-0">
+                                                        <p className="text-[12px] text-amber-300 font-medium">WhatsApp send failed</p>
+                                                        <p className="text-[11px] text-slate-400 mt-0.5 break-words">{waShare.error}</p>
+                                                        <p className="text-[11px] text-slate-400 mt-1">You can still publish to social media.</p>
+                                                    </div>
+                                                </div>
+                                            );
+                                        }
+
+                                        if (waShare.sent) {
+                                            return (
+                                                <div className="flex items-start gap-2.5 px-4 py-3 bg-[#25D366]/10 border border-[#25D366]/25 rounded-xl">
+                                                    <Check className="w-4 h-4 text-[#25D366] shrink-0 mt-0.5" />
+                                                    <div>
+                                                        <p className="text-[12px] text-[#25D366] font-medium">Approval request sent via WhatsApp</p>
+                                                        <p className="text-[11px] text-slate-400 mt-0.5">Post will be published to LinkedIn automatically when approved. You can also publish manually below.</p>
+                                                    </div>
+                                                </div>
+                                            );
+                                        }
+
+                                        return null;
+                                    })()}
+
+                                    <div className="flex gap-3">
+                                        <button onClick={() => setIsPreviewOpen(false)} disabled={isPosting} className="flex-1 px-4 py-2.5 rounded-lg border border-slate-700 text-slate-300 hover:bg-slate-800 text-sm font-medium transition-colors cursor-pointer disabled:opacity-50">
+                                            Edit Post
+                                        </button>
+                                        <button
+                                            onClick={async () => { await handlePublish(); }}
+                                            disabled={isPosting || (waShare.enabled && !(waShare.mode === 'api' ? (waShare.sent || !!waShare.error) : waShare.opened))}
+                                            className="flex-1 bg-[#0A66C2] hover:bg-[#004182] disabled:opacity-50 disabled:cursor-not-allowed text-white px-4 py-2.5 rounded-lg text-sm font-medium flex items-center justify-center gap-2 transition-colors cursor-pointer shadow-lg shadow-blue-900/30"
+                                        >
+                                            {isPosting ? <><span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> Publishing...</> : <><Send className="w-4 h-4" /> Confirm & Publish</>}
+                                        </button>
+                                    </div>
+
+                                    {postStatus && (
+                                        <div className={`px-4 py-3 rounded-lg text-sm font-medium flex items-center gap-2 ${postStatus.type === 'success' ? 'bg-emerald-500/10 border border-emerald-500/30 text-emerald-400' : 'bg-red-500/10 border border-red-500/30 text-red-400'}`}>
+                                            {postStatus.type === 'success' ? '✓' : '✕'} {postStatus.message}
+                                        </div>
+                                    )}
+                                </>
+                            )}
+                        </div>
+                    </div>
+                );
+            })()}
         </div>
     );
 };

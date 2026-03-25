@@ -20,9 +20,10 @@ export const authenticateUser = async (req, res, next) => {
             return res.status(401).json({ success: false, error: 'Invalid or expired token' });
         }
 
-        // Attach user to request object
+        // Attach user and active workspace to request
         req.user = user;
         req.token = token;
+        req.workspaceId = req.headers['x-workspace-id'] || null;
         next();
     } catch (error) {
         console.error('Auth Middleware Error:', error);
