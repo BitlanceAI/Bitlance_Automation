@@ -73,75 +73,75 @@ const AuthorProfileForm = ({ formData, setFormData, showSaveOption = true, saveA
         <div className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                    <label className="block text-sm font-semibold mb-1 text-gray-700 dark:text-gray-300">
+                    <label className="block text-[10px] font-mono tracking-widest uppercase text-gray-500 mb-2">
                         Author Name *
                     </label>
                     <div className="relative">
-                        <User className="absolute left-3 top-3 text-gray-400" size={18} />
+                        <User className="absolute left-3 top-2.5 text-gray-500" size={18} />
                         <input
                             type="text"
                             name="name"
                             value={formData.name}
                             onChange={handleChange}
                             placeholder="e.g. John Doe"
-                            className="w-full pl-10 px-4 py-2 rounded-lg bg-gray-50 dark:bg-slate-900/50 border border-gray-200 dark:border-slate-700 outline-none focus:ring-2 focus:ring-indigo-500"
+                            className="w-full pl-10 px-4 py-2.5 rounded-[2px] bg-[#070707] border border-[#333] focus:ring-0 focus:border-[#26cece] outline-none transition-all text-white font-mono text-[14px] placeholder-gray-600"
                         />
                     </div>
                 </div>
 
                 <div>
-                    <label className="block text-sm font-semibold mb-1 text-gray-700 dark:text-gray-300">
+                    <label className="block text-[10px] font-mono tracking-widest uppercase text-gray-500 mb-2">
                         Role / Title
                     </label>
                     <div className="relative">
-                        <Briefcase className="absolute left-3 top-3 text-gray-400" size={18} />
+                        <Briefcase className="absolute left-3 top-2.5 text-gray-500" size={18} />
                         <input
                             type="text"
                             name="role"
                             value={formData.role}
                             onChange={handleChange}
                             placeholder="e.g. Senior Editor"
-                            className="w-full pl-10 px-4 py-2 rounded-lg bg-gray-50 dark:bg-slate-900/50 border border-gray-200 dark:border-slate-700 outline-none focus:ring-2 focus:ring-indigo-500"
+                            className="w-full pl-10 px-4 py-2.5 rounded-[2px] bg-[#070707] border border-[#333] focus:ring-0 focus:border-[#26cece] outline-none transition-all text-white font-mono text-[14px] placeholder-gray-600"
                         />
                     </div>
                 </div>
             </div>
 
             <div>
-                <label className="block text-sm font-semibold mb-1 text-gray-700 dark:text-gray-300">
+                <label className="block text-[10px] font-mono tracking-widest uppercase text-gray-500 mb-2">
                     Bio
                 </label>
                 <div className="relative">
-                    <FileText className="absolute left-3 top-3 text-gray-400" size={18} />
+                    <FileText className="absolute left-3 top-3 text-gray-500" size={18} />
                     <textarea
                         name="bio"
                         value={formData.bio}
                         onChange={handleChange}
                         placeholder="Short biography..."
                         rows="3"
-                        className="w-full pl-10 px-4 py-2 rounded-lg bg-gray-50 dark:bg-slate-900/50 border border-gray-200 dark:border-slate-700 outline-none focus:ring-2 focus:ring-indigo-500"
+                        className="w-full pl-10 px-4 py-3 rounded-[2px] bg-[#070707] border border-[#333] focus:ring-0 focus:border-[#26cece] outline-none transition-all text-white font-mono text-[14px] placeholder-gray-600 custom-scrollbar"
                     />
                 </div>
             </div>
 
             <div>
-                <label className="block text-sm font-semibold mb-1 text-gray-700 dark:text-gray-300">
+                <label className="block text-[10px] font-mono tracking-widest uppercase text-gray-500 mb-2">
                     Profile Image
                 </label>
 
                 {formData.profile_image ? (
-                    <div className="flex items-center gap-4 p-3 bg-gray-50 dark:bg-slate-900/50 rounded-lg border border-gray-200 dark:border-slate-700">
+                    <div className="flex items-center gap-4 p-3 bg-[#111111] rounded-[2px] border border-[#333]">
                         <img
                             src={formData.profile_image}
                             alt="Profile"
-                            className="w-16 h-16 rounded-full object-cover border-2 border-white dark:border-slate-600 shadow-sm"
+                            className="w-16 h-16 rounded-[2px] object-cover shadow-sm"
                         />
                         <div className="flex-1 overflow-hidden">
-                            <p className="text-sm font-medium text-gray-900 dark:text-white truncate">Image Uploaded</p>
+                            <p className="text-[12px] font-mono tracking-widest uppercase text-white truncate">Image Uploaded</p>
                             <button
                                 type="button"
                                 onClick={removeImage}
-                                className="text-xs text-red-500 hover:text-red-600 flex items-center gap-1 mt-1"
+                                className="text-[10px] font-mono uppercase tracking-widest text-red-500 hover:text-red-400 flex items-center gap-1 mt-2"
                             >
                                 <X size={12} /> Remove
                             </button>
@@ -159,25 +159,25 @@ const AuthorProfileForm = ({ formData, setFormData, showSaveOption = true, saveA
                         />
                         <label
                             htmlFor="profile-image-upload"
-                            className={`flex items-center gap-2 w-full px-4 py-3 rounded-lg border-2 border-dashed cursor-pointer transition-colors ${uploading
-                                    ? 'bg-gray-100 border-gray-300 cursor-not-allowed'
-                                    : 'bg-gray-50 dark:bg-slate-900/50 border-gray-300 dark:border-slate-600 hover:border-indigo-500 hover:bg-indigo-50 dark:hover:bg-indigo-900/20'
+                            className={`flex flex-col items-center justify-center gap-2 w-full p-4 rounded-[2px] border-2 border-dashed cursor-pointer transition-colors ${uploading
+                                    ? 'bg-[#111111] border-[#333] cursor-not-allowed'
+                                    : 'bg-[#070707] border-[#333] hover:border-[#26cece] hover:bg-[#111111]'
                                 }`}
                         >
                             {uploading ? (
                                 <>
                                     <Loader2 className="animate-spin text-gray-500" size={20} />
-                                    <span className="text-gray-500 text-sm">Uploading...</span>
+                                    <span className="text-[10px] font-mono tracking-widest uppercase text-gray-500 mt-2">Uploading...</span>
                                 </>
                             ) : (
                                 <>
-                                    <Upload className="text-gray-400" size={20} />
-                                    <span className="text-gray-500 dark:text-gray-400 text-sm">Click to upload photo</span>
+                                    <Upload className="text-[#26cece]" size={20} />
+                                    <span className="text-[10px] font-mono tracking-widest uppercase text-gray-500 mt-2">Click to upload photo</span>
                                 </>
                             )}
                         </label>
                         {uploadError && (
-                            <p className="text-xs text-red-500 mt-1">{uploadError}</p>
+                            <p className="text-[10px] font-mono uppercase tracking-widest text-red-500 mt-2">{uploadError}</p>
                         )}
                     </div>
                 )}
@@ -185,89 +185,89 @@ const AuthorProfileForm = ({ formData, setFormData, showSaveOption = true, saveA
 
             {/* Social Links */}
             <div>
-                <label className="block text-sm font-semibold mb-2 text-gray-700 dark:text-gray-300">
+                <label className="block text-[10px] font-mono tracking-widest uppercase text-gray-500 mb-3">
                     Social Links (Optional)
                 </label>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="relative">
-                        <Facebook className="absolute left-3 top-3 text-gray-400" size={16} />
+                        <Facebook className="absolute left-3 top-2.5 text-gray-500" size={16} />
                         <input
                             type="text"
                             name="facebook"
                             value={formData.social_links?.facebook || ''}
                             onChange={handleSocialChange}
                             placeholder="Facebook URL"
-                            className="w-full pl-10 px-3 py-2 text-sm rounded-lg bg-gray-50 dark:bg-slate-900/50 border border-gray-200 dark:border-slate-700 outline-none focus:ring-2 focus:ring-indigo-500"
+                            className="w-full pl-9 px-3 py-2.5 rounded-[2px] bg-[#070707] border border-[#333] focus:ring-0 focus:border-[#26cece] outline-none transition-all text-white font-mono text-[14px] placeholder-gray-600"
                         />
                     </div>
                     <div className="relative">
-                        <Twitter className="absolute left-3 top-3 text-gray-400" size={16} />
+                        <Twitter className="absolute left-3 top-2.5 text-gray-500" size={16} />
                         <input
                             type="text"
                             name="twitter"
                             value={formData.social_links?.twitter || ''}
                             onChange={handleSocialChange}
                             placeholder="Twitter/X URL"
-                            className="w-full pl-10 px-3 py-2 text-sm rounded-lg bg-gray-50 dark:bg-slate-900/50 border border-gray-200 dark:border-slate-700 outline-none focus:ring-2 focus:ring-indigo-500"
+                            className="w-full pl-9 px-3 py-2.5 rounded-[2px] bg-[#070707] border border-[#333] focus:ring-0 focus:border-[#26cece] outline-none transition-all text-white font-mono text-[14px] placeholder-gray-600"
                         />
                     </div>
                     <div className="relative">
-                        <Linkedin className="absolute left-3 top-3 text-gray-400" size={16} />
+                        <Linkedin className="absolute left-3 top-2.5 text-gray-500" size={16} />
                         <input
                             type="text"
                             name="linkedin"
                             value={formData.social_links?.linkedin || ''}
                             onChange={handleSocialChange}
                             placeholder="LinkedIn URL"
-                            className="w-full pl-10 px-3 py-2 text-sm rounded-lg bg-gray-50 dark:bg-slate-900/50 border border-gray-200 dark:border-slate-700 outline-none focus:ring-2 focus:ring-indigo-500"
+                            className="w-full pl-9 px-3 py-2.5 rounded-[2px] bg-[#070707] border border-[#333] focus:ring-0 focus:border-[#26cece] outline-none transition-all text-white font-mono text-[14px] placeholder-gray-600"
                         />
                     </div>
                     <div className="relative">
-                        <Globe className="absolute left-3 top-3 text-gray-400" size={16} />
+                        <Globe className="absolute left-3 top-2.5 text-gray-500" size={16} />
                         <input
                             type="text"
                             name="website"
                             value={formData.social_links?.website || ''}
                             onChange={handleSocialChange}
                             placeholder="Website URL"
-                            className="w-full pl-10 px-3 py-2 text-sm rounded-lg bg-gray-50 dark:bg-slate-900/50 border border-gray-200 dark:border-slate-700 outline-none focus:ring-2 focus:ring-indigo-500"
+                            className="w-full pl-9 px-3 py-2.5 rounded-[2px] bg-[#070707] border border-[#333] focus:ring-0 focus:border-[#26cece] outline-none transition-all text-white font-mono text-[14px] placeholder-gray-600"
                         />
                     </div>
                     <div className="relative">
-                        <Mail className="absolute left-3 top-3 text-gray-400" size={16} />
+                        <Mail className="absolute left-3 top-2.5 text-gray-500" size={16} />
                         <input
                             type="text"
                             name="email"
                             value={formData.social_links?.email || ''}
                             onChange={handleSocialChange}
                             placeholder="Email Address"
-                            className="w-full pl-10 px-3 py-2 text-sm rounded-lg bg-gray-50 dark:bg-slate-900/50 border border-gray-200 dark:border-slate-700 outline-none focus:ring-2 focus:ring-indigo-500"
+                            className="w-full pl-9 px-3 py-2.5 rounded-[2px] bg-[#070707] border border-[#333] focus:ring-0 focus:border-[#26cece] outline-none transition-all text-white font-mono text-[14px] placeholder-gray-600"
                         />
                     </div>
                     <div className="relative">
-                        <Phone className="absolute left-3 top-3 text-gray-400" size={16} />
+                        <Phone className="absolute left-3 top-2.5 text-gray-500" size={16} />
                         <input
                             type="text"
                             name="phone"
                             value={formData.social_links?.phone || ''}
                             onChange={handleSocialChange}
                             placeholder="Phone Number"
-                            className="w-full pl-10 px-3 py-2 text-sm rounded-lg bg-gray-50 dark:bg-slate-900/50 border border-gray-200 dark:border-slate-700 outline-none focus:ring-2 focus:ring-indigo-500"
+                            className="w-full pl-9 px-3 py-2.5 rounded-[2px] bg-[#070707] border border-[#333] focus:ring-0 focus:border-[#26cece] outline-none transition-all text-white font-mono text-[14px] placeholder-gray-600"
                         />
                     </div>
                 </div>
             </div>
 
             {showSaveOption && (
-                <div className="flex items-center gap-2 pt-2">
+                <div className="flex items-center gap-3 pt-4 border-t border-[#333] mt-2">
                     <input
                         type="checkbox"
                         id="saveAsProfile"
                         checked={saveAsProfile}
                         onChange={(e) => setSaveAsProfile(e.target.checked)}
-                        className="w-4 h-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                        className="w-4 h-4 bg-[#070707] border-[#333] text-[#26cece] focus:ring-0 rounded-[2px]"
                     />
-                    <label htmlFor="saveAsProfile" className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                    <label htmlFor="saveAsProfile" className="text-[12px] font-mono tracking-widest uppercase text-gray-400 cursor-pointer">
                         Save this as a new Author Profile for future use
                     </label>
                 </div>

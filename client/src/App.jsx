@@ -43,6 +43,7 @@ import PrivacyPolicy from './pages/PrivacyPolicy';
 import TermsPage from './pages/TermsPage';
 import TestimonialDemo from './pages/TestimonialDemo';
 import ThankYouPage from './pages/ThankYouPage';
+import QuizLandingPage from './pages/QuizLandingPage';
 import VoiceBotFeaturesPage from './pages/VoiceBotFeaturesPage';
 import BlogAgentFeaturesPage from './pages/BlogAgentFeaturesPage';
 import ContactPage from './pages/ContactPage';
@@ -145,7 +146,8 @@ function App() {
     (normalizedPath.includes('blogs/new') || normalizedPath.includes('blogs/edit')) ||
     normalizedPath.includes('push') ||
     normalizedPath.startsWith('/l/') ||
-    normalizedPath.includes('/apply/audit'); // Hide Main Nav for Landing Pages and Audit Funnel
+    normalizedPath.includes('/apply/audit') ||
+    normalizedPath.includes('/apply'); // Hide Main Nav for Landing Pages and Audit Funnel
 
   return (
     <ThemeProvider>
@@ -283,6 +285,7 @@ function App() {
             <Route path="/l/offer/:campaignId" element={<OfferLanding />} />
             {/* General Lead Gen Custom Funnel */}
             <Route path="/apply/audit" element={<RealEstateLeadGen />} />
+            <Route path="/apply" element={<QuizLandingPage />} />
             <Route path="/thank-you" element={<ThankYouPage />} />
 
             <Route path="/testimonial-demo" element={<TestimonialDemo />} />

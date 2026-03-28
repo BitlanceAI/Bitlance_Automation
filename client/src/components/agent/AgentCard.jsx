@@ -14,58 +14,51 @@ const AgentCard = ({
         <div
             onClick={onClick}
             className="
-        group relative bg-white dark:bg-slate-800 rounded-2xl shadow-md 
-        hover:shadow-2xl hover:-translate-y-1 
+        group relative bg-[#111111] rounded-[2px] 
+        hover:-translate-y-1 hover:shadow-[4px_4px_0_0_#26CECE]
         transition-all duration-300 ease-in-out
-        p-8 flex flex-col h-full cursor-pointer
-        border border-gray-100 dark:border-slate-700 hover:border-gray-200 dark:hover:border-slate-600
+        p-5 flex flex-col h-full cursor-pointer
+        border border-[#1E1E1E] hover:border-[#333]
       "
         >
             {/* Status Badge - Top Right */}
-            <div className="absolute top-6 right-6">
+            <div className="absolute top-4 right-4 scale-90 origin-top-right">
                 <StatusBadge status={status} />
             </div>
 
             {/* Icon */}
-            <div className="mb-6">
+            <div className="mb-3">
                 <div className="
-          w-16 h-16 rounded-2xl bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-indigo-900/20 dark:to-purple-900/20
-          flex items-center justify-center text-4xl text-indigo-600 dark:text-indigo-400
-          group-hover:scale-110 transition-transform duration-300
-        ">
-                    <Icon className="w-8 h-8" />
+                  w-10 h-10 rounded-[2px] bg-[#070707] border border-[#333]
+                  flex items-center justify-center text-[#26CECE]
+                  group-hover:bg-[#26CECE] group-hover:text-[#070707] transition-colors duration-300
+                ">
+                    <Icon className="w-5 h-5" />
                 </div>
             </div>
 
             {/* Title */}
-            <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-3 leading-tight">
+            <h3 className="text-[15px] font-bold text-white mb-2 leading-tight font-['Space_Grotesk'] tracking-widest uppercase">
                 {title}
             </h3>
 
             {/* Description */}
-            <p className="text-gray-600 dark:text-gray-300 text-sm leading-relaxed mb-6 flex-grow">
+            <p className="text-gray-400 text-[11px] font-mono leading-relaxed mb-4 flex-grow tracking-wide">
                 {description}
             </p>
 
             {/* Features List */}
-            <div className="space-y-3 pt-4 border-t border-gray-100 dark:border-slate-700">
+            <div className="space-y-2 pt-3 border-t border-[#1E1E1E]">
                 {features.map((feature, index) => (
                     <div
                         key={index}
-                        className="flex items-start gap-3 text-sm text-gray-700 dark:text-gray-300"
+                        className="flex items-start gap-2 text-[10px] text-gray-500 font-mono tracking-widest uppercase"
                     >
-                        <CheckCircle2 className="w-5 h-5 text-indigo-600 dark:text-indigo-400 flex-shrink-0 mt-0.5" />
+                        <CheckCircle2 className="w-3 h-3 text-[#26CECE] flex-shrink-0 mt-[1px]" />
                         <span className="leading-snug">{feature}</span>
                     </div>
                 ))}
             </div>
-
-            {/* Hover Indicator */}
-            <div className="
-        absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r 
-        from-indigo-600 to-purple-600 rounded-b-2xl
-        opacity-0 group-hover:opacity-100 transition-opacity duration-300
-      "></div>
         </div>
     );
 };

@@ -325,10 +325,13 @@ const MetaAdsLayout = () => {
 
     if (loading) {
         return (
-            <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-blue-950/20 flex items-center justify-center">
-                <div className="text-center">
-                    <RefreshCw className="h-8 w-8 animate-spin text-blue-500 mx-auto mb-4" />
-                    <p className="text-gray-400">Loading Meta Ads...</p>
+            <div className="min-h-screen bg-[#070707] flex flex-col items-center justify-center relative overflow-hidden font-mono">
+                {/* Brutalist background grid pattern */}
+                <div className="absolute inset-0 z-0 opacity-10" style={{ backgroundImage: 'linear-gradient(#333 1px, transparent 1px), linear-gradient(90deg, #333 1px, transparent 1px)', backgroundSize: '40px 40px' }}></div>
+                <div className="text-center z-10 relative bg-[#111111] p-10 rounded-[2px] border border-[#333] shadow-[8px_8px_0_0_#26cece]">
+                    <div className="w-16 h-16 border-4 border-[#333] border-t-[#26cece] rounded-full animate-spin mx-auto mb-6"></div>
+                    <p className="text-[#26cece] tracking-widest uppercase font-bold text-lg">Initializing Meta Link</p>
+                    <p className="text-gray-500 text-[10px] mt-2">Checking active connections...</p>
                 </div>
             </div>
         );
@@ -336,64 +339,71 @@ const MetaAdsLayout = () => {
 
     return (
         <MetaAdsContext.Provider value={ctx}>
-            <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-blue-950/20 flex flex-col">
+            <div className="min-h-screen bg-[#070707] text-white flex flex-col font-mono selection:bg-[#26cece] selection:text-[#070707]">
                 <SEOHead canonicalUrl="https://www.bitlancetechhub.com/dashboard/agents/meta" noIndex={true} />
 
                 {/* ── Sticky Header ── */}
-                <header className="sticky top-0 z-50 backdrop-blur-xl bg-slate-900/80 border-b border-slate-700/50">
+                <header className="sticky top-0 z-50 bg-[#111111] border-b border-[#1E1E1E]">
                     <div className="flex items-center justify-between h-16 px-4 sm:px-6">
                         {/* Left: back + logo */}
-                        <div className="flex items-center gap-4">
+                        <div className="flex items-center gap-6">
                             <button
                                 onClick={() => navigate('/agents')}
-                                className="p-2 rounded-lg hover:bg-slate-800 text-gray-400 hover:text-white transition-colors"
+                                className="p-2 border border-[#333] rounded-[2px] hover:bg-white hover:text-[#070707] text-gray-400 hover:-translate-x-1 hover:shadow-[4px_4px_0_0_#26cece] transition-all uppercase tracking-widest text-[10px] flex items-center gap-2"
                                 title="Back to Agents"
                             >
-                                <ArrowLeft size={20} />
+                                <ArrowLeft size={16} /> Exit
                             </button>
-                            <div className="flex items-center gap-3">
-                                <div className="p-2 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 shadow-lg shadow-blue-500/25">
-                                    <Target className="h-5 w-5 text-white" />
+                            <div className="flex items-center gap-4">
+                                <div className="p-2.5 rounded-[2px] bg-[#26cece] text-[#070707] border border-[#070707] shadow-[2px_2px_0_0_#333]">
+                                    <Target className="h-5 w-5 fill-current" />
                                 </div>
                                 <div>
-                                    <h1 className="text-base font-bold text-white leading-none">Meta Ads Automation</h1>
-                                    <p className="text-xs text-gray-400 mt-0.5">
-                                        {isConnected ? `${stats.pages} Page${stats.pages !== 1 ? 's' : ''} Connected` : 'Connect your Meta account'}
+                                    <h1 className="text-lg font-bold text-white font-['Space_Grotesk'] tracking-tight capitalize leading-none">
+                                        Meta Control Center
+                                    </h1>
+                                    <p className="text-[10px] uppercase font-mono text-gray-500 mt-1 tracking-widest">
+                                        {isConnected ? `ACTIVE // ${stats.pages} NODE${stats.pages !== 1 ? 'S' : ''} LINKED` : 'STATUS // OFFLINE'}
                                     </p>
                                 </div>
                             </div>
                         </div>
 
                         {/* Right: status + credits */}
-                        <div className="flex items-center gap-3">
-                            <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold ${isConnected
-                                ? 'bg-emerald-500/15 text-emerald-400 ring-1 ring-emerald-500/30'
-                                : 'bg-slate-700 text-gray-400'
+                        <div className="flex items-center gap-4">
+                            <div className={`flex items-center gap-2 px-3 py-1.5 rounded-[2px] text-[10px] uppercase font-bold tracking-widest border ${isConnected
+                                ? 'bg-[#070707] border-[#26cece] text-[#26cece]'
+                                : 'bg-[#070707] border-red-500/50 text-red-500'
                                 }`}>
                                 {isConnected ? <Link2 className="h-3.5 w-3.5" /> : <Unlink className="h-3.5 w-3.5" />}
-                                {isConnected ? 'Connected' : 'Not Connected'}
+                                {isConnected ? 'Link Active' : 'Disconnected'}
                             </div>
-                            <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-blue-500/10 border border-blue-500/20">
-                                <Zap className="h-4 w-4 text-blue-400" />
-                                <span className="text-sm font-bold text-blue-400">{credits?.toLocaleString() || 0}</span>
+                            <div className="hidden sm:flex items-center gap-3 px-3 py-1.5 rounded-[2px] bg-[#070707] border border-[#333]">
+                                <Zap className="h-4 w-4 text-[#26cece] fill-[#26cece]" />
+                                <span className="text-[12px] font-mono text-white tracking-widest">
+                                    {credits?.toLocaleString() || 0} CREDITS
+                                </span>
                             </div>
                         </div>
                     </div>
                 </header>
 
                 {/* ── Body: Sidebar + Content ── */}
-                <div className="flex flex-1 overflow-hidden">
+                <div className="flex flex-1 overflow-hidden relative">
+                    {/* Brutalist Grid Background overlay for main content area (behind everything) */}
+                    <div className="absolute inset-0 z-0 opacity-5 pointer-events-none" style={{ backgroundImage: 'linear-gradient(#26cece 1px, transparent 1px), linear-gradient(90deg, #26cece 1px, transparent 1px)', backgroundSize: '60px 60px' }}></div>
+
                     {/* Sidebar */}
-                    <aside className="w-56 shrink-0 border-r border-slate-700/50 bg-slate-900/50 backdrop-blur-sm flex flex-col pt-4 pb-6 px-3">
-                        <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-500 px-3 mb-3">Navigation</p>
-                        <nav className="flex flex-col gap-1">
+                    <aside className="w-64 shrink-0 border-r border-[#1E1E1E] bg-[#111111] flex flex-col pt-6 pb-6 px-4 z-10 relative">
+                        <p className="text-[10px] font-bold uppercase font-['Space_Grotesk'] tracking-widest text-[#26cece] mb-4 pl-2 opacity-80 border-b border-[#333] pb-2">Modules</p>
+                        <nav className="flex flex-col gap-2">
                             {NAV_ITEMS.map(({ label, path, icon: Icon }) => (
                                 <button
                                     key={path}
                                     onClick={() => navigate(path)}
-                                    className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150 w-full text-left ${isActive(path)
-                                        ? 'bg-gradient-to-r from-blue-600/80 to-indigo-600/80 text-white shadow-lg shadow-blue-900/40'
-                                        : 'text-slate-400 hover:bg-slate-800/70 hover:text-white'
+                                    className={`flex items-center gap-3 px-4 py-3 rounded-[2px] text-[12px] font-mono tracking-widest uppercase transition-all duration-200 w-full text-left border ${isActive(path)
+                                        ? 'bg-[#26cece] border-[#070707] text-[#070707] font-bold shadow-[4px_4px_0_0_#333] translate-x-1'
+                                        : 'bg-transparent border-transparent text-gray-400 hover:text-white hover:border-[#333] hover:bg-[#070707]'
                                         }`}
                                 >
                                     <Icon className="h-4 w-4 shrink-0" />
@@ -403,22 +413,22 @@ const MetaAdsLayout = () => {
                         </nav>
 
                         {/* Connection quick-action */}
-                        <div className="mt-auto">
+                        <div className="mt-auto pt-6 border-t border-[#333]">
                             {isConnected ? (
                                 <button
                                     onClick={handleRefresh}
-                                    className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white text-xs font-medium transition-colors"
+                                    className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-[2px] bg-[#070707] border border-[#333] hover:border-[#26cece] text-gray-400 hover:text-white text-[10px] font-mono tracking-widest uppercase transition-all hover:shadow-[4px_4px_0_0_#26cece] hover:-translate-y-1"
                                 >
-                                    <RefreshCw className={`h-3.5 w-3.5 ${refreshing ? 'animate-spin' : ''}`} />
-                                    Refresh Data
+                                    <RefreshCw className={`h-4 w-4 ${refreshing ? 'animate-spin text-[#26cece]' : ''}`} />
+                                    {refreshing ? 'Syncing...' : 'Force Sync'}
                                 </button>
                             ) : (
                                 <button
                                     onClick={() => setShowConnectModal(true)}
-                                    className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold transition-colors"
+                                    className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-[2px] bg-[#26cece] border border-[#070707] hover:bg-white text-[#070707] text-[12px] font-bold font-['Space_Grotesk'] uppercase tracking-widest transition-all hover:shadow-[4px_4px_0_0_#333] hover:-translate-y-1"
                                 >
-                                    <Link2 className="h-3.5 w-3.5" />
-                                    Connect Account
+                                    <Link2 className="h-4 w-4" />
+                                    Link Account
                                 </button>
                             )}
                         </div>

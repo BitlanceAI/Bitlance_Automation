@@ -4,6 +4,8 @@ import { ArrowRight, Loader2 } from 'lucide-react';
 import BlogCard from '../blog/BlogCard';
 import API_BASE_URL from '../../config';
 
+const TEAL = '#26CECE';
+
 const LatestBlogsSection = () => {
     const [articles, setArticles] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -33,24 +35,25 @@ const LatestBlogsSection = () => {
     }
 
     return (
-        <section className="py-24 bg-[#030303] border-t border-white/5 relative z-10">
+        <section className="py-24 bg-[#070707] border-t border-[#1E1E1E] relative z-10" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
             <div className="max-w-7xl mx-auto px-6">
                 <div className="flex flex-col md:flex-row justify-between items-end mb-16 gap-8 text-left">
                     <div className="max-w-xl">
-                        <h2 className="text-4xl md:text-5xl font-black text-white uppercase tracking-tighter mb-4">
+                        <h2 className="text-4xl md:text-5xl lg:text-5xl font-extrabold text-white tracking-tight mb-4 uppercase">
                             Latest from our Blog
                         </h2>
-                        <p className="text-lg text-white/40 font-medium leading-relaxed">
+                        <p className="text-lg text-white/60 mb-2 leading-relaxed">
                             Discover actionable insights, case studies, and modern strategies to scale your business with AI.
                         </p>
                     </div>
 
                     <Link
                         to="/blogs"
-                        className="hidden md:inline-flex items-center gap-2 text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300 font-semibold group"
+                        className="hidden md:inline-flex items-center gap-2 font-bold transition-all hover:scale-105 active:scale-95 group"
+                        style={{ color: TEAL }}
                     >
                         View all articles
-                        <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                        <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                     </Link>
                 </div>
 
@@ -69,10 +72,19 @@ const LatestBlogsSection = () => {
                 <div className="mt-12 md:hidden">
                     <Link
                         to="/blogs"
-                        className="inline-flex items-center justify-center gap-2 w-full px-6 py-3 rounded-xl border-2 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 font-semibold hover:border-indigo-500 dark:hover:border-indigo-500 transition-colors"
+                        className="inline-flex items-center justify-center gap-3 w-full px-6 py-4 transition-all hover:bg-[#1A1A1A] group"
+                        style={{
+                            background: '#111111',
+                            color: TEAL,
+                            border: '1px solid #1E1E1E',
+                            borderRadius: 2,
+                            fontFamily: "'Space Grotesk', sans-serif",
+                            fontWeight: 'bold',
+                            fontSize: '1rem'
+                        }}
                     >
                         View all articles
-                        <ArrowRight className="w-4 h-4" />
+                        <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                     </Link>
                 </div>
             </div>

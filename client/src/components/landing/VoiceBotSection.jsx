@@ -5,74 +5,108 @@ import TiltCard from '../ui/TiltCard';
 import ScrollReveal from '../ui/ScrollReveal';
 import { useNavigate } from 'react-router-dom';
 
+const TEAL = '#26CECE';
+
 const VoiceBotSection = ({ onOpenBooking }) => {
     const navigate = useNavigate();
     return (
-        <section className="py-24 relative overflow-hidden bg-[#030303]">
+        <section className="py-24 relative overflow-hidden bg-[#070707]">
             {/* Background glowing effects */}
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-violet-600/10 rounded-full blur-[100px] pointer-events-none" />
+            <div 
+                className="absolute top-1/2 left-1/4 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full blur-[140px] pointer-events-none transition-opacity duration-1000"
+                style={{ background: `${TEAL}0D` }}
+            />
 
             <ScrollReveal className="max-w-7xl mx-auto px-6 relative z-10">
                 <div className="grid lg:grid-cols-2 gap-16 items-center">
 
                     {/* Left Column: Content & Features */}
-                    <div className="space-y-12">
-                        <div className="text-left">
-                            <motion.h2
-                                initial={{ opacity: 0, y: 20 }}
-                                whileInView={{ opacity: 1, y: 0 }}
-                                transition={{ duration: 0.5 }}
-                                viewport={{ once: true }}
-                                className="text-3xl md:text-5xl font-extrabold mb-6 text-white leading-[1.2]"
-                            >
-                                Empower Your Business with<br />
-                                <span className="text-transparent bg-clip-text bg-gradient-to-r from-violet-400 to-indigo-400">
-                                    Bitlance AI Voice Agents
-                                </span>
-                            </motion.h2>
-                            <motion.p
-                                initial={{ opacity: 0, y: 20 }}
-                                whileInView={{ opacity: 1, y: 0 }}
-                                transition={{ duration: 0.5, delay: 0.1 }}
-                                viewport={{ once: true }}
-                                className="text-xl text-white/60 mb-8 max-w-xl"
-                            >
-                                Scale your business with AI agents that handle leads and
-                                bookings 24/7 with human-level accuracy.
-                            </motion.p>
-                            <motion.button
-                                initial={{ opacity: 0, y: 20 }}
-                                whileInView={{ opacity: 1, y: 0 }}
-                                transition={{ duration: 0.5, delay: 0.2 }}
-                                viewport={{ once: true }}
-                                onClick={() => navigate('/features/voice-bot')}
-                                className="btn-primary inline-flex items-center justify-center gap-2 px-8 py-4 rounded-full font-bold transition-all hover:scale-105"
-                            >
-                                Get Started <ArrowRight size={18} />
-                            </motion.button>
+                    <div className="flex flex-col items-start text-left">
+                        {/* Agent badge */}
+                        <div className="inline-flex items-center gap-2 mb-6" style={{
+                            fontFamily: "'DM Mono', monospace",
+                            fontSize: 11,
+                            letterSpacing: '0.14em',
+                            color: TEAL,
+                            textTransform: 'uppercase',
+                        }}>
+                            <Phone size={14} /> VOICE AGENTS
                         </div>
 
-                        {/* Compact Features List - Single column or tighter grid */}
-                        <div className="grid sm:grid-cols-2 gap-4">
+                        <motion.h2
+                            initial={{ opacity: 0, y: 20 }}
+                            whileInView={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.5 }}
+                            viewport={{ once: true }}
+                            className="text-4xl sm:text-5xl lg:text-5xl font-extrabold tracking-tight mb-6 leading-[1.08] text-white"
+                            style={{ fontFamily: "'Space Grotesk', sans-serif", letterSpacing: '-0.03em' }}
+                        >
+                            Empower Your Business with<br />
+                            <span style={{ color: TEAL }}>
+                                Bitlance AI Voice Agents
+                            </span>
+                        </motion.h2>
+                        
+                        <motion.p
+                            initial={{ opacity: 0, y: 20 }}
+                            whileInView={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.5, delay: 0.1 }}
+                            viewport={{ once: true }}
+                            className="text-base md:text-lg text-white/60 mb-8 max-w-xl leading-relaxed"
+                        >
+                            Scale your business with AI agents that handle leads and
+                            bookings 24/7 with human-level accuracy.
+                        </motion.p>
+                        
+                        <motion.button
+                            initial={{ opacity: 0, y: 20 }}
+                            whileInView={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.5, delay: 0.2 }}
+                            viewport={{ once: true }}
+                            onClick={() => navigate('/features/voice-bot')}
+                            whileHover={{ backgroundColor: '#35DFDF' }}
+                            whileTap={{ scale: 0.97 }}
+                            className="group inline-flex items-center gap-3 font-bold text-base transition-all mb-12"
+                            style={{
+                                background: TEAL,
+                                color: '#070707',
+                                padding: '16px 32px',
+                                borderRadius: 2,
+                                border: 'none',
+                                cursor: 'pointer',
+                                letterSpacing: '-0.01em',
+                                fontFamily: "'Space Grotesk', sans-serif",
+                            }}
+                        >
+                            Get Started <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
+                        </motion.button>
+
+                        {/* Brutalist Features List */}
+                        <div className="grid sm:grid-cols-2 gap-4 w-full">
                             {[
-                                { icon: Star, title: "Pure Precision", desc: "99.8% accuracy in every call.", color: "from-yellow-400 to-amber-500" },
-                                { icon: Clock, title: "Always Active", desc: "24/7 support without overhead.", color: "from-red-400 to-rose-500" },
-                                { icon: Maximize, title: "Rapid Scale", desc: "10,000+ simultaneous calls.", color: "from-blue-400 to-cyan-500" },
-                                { icon: Target, title: "Smart Logic", desc: "Niche-specific custom training.", color: "from-emerald-400 to-teal-500" }
+                                { icon: Star, title: "Pure Precision", desc: "99.8% accuracy in every call." },
+                                { icon: Clock, title: "Always Active", desc: "24/7 support without overhead." },
+                                { icon: Maximize, title: "Rapid Scale", desc: "10,000+ simultaneous calls." },
+                                { icon: Target, title: "Smart Logic", desc: "Niche-specific custom training." }
                             ].map((feature, idx) => (
                                 <motion.div
                                     key={idx}
-                                    initial={{ opacity: 0, scale: 0.95 }}
-                                    whileInView={{ opacity: 1, scale: 1 }}
+                                    initial={{ opacity: 0, y: 10 }}
+                                    whileInView={{ opacity: 1, y: 0 }}
                                     transition={{ delay: idx * 0.1 }}
-                                    className="p-3.5 rounded-xl bg-white/[0.03] border border-white/10 hover:bg-white/[0.06] transition-all group flex items-start gap-4"
+                                    className="p-4 flex items-start gap-4 transition-all group relative overflow-hidden"
+                                    style={{
+                                        background: '#111',
+                                        border: '1px solid #1E1E1E',
+                                        borderRadius: 2,
+                                    }}
                                 >
-                                    <div className={`w-8 h-8 shrink-0 rounded-lg bg-gradient-to-br ${feature.color} flex items-center justify-center shadow-lg`}>
-                                        <feature.icon size={16} className="text-white" />
+                                    <div className="w-8 h-8 shrink-0 flex items-center justify-center" style={{ border: `1px solid ${TEAL}40`, background: `${TEAL}10`, borderRadius: 2 }}>
+                                        <feature.icon size={16} style={{ color: TEAL }} />
                                     </div>
                                     <div>
-                                        <h4 className="text-sm font-bold text-white mb-0.5">{feature.title}</h4>
-                                        <p className="text-white/40 text-[11px] leading-tight">{feature.desc}</p>
+                                        <h4 className="text-sm font-bold text-white mb-1" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>{feature.title}</h4>
+                                        <p className="text-white/50 text-xs leading-tight" style={{ fontFamily: "'DM Mono', monospace" }}>{feature.desc}</p>
                                     </div>
                                 </motion.div>
                             ))}
@@ -80,68 +114,71 @@ const VoiceBotSection = ({ onOpenBooking }) => {
                     </div>
 
                     {/* Right Column: AI Video Agent */}
-                    <div className="relative lg:h-[600px] flex items-center justify-center lg:justify-end">
-                        <div className="relative group w-full max-w-2xl">
-                            {/* Decorative Background Elements */}
-                            <div className="absolute -inset-10 bg-indigo-500/10 rounded-full blur-[120px] -z-10 group-hover:bg-indigo-500/20 transition-all duration-700" />
+                    <div className="relative w-full flex items-center justify-center lg:justify-end group lg:h-[600px]">
+                        {/* Teal ambient glow beneath */}
+                        <div className="absolute -inset-4 rounded-xl blur-2xl -z-10 transition-opacity duration-500 opacity-60"
+                            style={{ background: `${TEAL}12` }} />
 
-                            {/* Main Display Container (Desktop/Laptop Style) */}
-                            <motion.div
-                                initial={{ opacity: 0, x: 50, rotateY: -10 }}
-                                whileInView={{ opacity: 1, x: 0, rotateY: 0 }}
-                                transition={{ duration: 1, ease: "easeOut" }}
-                                style={{ perspective: "1000px" }}
-                                className="relative z-10"
-                            >
-                                {/* Screen Frame */}
-                                <div className="relative aspect-video bg-[#0A0A0A] rounded-xl overflow-hidden border-[6px] border-[#1A1A1A] shadow-[0_30px_60px_-15px_rgba(0,0,0,0.5),0_0_40px_rgba(139,92,246,0.2)]">
-                                    {/* Camera dot */}
-                                    <div className="absolute top-1.5 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-white/10 z-20" />
-
-                                    <video
-                                        src="/ai_voice_agent.mp4"
-                                        autoPlay
-                                        muted
-                                        loop
-                                        playsInline
-                                        controls
-                                        className="w-full h-full object-cover"
-                                    />
-
-                                    {/* Screen Glare */}
-                                    <div className="absolute inset-0 bg-gradient-to-tr from-white/5 via-transparent to-transparent pointer-events-none" />
+                        {/* Main Display Container */}
+                        <motion.div
+                            initial={{ opacity: 0, x: 50 }}
+                            whileInView={{ opacity: 1, x: 0 }}
+                            transition={{ duration: 0.9, ease: "easeOut" }}
+                            className="relative z-10 w-full max-w-2xl"
+                        >
+                            <div className="aspect-video w-full overflow-hidden border relative shadow-2xl"
+                                style={{ background: '#111', borderColor: '#1E1E1E', borderRadius: 2, boxShadow: `0 32px 80px -20px ${TEAL}18` }}>
+                                {/* Camera dot */}
+                                <div className="absolute top-2 left-1/2 -translate-x-1/2 w-1.5 h-1.5 bg-[#2A2A2A] rounded border border-[#333] z-20 flex items-center justify-center">
+                                    <div className="w-0.5 h-0.5 bg-white rounded-full bg-opacity-50" />
                                 </div>
 
-                                {/* Stand / Base (Laptop look) */}
-                                <div className="relative -mt-1 h-2 mx-auto w-[90%] bg-gradient-to-b from-[#1A1A1A] to-[#0A0A0A] rounded-b-xl shadow-lg border-x border-b border-white/5" />
-                                <div className="mt-0.5 mx-auto w-[25%] h-1 bg-[#222] rounded-full opacity-50" />
-                            </motion.div>
+                                <video
+                                    src="/ai_voice_agent.mp4"
+                                    autoPlay
+                                    muted
+                                    loop
+                                    playsInline
+                                    className="w-full h-full object-cover"
+                                />
 
-                            {/* Floating Analytics Card */}
+                                {/* Screen Glare */}
+                                <div className="absolute inset-0 bg-gradient-to-tr from-white/5 via-transparent to-transparent pointer-events-none" />
+                            </div>
+
+                            {/* Floating Analytics Card Brutalist */}
                             <motion.div
-                                initial={{ opacity: 0, scale: 0.8, y: 20 }}
-                                whileInView={{ opacity: 1, scale: 1, y: 0 }}
+                                initial={{ opacity: 0, y: 20 }}
+                                whileInView={{ opacity: 1, y: 0 }}
                                 transition={{ delay: 0.5 }}
-                                className="absolute -bottom-6 -left-6 md:-left-12 bg-black/60 backdrop-blur-xl border border-white/10 p-5 rounded-2xl shadow-2xl z-20 hidden sm:block border-l-violet-500/50 border-l-[3px]"
+                                className="absolute -bottom-6 -left-6 md:-left-12 p-5 z-20 hidden sm:block shadow-2xl"
+                                style={{
+                                    background: '#070707',
+                                    border: `1px solid ${TEAL}`,
+                                    borderRadius: 2,
+                                    borderLeftWidth: 4,
+                                }}
                             >
-                                <div className="space-y-3">
+                                <div className="space-y-4">
                                     <div className="flex items-center gap-3">
-                                        <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                                        <span className="text-[10px] uppercase tracking-wider text-white/40 font-bold">Neural Engine Active</span>
+                                        <div className="w-2 h-2" style={{ background: TEAL, animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite' }} />
+                                        <span style={{ fontFamily: "'DM Mono', monospace", fontSize: 10, letterSpacing: '0.14em', color: TEAL, textTransform: 'uppercase' }}>
+                                            Neural Engine Active
+                                        </span>
                                     </div>
                                     <div className="flex gap-8">
                                         <div>
-                                            <p className="text-[9px] text-white/30 uppercase mb-0.5">Response Time</p>
-                                            <p className="text-lg font-mono font-bold text-white">0.4s</p>
+                                            <p style={{ fontFamily: "'DM Mono', monospace", fontSize: 9, color: '#666', textTransform: 'uppercase', marginBottom: 4 }}>Response Time</p>
+                                            <p className="text-xl font-bold text-white" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>0.4s</p>
                                         </div>
                                         <div>
-                                            <p className="text-[9px] text-white/30 uppercase mb-0.5">Accuracy</p>
-                                            <p className="text-lg font-mono font-bold text-violet-400">99.8%</p>
+                                            <p style={{ fontFamily: "'DM Mono', monospace", fontSize: 9, color: '#666', textTransform: 'uppercase', marginBottom: 4 }}>Accuracy</p>
+                                            <p className="text-xl font-bold" style={{ color: TEAL, fontFamily: "'Space Grotesk', sans-serif" }}>99.8%</p>
                                         </div>
                                     </div>
                                 </div>
                             </motion.div>
-                        </div>
+                        </motion.div>
                     </div>
 
                 </div>

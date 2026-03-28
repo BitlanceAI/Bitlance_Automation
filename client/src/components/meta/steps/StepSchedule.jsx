@@ -14,34 +14,34 @@ const StepSchedule = ({ scheduledTime, onScheduleChange }) => {
     };
 
     return (
-        <div className="space-y-6">
-            <h4 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
-                <CalendarClock className="h-5 w-5 text-blue-500" /> Schedule Your Post
+        <div className="space-y-8 font-mono">
+            <h4 className="text-xl font-extrabold font-['Space_Grotesk'] text-white uppercase tracking-tight flex items-center gap-3 border-l-4 border-[#26cece] pl-3 mb-6">
+                <CalendarClock className="h-5 w-5 text-[#26cece]" /> Chronometric Setup
             </h4>
 
-            <div className="max-w-md">
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Select Date & Time
+            <div className="max-w-md bg-[#070707] border border-[#333] p-6 md:p-8">
+                <label className="block text-[10px] font-mono tracking-widest text-[#26cece] uppercase mb-4">
+                    Target Execution Time
                 </label>
                 <input
                     type="datetime-local"
                     value={scheduledTime}
                     onChange={(e) => onScheduleChange(e.target.value)}
                     min={getMinDateTime()}
-                    className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-slate-600 bg-gray-50 dark:bg-slate-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                    className="w-full px-4 py-3 border border-[#333] bg-[#111111] text-white focus:border-[#26cece] focus:ring-0 focus:outline-none transition-colors font-mono text-sm [color-scheme:dark]"
                 />
-                <p className="text-xs text-gray-500 mt-2">
-                    Posts must be scheduled at least 2 minutes in advance. <br />
-                    <span className="font-semibold text-blue-600">Times are in India Standard Time (IST).</span>
+                <p className="text-[10px] font-mono text-gray-500 mt-4 uppercase tracking-widest leading-relaxed">
+                    &gt; Buffer requirement: 120,000ms minimum <br />
+                    <span className="font-bold text-[#26cece]">&gt; Input mapped to Indian Standard Time (IST)</span>
                 </p>
             </div>
 
             {/* Quick Schedule Options */}
-            <div className="mt-6">
-                <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
-                    Quick Schedule (IST)
+            <div>
+                <p className="text-[10px] font-bold font-mono tracking-widest text-[#26cece] uppercase mb-4 flex items-center gap-2">
+                    <span className="w-2 h-2 bg-[#26cece]"></span> Macros (IST)
                 </p>
-                <div className="flex flex-wrap gap-2">
+                <div className="flex flex-wrap gap-3">
                     {[
                         { label: 'Tomorrow 9 AM', hours: 24, setHour: 9 },
                         { label: 'Tomorrow 12 PM', hours: 24, setHour: 12 },
@@ -62,7 +62,7 @@ const StepSchedule = ({ scheduledTime, onScheduleChange }) => {
                                 const localISOTime = (new Date(date.getTime() - offset)).toISOString().slice(0, 16);
                                 onScheduleChange(localISOTime);
                             }}
-                            className="px-4 py-2 rounded-lg border border-gray-200 dark:border-slate-600 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors"
+                            className="px-4 py-3 border border-[#333] bg-[#111111] text-[10px] font-mono uppercase tracking-widest text-gray-400 hover:bg-[#26cece] hover:text-[#070707] hover:border-[#26cece] hover:font-bold hover:shadow-[2px_2px_0_0_#333] transition-all"
                         >
                             {option.label}
                         </button>

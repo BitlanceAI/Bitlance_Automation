@@ -18,24 +18,24 @@ const StepAdvanced = ({ targetAudience, callToAction, onTargetChange, onCtaChang
     ];
 
     return (
-        <div className="space-y-6">
-            <h4 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
-                <Settings className="h-5 w-5 text-blue-500" /> Advanced Options
+        <div className="space-y-8 font-mono">
+            <h4 className="text-xl font-extrabold font-['Space_Grotesk'] text-white uppercase tracking-tight flex items-center gap-3 border-l-4 border-[#26cece] pl-3 mb-6">
+                <Settings className="h-5 w-5 text-[#26cece]" /> Configuration Matrix
             </h4>
 
             {/* Target Audience Section */}
-            <div className="p-6 bg-gray-50 dark:bg-slate-900 rounded-2xl border border-gray-200 dark:border-slate-700">
-                <h5 className="font-medium text-gray-900 dark:text-white mb-4 flex items-center gap-2">
-                    <Users className="h-4 w-4" /> Target Audience
+            <div className="p-6 md:p-8 bg-[#070707] border border-[#333]">
+                <h5 className="font-bold font-['Space_Grotesk'] text-[#26cece] uppercase tracking-widest mb-6 flex items-center gap-3 text-sm">
+                    <Users className="h-4 w-4" /> Target Audience Parameters
                 </h5>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     {/* Age Range */}
                     <div>
-                        <label className="block text-sm text-gray-600 dark:text-gray-400 mb-2">
-                            Age Range
+                        <label className="block text-[10px] font-mono tracking-widest text-gray-500 uppercase mb-3">
+                            Age Vector Range
                         </label>
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-3">
                             <input
                                 type="number"
                                 value={targetAudience?.ageMin || 18}
@@ -47,9 +47,9 @@ const StepAdvanced = ({ targetAudience, callToAction, onTargetChange, onCtaChang
                                 }
                                 min="13"
                                 max="65"
-                                className="w-20 px-3 py-2 rounded-lg border border-gray-200 dark:border-slate-600 bg-white dark:bg-slate-800 text-gray-900 dark:text-white text-center"
+                                className="w-20 px-3 py-3 border border-[#333] bg-[#111111] text-white text-center font-mono focus:border-[#26cece] focus:outline-none transition-colors"
                             />
-                            <span className="text-gray-500">to</span>
+                            <span className="text-gray-500 font-bold">&gt;</span>
                             <input
                                 type="number"
                                 value={targetAudience?.ageMax || 65}
@@ -61,15 +61,15 @@ const StepAdvanced = ({ targetAudience, callToAction, onTargetChange, onCtaChang
                                 }
                                 min="13"
                                 max="65"
-                                className="w-20 px-3 py-2 rounded-lg border border-gray-200 dark:border-slate-600 bg-white dark:bg-slate-800 text-gray-900 dark:text-white text-center"
+                                className="w-20 px-3 py-3 border border-[#333] bg-[#111111] text-white text-center font-mono focus:border-[#26cece] focus:outline-none transition-colors"
                             />
                         </div>
                     </div>
 
                     {/* Gender */}
                     <div>
-                        <label className="block text-sm text-gray-600 dark:text-gray-400 mb-2">
-                            Gender
+                        <label className="block text-[10px] font-mono tracking-widest text-gray-500 uppercase mb-3">
+                            Demographic Signature
                         </label>
                         <select
                             value={targetAudience?.gender || 'all'}
@@ -79,18 +79,18 @@ const StepAdvanced = ({ targetAudience, callToAction, onTargetChange, onCtaChang
                                     gender: e.target.value
                                 })
                             }
-                            className="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-slate-600 bg-white dark:bg-slate-800 text-gray-900 dark:text-white"
+                            className="w-full px-4 py-3 border border-[#333] bg-[#111111] text-white font-mono focus:border-[#26cece] focus:outline-none transition-colors"
                         >
-                            <option value="all">All</option>
-                            <option value="male">Male</option>
-                            <option value="female">Female</option>
+                            <option value="all">ALL</option>
+                            <option value="male">MALE</option>
+                            <option value="female">FEMALE</option>
                         </select>
                     </div>
 
                     {/* Locations */}
                     <div className="md:col-span-2">
-                        <label className="block text-sm text-gray-600 dark:text-gray-400 mb-2">
-                            Locations (comma separated)
+                        <label className="block text-[10px] font-mono tracking-widest text-gray-500 uppercase mb-3">
+                            Geospatial Coordinates (comma separated)
                         </label>
                         <input
                             type="text"
@@ -101,15 +101,15 @@ const StepAdvanced = ({ targetAudience, callToAction, onTargetChange, onCtaChang
                                     locations: e.target.value
                                 })
                             }
-                            placeholder="e.g., Mumbai, Delhi, Bangalore"
-                            className="w-full px-4 py-2 rounded-lg border border-gray-200 dark:border-slate-600 bg-white dark:bg-slate-800 text-gray-900 dark:text-white"
+                            placeholder="&gt; e.g., Mumbai, Delhi, Bangalore"
+                            className="w-full px-4 py-3 border border-[#333] bg-[#111111] text-white font-mono focus:border-[#26cece] focus:outline-none transition-colors placeholder-gray-600 text-sm"
                         />
                     </div>
 
                     {/* Interests */}
                     <div className="md:col-span-2">
-                        <label className="block text-sm text-gray-600 dark:text-gray-400 mb-2">
-                            Interests (comma separated)
+                        <label className="block text-[10px] font-mono tracking-widest text-gray-500 uppercase mb-3">
+                            Behavioral Vectors (comma separated)
                         </label>
                         <input
                             type="text"
@@ -120,26 +120,26 @@ const StepAdvanced = ({ targetAudience, callToAction, onTargetChange, onCtaChang
                                     interests: e.target.value
                                 })
                             }
-                            placeholder="e.g., Real Estate, Investment, Property"
-                            className="w-full px-4 py-2 rounded-lg border border-gray-200 dark:border-slate-600 bg-white dark:bg-slate-800 text-gray-900 dark:text-white"
+                            placeholder="&gt; e.g., Real Estate, Investment, Property"
+                            className="w-full px-4 py-3 border border-[#333] bg-[#111111] text-white font-mono focus:border-[#26cece] focus:outline-none transition-colors placeholder-gray-600 text-sm"
                         />
                     </div>
                 </div>
             </div>
 
             {/* Call to Action */}
-            <div className="p-6 bg-gray-50 dark:bg-slate-900 rounded-2xl border border-gray-200 dark:border-slate-700">
-                <h5 className="font-medium text-gray-900 dark:text-white mb-4">
-                    Call to Action Button
+            <div className="p-6 md:p-8 bg-[#070707] border border-[#333]">
+                <h5 className="font-bold font-['Space_Grotesk'] text-[#26cece] uppercase tracking-widest mb-6 flex items-center gap-3 text-sm">
+                    <span className="w-2 h-2 bg-[#26cece]"></span> Call to Action Matrix
                 </h5>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                     {ctaOptions.map((option) => (
                         <button
                             key={option.value}
                             onClick={() => onCtaChange(option.value)}
-                            className={`p-3 rounded-xl border-2 text-sm font-medium transition-all ${callToAction === option.value
-                                    ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20 text-blue-600'
-                                    : 'border-gray-200 dark:border-slate-700 text-gray-700 dark:text-gray-300 hover:border-blue-300'
+                            className={`p-4 border transition-all text-[10px] font-mono uppercase tracking-widest ${callToAction === option.value
+                                    ? 'border-[#26cece] bg-[#26cece]/10 text-[#26cece] font-bold shadow-[2px_2px_0_0_#26cece] -translate-y-0.5'
+                                    : 'border-[#333] bg-[#111111] text-gray-500 hover:text-white hover:border-[#26cece]'
                                 }`}
                         >
                             {option.label}

@@ -1,126 +1,134 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Play, CheckCircle2, Sparkles } from 'lucide-react';
+import { CheckCircle2, Sparkles } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import ScrollReveal from '../ui/ScrollReveal';
 
+const T = '#26CECE';
+
+const features = [
+    'Native AI Voice Integration',
+    'Custom Trained for Your Data',
+    'Seamless CRM Automation',
+    'Zero Management Overhead',
+];
+
 const WhyBitlanceSection = () => {
     const videoRef = useRef(null);
-    const [isManuallyPaused, setIsManuallyPaused] = useState(false);
+    const [manualPause, setManualPause] = useState(false);
 
     useEffect(() => {
         const video = videoRef.current;
         if (!video) return;
-
-        const observer = new IntersectionObserver(
-            ([entry]) => {
-                if (entry.isIntersecting) {
-                    if (!isManuallyPaused) {
-                        video.play().catch(err => console.log("Autoplay blocked:", err));
-                    }
-                } else {
-                    video.pause();
-                }
-            },
+        const obs = new IntersectionObserver(
+            ([e]) => { if (e.isIntersecting) { if (!manualPause) video.play().catch(() => {}); } else { video.pause(); } },
             { threshold: 0.5 }
         );
+        obs.observe(video);
+        return () => { if (video) obs.unobserve(video); };
+    }, [manualPause]);
 
-        observer.observe(video);
-        return () => {
-            if (video) observer.unobserve(video);
-        };
-    }, [isManuallyPaused]);
-
-    const handlePlay = () => {
-        setIsManuallyPaused(false);
-    };
-
-    const handlePause = () => {
-        // If the video is paused and it's not due to scrolling away 
-        // We set manually paused to true if the pause event fires while the video is still in view
-        if (videoRef.current) {
-            // Check if element is still in viewport when pause is triggered
-            const rect = videoRef.current.getBoundingClientRect();
-            const isInView = rect.top >= 0 && rect.bottom <= window.innerHeight;
-            if (isInView) {
-                setIsManuallyPaused(true);
-            }
-        }
-    };
     return (
-        <section className="py-24 relative overflow-hidden bg-[#030303]">
+        <section className="py-24 relative overflow-hidden bg-[#070707]">
             <ScrollReveal className="max-w-7xl mx-auto px-4 sm:px-6">
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16 items-center border border-white/5 bg-white/[0.01] rounded-2xl sm:rounded-[3rem] p-4 sm:p-8 lg:p-16">
-
+                <div
+                    className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16 items-center p-4 sm:p-8 lg:p-14 rounded"
+                    style={{ background: '#0D0D0D', border: '1px solid #1A1A1A' }}
+                >
                     {/* Left: Content */}
                     <div className="space-y-8 order-2 lg:order-1">
                         <div>
-                            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black text-white uppercase tracking-tighter mb-4 sm:mb-6 leading-tight">
+                            <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 10, letterSpacing: '0.18em', color: T, textTransform: 'uppercase' }}>
+                                Why Bitlance
+                            </span>
+                            <h2 className="mt-4 text-3xl sm:text-4xl lg:text-5xl font-black text-white uppercase leading-tight"
+                                style={{ fontFamily: "'Space Grotesk',sans-serif", letterSpacing: '-0.03em' }}>
                                 Why Bitlance Technology?
                             </h2>
-                            <p className="text-base sm:text-lg text-white/50 font-medium leading-relaxed max-w-lg">
-                                We don't just provide tools. We build autonomous systems that handle the heavy lifting of lead engagement and sales follow-up, so you can focus on closing deals.
+                            <div className="mt-5" style={{ width: 48, height: 2, background: T }} />
+                            <p className="mt-5 text-base text-white/50 leading-relaxed max-w-lg">
+                                We don't just provide tools. We build autonomous systems that handle the heavy lifting of lead engagement and sales follow-up — so you can focus on closing deals.
                             </p>
                         </div>
 
-                        <div className="space-y-3 sm:space-y-4">
-                            {[
-                                "Native AI Voice Integration",
-                                "Custom Trained for Your Data",
-                                "Seamless CRM Automation",
-                                "Zero Management Overhead"
-                            ].map((item, idx) => (
-                                <div key={idx} className="flex items-center gap-3">
-                                    <div className="w-5 h-5 rounded-full bg-indigo-500/20 flex items-center justify-center">
-                                        <CheckCircle2 size={12} className="text-indigo-400" />
-                                    </div>
-                                    <span className="text-sm font-semibold text-white/80">{item}</span>
-                                </div>
+                        {/* Feature list — left-border style */}
+                        <div className="space-y-3 border-l-2 pl-5" style={{ borderColor: '#1E1E1E' }}>
+                            {features.map((item, idx) => (
+                                <motion.div
+                                    key={idx}
+                                    initial={{ opacity: 0, x: -12 }}
+                                    whileInView={{ opacity: 1, x: 0 }}
+                                    transition={{ duration: 0.35, delay: idx * 0.07 }}
+                                    viewport={{ once: true }}
+                                    className="flex items-center gap-3"
+                                >
+                                    <CheckCircle2 size={14} style={{ color: T, flexShrink: 0 }} />
+                                    <span className="text-sm font-medium text-white/80"
+                                        style={{ fontFamily: "'Space Grotesk',sans-serif" }}>
+                                        {item}
+                                    </span>
+                                </motion.div>
                             ))}
                         </div>
-
                     </div>
 
-                    {/* Right: Video Player */}
+                    {/* Right: Video */}
                     <div className="relative group order-1 lg:order-2 w-full">
-                        <div className="aspect-video w-full rounded-xl sm:rounded-[2rem] overflow-hidden bg-white/5 border border-white/10 relative shadow-2xl shadow-indigo-500/10">
+                        <div className="aspect-video w-full rounded overflow-hidden relative shadow-2xl"
+                            style={{ background: '#111', border: '1px solid #1E1E1E', boxShadow: `0 24px 60px -16px ${T}18` }}>
                             <video
                                 ref={videoRef}
                                 src="/why_bitlance.mp4"
                                 className="w-full h-full object-cover"
-                                controls
-                                loop
-                                playsInline
-                                onPlay={handlePlay}
-                                onPause={handlePause}
+                                controls loop playsInline
+                                onPlay={() => setManualPause(false)}
+                                onPause={() => {
+                                    if (videoRef.current) {
+                                        const r = videoRef.current.getBoundingClientRect();
+                                        if (r.top >= 0 && r.bottom <= window.innerHeight) setManualPause(true);
+                                    }
+                                }}
                             />
-                            {/* Subtle Overlay to maintain text readability if needed, though here it's just a player */}
-                            <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent pointer-events-none" />
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent pointer-events-none" />
                         </div>
-
-                        {/* Ambient Glow */}
-                        <div className="absolute -inset-4 bg-indigo-500/10 blur-2xl rounded-full -z-10 group-hover:bg-indigo-500/20 transition-all duration-500" />
+                        <div className="absolute -inset-3 rounded blur-2xl -z-10 opacity-50 group-hover:opacity-80 transition-opacity"
+                            style={{ background: `${T}10` }} />
                     </div>
-
                 </div>
 
-                {/* Centered Large CTA */}
-                <div className="mt-20 text-center relative z-10">
+                {/* CTA */}
+                <div className="mt-20 text-center">
                     <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.5, delay: 0.2 }}
-                        viewport={{ once: true }}
+                        initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.45, delay: 0.15 }} viewport={{ once: true }}
                     >
                         <Link
-                            to="/apply/audit"
-                            className="audit-cta inline-flex items-center gap-3 bg-white/5 border border-white/10 px-10 py-5 rounded-2xl text-white font-black uppercase tracking-widest text-base hover:bg-white/10 transition-all group relative overflow-hidden"
+                            to="/apply"
+                            className="audit-cta inline-flex items-center gap-3 font-bold uppercase tracking-widest text-sm transition-all group"
+                            style={{
+                                background: 'transparent',
+                                border: `1px solid #1E1E1E`,
+                                color: '#EFEFEF',
+                                padding: '18px 40px',
+                                borderRadius: 2,
+                                fontFamily: "'Space Grotesk',sans-serif",
+                            }}
+                            onMouseEnter={e => {
+                                e.currentTarget.style.borderColor = T;
+                                e.currentTarget.style.color = T;
+                            }}
+                            onMouseLeave={e => {
+                                e.currentTarget.style.borderColor = '#1E1E1E';
+                                e.currentTarget.style.color = '#EFEFEF';
+                            }}
                         >
-                            <Sparkles className="w-6 h-6 text-indigo-400 group-hover:rotate-12 transition-transform" />
-                            Claim My Free AI Audit
-                            <div className="absolute inset-0 bg-indigo-500/20 blur-3xl opacity-0 group-hover:opacity-100 transition-opacity" />
+                            <Sparkles size={18} style={{ color: T }} className="group-hover:rotate-12 transition-transform" />
+                            Get Free Audit
                         </Link>
-                        <p className="text-white/30 text-xs mt-4 font-medium uppercase tracking-widest">Takes less than 2 minutes • No card required</p>
+                        <p className="mt-4 text-white/30 text-xs uppercase tracking-widest"
+                            style={{ fontFamily: "'DM Mono',monospace" }}>
+                            Takes less than 2 minutes · No card required
+                        </p>
                     </motion.div>
                 </div>
             </ScrollReveal>

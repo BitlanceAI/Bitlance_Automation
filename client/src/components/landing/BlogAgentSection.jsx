@@ -4,49 +4,45 @@ import { motion } from 'framer-motion';
 import ScrollReveal from '../ui/ScrollReveal';
 import { useNavigate } from 'react-router-dom';
 
+const TEAL = '#26CECE';
+
 const BlogAgentSection = ({ onOpenBooking }) => {
     const navigate = useNavigate();
 
     const workflowSteps = [
         {
-            icon: <Database className="w-8 h-8 text-cyan-400" />,
+            icon: <Database className="w-8 h-8" style={{ color: TEAL }} />,
             title: "Data Ingestion",
             desc: "Provide your niche or keyword list via Excel.",
-            color: "from-cyan-500/20 to-blue-500/20",
-            border: "border-cyan-500/30",
             delay: 0.2
         },
         {
-            icon: <FileText className="w-8 h-8 text-purple-400" />,
+            icon: <FileText className="w-8 h-8" style={{ color: TEAL }} />,
             title: "Outline & Research",
             desc: "AI extracts trends and builds a structured outline.",
-            color: "from-purple-500/20 to-fuchsia-500/20",
-            border: "border-purple-500/30",
             delay: 0.4
         },
         {
-            icon: <Wand2 className="w-8 h-8 text-amber-400" />,
+            icon: <Wand2 className="w-8 h-8" style={{ color: TEAL }} />,
             title: "Content Generation",
             desc: "Crafts SEO-optimized content with engaging titles.",
-            color: "from-amber-500/20 to-orange-500/20",
-            border: "border-amber-500/30",
             delay: 0.6
         },
         {
-            icon: <Globe className="w-8 h-8 text-emerald-400" />,
+            icon: <Globe className="w-8 h-8" style={{ color: TEAL }} />,
             title: "Auto-Publish",
             desc: "Posts directly to your blog with images and tags.",
-            color: "from-emerald-500/20 to-green-500/20",
-            border: "border-emerald-500/30",
             delay: 0.8
         }
     ];
 
     return (
-        <section className="py-24 relative overflow-hidden bg-[#030303] border-t border-white/5">
+        <section className="py-24 relative overflow-hidden bg-[#070707]" style={{ borderTop: '1px solid #1E1E1E' }}>
             {/* Background glowing effects */}
-            <div className="absolute top-1/2 right-0 -translate-y-1/2 w-[800px] h-[800px] bg-cyan-600/10 rounded-full blur-[120px] pointer-events-none" />
-            <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-purple-600/10 rounded-full blur-[100px] pointer-events-none" />
+            <div 
+                className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] rounded-full blur-[140px] pointer-events-none transition-opacity duration-1000 opacity-60"
+                style={{ background: `${TEAL}0A` }}
+            />
 
             <ScrollReveal className="max-w-7xl mx-auto px-6 relative z-10">
                 {/* Header Subtext */}
@@ -56,9 +52,16 @@ const BlogAgentSection = ({ onOpenBooking }) => {
                         whileInView={{ opacity: 1, scale: 1 }}
                         transition={{ duration: 0.5 }}
                         viewport={{ once: true }}
-                        className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 text-cyan-400 text-sm font-medium mb-6"
+                        className="inline-flex items-center gap-2 mb-6"
+                        style={{
+                            fontFamily: "'DM Mono', monospace",
+                            fontSize: 11,
+                            letterSpacing: '0.14em',
+                            color: TEAL,
+                            textTransform: 'uppercase',
+                        }}
                     >
-                        <Rss size={16} /> Content Automation Engine
+                        <Rss size={14} /> CONTENT AUTOMATION ENGINE
                     </motion.div>
 
                     <motion.h2
@@ -66,10 +69,11 @@ const BlogAgentSection = ({ onOpenBooking }) => {
                         whileInView={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.5, delay: 0.1 }}
                         viewport={{ once: true }}
-                        className="text-4xl md:text-5xl font-extrabold mb-6 text-white leading-tight"
+                        className="text-4xl md:text-5xl lg:text-5xl font-extrabold tracking-tight mb-6 leading-[1.08] text-white"
+                        style={{ fontFamily: "'Space Grotesk', sans-serif", letterSpacing: '-0.03em' }}
                     >
                         Automate Your SEO with the<br />
-                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-blue-400 to-purple-400">
+                        <span style={{ color: TEAL }}>
                             Blog AI Agent
                         </span>
                     </motion.h2>
@@ -78,21 +82,22 @@ const BlogAgentSection = ({ onOpenBooking }) => {
                         whileInView={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.5, delay: 0.2 }}
                         viewport={{ once: true }}
-                        className="text-lg text-white/60 mb-8"
+                        className="text-base md:text-lg text-white/60 mx-auto max-w-xl leading-relaxed"
                     >
                         Stop writing manually. Our autonomous agent takes your keywords and turns them into
                         fully-formatted, SEO-optimized blog posts published straight to your website.
                     </motion.p>
                 </div>
 
-                {/* Animated Workflow */}
+                {/* Animated Workflow Brutalist */}
                 <div className="mt-20 relative max-w-6xl mx-auto pb-12">
 
-                    {/* Connecting dotted line (Desktop only) */}
-                    <div className="hidden md:block absolute top-[60px] left-[10%] right-[10%] h-[2px] border-t-2 border-dashed border-white/20 z-0">
+                    {/* Connecting line (Desktop only) */}
+                    <div className="hidden md:block absolute top-[50px] left-[10%] right-[10%] h-[1px] border-t border-[#1E1E1E] z-0">
                         {/* Animated gradient bar moving across the line */}
                         <motion.div
-                            className="absolute inset-0 h-[2px] bg-gradient-to-r from-transparent via-cyan-400 to-transparent w-1/3 -top-[2px]"
+                            className="absolute inset-0 h-[1px] w-1/3 -top-[1px]"
+                            style={{ background: `linear-gradient(90deg, transparent, ${TEAL}, transparent)` }}
                             animate={{ left: ['-33%', '100%'] }}
                             transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
                         />
@@ -104,25 +109,37 @@ const BlogAgentSection = ({ onOpenBooking }) => {
 
                                 {/* Mobile connector arrow */}
                                 {index < workflowSteps.length - 1 && (
-                                    <div className="md:hidden text-white/20 my-4 transform translate-y-2">
+                                    <div className="md:hidden my-4 transform translate-y-2" style={{ color: '#1E1E1E' }}>
                                         <ArrowDown size={24} />
                                     </div>
                                 )}
 
-                                {/* Icon Bubble */}
+                                {/* Icon Square */}
                                 <motion.div
-                                    initial={{ opacity: 0, y: 40, scale: 0.8 }}
-                                    whileInView={{ opacity: 1, y: 0, scale: 1 }}
-                                    transition={{ duration: 0.6, delay: step.delay, type: "spring" }}
+                                    initial={{ opacity: 0, y: 40 }}
+                                    whileInView={{ opacity: 1, y: 0 }}
+                                    transition={{ duration: 0.4, delay: step.delay }}
                                     viewport={{ once: true, margin: "-50px" }}
-                                    className={`relative w-28 h-28 md:w-32 md:h-32 mb-6 rounded-[2rem] bg-gradient-to-br ${step.color} border ${step.border} flex items-center justify-center backdrop-blur-md shadow-2xl transition-transform duration-500 group-hover:-translate-y-2 group-hover:scale-105`}
+                                    className="relative w-24 h-24 md:w-28 md:h-28 mb-8 flex items-center justify-center transition-transform duration-300 group-hover:-translate-y-2"
+                                    style={{
+                                        background: '#111',
+                                        border: '1px solid #1E1E1E',
+                                        borderRadius: 2,
+                                        boxShadow: `0 8px 30px -10px ${TEAL}15`
+                                    }}
                                 >
-                                    <div className="absolute inset-0 bg-white/5 rounded-[2rem] opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                                     {step.icon}
 
-                                    {/* Number Badge */}
-                                    <div className="absolute -top-3 -right-3 w-8 h-8 bg-white text-black font-bold rounded-full flex items-center justify-center text-sm shadow-lg">
-                                        {index + 1}
+                                    {/* Number Badge Brutalist */}
+                                    <div className="absolute -top-3 -right-3 w-8 h-8 flex items-center justify-center text-sm font-bold"
+                                        style={{
+                                            background: TEAL,
+                                            color: '#070707',
+                                            border: 'none',
+                                            borderRadius: 2,
+                                            fontFamily: "'DM Mono', monospace"
+                                        }}>
+                                        0{index + 1}
                                     </div>
                                 </motion.div>
 
@@ -130,11 +147,11 @@ const BlogAgentSection = ({ onOpenBooking }) => {
                                 <motion.div
                                     initial={{ opacity: 0 }}
                                     whileInView={{ opacity: 1 }}
-                                    transition={{ duration: 0.5, delay: step.delay + 0.3 }}
+                                    transition={{ duration: 0.5, delay: step.delay + 0.2 }}
                                     viewport={{ once: true }}
                                 >
-                                    <h3 className="text-xl font-bold text-white mb-2">{step.title}</h3>
-                                    <p className="text-sm text-white/50 leading-relaxed px-2">
+                                    <h3 className="text-lg font-bold text-white mb-2" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>{step.title}</h3>
+                                    <p className="text-sm text-white/50 leading-relaxed px-2" style={{ fontFamily: "'DM Mono', monospace" }}>
                                         {step.desc}
                                     </p>
                                 </motion.div>
@@ -147,15 +164,27 @@ const BlogAgentSection = ({ onOpenBooking }) => {
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     whileInView={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.5, delay: 1 }}
+                    transition={{ duration: 0.5, delay: 0.8 }}
                     viewport={{ once: true }}
-                    className="mt-16 text-center"
+                    className="mt-16 flex justify-center"
                 >
                     <button
                         onClick={() => navigate('/features/blog-agent')}
-                        className="btn-primary inline-flex items-center justify-center gap-2 px-8 py-3.5 rounded-full font-bold transition-all hover:scale-105"
+                        whileHover={{ backgroundColor: '#35DFDF' }}
+                        whileTap={{ scale: 0.97 }}
+                        className="group inline-flex items-center gap-3 font-bold text-base transition-all mx-auto"
+                        style={{
+                            background: TEAL,
+                            color: '#070707',
+                            padding: '16px 32px',
+                            borderRadius: 2,
+                            border: 'none',
+                            cursor: 'pointer',
+                            letterSpacing: '-0.01em',
+                            fontFamily: "'Space Grotesk', sans-serif",
+                        }}
                     >
-                        See the Blog Agent in Action <ArrowRight size={18} />
+                        See the Blog Agent in Action <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
                     </button>
                 </motion.div>
 

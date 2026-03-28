@@ -622,3 +622,164 @@ export const trackClick = async (req, res) => {
         return res.status(500).json({ success: false, message: 'Server error' });
     }
 };
+
+
+// =============================================
+// QUIZ OPT-IN CONTROLLER (Blueprint Download)
+// =============================================
+
+// @desc    Handle quiz opt-in: save lead, send Blueprint PDF, schedule follow-up sequence
+// @route   POST /api/leads/quiz-optin
+// @access  Public
+export const quizOptin = async (req, res) => {
+    try {
+        const { name, email, phone, quizScore, quizAnswers } = req.body;
+
+        if (!name || !email) {
+            return res.status(400).json({ success: false, message: 'Name and email are required.' });
+        }
+
+        const tag = `Blueprint Download – Score: ${quizScore ?? 0}`;
+
+        // ── 1. Upsert lead in Supabase ──────────────────────────────────────
+        const { data: existing } = await supabaseAdmin
+            .from('leads')
+            .select('id')
+            .eq('email', email)
+            .maybeSingle();
+
+        let lead;
+        if (existing) {
+            const { data } = await supabaseAdmin
+                .from('leads')
+                .update({ name, phone, tag, source: 'Quiz Funnel', quiz_score: quizScore, quiz_answers: quizAnswers })
+                .eq('id', existing.id)
+                .select()
+                .single();
+            lead = data;
+        } else {
+            const { data } = await supabaseAdmin
+                .from('leads')
+                .insert([{ name, email, phone, tag, source: 'Quiz Funnel', quiz_score: quizScore, quiz_answers: quizAnswers, booked: false, reminder_sent: false }])
+                .select()
+                .single();
+            lead = data;
+        }
+
+        // ── 2. Immediate: send Blueprint PDF email ──────────────────────────
+        const blueprintUrl = process.env.BLUEPRINT_PDF_URL || '#';
+
+        const emailDay0Subject = '📘 Your AI Automation Blueprint is here!';
+        const emailDay0Html = `
+<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+<body style="margin:0;padding:0;background:#0f0c29;font-family:Arial,sans-serif;">
+<table width="100%" cellpadding="0" cellspacing="0" style="max-width:600px;margin:0 auto;background:#1a1730;border-radius:12px;overflow:hidden;">
+  <tr><td style="padding:40px 32px;text-align:center;background:linear-gradient(135deg,#7c3aed,#3b82f6);">
+    <h1 style="color:#fff;margin:0;font-size:22px;">Your Blueprint is Ready 🚀</h1>
+    <p style="color:rgba(255,255,255,0.8);margin:8px 0 0;font-size:14px;">AI Automation Blueprint + Bonus Checklist</p>
+  </td></tr>
+  <tr><td style="padding:32px;">
+    <p style="color:#e2e8f0;font-size:16px;">Hi ${name},</p>
+    <p style="color:#94a3b8;font-size:15px;line-height:1.7;">
+      Your quiz score came in at <strong style="color:#a78bfa;">${quizScore}/100 – ${quizScore >= 70 ? 'High Potential' : quizScore >= 50 ? 'Strong Candidate' : 'Good Starting Point'}</strong>.
+      Based on your answers, the Blueprint below will help you build your first (or next) AI automation system fast.
+    </p>
+    <div style="text-align:center;margin:28px 0;">
+      <a href="${blueprintUrl}" style="display:inline-block;padding:14px 36px;background:linear-gradient(90deg,#7c3aed,#3b82f6);color:#fff;text-decoration:none;border-radius:50px;font-size:16px;font-weight:bold;">
+        📥 Download Your Free Blueprint
+      </a>
+    </div>
+    <p style="color:#64748b;font-size:13px;">Also inside: bonus automation checklist to help you hit your first automation within 48 hours.</p>
+  </td></tr>
+  <tr><td style="padding:20px 32px;background:#0f0c29;text-align:center;">
+    <p style="color:#475569;font-size:12px;margin:0;">© ${new Date().getFullYear()} Bitlance AI. You're receiving this because you downloaded the Blueprint.</p>
+  </td></tr>
+</table></body></html>`;
+
+        await sendRemarketingEmail([email], emailDay0Subject, emailDay0Html).catch(err => {
+            console.error('Quiz Day-0 email failed:', err);
+        });
+
+        // ── 3. Day 1: Quick-win tips ────────────────────────────────────────
+        setTimeout(async () => {
+            const subject1 = '⚡ 3 quick-win automations you can build today';
+            const html1 = `
+<!DOCTYPE html><html><body style="margin:0;padding:0;background:#f4f4f4;font-family:Arial,sans-serif;">
+<table width="100%" cellpadding="0" cellspacing="0" style="max-width:600px;margin:0 auto;background:#fff;border-radius:8px;overflow:hidden;">
+  <tr><td style="padding:32px;"><h2 style="color:#1e293b;">Hi ${name}, ready for quick wins?</h2>
+  <p style="color:#475569;line-height:1.7;">Here are 3 automations from the Blueprint you can set up in under an hour each:</p>
+  <ol style="color:#334155;line-height:2;">
+    <li><strong>Auto-reply to new leads</strong> — capture & respond instantly via WhatsApp or email</li>
+    <li><strong>Follow-up sequence</strong> — send Day 1, Day 3, Day 7 emails automatically</li>
+    <li><strong>Content repurposing bot</strong> — turn one post into 5 formats automatically</li>
+  </ol>
+  <p style="color:#475569;">Each of these is covered step-by-step in your Blueprint. Open it if you haven't yet!</p>
+  <div style="margin:24px 0;text-align:center;">
+    <a href="${blueprintUrl}" style="padding:12px 28px;background:#7c3aed;color:#fff;text-decoration:none;border-radius:50px;font-weight:bold;font-size:14px;">Re-open Blueprint →</a>
+  </div>
+  </td></tr>
+  <tr><td style="padding:16px 32px;background:#f8fafc;text-align:center;"><p style="font-size:12px;color:#94a3b8;margin:0;">© ${new Date().getFullYear()} Bitlance AI</p></td></tr>
+</table></body></html>`;
+            await sendRemarketingEmail([email], subject1, html1).catch(() => {});
+        }, 24 * 60 * 60 * 1000); // Day 1
+
+        // ── 4. Day 3: Course teaser ─────────────────────────────────────────
+        setTimeout(async () => {
+            const subject3 = '🚀 Inside our AI Agent course (sneak peek)';
+            const html3 = `
+<!DOCTYPE html><html><body style="margin:0;padding:0;background:#f4f4f4;font-family:Arial,sans-serif;">
+<table width="100%" cellpadding="0" cellspacing="0" style="max-width:600px;margin:0 auto;background:#fff;border-radius:8px;overflow:hidden;">
+  <tr><td style="padding:32px;"><h2 style="color:#1e293b;">Hi ${name}, want to see what's inside?</h2>
+  <p style="color:#475569;line-height:1.7;">Our paid <strong>AI Agent Mastery</strong> course goes 10x deeper than the Blueprint. Here's a sneak peek of what's covered:</p>
+  <ul style="color:#334155;line-height:2;">
+    <li>Build AI voice agents that follow up with leads automatically</li>
+    <li>Create WhatsApp broadcast systems that convert at 40%+</li>
+    <li>Set up full client onboarding on autopilot</li>
+    <li>Sell AI automation services to businesses (done-for-you templates)</li>
+  </ul>
+  <p style="color:#475569;">Students are saving 15+ hours/week and generating ₹50K–₹2L/month in new income.</p>
+  <p style="color:#7c3aed;font-weight:bold;">Stay tuned — a special offer is coming your way in a few days.</p>
+  </td></tr>
+  <tr><td style="padding:16px 32px;background:#f8fafc;text-align:center;"><p style="font-size:12px;color:#94a3b8;margin:0;">© ${new Date().getFullYear()} Bitlance AI</p></td></tr>
+</table></body></html>`;
+            await sendRemarketingEmail([email], subject3, html3).catch(() => {});
+        }, 3 * 24 * 60 * 60 * 1000); // Day 3
+
+        // ── 5. Day 7: Special offer ─────────────────────────────────────────
+        setTimeout(async () => {
+            const subject7 = '🎁 Special offer for AI Agent training (expires soon)';
+            const html7 = `
+<!DOCTYPE html><html><body style="margin:0;padding:0;background:#0f0c29;font-family:Arial,sans-serif;">
+<table width="100%" cellpadding="0" cellspacing="0" style="max-width:600px;margin:0 auto;background:#1a1730;border-radius:12px;overflow:hidden;">
+  <tr><td style="padding:40px 32px;text-align:center;background:linear-gradient(135deg,#7c3aed,#3b82f6);">
+    <h1 style="color:#fff;margin:0;font-size:22px;">Exclusive Offer for Blueprint Subscribers 🎁</h1>
+  </td></tr>
+  <tr><td style="padding:32px;">
+    <p style="color:#e2e8f0;font-size:16px;">Hi ${name},</p>
+    <p style="color:#94a3b8;font-size:15px;line-height:1.7;">
+      A week ago you downloaded the Blueprint and scored <strong style="color:#a78bfa;">${quizScore}/100</strong>.
+      That tells us you're serious about AI automation — so we want to make this easy for you.
+    </p>
+    <p style="color:#94a3b8;font-size:15px;line-height:1.7;">
+      For the next 48 hours, you can join our <strong style="color:#fff;">AI Agent Mastery</strong> training at a special Blueprint subscriber discount.
+    </p>
+    <div style="text-align:center;margin:28px 0;">
+      <a href="${process.env.COURSE_URL || '#'}" style="display:inline-block;padding:14px 36px;background:linear-gradient(90deg,#7c3aed,#3b82f6);color:#fff;text-decoration:none;border-radius:50px;font-size:16px;font-weight:bold;">
+        Claim My Discount →
+      </a>
+    </div>
+    <p style="color:#64748b;font-size:13px;text-align:center;">This offer expires in 48 hours. Don't miss it.</p>
+  </td></tr>
+  <tr><td style="padding:20px 32px;background:#0f0c29;text-align:center;">
+    <p style="color:#475569;font-size:12px;margin:0;">© ${new Date().getFullYear()} Bitlance AI</p>
+  </td></tr>
+</table></body></html>`;
+            await sendRemarketingEmail([email], subject7, html7).catch(() => {});
+        }, 7 * 24 * 60 * 60 * 1000); // Day 7
+
+        return res.status(201).json({ success: true, message: 'Blueprint sent. Follow-up sequence initiated.' });
+    } catch (error) {
+        console.error('quizOptin error:', error);
+        return res.status(500).json({ success: false, message: 'Server error' });
+    }
+};

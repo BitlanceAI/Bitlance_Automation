@@ -286,7 +286,7 @@ const CampaignManagerPage = ({ embedded = false }) => {
     };
 
     return (
-        <div className={`mx-auto ${embedded ? '' : 'p-6 max-w-7xl'}`}>
+        <div className={`mx-auto font-mono ${embedded ? '' : 'p-6 lg:p-10 max-w-7xl'}`}>
             <MetaConnectModal
                 isOpen={showConnectModal}
                 onClose={() => setShowConnectModal(false)}
@@ -296,27 +296,27 @@ const CampaignManagerPage = ({ embedded = false }) => {
 
             {/* Graphic Selection Modal */}
             {showGraphicModal && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-                    <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-xl w-full max-w-3xl max-h-[80vh] overflow-hidden flex flex-col animate-in fade-in zoom-in duration-200">
-                        <div className="flex items-center justify-between p-4 border-b border-gray-100 dark:border-gray-700">
-                            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Select Generated Graphic</h3>
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+                    <div className="bg-[#070707] border border-[#333] shadow-[8px_8px_0_0_#26cece] w-full max-w-3xl max-h-[80vh] overflow-hidden flex flex-col">
+                        <div className="flex items-center justify-between p-5 md:p-6 border-b border-[#333] bg-[#111111]">
+                            <h3 className="text-xl md:text-2xl font-extrabold font-['Space_Grotesk'] text-white uppercase tracking-tight border-l-4 border-[#26cece] pl-3">Select Graphic Asset</h3>
                             <button
                                 onClick={() => setShowGraphicModal(false)}
-                                className="p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-700 text-gray-500 transition-colors"
+                                className="p-2 border border-transparent hover:border-[#333] hover:text-red-500 hover:bg-red-500/10 text-gray-500 transition-colors"
                             >
                                 <X size={20} />
                             </button>
                         </div>
-                        <div className="p-6 overflow-y-auto flex-1">
+                        <div className="p-6 md:p-8 overflow-y-auto flex-1 bg-[#070707]">
                             {graphicsLoading ? (
                                 <div className="flex justify-center py-12">
-                                    <RefreshCw className="h-8 w-8 animate-spin text-blue-500" />
+                                    <RefreshCw className="h-8 w-8 animate-spin text-[#26cece]" />
                                 </div>
                             ) : graphics.length === 0 ? (
-                                <div className="text-center py-12 text-gray-500 dark:text-gray-400">
-                                    <Image size={48} className="mx-auto mb-4 opacity-50" />
-                                    <p>No generated graphics found.</p>
-                                    <p className="text-sm mt-2">Generate flyers in the Design Studio first.</p>
+                                <div className="text-center py-12 border border-dashed border-[#333] bg-[#111111]">
+                                    <Image size={48} className="mx-auto mb-4 text-[#333]" />
+                                    <p className="text-[12px] font-mono tracking-widest uppercase text-gray-500">No generated graphics found.</p>
+                                    <p className="text-[10px] mt-2 font-mono tracking-widest text-[#26cece] uppercase">&gt; Generate assets in the Design Studio first.</p>
                                 </div>
                             ) : (
                                 <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
@@ -324,15 +324,15 @@ const CampaignManagerPage = ({ embedded = false }) => {
                                         <div
                                             key={job.id}
                                             onClick={() => handleGraphicSelect(job.flyer_url)}
-                                            className="group relative cursor-pointer rounded-xl overflow-hidden border border-gray-200 dark:border-gray-700 hover:ring-2 hover:ring-blue-500 transition-all aspect-[4/5]"
+                                            className="group relative cursor-pointer overflow-hidden border border-[#333] bg-[#111111] hover:border-[#26cece] transition-all aspect-[4/5]"
                                         >
                                             <img
                                                 src={job.flyer_url}
                                                 alt={`Job ${job.id}`}
-                                                className="w-full h-full object-cover transition-transform group-hover:scale-105"
+                                                className="w-full h-full object-cover transition-transform group-hover:scale-105 grayscale group-hover:grayscale-0"
                                             />
-                                            <div className="absolute inset-x-0 bottom-0 p-2 bg-gradient-to-t from-black/80 to-transparent text-white text-xs opacity-0 group-hover:opacity-100 transition-opacity">
-                                                {job.property_type} • {new Date(job.created_at).toLocaleDateString()}
+                                            <div className="absolute inset-x-0 bottom-0 p-3 bg-[#070707]/90 text-white text-[10px] font-mono tracking-widest uppercase opacity-0 group-hover:opacity-100 transition-opacity border-t border-[#333]">
+                                                {job.property_type} <span className="text-[#26cece]">|</span> {new Date(job.created_at).toLocaleDateString()}
                                             </div>
                                         </div>
                                     ))}
@@ -346,36 +346,36 @@ const CampaignManagerPage = ({ embedded = false }) => {
             {/* Header */}
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
                 {!embedded && (
-                    <div>
-                        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Campaign Manager</h1>
-                        <p className="text-gray-500 mt-1">Manage your internal marketing campaigns</p>
+                    <div className="border-b border-[#333] pb-6 w-full md:w-auto">
+                        <h1 className="text-3xl md:text-4xl font-extrabold font-['Space_Grotesk'] text-white uppercase tracking-tight mb-2">Campaign Manager</h1>
+                        <p className="text-[#26cece] text-[10px] uppercase tracking-widest bg-[#26cece]/10 inline-block px-2 py-1">&gt; Control structural marketing pipelines</p>
                     </div>
                 )}
                 <div className={`flex flex-wrap gap-2 ${embedded ? 'w-full justify-between' : ''}`}>
                     {!embedded && (
                         <button
                             onClick={() => setShowConnectModal(true)}
-                            className={`px-4 py-2 rounded-lg flex items-center gap-2 border transition-colors ${isConnected
-                                ? 'bg-emerald-50 text-emerald-600 border-emerald-200 hover:bg-emerald-100'
-                                : 'bg-white text-gray-600 border-gray-300 hover:bg-gray-50'}`}
+                            className={`px-4 py-3 flex items-center gap-2 border text-[10px] uppercase font-bold tracking-widest font-mono transition-all ${isConnected
+                                ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'
+                                : 'bg-[#111111] text-gray-500 border-[#333] hover:border-[#26cece] hover:text-[#26cece]'}`}
                         >
-                            {isConnected ? <Link2 size={18} /> : <Unlink size={18} />}
-                            {isConnected ? 'Facebook Connected' : 'Connect Facebook'}
+                            {isConnected ? <Link2 size={16} /> : <Unlink size={16} />}
+                            {isConnected ? 'Meta Connected' : 'Connect Meta'}
                         </button>
                     )}
 
                     <div className="flex gap-2">
                         <button
                             onClick={() => setActiveTab('list')}
-                            className={`px-4 py-2 rounded-lg flex items-center gap-2 ${activeTab === 'list' ? 'bg-blue-600 text-white' : 'bg-white text-gray-700 border border-gray-300'}`}
+                            className={`px-6 py-3 flex items-center gap-2 text-[10px] font-bold tracking-widest uppercase transition-all border ${activeTab === 'list' ? 'bg-[#26cece] text-[#070707] border-[#26cece] shadow-[4px_4px_0_0_#333] -translate-y-1' : 'bg-[#111111] text-gray-500 border-[#333] hover:border-[#26cece] hover:text-white'}`}
                         >
-                            <List size={18} /> List
+                            <List size={16} /> Registry
                         </button>
                         <button
                             onClick={() => setActiveTab('create')}
-                            className={`px-4 py-2 rounded-lg flex items-center gap-2 ${activeTab === 'create' ? 'bg-blue-600 text-white' : 'bg-white text-gray-700 border border-gray-300'}`}
+                            className={`px-6 py-3 flex items-center gap-2 text-[10px] font-bold tracking-widest uppercase transition-all border ${activeTab === 'create' ? 'bg-[#26cece] text-[#070707] border-[#26cece] shadow-[4px_4px_0_0_#333] -translate-y-1' : 'bg-[#111111] text-gray-500 border-[#333] hover:border-[#26cece] hover:text-white'}`}
                         >
-                            <Plus size={18} /> Create New
+                            <Plus size={16} /> Construct New
                         </button>
                     </div>
                 </div>
@@ -383,78 +383,81 @@ const CampaignManagerPage = ({ embedded = false }) => {
 
             {/* Content */}
             {activeTab === 'list' ? (
-                <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+                <div className="bg-[#070707] border border-[#333] shadow-[8px_8px_0_0_#26cece] overflow-hidden">
                     {loading ? (
-                        <div className="p-8 text-center text-gray-500">Loading campaigns...</div>
+                        <div className="p-8 text-center text-[10px] uppercase tracking-widest font-mono text-gray-500 border-b border-[#333]">Syncing structural data...</div>
                     ) : campaigns.length === 0 ? (
-                        <div className="p-16 text-center text-gray-500">
-                            <p>No campaigns found.</p>
-                            <button onClick={() => setActiveTab('create')} className="mt-4 text-blue-600 underline">Create your first campaign</button>
+                        <div className="p-16 text-center">
+                            <p className="text-[12px] text-gray-500 font-mono tracking-widest uppercase mb-4">&gt; No active campaigns logged.</p>
+                            <button onClick={() => setActiveTab('create')} className="px-6 py-3 border border-[#26cece] text-[#26cece] text-[10px] font-bold tracking-widest uppercase hover:bg-[#26cece] hover:text-[#070707] transition-all">Initialize First Sequence</button>
                         </div>
                     ) : (
-                        <table className="w-full text-left border-collapse">
-                            <thead>
-                                <tr className="bg-gray-50 dark:bg-slate-700 text-gray-600 dark:text-gray-300 text-sm uppercase tracking-wider">
-                                    <th className="p-4 font-semibold border-b dark:border-gray-600">Name</th>
-                                    <th className="p-4 font-semibold border-b dark:border-gray-600">Type</th>
-                                    <th className="p-4 font-semibold border-b dark:border-gray-600">Status</th>
-                                    <th className="p-4 font-semibold border-b dark:border-gray-600">Created</th>
-                                    <th className="p-4 font-semibold border-b dark:border-gray-600">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
-                                {campaigns.map(campaign => (
-                                    <tr key={campaign.id} className="hover:bg-gray-50 dark:hover:bg-slate-700/50 transition-colors">
-                                        <td className="p-4 font-medium text-gray-900 dark:text-white">{campaign.name}</td>
-                                        <td className="p-4">
-                                            <span className={`px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300 uppercase`}>
-                                                {campaign.objective || campaign.type || 'Campaign'}
-                                            </span>
-                                        </td>
-                                        <td className="p-4">
-                                            <span className={`px-2 py-1 text-xs rounded-full ${campaign.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>
-                                                {campaign.status || 'Draft'}
-                                            </span>
-                                        </td>
-                                        <td className="p-4 text-gray-500 text-sm">
-                                            {new Date(campaign.created_at).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', dateStyle: 'medium', timeStyle: 'short' })}
-                                        </td>
-                                        <td className="p-4">
-                                            <div className="flex gap-2">
-                                                <button
-                                                    onClick={() => handleViewStats(campaign)}
-                                                    className="p-1.5 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                                                    title="View Analytics"
-                                                >
-                                                    <BarChart2 size={16} />
-                                                </button>
-                                                <button
-                                                    onClick={() => handleViewCampaign(campaign)}
-                                                    className="p-1.5 text-gray-500 hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors"
-                                                    title="View Details"
-                                                >
-                                                    <Eye size={16} />
-                                                </button>
-                                                <button
-                                                    onClick={() => handleDeleteCampaign(campaign.id)}
-                                                    className="p-1.5 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                                                    title="Delete Campaign"
-                                                >
-                                                    <Trash2 size={16} />
-                                                </button>
-                                            </div>
-                                        </td>
+                        <div className="overflow-x-auto">
+                            <table className="w-full text-left border-collapse">
+                                <thead>
+                                    <tr className="bg-[#111111] border-b border-[#333] text-gray-500 text-[10px] uppercase font-mono tracking-widest">
+                                        <th className="p-4 md:p-5 border-r border-[#333]">Designation</th>
+                                        <th className="p-4 md:p-5 border-r border-[#333]">Objective Class</th>
+                                        <th className="p-4 md:p-5 border-r border-[#333]">State</th>
+                                        <th className="p-4 md:p-5 border-r border-[#333]">Timestamp</th>
+                                        <th className="p-4 md:p-5">Terminals</th>
                                     </tr>
-                                ))}
-                            </tbody>
-                        </table>
+                                </thead>
+                                <tbody className="divide-y divide-[#333]">
+                                    {campaigns.map(campaign => (
+                                        <tr key={campaign.id} className="hover:bg-[#111111] transition-colors group">
+                                            <td className="p-4 md:p-5 border-r border-[#333] font-bold font-['Space_Grotesk'] text-white text-base tracking-tight uppercase group-hover:text-[#26cece] transition-colors">{campaign.name}</td>
+                                            <td className="p-4 md:p-5 border-r border-[#333]">
+                                                <span className={`px-2 py-1 text-[10px] font-mono tracking-widest bg-[#26cece]/10 text-[#26cece] uppercase border border-[#26cece]/30`}>
+                                                    {campaign.objective || campaign.type || 'Campaign'}
+                                                </span>
+                                            </td>
+                                            <td className="p-4 md:p-5 border-r border-[#333]">
+                                                <span className={`px-2 py-1 flex items-center max-w-max gap-1.5 text-[10px] font-mono tracking-widest uppercase border ${campaign.status === 'active' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30' : 'bg-gray-500/10 text-gray-400 border-gray-500/30'}`}>
+                                                    <span className={`w-1.5 h-1.5 rounded-none ${campaign.status === 'active' ? 'bg-emerald-400 shadow-[0_0_5px_#10b981]' : 'bg-gray-400'}`}></span>
+                                                    {campaign.status || 'Draft'}
+                                                </span>
+                                            </td>
+                                            <td className="p-4 md:p-5 border-r border-[#333] text-[#888] text-[10px] uppercase font-mono tracking-widest">
+                                                {new Date(campaign.created_at).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', dateStyle: 'medium', timeStyle: 'short' })}
+                                            </td>
+                                            <td className="p-4 md:p-5">
+                                                <div className="flex gap-3">
+                                                    <button
+                                                        onClick={() => handleViewStats(campaign)}
+                                                        className="p-2 border border-transparent text-gray-500 hover:text-[#26cece] hover:border-[#26cece] transition-all bg-[#111111] hover:shadow-[2px_2px_0_0_#26cece] hover:-translate-y-0.5"
+                                                        title="View Analytics"
+                                                    >
+                                                        <BarChart2 size={16} />
+                                                    </button>
+                                                    <button
+                                                        onClick={() => handleViewCampaign(campaign)}
+                                                        className="p-2 border border-transparent text-gray-500 hover:text-white hover:border-white transition-all bg-[#111111] hover:shadow-[2px_2px_0_0_#fff] hover:-translate-y-0.5"
+                                                        title="View Details"
+                                                    >
+                                                        <Eye size={16} />
+                                                    </button>
+                                                    <button
+                                                        onClick={() => handleDeleteCampaign(campaign.id)}
+                                                        className="p-2 border border-transparent text-gray-500 hover:text-red-500 hover:border-red-500 transition-all bg-[#111111] hover:shadow-[2px_2px_0_0_#ef4444] hover:-translate-y-0.5"
+                                                        title="Delete Campaign"
+                                                    >
+                                                        <Trash2 size={16} />
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
                     )}
                 </div>
             ) : (
-                <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-8 max-w-4xl mx-auto">
+                <div className="bg-[#070707] border border-[#333] shadow-[8px_8px_0_0_#26cece] p-6 lg:p-10 max-w-5xl mx-auto">
                     {!selectedType ? (
                         <>
-                            <h2 className="text-2xl font-bold mb-6 text-gray-900 dark:text-white text-center">Choose Campaign Objective</h2>
+                            <h2 className="text-2xl md:text-3xl font-extrabold font-['Space_Grotesk'] mb-8 text-white uppercase tracking-tight border-l-4 border-[#26cece] pl-4">Assign Protocol Objective</h2>
                             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
                                 {campaignTypes.map(type => (
                                     <button
@@ -463,42 +466,48 @@ const CampaignManagerPage = ({ embedded = false }) => {
                                             setSelectedType(type.id);
                                             setFormData(prev => ({ ...prev, type: type.id }));
                                         }}
-                                        className="flex flex-col items-center p-6 rounded-xl border border-gray-200 dark:border-gray-700 hover:border-blue-500 hover:shadow-lg transition-all group bg-gray-50 dark:bg-slate-900/50"
+                                        className="flex flex-col items-center p-6 border border-[#333] hover:border-[#26cece] hover:shadow-[4px_4px_0_0_#26cece] hover:-translate-y-1 transition-all group bg-[#111111]"
                                     >
-                                        <div className="p-4 rounded-full bg-white dark:bg-slate-800 shadow-sm mb-4 group-hover:scale-110 transition-transform">
-                                            <type.icon size={32} className="text-blue-600 dark:text-blue-400" />
+                                        <div className="p-4 border border-[#333] bg-[#070707] mb-6 group-hover:border-[#26cece] transition-colors">
+                                            <type.icon size={32} className="text-[#26cece]" />
                                         </div>
-                                        <h3 className="font-semibold text-gray-900 dark:text-white mb-2">{type.label}</h3>
-                                        <p className="text-sm text-gray-500 text-center">{type.desc}</p>
+                                        <h3 className="font-bold font-['Space_Grotesk'] text-white uppercase tracking-tight text-lg mb-2">{type.label}</h3>
+                                        <p className="text-[10px] font-mono tracking-widest text-[#888] text-center uppercase">&gt; {type.desc}</p>
                                     </button>
                                 ))}
                             </div>
                         </>
                     ) : (
                         <div>
-                            <div className="flex items-center gap-4 mb-6 border-b border-gray-100 dark:border-gray-700 pb-4">
+                            <div className="flex flex-col md:flex-row md:items-center gap-4 mb-8 border-b border-[#333] pb-6">
                                 <button
                                     onClick={() => setSelectedType(null)}
-                                    className="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
+                                    className="px-4 py-2 border border-[#333] bg-[#111111] text-gray-400 hover:text-white hover:border-[#26cece] text-[10px] tracking-widest font-mono uppercase transition-all whitespace-nowrap"
                                 >
-                                    &larr; Back
+                                    &lt; Revert
                                 </button>
-                                <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-                                    Create {campaignTypes.find(t => t.id === selectedType)?.label} Campaign
-                                </h2>
+                                <div>
+                                    <h2 className="text-2xl font-extrabold font-['Space_Grotesk'] text-white uppercase tracking-tight">
+                                        Deploy {campaignTypes.find(t => t.id === selectedType)?.label} Protocol
+                                    </h2>
+                                    <p className="text-[#26cece] text-[10px] uppercase tracking-widest">&gt; Formulate operational parameters</p>
+                                </div>
                             </div>
 
                             <form onSubmit={handleCreateSubmit} className="space-y-6">
                                 {renderSpecificForm()}
 
                                 {/* Schedule - Common Logic */}
-                                <div className="border-t border-gray-100 dark:border-gray-700 pt-6">
-                                    <h3 className="text-lg font-semibold mb-4 text-gray-800 dark:text-gray-200">Budget & Schedule</h3>
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div className="border-t border-[#333] pt-8">
+                                    <h3 className="text-xl font-bold mb-6 text-white font-['Space_Grotesk'] uppercase tracking-tight flex items-center gap-2">
+                                        <span className="w-2 h-2 bg-[#26cece]"></span>
+                                        Resource Allocation
+                                    </h3>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                         <div>
-                                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Daily Budget (INR)</label>
+                                            <label className="block text-[10px] font-mono tracking-widest text-gray-400 uppercase mb-2">Daily Budget (INR)</label>
                                             <div className="relative">
-                                                <span className="absolute left-3 top-2.5 text-gray-500">₹</span>
+                                                <span className="absolute left-4 top-3.5 text-[#26cece] font-mono">₹</span>
                                                 <input
                                                     type="number"
                                                     name="budget"
@@ -507,37 +516,37 @@ const CampaignManagerPage = ({ embedded = false }) => {
                                                     placeholder="500.00"
                                                     step="1"
                                                     min="85"
-                                                    className="w-full pl-8 pr-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-slate-900 focus:ring-2 focus:ring-blue-500"
+                                                    className="w-full pl-10 pr-4 py-3 border border-[#333] bg-[#111111] text-white placeholder-gray-600 focus:border-[#26cece] focus:outline-none focus:ring-0 transition-colors font-mono"
                                                 />
                                             </div>
-                                            <p className="text-xs text-gray-500 mt-1">Min. ₹85/day approx.</p>
+                                            <p className="text-[10px] text-gray-500 mt-2 font-mono uppercase tracking-widest">&gt; Minimum structural burn rate: ₹85/day</p>
                                         </div>
                                         <div>
-                                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Start Date</label>
+                                            <label className="block text-[10px] font-mono tracking-widest text-gray-400 uppercase mb-2">Initiation Date</label>
                                             <input
                                                 type="date"
                                                 name="start_date"
                                                 value={formData.start_date}
                                                 onChange={handleInputChange}
-                                                className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-slate-900 focus:ring-2 focus:ring-blue-500"
+                                                className="w-full px-4 py-3 border border-[#333] bg-[#111111] text-white focus:border-[#26cece] focus:outline-none focus:ring-0 transition-colors font-mono uppercase"
                                             />
                                         </div>
                                     </div>
                                 </div>
 
-                                <div className="flex justify-end gap-3 pt-6 border-t border-gray-100 dark:border-gray-700">
+                                <div className="flex justify-end gap-3 pt-8 border-t border-[#333] mt-8">
                                     <button
                                         type="button"
                                         onClick={() => { setActiveTab('list'); setSelectedType(null); }}
-                                        className="px-6 py-2.5 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 font-medium transition-colors"
+                                        className="px-6 py-3 border border-[#333] bg-[#111111] text-gray-400 hover:text-white hover:border-[#26cece] transition-all font-mono uppercase tracking-widest text-[10px] shadow-[4px_4px_0_0_transparent] hover:shadow-[4px_4px_0_0_#333]"
                                     >
-                                        Cancel
+                                        Abort
                                     </button>
                                     <button
                                         type="submit"
-                                        className="px-6 py-2.5 rounded-lg bg-blue-600 text-white font-medium hover:bg-blue-700 shadow-lg shadow-blue-500/20 transition-all hover:scale-[1.02]"
+                                        className="px-8 py-3 bg-[#26cece] border border-[#070707] text-[#070707] font-bold font-['Space_Grotesk'] uppercase tracking-widest text-[12px] hover:shadow-[4px_4px_0_0_#333] transition-all hover:-translate-y-1"
                                     >
-                                        Create Campaign
+                                        Execute Campaign
                                     </button>
                                 </div>
                             </form>
@@ -547,44 +556,39 @@ const CampaignManagerPage = ({ embedded = false }) => {
             )}
             {/* Analytics Modal */}
             {showStatsModal && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-                    <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in duration-200">
-                        <div className="flex items-center justify-between p-4 border-b border-gray-100 dark:border-gray-700">
-                            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Campaign Analytics</h3>
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 font-mono">
+                    <div className="bg-[#070707] border border-[#333] shadow-[8px_8px_0_0_#26cece] w-full max-w-lg overflow-hidden flex flex-col">
+                        <div className="flex items-center justify-between p-5 md:p-6 border-b border-[#333] bg-[#111111]">
+                            <h3 className="text-xl md:text-2xl font-extrabold font-['Space_Grotesk'] text-white uppercase tracking-tight border-l-4 border-[#26cece] pl-3">Telemetry Readings</h3>
                             <button
                                 onClick={() => setShowStatsModal(false)}
-                                className="p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-700 text-gray-500 transition-colors"
+                                className="p-2 border border-transparent hover:border-[#333] hover:text-red-500 hover:bg-red-500/10 text-gray-500 transition-colors"
                             >
                                 <X size={20} />
                             </button>
                         </div>
-                        <div className="p-6">
+                        <div className="p-6 md:p-8 bg-[#070707]">
                             {statsLoading ? (
-                                <div className="flex justify-center py-8">
-                                    <RefreshCw className="h-8 w-8 animate-spin text-blue-500" />
+                                <div className="flex justify-center py-12">
+                                    <RefreshCw className="h-8 w-8 animate-spin text-[#26cece]" />
                                 </div>
                             ) : selectedStats ? (
                                 <div className="grid grid-cols-2 gap-4">
-                                    <div className="p-4 rounded-xl bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800/30">
-                                        <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">Impressions</p>
-                                        <p className="text-2xl font-bold text-gray-900 dark:text-white">{selectedStats.impressions}</p>
-                                    </div>
-                                    <div className="p-4 rounded-xl bg-green-50 dark:bg-green-900/20 border border-green-100 dark:border-green-800/30">
-                                        <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">Clicks</p>
-                                        <p className="text-2xl font-bold text-gray-900 dark:text-white">{selectedStats.clicks}</p>
-                                    </div>
-                                    <div className="p-4 rounded-xl bg-purple-50 dark:bg-purple-900/20 border border-purple-100 dark:border-purple-800/30">
-                                        <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">CTR</p>
-                                        <p className="text-2xl font-bold text-gray-900 dark:text-white">{selectedStats.ctr}%</p>
-                                    </div>
-                                    <div className="p-4 rounded-xl bg-orange-50 dark:bg-orange-900/20 border border-orange-100 dark:border-orange-800/30">
-                                        <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">Amount Spent</p>
-                                        <p className="text-2xl font-bold text-gray-900 dark:text-white">₹{selectedStats.spend || '0.00'}</p>
-                                    </div>
+                                    {[
+                                        { label: 'Impressions', value: selectedStats.impressions, color: 'text-emerald-400', border: 'border-emerald-500/30', bg: 'bg-emerald-500/10' },
+                                        { label: 'Clicks', value: selectedStats.clicks, color: 'text-[#26cece]', border: 'border-[#26cece]/30', bg: 'bg-[#26cece]/10' },
+                                        { label: 'Conversion Rate', value: `${selectedStats.ctr}%`, color: 'text-purple-400', border: 'border-purple-500/30', bg: 'bg-purple-500/10' },
+                                        { label: 'Capital Burn', value: `₹${selectedStats.spend || '0.00'}`, color: 'text-red-400', border: 'border-red-500/30', bg: 'bg-red-500/10' },
+                                    ].map((stat, i) => (
+                                        <div key={i} className={`p-4 border ${stat.border} ${stat.bg} flex flex-col justify-center items-center text-center`}>
+                                            <p className="text-[10px] text-white uppercase tracking-widest font-mono mb-2">{stat.label}</p>
+                                            <p className={`text-2xl md:text-3xl font-bold font-['Space_Grotesk'] ${stat.color} tracking-tight`}>{stat.value}</p>
+                                        </div>
+                                    ))}
                                 </div>
                             ) : (
-                                <div className="text-center py-8 text-gray-500">
-                                    No data available
+                                <div className="text-center py-12 text-gray-500 text-[10px] font-mono tracking-widest uppercase border border-dashed border-[#333] bg-[#111111]">
+                                    &gt; Telemetry signal lost
                                 </div>
                             )}
                         </div>
@@ -594,70 +598,82 @@ const CampaignManagerPage = ({ embedded = false }) => {
 
             {/* View Campaign Details Modal */}
             {showViewModal && selectedCampaign && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-                    <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col animate-in fade-in zoom-in duration-200">
-                        <div className="flex items-center justify-between p-6 border-b border-gray-100 dark:border-gray-700">
-                            <div>
-                                <h3 className="text-xl font-bold text-gray-900 dark:text-white">{selectedCampaign.name}</h3>
-                                <p className="text-sm text-gray-500 dark:text-gray-400 mt-1 capitalize">{selectedCampaign.objective || selectedCampaign.type || 'Campaign'}</p>
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 font-mono">
+                    <div className="bg-[#070707] border border-[#333] shadow-[8px_8px_0_0_#26cece] w-full max-w-3xl max-h-[90vh] overflow-hidden flex flex-col">
+                        <div className="flex items-center justify-between p-5 md:p-6 border-b border-[#333] bg-[#111111]">
+                            <div className="pl-3 border-l-4 border-[#26cece]">
+                                <h3 className="text-xl md:text-2xl font-extrabold font-['Space_Grotesk'] text-white uppercase tracking-tight">{selectedCampaign.name}</h3>
+                                <p className="text-[10px] text-[#26cece] font-mono tracking-widest uppercase mt-1">&gt; Class: {selectedCampaign.objective || selectedCampaign.type || 'Campaign'}</p>
                             </div>
                             <button
                                 onClick={() => setShowViewModal(false)}
-                                className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-700 text-gray-500 transition-colors"
+                                className="p-2 border border-transparent hover:border-[#333] hover:text-red-500 hover:bg-red-500/10 text-gray-500 transition-colors"
                             >
                                 <X size={20} />
                             </button>
                         </div>
-                        <div className="p-6 overflow-y-auto flex-1 space-y-6">
+                        <div className="p-6 md:p-8 overflow-y-auto flex-1 bg-[#070707] space-y-8">
 
-                            <div className="grid grid-cols-2 gap-6">
-                                <div>
-                                    <h4 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Status</h4>
-                                    <p className="text-gray-900 dark:text-white font-medium capitalize">
-                                        <span className={`inline-block w-2 h-2 rounded-full mr-2 ${selectedCampaign.status === 'active' ? 'bg-green-500' : 'bg-gray-500'}`}></span>
+                            {/* Key Value Pairs Grid */}
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                <div className="bg-[#111111] border border-[#333] p-4 text-center group hover:border-[#26cece] transition-colors">
+                                    <h4 className="text-[10px] font-mono font-bold text-gray-500 tracking-widest uppercase mb-1">Status</h4>
+                                    <p className="text-white font-mono uppercase tracking-widest font-bold text-xs flex items-center justify-center gap-1.5">
+                                        <span className={`w-1.5 h-1.5 ${selectedCampaign.status === 'active' ? 'bg-emerald-400 shadow-[0_0_5px_#10b981]' : 'bg-gray-500'}`}></span>
                                         {selectedCampaign.status || 'Draft'}
                                     </p>
                                 </div>
-                                <div>
-                                    <h4 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Budget</h4>
-                                    <p className="text-gray-900 dark:text-white font-medium">₹{selectedCampaign.budget || '0'}/day</p>
+                                <div className="bg-[#111111] border border-[#333] p-4 text-center group hover:border-[#26cece] transition-colors">
+                                    <h4 className="text-[10px] font-mono font-bold text-gray-500 tracking-widest uppercase mb-1">Burn Rate</h4>
+                                    <p className="text-white font-mono text-sm tracking-widest uppercase font-bold text-center">₹{selectedCampaign.budget || '0'}/<span className="text-gray-500 text-[10px]">D</span></p>
                                 </div>
-                                <div>
-                                    <h4 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Start Date</h4>
-                                    <p className="text-gray-900 dark:text-white font-medium">{selectedCampaign.start_date ? new Date(selectedCampaign.start_date).toLocaleDateString() : 'N/A'}</p>
+                                <div className="bg-[#111111] border border-[#333] p-4 text-center group hover:border-[#26cece] transition-colors">
+                                    <h4 className="text-[10px] font-mono font-bold text-gray-500 tracking-widest uppercase mb-1">T-Zero</h4>
+                                    <p className="text-[#26cece] font-mono uppercase tracking-widest text-[10px] font-bold mt-1">
+                                        {selectedCampaign.start_date ? new Date(selectedCampaign.start_date).toISOString().split('T')[0] : 'N/A'}
+                                    </p>
                                 </div>
-                                <div>
-                                    <h4 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Created At</h4>
-                                    <p className="text-gray-900 dark:text-white font-medium">{new Date(selectedCampaign.created_at).toLocaleString()}</p>
+                                <div className="bg-[#111111] border border-[#333] p-4 text-center group hover:border-[#26cece] transition-colors">
+                                    <h4 className="text-[10px] font-mono font-bold text-gray-500 tracking-widest uppercase mb-1">Creation Sync</h4>
+                                    <p className="text-gray-400 font-mono uppercase tracking-widest text-[10px] font-bold mt-1">
+                                        {new Date(selectedCampaign.created_at).toISOString().split('T')[0]}
+                                    </p>
                                 </div>
                             </div>
 
                             {selectedCampaign.creative_assets && (
                                 <div>
-                                    <h4 className="text-base font-semibold text-gray-900 dark:text-white mb-3 pb-2 border-b border-gray-100 dark:border-gray-700">Creative Assets</h4>
-                                    <div className="bg-gray-50 dark:bg-slate-900/50 rounded-xl p-4 space-y-4 border border-gray-100 dark:border-gray-800">
+                                    <h4 className="text-sm font-bold font-mono text-[#26cece] uppercase tracking-widest mb-4 flex items-center gap-2">
+                                        <span className="w-2 h-2 bg-[#26cece]"></span>
+                                        Payload Data
+                                    </h4>
+                                    <div className="bg-[#111111] border border-[#333] p-5 space-y-5 relative overflow-hidden group">
+                                        <div className="absolute top-0 right-0 w-32 h-32 bg-[#26cece]/5 rotate-45 transform translate-x-16 -translate-y-16 pointer-events-none"></div>
+                                        
                                         {selectedCampaign.creative_assets.headline && (
                                             <div>
-                                                <span className="text-xs text-gray-500 dark:text-gray-400 block mb-1">Headline</span>
-                                                <p className="text-gray-900 dark:text-white text-sm font-medium">{selectedCampaign.creative_assets.headline}</p>
+                                                <span className="text-[10px] text-gray-500 uppercase font-mono tracking-widest block mb-1">Headline</span>
+                                                <p className="text-white font-['Space_Grotesk'] text-lg md:text-xl font-bold">{selectedCampaign.creative_assets.headline}</p>
                                             </div>
                                         )}
                                         {selectedCampaign.creative_assets.description && (
                                             <div>
-                                                <span className="text-xs text-gray-500 dark:text-gray-400 block mb-1">Description</span>
-                                                <p className="text-gray-700 dark:text-gray-300 text-sm whitespace-pre-wrap">{selectedCampaign.creative_assets.description}</p>
+                                                <span className="text-[10px] text-gray-500 uppercase font-mono tracking-widest block mb-2">Description</span>
+                                                <p className="text-gray-300 font-mono text-xs whitespace-pre-wrap leading-relaxed pl-3 border-l-2 border-[#333]">{selectedCampaign.creative_assets.description}</p>
                                             </div>
                                         )}
                                         {selectedCampaign.creative_assets.imageUrl && (
                                             <div>
-                                                <span className="text-xs text-gray-500 dark:text-gray-400 block mb-2">Image</span>
-                                                <img src={selectedCampaign.creative_assets.imageUrl} alt="Campaign Creative" className="max-w-xs rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm" />
+                                                <span className="text-[10px] text-gray-500 uppercase font-mono tracking-widest block mb-2">Media Asset</span>
+                                                <div className="border border-[#333] p-2 inline-block bg-[#070707] hover:border-[#26cece] transition-colors">
+                                                    <img src={selectedCampaign.creative_assets.imageUrl} alt="Campaign Creative" className="max-w-[200px] h-auto object-cover grayscale hover:grayscale-0 transition-all" />
+                                                </div>
                                             </div>
                                         )}
                                         {selectedCampaign.creative_assets.ctaText && (
                                             <div>
-                                                <span className="text-xs text-gray-500 dark:text-gray-400 block mb-1">Call to Action</span>
-                                                <span className="inline-block px-3 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 text-sm font-medium rounded-lg">
+                                                <span className="text-[10px] text-gray-500 uppercase font-mono tracking-widest block mb-1">Interaction Module</span>
+                                                <span className="inline-block px-3 py-1.5 bg-[#26cece] text-[#070707] text-[10px] font-bold uppercase tracking-widest border border-[#26cece] shadow-[2px_2px_0_0_#333]">
                                                     {selectedCampaign.creative_assets.ctaText}
                                                 </span>
                                             </div>
@@ -668,9 +684,12 @@ const CampaignManagerPage = ({ embedded = false }) => {
 
                             {selectedCampaign.destination_url && (
                                 <div>
-                                    <h4 className="text-base font-semibold text-gray-900 dark:text-white mb-3 pb-2 border-b border-gray-100 dark:border-gray-700">Destination URL</h4>
-                                    <a href={selectedCampaign.destination_url} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-500 text-sm flex items-center gap-1.5 break-all">
-                                        <Link2 size={16} />
+                                    <h4 className="text-sm font-bold font-mono text-[#26cece] uppercase tracking-widest mb-4 flex items-center gap-2">
+                                        <span className="w-2 h-2 bg-[#26cece]"></span>
+                                        Redirection Vector
+                                    </h4>
+                                    <a href={selectedCampaign.destination_url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 p-4 border border-[#333] bg-[#111111] text-white hover:text-[#070707] hover:bg-[#26cece] hover:border-[#26cece] transition-all font-mono text-xs break-all group shadow-[4px_4px_0_0_transparent] hover:shadow-[4px_4px_0_0_#333]">
+                                        <Link2 size={16} className="group-hover:text-[#070707]" />
                                         {selectedCampaign.destination_url}
                                     </a>
                                 </div>

@@ -104,14 +104,14 @@ const MetaScheduledPostsPage = () => {
 
     if (!isConnected) {
         return (
-            <div className="p-8 flex flex-col items-center justify-center min-h-[60vh] text-center">
-                <div className="w-20 h-20 mb-6 rounded-3xl bg-slate-800 flex items-center justify-center">
-                    <CalendarClock className="h-10 w-10 text-gray-500" />
+            <div className="p-8 flex flex-col items-center justify-center min-h-[60vh] text-center bg-[#070707] font-mono">
+                <div className="w-20 h-20 mb-6 bg-[#111111] border border-[#333] flex items-center justify-center transform -rotate-3 hover:rotate-0 transition-transform shadow-[4px_4px_0_0_#26cece]">
+                    <CalendarClock className="h-10 w-10 text-[#26cece]" />
                 </div>
-                <h3 className="text-xl font-bold text-white mb-2">Not Connected</h3>
-                <p className="text-gray-400 mb-6 max-w-xs">Connect your Meta account first to manage scheduled posts.</p>
-                <button onClick={() => setShowConnectModal(true)} className="px-6 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold transition-colors text-sm">
-                    Connect Account
+                <h3 className="text-xl font-bold font-['Space_Grotesk'] text-white uppercase tracking-tight mb-2">Not Connected</h3>
+                <p className="text-gray-500 text-sm mb-6 max-w-xs">&gt; Connect your Meta account first to manage scheduled posts.</p>
+                <button onClick={() => setShowConnectModal(true)} className="px-6 py-3 rounded-[2px] bg-[#26cece] text-[#070707] font-bold font-['Space_Grotesk'] uppercase tracking-widest text-[12px] border border-[#070707] hover:shadow-[4px_4px_0_0_#333] hover:-translate-y-1 transition-all">
+                    Initialize Connection
                 </button>
             </div>
         );
@@ -120,31 +120,32 @@ const MetaScheduledPostsPage = () => {
     return (
         <div className="p-6 lg:p-8 max-w-6xl mx-auto">
             {/* Header */}
-            <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center justify-between mb-8 border-b border-[#333] pb-6">
                 <div>
-                    <h2 className="text-2xl font-bold text-white">Scheduled Posts</h2>
-                    <p className="text-gray-400 text-sm mt-1">{scheduledPosts.length} post{scheduledPosts.length !== 1 ? 's' : ''} queued</p>
+                    <h2 className="text-3xl font-extrabold text-white font-['Space_Grotesk'] uppercase tracking-tight">Scheduled Transmissions</h2>
+                    <p className="text-gray-500 text-[10px] font-mono uppercase tracking-widest mt-1">&gt; {scheduledPosts.length} packet{scheduledPosts.length !== 1 ? 's' : ''} queued in buffer</p>
                 </div>
                 <button
                     onClick={() => setShowModal(true)}
-                    className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold hover:from-blue-700 hover:to-indigo-700 transition-colors shadow-lg shadow-blue-500/25 text-sm"
+                    className="flex flex-row items-center gap-2 px-5 py-3 rounded-[2px] bg-[#26cece] text-[#070707] font-bold font-['Space_Grotesk'] uppercase tracking-widest text-[12px] border border-[#070707] hover:shadow-[4px_4px_0_0_#333] hover:-translate-y-1 transition-all"
                 >
-                    <Calendar className="h-4 w-4" />Schedule Post
+                    <Calendar className="h-4 w-4" /> Queue Transmission
                 </button>
             </div>
 
             {scheduledPosts.length === 0 ? (
-                <div className="text-center py-20 bg-slate-800/40 rounded-3xl border border-slate-700/50">
-                    <div className="w-20 h-20 mx-auto mb-5 rounded-3xl bg-slate-800 flex items-center justify-center">
-                        <CalendarClock className="h-10 w-10 text-gray-500" />
+                <div className="text-center py-20 bg-[#111111] border border-dashed border-[#333] relative overflow-hidden group">
+                    <div className="absolute inset-0 opacity-10 pointer-events-none" style={{ backgroundImage: 'radial-gradient(#333 1px, transparent 1px)', backgroundSize: '16px 16px' }} />
+                    <div className="relative z-10 w-20 h-20 mx-auto mb-6 bg-[#070707] border border-[#333] flex items-center justify-center transform rotate-3 shadow-[4px_4px_0_0_#333] group-hover:border-[#26cece] group-hover:shadow-[4px_4px_0_0_#26cece] transition-all">
+                        <CalendarClock className="h-8 w-8 text-gray-600 group-hover:text-[#26cece] transition-colors" />
                     </div>
-                    <h3 className="text-lg font-semibold text-white mb-2">No Scheduled Posts</h3>
-                    <p className="text-gray-400 max-w-xs mx-auto mb-6">Schedule your first post to see it here.</p>
+                    <h3 className="relative z-10 text-xl font-bold font-['Space_Grotesk'] text-white uppercase tracking-tight mb-2">Buffer Empty</h3>
+                    <p className="relative z-10 text-gray-500 font-mono text-sm max-w-sm mx-auto mb-6">&gt; Schedule your first post transmission to populate the queue.</p>
                     <button
                         onClick={() => setShowModal(true)}
-                        className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold transition-colors text-sm"
+                        className="relative z-10 inline-flex items-center gap-2 px-6 py-3 rounded-[2px] bg-[#26cece] text-[#070707] font-bold font-['Space_Grotesk'] uppercase tracking-widest text-[12px] border border-[#070707] hover:-translate-y-1 shadow-[4px_4px_0_0_#333] transition-all"
                     >
-                        <Calendar className="h-4 w-4" />Schedule Post
+                        <Calendar className="h-4 w-4" /> Queue Transmission
                     </button>
                 </div>
             ) : (
@@ -153,25 +154,25 @@ const MetaScheduledPostsPage = () => {
                         const statusConfig = getStatusConfig(post.status);
                         const StatusIcon = statusConfig.icon;
                         return (
-                            <div key={post.id} className="flex items-center justify-between p-4 rounded-xl bg-slate-800/40 border border-slate-700/50 gap-4">
-                                <div className="flex-1 min-w-0">
-                                    <p className="font-medium text-white truncate">{post.content || '(No text)'}</p>
-                                    <div className="flex items-center gap-3 mt-1 text-sm text-gray-400 flex-wrap">
-                                        <span>{post.page_name}</span>
-                                        <span>•</span>
-                                        <span>{new Date(post.scheduled_time).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', dateStyle: 'medium', timeStyle: 'short' })}</span>
+                            <div key={post.id} className="group flex flex-col sm:flex-row sm:items-center justify-between p-5 bg-[#070707] border border-[#333] hover:border-[#26cece] hover:shadow-[4px_4px_0_0_#26cece] hover:-translate-y-1 transition-all gap-4">
+                                <div className="flex-1 min-w-0 border-l-2 border-transparent group-hover:border-[#26cece] pl-3">
+                                    <p className="font-extrabold font-['Space_Grotesk'] text-lg text-white truncate tracking-tight uppercase">{post.content || '(No text)'}</p>
+                                    <div className="flex items-center gap-3 mt-1 text-[10px] font-mono tracking-widest uppercase text-gray-500 flex-wrap">
+                                        <span>TARGET: {post.page_name}</span>
+                                        <span className="text-[#333]">/</span>
+                                        <span>ETA: {new Date(post.scheduled_time).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', dateStyle: 'medium', timeStyle: 'short' })}</span>
                                     </div>
                                 </div>
-                                <div className="flex items-center gap-3 shrink-0">
-                                    <div className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium ${statusConfig.bg} ${statusConfig.color}`}>
+                                <div className="flex items-center bg-[#111111] border border-[#1E1E1E] p-3 gap-4 shrink-0">
+                                    <div className={`flex items-center gap-1.5 px-2 py-0.5 border text-[10px] uppercase font-mono tracking-widest font-bold ${statusConfig.bg === 'bg-emerald-500/10' ? 'border-emerald-500 text-emerald-400 bg-emerald-950/30' : statusConfig.bg === 'bg-amber-500/10' ? 'border-amber-500 text-amber-400 bg-amber-950/30' : statusConfig.bg === 'bg-red-500/10' ? 'border-red-500 text-red-400 bg-red-950/30' : 'border-blue-500 text-blue-400 bg-blue-950/30'}`}>
                                         <StatusIcon className="h-3 w-3" />
                                         {statusConfig.label}
                                     </div>
                                     {post.status === 'pending' && (
                                         <button
                                             onClick={() => handleDelete(post.id)}
-                                            className="p-2 rounded-lg hover:bg-red-900/30 text-red-400 transition-colors"
-                                            title="Delete"
+                                            className="p-2 border border-[#333] hover:border-red-500 hover:bg-red-500 hover:text-[#070707] text-gray-400 transition-colors"
+                                            title="Abort Transmission"
                                         >
                                             <X className="h-4 w-4" />
                                         </button>

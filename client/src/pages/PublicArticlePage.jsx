@@ -5,6 +5,8 @@ import { Loader2, ArrowLeft, Calendar, User, Clock, Share2, Tag, Facebook, Twitt
 import API_BASE_URL from '../config.js';
 import { trackBlogRead, trackDemoClick } from '../lib/analytics';
 
+const TEAL = '#26CECE';
+
 const PublicArticlePage = () => {
     const { id, slug } = useParams(); // Support both id and slug
     const [article, setArticle] = useState(null);
@@ -64,6 +66,7 @@ const PublicArticlePage = () => {
                 // Add the new comment to the top of the list
                 setComments([data.comment, ...comments]);
                 setNewComment('');
+                setCommentName('');
             } else {
                 setCommentsError(data.error || 'Failed to post comment');
             }
@@ -96,11 +99,11 @@ const PublicArticlePage = () => {
     useEffect(() => {
         fetchArticle();
         window.scrollTo(0, 0);
-    }, [id]);
+    }, [id, slug]);
 
     useEffect(() => {
         fetchLatestBlogs();
-    }, [id]);
+    }, [id, slug]);
 
     const fetchArticle = async () => {
         try {
@@ -132,7 +135,7 @@ const PublicArticlePage = () => {
             }
         } catch (err) {
             console.error('Error fetching article:', err);
-            setError('Isse fetching article. Please try again.');
+            setError('Issue fetching article. Please try again.');
         } finally {
             setLoading(false);
         }
@@ -140,18 +143,24 @@ const PublicArticlePage = () => {
 
     if (loading) {
         return (
-            <div className="min-h-screen flex justify-center items-center bg-gray-50 dark:bg-slate-900">
-                <Loader2 className="animate-spin text-indigo-600" size={48} />
+            <div className="min-h-screen flex justify-center items-center bg-[#070707]">
+                <Loader2 className="animate-spin text-white/20" size={48} />
             </div>
         );
     }
 
     if (error || !article) {
         return (
-            <div className="min-h-screen flex flex-col justify-center items-center bg-gray-50 dark:bg-slate-900 px-6">
-                <h1 className="text-4xl font-bold text-gray-800 dark:text-gray-200 mb-4">Oops!</h1>
-                <p className="text-lg text-gray-600 dark:text-gray-400 mb-8">{error || 'Article not found'}</p>
-                <Link to="/blogs" className="px-6 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors">
+            <div className="min-h-screen flex flex-col justify-center items-center bg-[#070707] px-6" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+                <h1 className="text-5xl font-extrabold text-white tracking-tight uppercase mb-4">404 NOT FOUND</h1>
+                <p className="text-lg text-white/40 mb-8 font-medium uppercase tracking-widest" style={{ fontFamily: "'DM Mono', monospace" }}>
+                    {error || 'Article not found'}
+                </p>
+                <Link 
+                    to="/blogs" 
+                    className="px-8 py-4 font-bold uppercase tracking-widest text-xs transition-all hover:bg-[#1A1A1A]"
+                    style={{ background: '#111', color: TEAL, border: '1px solid #1E1E1E', fontFamily: "'DM Mono', monospace" }}
+                >
                     Back to Blogs
                 </Link>
             </div>
@@ -165,14 +174,14 @@ const PublicArticlePage = () => {
 
 
     return (
-        <div className="min-h-screen bg-gray-50 dark:bg-slate-900 pb-20">
+        <div className="min-h-screen bg-[#070707] pb-20">
             <SEOHead
                 title={article.seo_title || article.topic}
                 description={article.content ? article.content.replace(/<[^>]+>/g, '').substring(0, 160) : ''}
                 ogType="article"
                 ogImage={article.image_url}
                 publishedTime={article.created_at}
-                modifiedTime={article.updated_at}
+                modifiedTime={article.updated_at || article.created_at}
                 author={article.author?.name || article.author_details?.name || article.author_name || 'Bitlance Author'}
                 keywords={article.tags && article.tags.length > 0 ? article.tags.join(', ') : (article.category || 'AI, automation')}
                 structuredData={{
@@ -203,51 +212,62 @@ const PublicArticlePage = () => {
             />
 
             {/* Header Image & Title */}
-            <div className="bg-white dark:bg-slate-800 border-b border-gray-200 dark:border-slate-700">
-                <div className="max-w-7xl mx-auto px-6 py-12 md:py-20 lg:px-8">
-                    <Link to="/blogs" className="inline-flex items-center text-gray-500 hover:text-indigo-600 mb-8 transition-colors">
-                        <ArrowLeft size={20} className="mr-2" /> Back to Articles
+            <div className="bg-[#070707] border-b border-[#1E1E1E]">
+                <div className="max-w-7xl mx-auto px-6 py-12 md:py-24 lg:px-8">
+                    <Link 
+                        to="/blogs" 
+                        className="inline-flex items-center text-xs uppercase tracking-widest font-bold hover:translate-x-1 mb-10 transition-all"
+                        style={{ color: TEAL, fontFamily: "'DM Mono', monospace" }}
+                    >
+                        <ArrowLeft size={16} className="mr-2" /> 
+                        CD /BLOGS
                     </Link>
 
-                    <h1 className="text-3xl md:text-5xl font-extrabold text-gray-900 dark:text-white mb-6 leading-tight max-w-4xl">
+                    <h1 
+                        className="text-4xl md:text-5xl lg:text-6xl font-extrabold text-white mb-8 tracking-tighter uppercase leading-[1.1]" 
+                        style={{ fontFamily: "'Space Grotesk', sans-serif" }}
+                    >
                         {article.seo_title || article.topic}
                     </h1>
 
-                    <div className="flex flex-wrap items-center gap-6 text-gray-500 dark:text-gray-400 text-sm md:text-base mb-8">
+                    <div className="flex flex-wrap items-center gap-6 text-[11px] text-white/40 mb-10 tracking-widest uppercase font-bold" style={{ fontFamily: "'DM Mono', monospace" }}>
                         <span className="flex items-center gap-2">
-                            <User size={18} />
-                            {article.author_name || (article.user_id === 'anonymous' ? 'Bitlance AI' : 'Bitlance Author')}
+                            <User size={14} />
+                            {article.author_name || (article.user_id === 'anonymous' ? 'AI Agent' : 'Bitlance Source')}
                         </span>
                         <span className="flex items-center gap-2">
-                            <Calendar size={18} />
+                            <Calendar size={14} />
                             {new Date(article.publish_date || article.created_at).toLocaleDateString('en-US', {
                                 year: 'numeric',
-                                month: 'long',
+                                month: 'short',
                                 day: 'numeric'
                             })}
                         </span>
                         <span className="flex items-center gap-2">
-                            <Clock size={18} />
-                            {article.estimated_read_time || readingTime} min read
+                            <Clock size={14} />
+                            {article.estimated_read_time || readingTime} MIN READ
                         </span>
                         {article.category && (
-                            <span className="px-3 py-1 rounded-full bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300 text-xs font-semibold">
+                            <span 
+                                className="px-2 py-1"
+                                style={{ background: `${TEAL}10`, color: TEAL, border: `1px solid ${TEAL}30` }}
+                            >
                                 {article.category}
                             </span>
                         )}
                         {(article.updated_at && article.updated_at !== article.created_at) && (
-                            <span className="px-3 py-1 rounded-full bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 text-xs font-semibold">
-                                Updated {new Date(article.updated_at).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}
+                            <span className="px-2 py-1" style={{ background: '#111', color: '#888', border: '1px solid #333' }}>
+                                UPD {new Date(article.updated_at).toLocaleDateString('en-US', { year: '2-digit', month: '2-digit', day: '2-digit' })}
                             </span>
                         )}
                     </div>
 
                     {article.image_url && (
-                        <div className="rounded-2xl overflow-hidden shadow-lg mt-8 max-w-5xl">
+                        <div className="w-full mt-10 p-2" style={{ background: '#111', border: '1px solid #1E1E1E' }}>
                             <img
                                 src={article.image_url}
                                 alt={article.seo_title || article.topic}
-                                className="w-full h-auto object-cover max-h-[600px]"
+                                className="w-full h-auto object-cover max-h-[600px] grayscale hover:grayscale-0 transition-all duration-700"
                                 onError={(e) => e.target.style.display = 'none'}
                             />
                         </div>
@@ -256,28 +276,37 @@ const PublicArticlePage = () => {
             </div>
 
             {/* Layout Container */}
-            <div className="max-w-7xl mx-auto px-6 lg:px-8 py-12 flex flex-col lg:flex-row gap-12 lg:gap-16">
+            <div className="max-w-7xl mx-auto px-6 lg:px-8 py-16 flex flex-col lg:flex-row gap-16 lg:gap-24">
 
                 {/* Article Content */}
                 <article className="flex-1 max-w-3xl">
                     <div
-                        className="prose prose-lg dark:prose-invert max-w-none
-                        prose-headings:font-bold prose-headings:text-gray-900 dark:prose-headings:text-white
-                        prose-a:text-indigo-600 dark:prose-a:text-indigo-400 prose-a:no-underline hover:prose-a:underline
-                        prose-img:rounded-xl prose-img:shadow-md text-gray-800 dark:text-gray-200 whitespace-pre-wrap"
+                        className="prose prose-lg max-w-none prose-headings:font-extrabold prose-headings:text-white prose-headings:uppercase prose-headings:tracking-tight prose-a:no-underline hover:prose-a:underline prose-img:border prose-img:border-[#1E1E1E] prose-img:p-1 prose-img:bg-[#111] text-white/80 whitespace-pre-wrap leading-relaxed marker:text-[#26CECE]"
+                        style={{ fontFamily: "'Space Grotesk', sans-serif" }}
                         dangerouslySetInnerHTML={{ __html: article.content }}
                     />
+                    
+                    {/* Inject teal color for prose links manually or via custom tag class */}
+                    <style dangerouslySetInnerHTML={{__html: `
+                        .prose a { color: ${TEAL}; font-weight: bold; }
+                        .prose strong { color: #ffffff; }
+                        .prose blockquote { border-left-color: ${TEAL}; background: #111; padding: 1rem; color: #ccc; }
+                        .prose code { color: ${TEAL}; background: #111; padding: 0.2rem 0.4rem; border: 1px solid #1E1E1E; }
+                        .prose pre { background: #070707; border: 1px solid #1E1E1E; }
+                    `}} />
 
                     {/* Tags Section */}
                     {article.tags && article.tags.length > 0 && (
-                        <div className="mb-12 mt-10">
-                            <h4 className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-4">
-                                Tags
+                        <div className="mb-16 mt-16">
+                            <h4 className="text-[11px] font-bold text-white/40 uppercase tracking-widest mb-6" style={{ fontFamily: "'DM Mono', monospace" }}>
+                                [ METADATA_TAGS ]
                             </h4>
-                            <div className="flex flex-wrap gap-2">
+                            <div className="flex flex-wrap gap-3" style={{ fontFamily: "'DM Mono', monospace" }}>
                                 {article.tags.map((tag, index) => (
-                                    <span key={index} className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-gray-100 dark:bg-slate-800 text-gray-700 dark:text-gray-300 text-sm hover:bg-indigo-50 dark:hover:bg-indigo-900/30 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors cursor-pointer">
-                                        <Tag size={14} />
+                                    <span key={index} className="flex items-center gap-2 px-3 py-1.5 text-xs font-bold uppercase tracking-widest transition-colors cursor-pointer hover:bg-[#1A1A1A]"
+                                        style={{ background: '#111', color: TEAL, border: '1px solid #1E1E1E' }}
+                                    >
+                                        <Tag size={12} />
                                         {tag}
                                     </span>
                                 ))}
@@ -285,80 +314,84 @@ const PublicArticlePage = () => {
                         </div>
                     )}
 
-                    {/* Author Profile Section */}
-                    <div className="mt-16 mb-12 pt-8 border-t border-gray-200 dark:border-slate-700">
-                        <h3 className="text-xl font-bold mb-6 text-gray-900 dark:text-white uppercase tracking-wider text-sm">About the Author</h3>
+                    {/* CTA Section (Book a Demo) Brutalist */}
+                    <div className="mt-16 p-8 md:p-12 relative overflow-hidden flex flex-col items-start gap-8 group"
+                         style={{ background: TEAL, border: `2px solid #000`, color: '#000', fontFamily: "'Space Grotesk', sans-serif" }}
+                    >
+                        {/* Abstract Decor */}
+                        <div className="absolute -right-20 -top-20 opacity-10 pointer-events-none">
+                            <span className="text-[200px] leading-none font-black text-black">/&gt;</span>
+                        </div>
+                        
+                        <div className="relative z-10">
+                            <h3 className="text-3xl md:text-5xl font-black uppercase tracking-tighter mb-4 text-black">
+                                Automate your <br/>workflow
+                            </h3>
+                            <p className="text-black/80 text-lg md:text-xl font-medium max-w-xl leading-relaxed">
+                                Deploy AI agents today. Let's schedule a deep dive into the architecture and operations.
+                            </p>
+                        </div>
+                        
+                        <Link
+                            to="/apply"
+                            onClick={() => trackDemoClick('blog_article_cta')}
+                            className="relative z-10 inline-flex items-center justify-center px-8 py-4 bg-black text-white font-black uppercase tracking-widest text-sm md:text-base border-2 border-black hover:bg-transparent hover:text-black transition-all"
+                            style={{ fontFamily: "'DM Mono', monospace" }}
+                        >
+                            <ArrowRight size={18} className="mr-3" />
+                            DEPLOY AGENTS
+                        </Link>
+                    </div>
 
-                        <div className="flex flex-col md:flex-row gap-6 items-start bg-gray-50 dark:bg-slate-800/50 p-6 rounded-2xl">
-                            {/* Avatar */}
+                    {/* Author Profile Section */}
+                    <div className="mt-20 pt-16 border-t border-[#1E1E1E]">
+                        <h4 className="text-[11px] font-bold text-white/40 uppercase tracking-widest mb-6" style={{ fontFamily: "'DM Mono', monospace" }}>
+                            [ AUTHOR_ID ]
+                        </h4>
+
+                        <div className="flex flex-col md:flex-row gap-8 items-start p-8" style={{ background: '#111', border: '1px solid #1E1E1E' }}>
                             <div className="flex-shrink-0">
                                 {(article.author?.profile_image || article.author_details?.profile_image) ? (
-                                    <img
-                                        src={article.author?.profile_image || article.author_details?.profile_image}
-                                        alt={article.author_name}
-                                        className="w-24 h-24 md:w-32 md:h-32 rounded-xl object-cover shadow-sm border-2 border-white dark:border-slate-700"
-                                    />
+                                    <div className="w-24 h-24 md:w-32 md:h-32 p-1" style={{ border: '1px solid #1E1E1E', background: '#070707' }}>
+                                        <img
+                                            src={article.author?.profile_image || article.author_details?.profile_image}
+                                            alt={article.author_name}
+                                            className="w-full h-full object-cover grayscale"
+                                        />
+                                    </div>
                                 ) : (
-                                    <div className="w-24 h-24 md:w-32 md:h-32 rounded-xl bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center text-indigo-600 dark:text-indigo-400">
-                                        <User size={40} />
+                                    <div className="w-24 h-24 md:w-32 md:h-32 flex items-center justify-center font-black text-4xl" style={{ border: '1px solid #1E1E1E', background: '#070707', color: TEAL, fontFamily: "'DM Mono', monospace" }}>
+                                        usr
                                     </div>
                                 )}
                             </div>
 
-                            {/* Details */}
-                            <div className="flex-1">
-                                <h4 className="text-xl md:text-2xl font-bold text-gray-900 dark:text-gray-100 mb-1">
-                                    {article.author?.name || article.author_details?.name || article.author_name || 'Bitlance Author'}
+                            <div className="flex-1" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+                                <h4 className="text-2xl md:text-3xl font-black text-white uppercase tracking-tight mb-2">
+                                    {article.author?.name || article.author_details?.name || article.author_name || 'System Operator'}
                                 </h4>
-
                                 {(article.author?.role || article.author_details?.role) && (
-                                    <p className="text-indigo-600 dark:text-indigo-400 font-medium mb-3 text-sm md:text-base">
+                                    <p className="font-bold uppercase tracking-widest text-[11px] mb-4" style={{ color: TEAL, fontFamily: "'DM Mono', monospace" }}>
                                         {article.author?.role || article.author_details?.role}
                                     </p>
                                 )}
-
-                                <div className="prose prose-sm dark:prose-invert mb-4 text-gray-600 dark:text-gray-300">
-                                    <p>{article.author?.bio || article.author_details?.bio || article.author_bio || 'Content Creator at Bitlance Tech Hub'}</p>
+                                <div className="text-white/60 leading-relaxed mb-6 font-medium">
+                                    <p>{article.author?.bio || article.author_details?.bio || article.author_bio || 'Maintains the grid.'}</p>
                                 </div>
 
-                                {/* Social Links */}
                                 {(() => {
                                     const socials = article.author?.social_links || article.author_details?.social_links || {};
-                                    const hasSocials = Object.keys(socials).length > 0;
-
-                                    if (!hasSocials) return null;
-
+                                    if (Object.keys(socials).length === 0) return null;
                                     return (
-                                        <div className="flex flex-wrap gap-3">
-                                            {socials.facebook && (
-                                                <a href={socials.facebook} target="_blank" rel="noopener noreferrer" className="p-2 bg-white dark:bg-slate-700 text-blue-600 rounded-lg hover:shadow-md transition-all" title="Facebook">
-                                                    <Facebook size={18} />
-                                                </a>
-                                            )}
+                                        <div className="flex flex-wrap gap-4">
                                             {socials.twitter && (
-                                                <a href={socials.twitter} target="_blank" rel="noopener noreferrer" className="p-2 bg-white dark:bg-slate-700 text-sky-500 rounded-lg hover:shadow-md transition-all" title="Twitter/X">
-                                                    <Twitter size={18} />
-                                                </a>
+                                                <a href={socials.twitter} target="_blank" rel="noopener noreferrer" className="text-white/40 hover:text-white transition-colors"><Twitter size={20} /></a>
                                             )}
                                             {socials.linkedin && (
-                                                <a href={socials.linkedin} target="_blank" rel="noopener noreferrer" className="p-2 bg-white dark:bg-slate-700 text-blue-700 rounded-lg hover:shadow-md transition-all" title="LinkedIn">
-                                                    <Linkedin size={18} />
-                                                </a>
+                                                <a href={socials.linkedin} target="_blank" rel="noopener noreferrer" className="text-white/40 hover:text-white transition-colors"><Linkedin size={20} /></a>
                                             )}
                                             {socials.website && (
-                                                <a href={socials.website} target="_blank" rel="noopener noreferrer" className="p-2 bg-white dark:bg-slate-700 text-gray-700 dark:text-gray-300 rounded-lg hover:shadow-md transition-all" title="Website">
-                                                    <Globe size={18} />
-                                                </a>
-                                            )}
-                                            {socials.email && (
-                                                <a href={`mailto:${socials.email}`} className="p-2 bg-white dark:bg-slate-700 text-red-500 rounded-lg hover:shadow-md transition-all" title="Email">
-                                                    <Mail size={18} />
-                                                </a>
-                                            )}
-                                            {socials.phone && (
-                                                <a href={`tel:${socials.phone}`} className="p-2 bg-white dark:bg-slate-700 text-green-600 rounded-lg hover:shadow-md transition-all" title="Phone">
-                                                    <Phone size={18} />
-                                                </a>
+                                                <a href={socials.website} target="_blank" rel="noopener noreferrer" className="text-white/40 hover:text-white transition-colors"><Globe size={20} /></a>
                                             )}
                                         </div>
                                     );
@@ -367,126 +400,77 @@ const PublicArticlePage = () => {
                         </div>
                     </div>
 
-                    <div className="mt-8 pt-8 border-t border-gray-200 dark:border-slate-700">
-                        <h3 className="text-lg font-bold mb-4 text-gray-900 dark:text-white">Share this article</h3>
-                        <div className="flex gap-4">
-                            <button
-                                onClick={() => {
-                                    if (navigator.share) {
-                                        navigator.share({
-                                            title: article.seo_title || article.topic,
-                                            url: window.location.href
-                                        })
-                                    } else {
-                                        navigator.clipboard.writeText(window.location.href);
-                                        alert('Link copied to clipboard!');
-                                    }
-                                }}
-                                className="flex items-center gap-2 px-4 py-2 bg-gray-100 dark:bg-slate-800 rounded-lg hover:bg-gray-200 dark:hover:bg-slate-700 transition-colors text-gray-700 dark:text-gray-300"
-                            >
-                                <Share2 size={18} /> Share Article
-                            </button>
-                        </div>
-                    </div>
-
-                    {/* CTA Section (Book a Demo) */}
-                    <div className="mt-12 bg-gradient-to-br from-indigo-900 via-indigo-800 to-purple-900 rounded-2xl p-8 md:p-10 shadow-xl overflow-hidden relative">
-                        {/* Decorative elements */}
-                        <div className="absolute top-0 right-0 -mx-8 -my-8 w-64 h-64 bg-white/5 rounded-full blur-3xl mix-blend-overlay"></div>
-                        <div className="absolute bottom-0 left-0 -mx-8 -my-8 w-48 h-48 bg-purple-500/20 rounded-full blur-2xl"></div>
-
-                        <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-8">
-                            <div className="flex-1 text-center md:text-left">
-                                <h3 className="text-2xl md:text-3xl font-bold text-white mb-3">
-                                    Want to transform your workflow?
-                                </h3>
-                                <p className="text-indigo-100 text-lg max-w-xl">
-                                    See how our AI agents can automate your tasks and boost productivity. Schedule a free personalized demo today.
-                                </p>
-                            </div>
-                            <div className="flex-shrink-0 w-full md:w-auto">
-                                <Link
-                                    to="/apply/audit"
-                                    onClick={() => trackDemoClick('blog_article_cta')}
-                                    className="audit-cta btn-primary w-full md:w-auto inline-flex items-center justify-center px-8 py-4 rounded-xl font-bold text-lg shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300"
-                                >
-                                    Book a Demo
-                                    <ArrowRight className="ml-2" size={20} />
-                                </Link>
-                            </div>
-                        </div>
+                    {/* Share */}
+                    <div className="mt-12 flex gap-4">
+                        <button
+                            onClick={() => {
+                                if (navigator.share) {
+                                    navigator.share({ title: article.seo_title, url: window.location.href })
+                                } else {
+                                    navigator.clipboard.writeText(window.location.href); alert('COPIED!');
+                                }
+                            }}
+                            className="flex items-center gap-3 px-6 py-4 font-bold uppercase tracking-widest text-xs transition-all hover:bg-[#1A1A1A]"
+                            style={{ background: '#111', color: TEAL, border: '1px solid #1E1E1E', fontFamily: "'DM Mono', monospace" }}
+                        >
+                            <Share2 size={16} /> SHARE_LOG
+                        </button>
                     </div>
 
                     {/* Comments Section */}
-                    <div className="mt-16 pt-8 border-t border-gray-200 dark:border-slate-700">
-                        <div className="flex items-center gap-3 mb-8">
-                            <MessageSquare className="text-indigo-600 dark:text-indigo-400" size={28} />
-                            <h3 className="text-2xl font-bold text-gray-900 dark:text-white">
-                                Comments ({comments.length})
-                            </h3>
-                        </div>
+                    <div className="mt-20 pt-16 border-t border-[#1E1E1E]">
+                        <h4 className="text-[11px] font-bold text-white/40 uppercase tracking-widest mb-10" style={{ fontFamily: "'DM Mono', monospace" }}>
+                            [ COMM_LOGS : {comments.length} ]
+                        </h4>
 
-                        {/* Comment Form */}
-                        <div className="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-sm border border-gray-200 dark:border-slate-700 mb-10">
-                            <h4 className="text-lg font-bold text-gray-800 dark:text-gray-200 mb-4">Leave a Reply</h4>
-                            <form onSubmit={handlePostComment} className="space-y-4">
+                        <div className="p-8 mb-12" style={{ background: '#111', border: '1px solid #1E1E1E' }}>
+                            <form onSubmit={handlePostComment} className="space-y-6" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Your Name</label>
+                                    <label className="block text-[11px] font-bold text-white/40 uppercase tracking-widest mb-2" style={{ fontFamily: "'DM Mono', monospace" }}>ID_NAME</label>
                                     <input
-                                        type="text"
-                                        required
-                                        value={commentName}
-                                        onChange={(e) => setCommentName(e.target.value)}
-                                        placeholder="John Doe"
-                                        className="w-full px-4 py-3 rounded-lg bg-gray-50 dark:bg-slate-900 border border-gray-200 dark:border-slate-700 focus:ring-2 focus:ring-indigo-500 outline-none transition-all text-gray-900 dark:text-white"
+                                        type="text" required value={commentName} onChange={(e) => setCommentName(e.target.value)}
+                                        placeholder="GUEST"
+                                        className="w-full px-4 py-4 bg-[#070707] border border-[#1E1E1E] focus:border-[#26CECE] outline-none transition-all text-white font-bold"
+                                        style={{ fontFamily: "'DM Mono', monospace" }}
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Your Comment</label>
+                                    <label className="block text-[11px] font-bold text-white/40 uppercase tracking-widest mb-2" style={{ fontFamily: "'DM Mono', monospace" }}>PAYLOAD</label>
                                     <textarea
-                                        required
-                                        value={newComment}
-                                        onChange={(e) => setNewComment(e.target.value)}
-                                        placeholder="What are your thoughts?"
-                                        rows="4"
-                                        className="w-full px-4 py-3 rounded-lg bg-gray-50 dark:bg-slate-900 border border-gray-200 dark:border-slate-700 focus:ring-2 focus:ring-indigo-500 outline-none transition-all resize-none text-gray-900 dark:text-white"
+                                        required value={newComment} onChange={(e) => setNewComment(e.target.value)}
+                                        placeholder="> ENTER INPUT..." rows="4"
+                                        className="w-full px-4 py-4 bg-[#070707] border border-[#1E1E1E] focus:border-[#26CECE] outline-none transition-all text-white resize-none font-medium"
                                     ></textarea>
                                 </div>
                                 <button
-                                    type="submit"
-                                    disabled={isSubmittingComment || !newComment.trim() || !commentName.trim()}
-                                    className="flex items-center gap-2 px-6 py-3 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg font-medium transition-colors"
+                                    type="submit" disabled={isSubmittingComment || !newComment.trim() || !commentName.trim()}
+                                    className="flex items-center gap-3 px-8 py-4 disabled:opacity-50 font-black uppercase tracking-widest text-sm hover:invert transition-all"
+                                    style={{ background: TEAL, color: '#000', border: 'none', fontFamily: "'DM Mono', monospace" }}
                                 >
                                     {isSubmittingComment ? <Loader2 className="animate-spin" size={18} /> : <Send size={18} />}
-                                    {isSubmittingComment ? 'Posting...' : 'Post Comment'}
+                                    {isSubmittingComment ? 'TRANSMITTING...' : 'EXECUTE'}
                                 </button>
-                                {commentsError && (
-                                    <p className="text-red-500 text-sm mt-2">{commentsError}</p>
-                                )}
+                                {commentsError && <p className="text-red-500 font-bold font-mono text-sm mt-4 uppercase">ERR: {commentsError}</p>}
                             </form>
                         </div>
 
-                        {/* Comments List */}
                         <div className="space-y-6">
                             {comments.length === 0 ? (
-                                <p className="text-gray-500 dark:text-gray-400 italic">No comments yet. Be the first to share your thoughts!</p>
+                                <p className="text-white/40 font-medium uppercase tracking-widest text-sm" style={{ fontFamily: "'DM Mono', monospace" }}>
+                                    NO LOGS FOUND.
+                                </p>
                             ) : (
                                 comments.map(comment => (
-                                    <div key={comment.id} className="flex gap-4 p-5 rounded-2xl bg-gray-50 dark:bg-slate-800/50 border border-gray-100 dark:border-slate-700/50">
-                                        <div className="flex-shrink-0">
-                                            <div className="w-12 h-12 rounded-full bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center text-indigo-700 dark:text-indigo-400 font-bold text-lg">
-                                                {comment.author_name ? comment.author_name.charAt(0).toUpperCase() : 'A'}
-                                            </div>
-                                        </div>
-                                        <div className="flex-1">
-                                            <div className="flex items-baseline justify-between mb-1">
-                                                <h5 className="font-bold text-gray-900 dark:text-white">{comment.author_name}</h5>
-                                                <span className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1">
+                                    <div key={comment.id} className="flex gap-6 p-6 md:p-8" style={{ background: '#111', border: '1px solid #1E1E1E' }}>
+                                        <div className="flex-1" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+                                            <div className="flex items-baseline justify-between mb-4 border-b border-[#1E1E1E] pb-4">
+                                                <h5 className="font-black text-white uppercase tracking-wider text-xl">{comment.author_name}</h5>
+                                                <span className="text-[10px] text-white/40 font-bold uppercase tracking-widest flex items-center gap-2" style={{ fontFamily: "'DM Mono', monospace" }}>
                                                     <Clock size={12} />
-                                                    {new Date(comment.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
+                                                    {new Date(comment.created_at).toLocaleDateString(undefined, { month: '2-digit', day: '2-digit', year: '2-digit' })}
                                                 </span>
                                             </div>
-                                            <p className="text-gray-700 dark:text-gray-300 leading-relaxed text-sm md:text-base">
+                                            <p className="text-white/80 leading-relaxed font-medium">
                                                 {comment.text}
                                             </p>
                                         </div>
@@ -497,49 +481,40 @@ const PublicArticlePage = () => {
                     </div>
                 </article>
 
-                {/* Sidebar: Latest Blogs */}
-                <aside className="w-full lg:w-80 flex-shrink-0 border-t lg:border-t-0 lg:border-l border-gray-200 dark:border-slate-700 pt-12 lg:pt-0 lg:pl-12">
-                    <h3 className="text-xl font-bold mb-6 text-gray-900 dark:text-white">
-                        Latest Blogs
-                    </h3>
+                {/* Sidebar */}
+                <aside className="w-full lg:w-[320px] flex-shrink-0 pt-16 lg:pt-0">
+                    <h4 className="text-[11px] font-bold text-white/40 uppercase tracking-widest mb-10" style={{ fontFamily: "'DM Mono', monospace" }}>
+                        [ SYS_RELATED_LOGS ]
+                    </h4>
 
                     {loadingLatest ? (
-                        <div className="flex justify-center py-10">
-                            <Loader2 className="animate-spin text-indigo-600" size={32} />
+                        <div className="flex py-10">
+                            <Loader2 className="animate-spin text-white/20" size={32} />
                         </div>
                     ) : latestBlogs.length > 0 ? (
-                        <div className="flex flex-col gap-6">
+                        <div className="flex flex-col gap-8">
                             {latestBlogs.map((blog) => (
-                                <Link
-                                    to={`/blogs/${blog.id}`}
-                                    key={blog.id}
-                                    className="group block"
-                                >
-                                    <div className="flex flex-col gap-3">
-                                        <div className="overflow-hidden rounded-xl aspect-[16/9] shadow-sm">
+                                <Link to={`/blogs/${blog.id}`} key={blog.id} className="group block focus:outline-none">
+                                    <div className="flex flex-col gap-4 p-4 transition-all hover:bg-[#111] hover:border-[#26CECE]" style={{ border: '1px solid transparent' }}>
+                                        <div className="overflow-hidden aspect-[16/9] border border-[#1E1E1E] p-1 bg-[#111]">
                                             <img
                                                 src={blog.image_url || 'https://via.placeholder.com/600x400?text=Blog'}
                                                 alt={blog.seo_title || blog.topic}
-                                                className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                                                className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500"
                                                 onError={(e) => { e.target.src = 'https://via.placeholder.com/600x400?text=No+Image' }}
                                             />
                                         </div>
-                                        <div>
+                                        <div style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
                                             {blog.category && (
-                                                <span className="text-xs font-semibold text-indigo-600 dark:text-indigo-400 mb-1 inline-block">
+                                                <span className="text-[10px] font-bold uppercase tracking-widest mb-2 inline-block px-1" style={{ color: TEAL, border: `1px solid ${TEAL}50`, fontFamily: "'DM Mono', monospace" }}>
                                                     {blog.category}
                                                 </span>
                                             )}
-                                            <h4 className="font-bold text-gray-900 dark:text-white line-clamp-2 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
+                                            <h4 className="font-extrabold text-white line-clamp-2 uppercase tracking-tight group-hover:text-[#26CECE] transition-colors leading-tight mb-3">
                                                 {blog.seo_title || blog.topic}
                                             </h4>
-                                            <div className="text-xs text-gray-500 dark:text-gray-400 mt-2 flex items-center gap-2">
-                                                <Calendar size={12} />
-                                                {new Date(blog.publish_date || blog.created_at).toLocaleDateString('en-US', {
-                                                    year: 'numeric',
-                                                    month: 'short',
-                                                    day: 'numeric'
-                                                })}
+                                            <div className="text-[10px] text-white/40 font-bold flex items-center gap-2 uppercase tracking-widest" style={{ fontFamily: "'DM Mono', monospace" }}>
+                                                {new Date(blog.publish_date || blog.created_at).toLocaleDateString('en-US', { year: '2-digit', month: '2-digit', day: '2-digit' })}
                                             </div>
                                         </div>
                                     </div>
@@ -547,8 +522,8 @@ const PublicArticlePage = () => {
                             ))}
                         </div>
                     ) : (
-                        <div className="text-gray-500 dark:text-gray-400 text-sm">
-                            Check back soon for latest blogs!
+                        <div className="text-white/40 uppercase tracking-widest font-bold text-xs" style={{ fontFamily: "'DM Mono', monospace" }}>
+                            DATA OFFLINE.
                         </div>
                     )}
                 </aside>

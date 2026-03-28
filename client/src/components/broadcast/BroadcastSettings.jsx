@@ -88,85 +88,78 @@ const BroadcastSettings = () => {
 
     if (loading) {
         return (
-            <div className="flex justify-center items-center py-12">
-                <Loader2 className="w-8 h-8 text-indigo-600 animate-spin" />
+            <div className="flex justify-center items-center py-12 font-mono text-[#26cece] text-[10px] uppercase tracking-widest gap-2">
+                <Loader2 className="w-5 h-5 animate-spin" /> LOADING CONFIG...
             </div>
         );
     }
 
     return (
-        <div className="max-w-2xl mx-auto space-y-6">
+        <div className="max-w-2xl mx-auto space-y-8">
             {/* Config Form */}
-            <div className="bg-white dark:bg-slate-800 rounded-2xl p-8 border border-gray-100 dark:border-slate-700 shadow-sm">
-                <div className="flex items-center gap-3 mb-6">
-                    <div className="p-3 bg-indigo-100 dark:bg-indigo-900/30 rounded-xl">
-                        <Save className="w-6 h-6 text-indigo-600 dark:text-indigo-400" />
+            <div className="bg-white dark:bg-[#111111] border border-gray-200 dark:border-[#333] shadow-[4px_4px_0_0_#26cece] p-8">
+                <div className="flex items-center gap-4 mb-8 border-b border-gray-200 dark:border-[#333] pb-6">
+                    <div className="p-3 bg-gray-100 dark:bg-[#070707] border border-[#26cece]">
+                        <Save className="w-6 h-6 text-[#26cece]" />
                     </div>
                     <div>
-                        <h2 className="text-xl font-bold text-gray-900 dark:text-white">WhatsApp Configuration</h2>
-                        <p className="text-sm text-gray-500 dark:text-gray-400">
-                            Configure your Meta WhatsApp Business API credentials.
-                        </p>
+                        <h2 className="text-xl font-bold font-['Space_Grotesk'] text-gray-900 dark:text-white uppercase tracking-widest">WhatsApp Configuration</h2>
+                        <p className="text-[10px] font-mono tracking-widest uppercase text-gray-500 mt-1">&gt; Configure Meta WhatsApp Business API credentials</p>
                     </div>
                 </div>
 
-                <div className="mb-6 p-4 bg-blue-50 dark:bg-blue-900/10 rounded-xl border border-blue-100 dark:border-blue-900/30 text-sm text-blue-700 dark:text-blue-300">
-                    <p className="flex items-start gap-2">
-                        <AlertCircle className="w-5 h-5 shrink-0 mt-0.5" />
+                <div className="mb-8 p-4 bg-blue-500/10 border border-blue-500 shadow-[2px_2px_0_0_#3b82f6] text-[10px] font-mono uppercase tracking-widest text-blue-500 dark:text-blue-400">
+                    <p className="flex items-start gap-3">
+                        <AlertCircle className="w-4 h-4 shrink-0 mt-0.5 text-blue-500" />
                         <span>
-                            You need to provide your <strong>Phone Number ID</strong> and <strong>WhatsApp Business Account (WABA) ID</strong>.
-                            These can be found in your <a href="https://business.facebook.com/wa/manage/home/" target="_blank" rel="noopener noreferrer" className="underline font-medium hover:text-blue-800">Meta Business Suite</a> under WhatsApp &gt; API Setup.
+                            Provide your <strong className="text-blue-600 dark:text-blue-300">Phone Number ID</strong> and <strong className="text-blue-600 dark:text-blue-300">WhatsApp Business Account (WABA) ID</strong>.
+                            Locate in{' '}
+                            <a href="https://business.facebook.com/wa/manage/home/" target="_blank" rel="noopener noreferrer" className="underline font-bold text-[#26cece] hover:text-gray-900 dark:hover:text-white transition-colors">Meta Business Suite &gt; WhatsApp &gt; API Setup</a>.
                         </span>
                     </p>
                 </div>
 
                 <form onSubmit={handleSave} className="space-y-6">
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        <label className="block text-[10px] font-mono tracking-widest text-[#26cece] uppercase mb-2">
                             Phone Number ID
                         </label>
                         <input
                             type="text"
                             value={config.whatsappPhoneId}
                             onChange={(e) => setConfig({ ...config, whatsappPhoneId: e.target.value })}
-                            placeholder="e.g. 744188362103708"
-                            className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-900 focus:ring-2 focus:ring-indigo-500 transition-all font-mono text-sm"
+                            placeholder="> e.g. 744188362103708"
+                            className="w-full px-4 py-3 border border-gray-200 dark:border-[#333] bg-gray-50 dark:bg-[#070707] text-gray-900 dark:text-white focus:border-[#26cece] focus:ring-0 focus:outline-none transition-colors font-mono text-sm placeholder-gray-400 dark:placeholder-gray-600 rounded-none"
                             required
                         />
-                        <p className="mt-1 text-xs text-gray-400">The ID of the phone number sending messages (e.g. 744188362103708).</p>
+                        <p className="mt-2 text-[10px] font-mono tracking-widest uppercase text-gray-500">&gt; The ID of the registered phone number used for transmissions.</p>
                     </div>
 
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                            WhatsApp Business Account (WABA) ID
+                        <label className="block text-[10px] font-mono tracking-widest text-[#26cece] uppercase mb-2">
+                            WABA ID (WhatsApp Business Account)
                         </label>
                         <input
                             type="text"
                             value={config.wabaId}
                             onChange={(e) => setConfig({ ...config, wabaId: e.target.value })}
-                            placeholder="e.g. 1448154649644918"
-                            className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-900 focus:ring-2 focus:ring-indigo-500 transition-all font-mono text-sm"
+                            placeholder="> e.g. 1448154649644918"
+                            className="w-full px-4 py-3 border border-gray-200 dark:border-[#333] bg-gray-50 dark:bg-[#070707] text-gray-900 dark:text-white focus:border-[#26cece] focus:ring-0 focus:outline-none transition-colors font-mono text-sm placeholder-gray-400 dark:placeholder-gray-600 rounded-none"
                             required
                         />
-                        <p className="mt-1 text-xs text-gray-400">The ID of your WhatsApp Business Account (e.g. 1448154649644918).</p>
+                        <p className="mt-2 text-[10px] font-mono tracking-widest uppercase text-gray-500">&gt; The root ID of your WhatsApp Business Account.</p>
                     </div>
 
-                    <div className="pt-4 flex justify-end">
+                    <div className="pt-6 border-t border-gray-200 dark:border-[#333] flex justify-end">
                         <button
                             type="submit"
                             disabled={saving}
-                            className="flex items-center gap-2 px-6 py-3 bg-indigo-600 text-white rounded-xl font-medium hover:bg-indigo-700 transition-colors shadow-lg shadow-indigo-500/25 disabled:opacity-70 disabled:cursor-not-allowed"
+                            className="flex items-center gap-3 px-8 py-4 bg-[#26cece] text-[#070707] border border-[#070707] font-bold font-mono uppercase tracking-widest text-[10px] hover:shadow-[4px_4px_0_0_#333] hover:-translate-y-0.5 transition-all disabled:opacity-70 disabled:hover:-translate-y-0 disabled:hover:shadow-none"
                         >
                             {saving ? (
-                                <>
-                                    <Loader2 className="w-5 h-5 animate-spin" />
-                                    Saving...
-                                </>
+                                <><Loader2 className="w-4 h-4 animate-spin" />WRITING CONFIG...</>
                             ) : (
-                                <>
-                                    <Save className="w-5 h-5" />
-                                    Save Configuration
-                                </>
+                                <><Save className="w-4 h-4" />COMMIT CONFIG</>
                             )}
                         </button>
                     </div>
@@ -174,43 +167,41 @@ const BroadcastSettings = () => {
             </div>
 
             {/* Test Send */}
-            <div className="bg-white dark:bg-slate-800 rounded-2xl p-8 border border-gray-100 dark:border-slate-700 shadow-sm">
-                <div className="flex items-center gap-3 mb-6">
-                    <div className="p-3 bg-green-100 dark:bg-green-900/30 rounded-xl">
-                        <Send className="w-6 h-6 text-green-600 dark:text-green-400" />
+            <div className="bg-white dark:bg-[#111111] border border-gray-200 dark:border-[#333] shadow-[4px_4px_0_0_#26cece] p-8">
+                <div className="flex items-center gap-4 mb-8 border-b border-gray-200 dark:border-[#333] pb-6">
+                    <div className="p-3 bg-gray-100 dark:bg-[#070707] border border-[#26cece]">
+                        <Send className="w-6 h-6 text-[#26cece]" />
                     </div>
                     <div>
-                        <h2 className="text-xl font-bold text-gray-900 dark:text-white">Test Message</h2>
-                        <p className="text-sm text-gray-500 dark:text-gray-400">
-                            Send a test message and see the exact Meta API response.
-                        </p>
+                        <h2 className="text-xl font-bold font-['Space_Grotesk'] text-gray-900 dark:text-white uppercase tracking-widest">Transmission Test</h2>
+                        <p className="text-[10px] font-mono tracking-widest uppercase text-gray-500 mt-1">&gt; Fire a test signal and inspect Meta API response</p>
                     </div>
                 </div>
 
-                <form onSubmit={handleTestSend} className="space-y-4">
+                <form onSubmit={handleTestSend} className="space-y-6">
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                            Recipient Phone (with country code)
+                        <label className="block text-[10px] font-mono tracking-widest text-[#26cece] uppercase mb-2">
+                            Target Endpoint (with country code)
                         </label>
                         <input
                             type="text"
                             value={testPhone}
                             onChange={(e) => setTestPhone(e.target.value)}
-                            placeholder="e.g. +916398792951"
-                            className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-900 focus:ring-2 focus:ring-green-500 transition-all font-mono text-sm"
+                            placeholder="> e.g. +916398792951"
+                            className="w-full px-4 py-3 border border-gray-200 dark:border-[#333] bg-gray-50 dark:bg-[#070707] text-gray-900 dark:text-white focus:border-[#26cece] focus:ring-0 focus:outline-none transition-colors font-mono text-sm placeholder-gray-400 dark:placeholder-gray-600 rounded-none"
                             required
                         />
                     </div>
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                            Message
+                        <label className="block text-[10px] font-mono tracking-widest text-[#26cece] uppercase mb-2">
+                            Test Signal Payload
                         </label>
                         <input
                             type="text"
                             value={testMessage}
                             onChange={(e) => setTestMessage(e.target.value)}
-                            placeholder="Test message text"
-                            className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-900 focus:ring-2 focus:ring-green-500 transition-all text-sm"
+                            placeholder="> Test message text"
+                            className="w-full px-4 py-3 border border-gray-200 dark:border-[#333] bg-gray-50 dark:bg-[#070707] text-gray-900 dark:text-white focus:border-[#26cece] focus:ring-0 focus:outline-none transition-colors font-mono text-sm placeholder-gray-400 dark:placeholder-gray-600 rounded-none"
                             required
                         />
                     </div>
@@ -218,29 +209,30 @@ const BroadcastSettings = () => {
                     <button
                         type="submit"
                         disabled={testing || !config.whatsappPhoneId}
-                        className="flex items-center gap-2 px-6 py-3 bg-green-600 text-white rounded-xl font-medium hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="flex items-center gap-3 px-8 py-4 bg-gray-100 dark:bg-[#070707] text-[#26cece] border border-[#26cece] font-bold font-mono uppercase tracking-widest text-[10px] hover:bg-[#26cece] hover:text-[#070707] hover:shadow-[4px_4px_0_0_#333] hover:-translate-y-0.5 transition-all disabled:opacity-50 disabled:hover:bg-gray-100 dark:disabled:hover:bg-[#070707] disabled:hover:text-[#26cece] disabled:hover:shadow-none disabled:hover:translate-y-0"
                     >
-                        {testing ? <><Loader2 className="w-5 h-5 animate-spin" />Sending...</> : <><Send className="w-5 h-5" />Send Test</>}
+                        {testing ? <><Loader2 className="w-4 h-4 animate-spin" />TRANSMITTING...</> : <><Send className="w-4 h-4" />FIRE TEST SIGNAL</>}
                     </button>
                     {!config.whatsappPhoneId && (
-                        <p className="text-xs text-amber-600 dark:text-amber-400">Save your Phone Number ID above before testing.</p>
+                        <p className="text-[10px] font-mono tracking-widest uppercase text-yellow-600 dark:text-yellow-500">&gt; WARNING: COMMIT Phone Number ID CONFIG BEFORE TESTING.</p>
                     )}
                 </form>
 
                 {/* Test Result */}
                 {testResult && (
-                    <div className={`mt-4 p-4 rounded-xl border text-sm font-mono whitespace-pre-wrap break-all ${testResult.success
-                        ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800 text-green-800 dark:text-green-300'
-                        : 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800 text-red-800 dark:text-red-300'
-                        }`}>
-                        <div className="flex items-center gap-2 mb-2 font-sans font-semibold">
+                    <div className={`mt-6 p-5 border text-[10px] font-mono uppercase tracking-widest whitespace-pre-wrap break-all ${
+                        testResult.success
+                            ? 'bg-[#26cece]/10 border-[#26cece] shadow-[4px_4px_0_0_#26cece] text-[#26cece]'
+                            : 'bg-red-500/10 border-red-500 shadow-[4px_4px_0_0_#ef4444] text-red-500 dark:text-red-400'
+                    }`}>
+                        <div className="flex items-center gap-3 mb-4 text-sm font-bold">
                             {testResult.success
-                                ? <><CheckCircle2 className="w-4 h-4" /> Message sent successfully!</>
-                                : <><XCircle className="w-4 h-4" /> Failed to send</>
+                                ? <><CheckCircle2 className="w-5 h-5" /> TRANSMISSION SUCCESSFUL</>  
+                                : <><XCircle className="w-5 h-5" /> SIGNAL FAILED</>  
                             }
                         </div>
                         {testResult.data?.hint && (
-                            <p className="font-sans text-sm mb-2 font-medium">{testResult.data.hint}</p>
+                            <p className="text-xs mb-4 font-bold normal-case tracking-normal text-gray-700 dark:text-gray-300">{testResult.data.hint}</p>
                         )}
                         {JSON.stringify(testResult.data, null, 2)}
                     </div>

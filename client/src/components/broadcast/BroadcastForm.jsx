@@ -194,10 +194,10 @@ const BroadcastForm = () => {
     };
 
     const statusStyles = {
-        success: 'bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-300 border-green-200 dark:border-green-800',
-        error: 'bg-red-50 dark:bg-red-900/30 text-red-700 dark:text-red-300 border-red-200 dark:border-red-800',
-        warning: 'bg-yellow-50 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300 border-yellow-200 dark:border-yellow-800',
-        info: 'bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-800'
+        success: 'bg-[#26cece]/10 text-[#26cece] border-[#26cece] shadow-[4px_4px_0_0_#26cece]',
+        error: 'bg-red-500/10 text-red-500 border-red-500 shadow-[4px_4px_0_0_#ef4444]',
+        warning: 'bg-yellow-500/10 text-yellow-500 border-yellow-500 shadow-[4px_4px_0_0_#eab308]',
+        info: 'bg-blue-500/10 text-blue-500 border-blue-500 shadow-[4px_4px_0_0_#3b82f6]'
     };
 
     const statusIcons = {
@@ -210,13 +210,13 @@ const BroadcastForm = () => {
     return (
         <div className="space-y-6">
             {/* Send Mode Toggle */}
-            <div className="flex gap-2 p-1 bg-gray-100 dark:bg-slate-700 rounded-xl">
+            <div className="flex flex-col sm:flex-row gap-2 border border-gray-200 dark:border-[#333] bg-white dark:bg-[#111111] p-1">
                 <button
                     type="button"
                     onClick={() => setSendMode('direct')}
-                    className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-all ${sendMode === 'direct'
-                        ? 'bg-white dark:bg-slate-600 text-indigo-600 dark:text-indigo-400 shadow-sm'
-                        : 'text-gray-500 dark:text-gray-400 hover:text-gray-700'
+                    className={`flex-1 flex items-center justify-center gap-3 px-6 py-4 text-[10px] sm:text-xs font-bold font-mono tracking-widest uppercase transition-all ${sendMode === 'direct'
+                        ? 'bg-[#26cece] text-[#070707] shadow-[2px_2px_0_0_#333] -translate-y-0.5'
+                        : 'text-gray-500 hover:text-gray-900 dark:hover:text-white border border-transparent hover:border-gray-300 dark:hover:border-[#333] bg-transparent'
                         }`}
                 >
                     <Send className="w-4 h-4" />
@@ -225,9 +225,9 @@ const BroadcastForm = () => {
                 <button
                     type="button"
                     onClick={() => setSendMode('template')}
-                    className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-all ${sendMode === 'template'
-                        ? 'bg-white dark:bg-slate-600 text-indigo-600 dark:text-indigo-400 shadow-sm'
-                        : 'text-gray-500 dark:text-gray-400 hover:text-gray-700'
+                    className={`flex-1 flex items-center justify-center gap-3 px-6 py-4 text-[10px] sm:text-xs font-bold font-mono tracking-widest uppercase transition-all ${sendMode === 'template'
+                        ? 'bg-[#26cece] text-[#070707] shadow-[2px_2px_0_0_#333] -translate-y-0.5'
+                        : 'text-gray-500 hover:text-gray-900 dark:hover:text-white border border-transparent hover:border-gray-300 dark:hover:border-[#333] bg-transparent'
                         }`}
                 >
                     <Sparkles className="w-4 h-4" />
@@ -238,8 +238,8 @@ const BroadcastForm = () => {
             <form onSubmit={handleSubmit} className="space-y-6">
                 {/* Broadcast Name (Template mode only) */}
                 {sendMode === 'template' && (
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    <div className="bg-white dark:bg-[#111111] border border-gray-200 dark:border-[#333] p-6">
+                        <label className="block text-[10px] font-mono tracking-widest text-[#26cece] uppercase mb-4">
                             Broadcast Name
                         </label>
                         <input
@@ -247,17 +247,17 @@ const BroadcastForm = () => {
                             name="name"
                             value={formData.name}
                             onChange={handleChange}
-                            placeholder="e.g., February Promo Blast"
-                            className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
+                            placeholder="> e.g., February Promo Blast"
+                            className="w-full px-4 py-3 border border-gray-200 dark:border-[#333] bg-gray-50 dark:bg-[#070707] text-gray-900 dark:text-white focus:border-[#26cece] focus:ring-0 focus:outline-none transition-colors font-mono text-sm placeholder-gray-400 dark:placeholder-gray-600 rounded-none"
                         />
                     </div>
                 )}
 
                 {/* Recipients Section */}
-                <div className="space-y-3">
-                    <label className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300">
-                        <Users className="w-4 h-4 text-indigo-500" />
-                        Recipients
+                <div className="bg-white dark:bg-[#111111] border border-gray-200 dark:border-[#333] p-6 space-y-4">
+                    <label className="flex items-center gap-2 text-[10px] font-mono tracking-widest text-[#26cece] uppercase">
+                        <Users className="w-4 h-4 text-[#26cece]" />
+                        Recipients Vector
                     </label>
 
                     <input
@@ -265,10 +265,10 @@ const BroadcastForm = () => {
                         name="phone"
                         value={formData.phone}
                         onChange={handleChange}
-                        placeholder="e.g., 919876543210, 919876543211"
-                        className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
+                        placeholder="> e.g., 919876543210, 919876543211"
+                        className="w-full px-4 py-3 border border-gray-200 dark:border-[#333] bg-gray-50 dark:bg-[#070707] text-gray-900 dark:text-white focus:border-[#26cece] focus:ring-0 focus:outline-none transition-colors font-mono text-sm placeholder-gray-400 dark:placeholder-gray-600 rounded-none"
                     />
-                    <p className="text-xs text-gray-500 dark:text-gray-400">Comma-separated phone numbers. Include country code (e.g., 91 for India).</p>
+                    <p className="text-[10px] tracking-widest uppercase text-gray-500">&gt; Comma-separated numbers. Include country code.</p>
 
                     {/* CSV Upload */}
                     <div className="relative">
@@ -283,23 +283,27 @@ const BroadcastForm = () => {
                         {!csvFile ? (
                             <label
                                 htmlFor="csv-upload"
-                                className="flex items-center justify-center gap-3 w-full px-4 py-4 border-2 border-dashed border-gray-300 dark:border-slate-600 rounded-lg cursor-pointer hover:border-indigo-400 hover:bg-indigo-50/50 dark:hover:bg-indigo-900/20 transition-all group"
+                                className="flex flex-col items-center justify-center gap-3 w-full px-4 py-8 border border-dashed border-gray-300 dark:border-[#333] bg-gray-50 dark:bg-[#070707] cursor-pointer hover:border-[#26cece] hover:bg-[#26cece]/5 transition-all group rounded-none"
                             >
-                                <FileSpreadsheet className="w-5 h-5 text-gray-400 group-hover:text-indigo-500 transition-colors" />
-                                <span className="text-sm text-gray-500 dark:text-gray-400 group-hover:text-indigo-600 dark:group-hover:text-indigo-400">
-                                    Or upload a CSV file with phone numbers
+                                <div className="mb-2 p-4 border border-gray-200 dark:border-[#333] bg-white dark:bg-[#111111] inline-flex group-hover:bg-[#26cece] group-hover:border-[#26cece] transition-colors">
+                                    <FileSpreadsheet className="w-6 h-6 text-[#26cece] group-hover:text-[#070707]" />
+                                </div>
+                                <span className="text-xs font-bold tracking-widest uppercase text-gray-700 dark:text-white group-hover:text-[#26cece]">
+                                    Upload CSV Payload
                                 </span>
                             </label>
                         ) : (
-                            <div className="flex items-center justify-between px-4 py-3 bg-indigo-50 dark:bg-indigo-900/30 border border-indigo-200 dark:border-indigo-800 rounded-lg">
-                                <div className="flex items-center gap-3">
-                                    <FileSpreadsheet className="w-5 h-5 text-indigo-600" />
+                            <div className="flex items-center justify-between px-4 py-4 bg-[#26cece]/10 border border-[#26cece] shadow-[4px_4px_0_0_#26cece] rounded-none">
+                                <div className="flex items-center gap-4">
+                                    <div className="p-3 bg-gray-100 dark:bg-[#070707] border border-[#26cece]">
+                                        <FileSpreadsheet className="w-5 h-5 text-[#26cece]" />
+                                    </div>
                                     <div>
-                                        <p className="text-sm font-medium text-indigo-700 dark:text-indigo-300">{csvFile.name}</p>
-                                        <p className="text-xs text-indigo-500 dark:text-indigo-400">{csvRecipients.length} recipients found</p>
+                                        <p className="text-sm font-bold font-mono text-[#26cece] tracking-widest uppercase">{csvFile.name}</p>
+                                        <p className="text-[10px] text-gray-400 font-mono tracking-widest uppercase">&gt; {csvRecipients.length} targets extracted</p>
                                     </div>
                                 </div>
-                                <button type="button" onClick={removeCsv} className="text-indigo-400 hover:text-red-500 transition-colors">
+                                <button type="button" onClick={removeCsv} className="p-2 border border-transparent hover:border-red-500 hover:bg-red-500/10 text-red-500 transition-colors">
                                     <X className="w-5 h-5" />
                                 </button>
                             </div>
@@ -308,26 +312,26 @@ const BroadcastForm = () => {
 
                     {/* Recipient summary */}
                     {getAllRecipients().length > 0 && (
-                        <div className="text-xs text-indigo-600 dark:text-indigo-400 font-medium bg-indigo-50 dark:bg-indigo-900/20 px-3 py-2 rounded-lg">
-                            Total unique recipients: {getAllRecipients().length}
+                        <div className="text-[10px] text-[#26cece] font-bold font-mono tracking-widest uppercase bg-[#26cece]/10 border border-[#26cece] px-4 py-3 mt-4">
+                            &gt; Active Targets: {getAllRecipients().length}
                         </div>
                     )}
                 </div>
 
                 {/* Template Selection (Template mode) */}
                 {sendMode === 'template' && (
-                    <div className="space-y-3">
-                        <label className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300">
-                            <MessageSquare className="w-4 h-4 text-indigo-500" />
-                            Message Template
+                    <div className="bg-white dark:bg-[#111111] border border-gray-200 dark:border-[#333] p-6 space-y-6">
+                        <label className="flex items-center gap-2 text-[10px] font-mono tracking-widest text-[#26cece] uppercase">
+                            <MessageSquare className="w-4 h-4 text-[#26cece]" />
+                            Template Matrix
                         </label>
                         <select
                             value={formData.templateId}
                             onChange={(e) => handleTemplateSelect(e.target.value)}
-                            className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-900 dark:text-white focus:ring-2 focus:ring-indigo-500 transition-colors"
+                            className="w-full px-4 py-3 border border-gray-200 dark:border-[#333] bg-gray-50 dark:bg-[#070707] text-gray-900 dark:text-white focus:border-[#26cece] focus:ring-0 focus:outline-none transition-colors font-mono text-sm rounded-none appearance-none"
                             required={sendMode === 'template'}
                         >
-                            <option value="">Select a template...</option>
+                            <option value="">&gt; SELECT TEMPLATE BASE...</option>
                             {templates.filter(t => t.status === 'APPROVED' || t.status === 'PENDING').map(t => (
                                 <option key={t.id} value={t.id}>{t.name} ({t.category})</option>
                             ))}
@@ -335,17 +339,17 @@ const BroadcastForm = () => {
 
                         {/* Variable Inputs */}
                         {selectedTemplate && formData.variables.length > 0 && (
-                            <div className="space-y-2 p-4 bg-gray-50 dark:bg-slate-800 rounded-lg border border-gray-200 dark:border-slate-700">
-                                <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Template Variables</p>
+                            <div className="space-y-4 p-5 bg-gray-50 dark:bg-[#070707] border border-gray-200 dark:border-[#333]">
+                                <p className="text-[10px] font-bold font-mono tracking-widest text-[#26cece] uppercase mb-4">Injection Variables</p>
                                 {formData.variables.map((val, idx) => (
-                                    <div key={idx} className="flex items-center gap-3">
-                                        <span className="text-xs font-mono text-gray-400 w-10">{`{{${idx + 1}}}`}</span>
+                                    <div key={idx} className="flex items-center gap-4">
+                                        <span className="text-[10px] font-mono font-bold text-[#26cece] bg-[#26cece]/10 px-2 py-1 border border-[#26cece]">{`{{${idx + 1}}}`}</span>
                                         <input
                                             type="text"
                                             value={val}
                                             onChange={(e) => handleVariableChange(idx, e.target.value)}
-                                            placeholder={`Value for variable ${idx + 1}`}
-                                            className="flex-1 px-3 py-2 text-sm rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-900 dark:text-white focus:ring-2 focus:ring-indigo-500"
+                                            placeholder={`> Value for {{${idx + 1}}}`}
+                                            className="flex-1 px-4 py-3 text-sm border border-gray-200 dark:border-[#333] bg-white dark:bg-[#111111] text-gray-900 dark:text-white focus:border-[#26cece] focus:ring-0 focus:outline-none font-mono rounded-none placeholder-gray-400 dark:placeholder-gray-600"
                                         />
                                     </div>
                                 ))}
@@ -357,21 +361,21 @@ const BroadcastForm = () => {
                             <button
                                 type="button"
                                 onClick={() => setShowPreview(!showPreview)}
-                                className="flex items-center gap-2 text-sm text-indigo-600 dark:text-indigo-400 hover:underline"
+                                className="flex items-center gap-2 text-[10px] font-mono tracking-widest uppercase text-gray-500 hover:text-[#26cece] transition-colors mt-4"
                             >
                                 <Eye className="w-4 h-4" />
-                                {showPreview ? 'Hide Preview' : 'Show Preview'}
+                                {showPreview ? 'DISABLE PREVIEW' : 'ENABLE PREVIEW'}
                             </button>
                         )}
                         {showPreview && selectedTemplate && (
-                            <div className="p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
-                                <p className="text-xs font-medium text-green-600 dark:text-green-400 mb-2">Message Preview</p>
+                            <div className="p-5 bg-gray-50 dark:bg-[#070707] border border-gray-200 dark:border-[#333] shadow-[4px_4px_0_0_#26cece] mt-4">
+                                <p className="text-[10px] font-bold tracking-widest text-[#26cece] uppercase mb-4 border-b border-gray-200 dark:border-[#333] pb-2">Simulation Output</p>
                                 {selectedTemplate.header_text && (
-                                    <p className="font-bold text-sm text-gray-800 dark:text-gray-200 mb-1">{selectedTemplate.header_text}</p>
+                                    <p className="font-bold font-['Space_Grotesk'] tracking-widest uppercase text-gray-900 dark:text-white mb-2">{selectedTemplate.header_text}</p>
                                 )}
-                                <p className="text-sm text-gray-700 dark:text-gray-300 whitespace-pre-wrap">{getPreviewText()}</p>
+                                <p className="text-sm text-gray-600 dark:text-gray-300 font-mono whitespace-pre-wrap leading-relaxed">{getPreviewText()}</p>
                                 {selectedTemplate.footer_text && (
-                                    <p className="text-xs text-gray-400 mt-2">{selectedTemplate.footer_text}</p>
+                                    <p className="text-[10px] text-gray-500 font-mono tracking-widest uppercase mt-4 border-t border-gray-200 dark:border-[#333] pt-2">{selectedTemplate.footer_text}</p>
                                 )}
                             </div>
                         )}
@@ -380,97 +384,99 @@ const BroadcastForm = () => {
 
                 {/* Direct Message Body (Direct mode only) */}
                 {sendMode === 'direct' && (
-                    <>
+                    <div className="bg-white dark:bg-[#111111] border border-gray-200 dark:border-[#333] p-6 space-y-6">
                         <div>
-                            <label className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                <MessageSquare className="w-4 h-4 text-indigo-500" />
-                                Message
+                            <label className="flex items-center gap-2 text-[10px] font-mono tracking-widest text-[#26cece] uppercase mb-4">
+                                <MessageSquare className="w-4 h-4 text-[#26cece]" />
+                                Payload Body
                             </label>
                             <textarea
                                 name="message"
                                 value={formData.message}
                                 onChange={handleChange}
-                                rows="4"
-                                className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
+                                rows="6"
+                                className="w-full px-4 py-3 border border-gray-200 dark:border-[#333] bg-gray-50 dark:bg-[#070707] text-gray-900 dark:text-white focus:border-[#26cece] focus:ring-0 focus:outline-none resize-none transition-colors rounded-none font-mono text-sm placeholder-gray-400 dark:placeholder-gray-600"
                                 required={sendMode === 'direct'}
-                                placeholder="Type your message here..."
+                                placeholder="> Type your message here..."
                             />
                         </div>
 
                         {/* Media Attachment */}
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                            <div className="md:col-span-2">
-                                <div className="flex items-center justify-between mb-2">
-                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                                        Media Attachment
-                                    </label>
-                                    <div className="flex gap-2 text-xs">
-                                        <button
-                                            type="button"
-                                            onClick={() => { setUploadMode('url'); setFormData(prev => ({ ...prev, mediaUrl: '' })); }}
-                                            className={`px-2 py-1 rounded ${uploadMode === 'url' ? 'bg-indigo-100 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300' : 'text-gray-500 hover:text-gray-700'}`}
-                                        >
-                                            URL
-                                        </button>
-                                        <button
-                                            type="button"
-                                            onClick={() => { setUploadMode('file'); setFormData(prev => ({ ...prev, mediaUrl: '' })); }}
-                                            className={`px-2 py-1 rounded ${uploadMode === 'file' ? 'bg-indigo-100 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300' : 'text-gray-500 hover:text-gray-700'}`}
-                                        >
-                                            Upload
-                                        </button>
-                                    </div>
+                        <div className="pt-6 border-t border-gray-200 dark:border-[#333]">
+                            <label className="block text-[10px] font-mono tracking-widest text-[#26cece] uppercase mb-4">
+                                Attached Assets
+                            </label>
+                            
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <label className="block text-[10px] text-gray-500 uppercase font-mono tracking-widest mb-3">Asset Type</label>
+                                    <select
+                                        name="mediaType"
+                                        value={formData.mediaType}
+                                        onChange={(e) => {
+                                            handleChange(e);
+                                            setFormData(prev => ({ ...prev, mediaUrl: '' }));
+                                        }}
+                                        className="w-full px-4 py-3 border border-gray-200 dark:border-[#333] bg-gray-50 dark:bg-[#070707] text-gray-900 dark:text-white focus:border-[#26cece] focus:ring-0 focus:outline-none transition-colors font-mono text-sm rounded-none appearance-none"
+                                    >
+                                        <option value="image">IMAGE VECTOR</option>
+                                        <option value="video">VIDEO STREAM</option>
+                                        <option value="document">DOCUMENT BINARY</option>
+                                    </select>
                                 </div>
-
-                                {uploadMode === 'url' ? (
-                                    <input
-                                        type="url"
-                                        name="mediaUrl"
-                                        value={formData.mediaUrl}
-                                        onChange={handleChange}
-                                        placeholder="https://example.com/image.jpg"
-                                        className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
-                                    />
-                                ) : (
-                                    <input
-                                        type="file"
-                                        onChange={handleFileChange}
-                                        accept={formData.mediaType === 'image' ? 'image/*' : formData.mediaType === 'video' ? 'video/*' : '.pdf,.doc,.docx'}
-                                        className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors text-sm file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100"
-                                    />
-                                )}
-                                {uploadMode === 'file' && formData.mediaUrl && (
-                                    <p className="mt-1 text-xs text-green-600 truncate">File loaded ✓</p>
-                                )}
-                            </div>
-
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                    Media Type
-                                </label>
-                                <select
-                                    name="mediaType"
-                                    value={formData.mediaType}
-                                    onChange={(e) => {
-                                        handleChange(e);
-                                        setFormData(prev => ({ ...prev, mediaUrl: '' }));
-                                    }}
-                                    className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
-                                >
-                                    <option value="image">Image</option>
-                                    <option value="video">Video</option>
-                                    <option value="document">Document</option>
-                                </select>
+                                
+                                <div>
+                                    <div className="flex items-center justify-between mb-3">
+                                        <label className="block text-[10px] text-gray-500 uppercase font-mono tracking-widest">Source</label>
+                                        <div className="flex gap-2">
+                                            <button
+                                                type="button"
+                                                onClick={() => { setUploadMode('url'); setFormData(prev => ({ ...prev, mediaUrl: '' })); }}
+                                                className={`px-3 py-1 font-mono text-[10px] tracking-widest uppercase border transition-colors ${uploadMode === 'url' ? 'bg-[#26cece] text-[#070707] border-[#26cece] font-bold shadow-[2px_2px_0_0_#26cece] -translate-y-0.5' : 'border-gray-300 dark:border-[#333] text-gray-500 hover:text-gray-900 dark:hover:text-white hover:border-[#26cece]'}`}
+                                            >
+                                                URL
+                                            </button>
+                                            <button
+                                                type="button"
+                                                onClick={() => { setUploadMode('file'); setFormData(prev => ({ ...prev, mediaUrl: '' })); }}
+                                                className={`px-3 py-1 font-mono text-[10px] tracking-widest uppercase border transition-colors ${uploadMode === 'file' ? 'bg-[#26cece] text-[#070707] border-[#26cece] font-bold shadow-[2px_2px_0_0_#26cece] -translate-y-0.5' : 'border-gray-300 dark:border-[#333] text-gray-500 hover:text-gray-900 dark:hover:text-white hover:border-[#26cece]'}`}
+                                            >
+                                                DISK
+                                            </button>
+                                        </div>
+                                    </div>
+                                    
+                                    {uploadMode === 'url' ? (
+                                        <input
+                                            type="url"
+                                            name="mediaUrl"
+                                            value={formData.mediaUrl}
+                                            onChange={handleChange}
+                                            placeholder="> https://example.com/asset.jpg"
+                                            className="w-full px-4 py-3 border border-gray-200 dark:border-[#333] bg-gray-50 dark:bg-[#070707] text-gray-900 dark:text-white focus:border-[#26cece] focus:ring-0 focus:outline-none transition-colors font-mono text-sm rounded-none placeholder-gray-400 dark:placeholder-gray-600"
+                                        />
+                                    ) : (
+                                        <input
+                                            type="file"
+                                            onChange={handleFileChange}
+                                            accept={formData.mediaType === 'image' ? 'image/*' : formData.mediaType === 'video' ? 'video/*' : '.pdf,.doc,.docx'}
+                                            className="w-full px-4 py-3 border border-[#333] bg-[#070707] text-gray-400 focus:border-[#26cece] focus:ring-0 focus:outline-none transition-colors text-sm font-mono rounded-none file:mr-4 file:py-1 file:px-3 file:border file:border-[#26cece] file:text-[10px] file:uppercase file:tracking-widest file:bg-[#26cece]/10 file:font-bold file:text-[#26cece] hover:file:bg-[#26cece] hover:file:text-[#070707] file:transition-colors file:cursor-pointer"
+                                        />
+                                    )}
+                                    {uploadMode === 'file' && formData.mediaUrl && (
+                                        <p className="mt-2 text-[10px] font-mono font-bold tracking-widest text-[#26cece] uppercase">&gt; Asset mapped to buffer</p>
+                                    )}
+                                </div>
                             </div>
                         </div>
-                    </>
+                    </div>
                 )}
 
                 {/* Status */}
                 {status.message && (
-                    <div className={`flex items-center gap-3 p-4 rounded-lg border ${statusStyles[status.type]}`}>
-                        {statusIcons[status.type]}
-                        <span className="text-sm">{status.message}</span>
+                    <div className={`p-4 border font-mono tracking-widest text-[10px] uppercase font-bold flex items-start gap-4 ${statusStyles[status.type]}`}>
+                        <div className="mt-0.5">{statusIcons[status.type]}</div>
+                        <span className="leading-relaxed">{status.message}</span>
                     </div>
                 )}
 
@@ -478,17 +484,17 @@ const BroadcastForm = () => {
                 <button
                     type="submit"
                     disabled={loading}
-                    className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-3.5 px-6 rounded-xl font-medium hover:from-indigo-700 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+                    className="w-full flex items-center justify-center gap-3 px-8 py-5 bg-[#26cece] border border-[#070707] font-bold font-['Space_Grotesk'] uppercase tracking-widest text-[#070707] hover:shadow-[4px_4px_0_0_#333] transition-all hover:-translate-y-1 disabled:opacity-50 disabled:hover:-translate-y-0 disabled:hover:shadow-none text-sm md:text-base"
                 >
                     {loading ? (
                         <>
                             <Loader2 className="w-5 h-5 animate-spin" />
-                            Sending...
+                            EXECUTING TRANSMISSION...
                         </>
                     ) : (
                         <>
                             <Send className="w-5 h-5" />
-                            {sendMode === 'template' ? 'Start Broadcast' : 'Send Message'}
+                            {sendMode === 'template' ? 'EXECUTE BROADCAST' : 'DISPATCH MESSAGE'}
                         </>
                     )}
                 </button>

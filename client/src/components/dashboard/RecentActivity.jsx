@@ -5,36 +5,28 @@ import { FileText, Phone, Clock } from 'lucide-react';
 const ActivityItem = ({ type, title, date, status }) => {
     const isBlog = type === 'blog';
     const Icon = isBlog ? FileText : Phone;
-    const colorClass = isBlog ? 'text-indigo-500 bg-indigo-50 dark:bg-indigo-900/20' : 'text-emerald-500 bg-emerald-50 dark:bg-emerald-900/20';
-
+    
     return (
-        <div className="flex items-center gap-4 p-4 rounded-xl hover:bg-gray-50 dark:hover:bg-slate-800/50 transition-colors border border-transparent hover:border-gray-100 dark:hover:border-slate-700">
-            <div className={`p-3 rounded-xl ${colorClass}`}>
-                <Icon size={20} />
+        <div className="flex items-center gap-4 p-4 rounded-[2px] hover:bg-[#1A1A1A] transition-colors border border-transparent hover:border-[#333] group">
+            <div className="p-2 border border-[#333] bg-[#070707] rounded-[2px] text-[#EFEFEF]">
+                <Icon size={18} />
             </div>
             <div className="flex-1 min-w-0">
-                <h4 className="font-medium text-gray-900 dark:text-white truncate">{title}</h4>
-                <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400 mt-1">
-                    <Clock size={12} />
+                <h4 className="font-['Space_Grotesk'] text-[15px] font-medium text-[#EFEFEF] truncate">{title}</h4>
+                <div className="flex items-center gap-2 text-[11px] font-mono text-gray-500 mt-[6px] tracking-wider uppercase">
+                    <Clock size={10} />
                     <span>{new Date(date).toLocaleDateString()}</span>
                     {status && (
                         <>
-                            <span>•</span>
-                            <span className="capitalize">{status}</span>
+                            <span className="text-gray-700">•</span>
+                            <span className="text-[#26CECE]">{status}</span>
                         </>
                     )}
                 </div>
             </div>
-            {isBlog && (
-                <div className="text-xs font-semibold px-2 py-1 bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-gray-300 rounded-lg">
-                    Article
-                </div>
-            )}
-            {!isBlog && (
-                <div className="text-xs font-semibold px-2 py-1 bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-gray-300 rounded-lg">
-                    Call
-                </div>
-            )}
+            <div className="text-[10px] font-mono tracking-widest uppercase px-2 py-1 bg-[#111111] border border-[#222] text-gray-400 rounded-[2px]">
+                {isBlog ? 'Article' : 'Call'}
+            </div>
         </div>
     );
 };
@@ -42,23 +34,25 @@ const ActivityItem = ({ type, title, date, status }) => {
 const RecentActivity = ({ activities = [] }) => {
     if (!activities || activities.length === 0) {
         return (
-            <div className="bg-white dark:bg-slate-800 rounded-3xl p-8 border border-gray-100 dark:border-slate-700 shadow-sm text-center">
-                <div className="p-4 bg-gray-50 dark:bg-slate-700/50 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4 text-gray-400">
-                    <Clock size={24} />
+            <div className="bg-[#111111] rounded-[2px] p-8 border border-[#1E1E1E] text-center w-full h-full flex flex-col justify-center items-center min-h-[300px]">
+                <div className="p-4 bg-[#070707] border border-[#333] rounded-[2px] flex items-center justify-center mb-4 text-[#26CECE]">
+                    <Clock size={20} />
                 </div>
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">No Recent Activity</h3>
-                <p className="text-gray-500 dark:text-gray-400">Your generated articles and calls will appear here.</p>
+                <h3 className="font-['Space_Grotesk'] text-lg font-bold text-white mb-2 tracking-tight">No Recent Activity</h3>
+                <p className="font-mono text-[12px] text-gray-500 tracking-wide uppercase">Awaitings logs...</p>
             </div>
         );
     }
 
     return (
-        <div className="bg-white dark:bg-slate-800 rounded-3xl p-8 border border-gray-100 dark:border-slate-700 shadow-sm">
-            <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-6 flex items-center gap-2">
-                <Clock className="text-indigo-600" size={24} />
-                Recent Activity
-            </h2>
-            <div className="space-y-2">
+        <div className="bg-[#111111] rounded-[2px] p-6 border border-[#1E1E1E] h-full">
+            <div className="flex items-center gap-3 mb-6 pb-4 border-b border-[#1E1E1E]">
+                <div className="w-2 h-2 bg-[#26CECE]" />
+                <h2 className="text-[16px] font-bold text-white font-['Space_Grotesk'] uppercase tracking-widest">
+                    Recent Activity
+                </h2>
+            </div>
+            <div className="space-y-[2px]">
                 {activities.map((activity, index) => (
                     <ActivityItem
                         key={index}

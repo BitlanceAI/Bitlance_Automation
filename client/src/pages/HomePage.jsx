@@ -140,16 +140,14 @@ const HomePage = () => {
     ];
 
     return (
-        <div className="min-h-screen bg-gray-50 dark:bg-slate-900 transition-colors duration-300 pt-24">
-
-
+        <div className="min-h-screen bg-[#070707] transition-colors duration-300 pt-24 font-['Space_Grotesk']">
             <main className="max-w-7xl mx-auto px-6 py-12">
                 {/* Welcome Section */}
-                <header className="mb-12">
-                    <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">
-                        {greeting}, <span className="text-indigo-600 dark:text-indigo-400">{user?.email?.split('@')[0]}</span>
+                <header className="mb-12 border-l-4 border-[#26CECE] pl-6">
+                    <h1 className="text-[40px] font-bold text-white mb-2 tracking-tight leading-none uppercase">
+                        {greeting}, <br /><span className="text-[#26CECE]">{user?.email?.split('@')[0]}</span>
                     </h1>
-                    <p className="text-lg text-gray-600 dark:text-gray-400">
+                    <p className="text-lg text-gray-400 font-sans tracking-tight">
                         Here's what's happening with your AI agents today.
                     </p>
                 </header>
@@ -164,42 +162,39 @@ const HomePage = () => {
                 {/* Content Grid: Agents & Activity */}
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                     {/* Left Column: Agents (2/3 width) */}
-                    <div className="lg:col-span-2 space-y-8">
-                        <div className="flex items-center justify-between mb-6">
-                            <h2 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
-                                <LayoutDashboard size={24} className="text-indigo-600" />
+                    <div className="lg:col-span-2 space-y-8 flex flex-col h-full">
+                        <div className="flex items-center justify-between mb-1 pb-4 border-b border-[#1E1E1E]">
+                            <h2 className="text-xl font-bold text-white flex items-center gap-3 uppercase tracking-widest">
+                                <LayoutDashboard size={20} className="text-[#26CECE]" />
                                 Your Agents
                             </h2>
                         </div>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 flex-grow">
                             {agents.map((agent, index) => (
                                 <div
                                     key={index}
                                     onClick={() => { trackAgentOpen(agent.title); navigate(agent.path); }}
-                                    className="group relative bg-white dark:bg-slate-800 rounded-3xl p-8 border border-gray-100 dark:border-slate-700 shadow-sm hover:shadow-xl transition-all duration-300 cursor-pointer overflow-hidden"
+                                    className="group relative bg-[#111111] rounded-[2px] p-8 border border-[#1E1E1E] transition-all duration-200 cursor-pointer hover:-translate-y-1 hover:border-[#333] hover:shadow-[4px_4px_0px_0px_#26cece]"
                                 >
-                                    {/* Gradient Hover Effect */}
-                                    <div className={`absolute inset-0 bg-gradient-to-br ${agent.color} opacity-0 group-hover:opacity-5 transition-opacity duration-300`}></div>
-
-                                    <div className="relative z-10">
-                                        <div className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${agent.color} flex items-center justify-center text-white mb-6 shadow-md group-hover:scale-110 transition-transform duration-300`}>
-                                            <agent.icon size={28} />
+                                    <div className="relative z-10 flex flex-col h-full">
+                                        <div className="w-12 h-12 flex flex-shrink-0 items-center justify-center text-[#26CECE] mb-6 border border-[#333] bg-[#070707] rounded-[2px] group-hover:bg-[#26CECE] group-hover:text-[#070707] transition-colors">
+                                            <agent.icon size={24} />
                                         </div>
 
-                                        <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-3 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
+                                        <h3 className="text-xl font-bold text-white mb-3 uppercase tracking-tight">
                                             {agent.title}
                                         </h3>
 
-                                        <p className="text-gray-600 dark:text-gray-400 mb-8 leading-relaxed h-12">
+                                        <p className="text-gray-400 mb-8 leading-relaxed text-[14px] font-sans flex-grow">
                                             {agent.description}
                                         </p>
 
-                                        <div className="flex items-center justify-between mt-auto">
-                                            <div className="text-xs font-semibold uppercase tracking-wider text-gray-400">
+                                        <div className="flex items-center justify-between mt-auto pt-6 border-t border-[#1E1E1E]">
+                                            <div className="text-[10px] font-mono font-semibold uppercase tracking-widest text-[#26CECE]">
                                                 {agent.stats}
                                             </div>
-                                            <div className="w-10 h-10 rounded-full bg-gray-50 dark:bg-slate-700 flex items-center justify-center text-gray-400 group-hover:bg-indigo-600 group-hover:text-white transition-all duration-300">
-                                                <ArrowRight size={18} />
+                                            <div className="w-8 h-8 rounded-[2px] bg-[#070707] border border-[#333] flex items-center justify-center text-gray-500 group-hover:text-[#26CECE] transition-colors">
+                                                <ArrowRight size={16} />
                                             </div>
                                         </div>
                                     </div>

@@ -44,59 +44,59 @@ const BlogManagerPanel = () => {
         <div className="space-y-6">
             <div className="flex justify-between items-center">
                 <div>
-                    <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Blog Posts</h2>
-                    <p className="mt-1 text-gray-600 dark:text-gray-400">Manage and schedule your content</p>
+                    <h2 className="text-2xl font-bold text-white font-['Space_Grotesk'] uppercase tracking-tight">Blog Posts</h2>
+                    <p className="mt-1 text-gray-400 font-sans">Manage and schedule your content</p>
                 </div>
                 <Link to="/blog/new"
-                    className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2.5 px-6 rounded-lg transition-colors shadow-sm">
-                    <Plus className="w-5 h-5" /> Create New Post
+                    className="flex items-center gap-2 bg-[#26cece] text-[#070707] font-bold font-['Space_Grotesk'] tracking-widest uppercase py-3 px-6 rounded-[2px] transition-all hover:bg-white hover:-translate-y-1 hover:shadow-[4px_4px_0_0_#333] text-[12px]">
+                    <Plus size={16} /> Create New Post
                 </Link>
             </div>
 
-            <div className="bg-white dark:bg-slate-800 rounded-xl border border-gray-100 dark:border-slate-700 shadow-sm overflow-hidden">
+            <div className="bg-[#111111] rounded-[2px] border border-[#1E1E1E] overflow-hidden">
                 <div className="overflow-x-auto">
                     <table className="w-full text-left">
-                        <thead className="bg-gray-50 dark:bg-slate-900/50">
+                        <thead className="bg-[#070707] border-b border-[#1E1E1E]">
                             <tr>
-                                <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase">Title & Slug</th>
-                                <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase">Status</th>
-                                <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase">Date</th>
-                                <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase text-right">Actions</th>
+                                <th className="px-6 py-4 text-[10px] font-mono tracking-widest text-gray-500 uppercase">Title & Slug</th>
+                                <th className="px-6 py-4 text-[10px] font-mono tracking-widest text-gray-500 uppercase">Status</th>
+                                <th className="px-6 py-4 text-[10px] font-mono tracking-widest text-gray-500 uppercase">Date</th>
+                                <th className="px-6 py-4 text-[10px] font-mono tracking-widest text-gray-500 uppercase text-right">Actions</th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-gray-100 dark:divide-slate-700">
+                        <tbody className="divide-y divide-[#1E1E1E]">
                             {posts.length === 0 && !loading ? (
-                                <tr><td colSpan="4" className="px-6 py-10 text-center text-gray-500">No posts found. Create your first blog post!</td></tr>
+                                <tr><td colSpan="4" className="px-6 py-10 text-center text-gray-500 font-mono text-[12px] uppercase">No posts found. Create your first blog post!</td></tr>
                             ) : (
                                 posts.map((post) => (
-                                    <tr key={post.id} className="hover:bg-gray-50 dark:hover:bg-slate-700/50 transition-colors">
+                                    <tr key={post.id} className="hover:bg-[#1A1A1A] transition-colors">
                                         <td className="px-6 py-4">
                                             <div className="flex flex-col">
-                                                <span className="font-semibold text-gray-900 dark:text-white line-clamp-1">{post.topic || post.seo_title}</span>
-                                                <span className="text-xs text-gray-500 dark:text-gray-400 font-mono">/{post.slug}</span>
+                                                <span className="font-bold text-white font-['Space_Grotesk'] line-clamp-1">{post.topic || post.seo_title}</span>
+                                                <span className="text-[12px] text-[#26cece] font-mono">/{post.slug}</span>
                                             </div>
                                         </td>
                                         <td className="px-6 py-4">
-                                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${post.is_published ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300' : 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300'}`}>
+                                            <span className={`inline-flex items-center px-2 py-1 rounded-[2px] text-[10px] uppercase font-mono tracking-widest border ${post.is_published ? 'bg-[#070707] border-[#26cece] text-[#26cece]' : 'bg-[#070707] border-gray-500 text-gray-400'}`}>
                                                 {post.is_published ? 'Published' : 'Draft/Scheduled'}
                                             </span>
                                         </td>
                                         <td className="px-6 py-4">
-                                            <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300">
-                                                <Calendar className="w-4 h-4" />
+                                            <div className="flex items-center gap-2 text-[12px] font-mono text-gray-400">
+                                                <Calendar size={14} />
                                                 {new Date(post.publish_date || post.created_at).toLocaleDateString()}
                                             </div>
                                         </td>
                                         <td className="px-6 py-4 text-right">
                                             <div className="flex justify-end gap-2">
-                                                <Link to={`/blogs/${post.id}`} target="_blank" className="p-2 text-gray-400 hover:text-indigo-600 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors">
-                                                    <Eye className="w-4 h-4" />
+                                                <Link to={`/blogs/${post.id}`} target="_blank" className="p-2 text-gray-400 hover:text-[#26cece] rounded-[2px] hover:bg-[#070707] transition-colors border border-transparent hover:border-[#333]">
+                                                    <Eye size={16} />
                                                 </Link>
-                                                <Link to={`/blog/edit/${post.id}`} className="p-2 text-gray-400 hover:text-indigo-600 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors">
-                                                    <Edit3 className="w-4 h-4" />
+                                                <Link to={`/blog/edit/${post.id}`} className="p-2 text-gray-400 hover:text-white rounded-[2px] hover:bg-[#070707] transition-colors border border-transparent hover:border-[#333]">
+                                                    <Edit3 size={16} />
                                                 </Link>
-                                                <button onClick={() => handleDelete(post.id)} className="p-2 text-gray-400 hover:text-red-600 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors">
-                                                    <Trash2 className="w-4 h-4" />
+                                                <button onClick={() => handleDelete(post.id)} className="p-2 text-gray-400 hover:text-rose-500 rounded-[2px] hover:bg-[rgba(244,63,94,0.1)] transition-colors border border-transparent hover:border-[rgba(244,63,94,0.3)]">
+                                                    <Trash2 size={16} />
                                                 </button>
                                             </div>
                                         </td>

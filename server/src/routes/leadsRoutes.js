@@ -1,10 +1,11 @@
 import express from 'express';
-import { createLead, markLeadAsBooked, getLeads, getStats, getLeadById, bookAudit, handleCalendlyWebhook, confirmBooking, trackClick } from '../controllers/leadController.js';
+import { createLead, markLeadAsBooked, getLeads, getStats, getLeadById, bookAudit, handleCalendlyWebhook, confirmBooking, trackClick, quizOptin } from '../controllers/leadController.js';
 import { protect } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
 
 router.post('/', createLead);
+router.post('/quiz-optin', quizOptin);
 router.post('/book-audit', bookAudit);
 router.post('/calendly', handleCalendlyWebhook);
 router.post('/confirm-booking', confirmBooking);

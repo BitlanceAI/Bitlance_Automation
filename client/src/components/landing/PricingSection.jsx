@@ -3,125 +3,135 @@ import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Check, X } from 'lucide-react';
 
+const T = '#26CECE';
+
+const plans = [
+    {
+        name: 'Starter',
+        price: '99',
+        perDay: '3.30',
+        desc: 'Perfect for small businesses just starting with automation.',
+        features: ['1 AI Agent', 'Up to 500 conversations/mo', 'WhatsApp & Web Chat', 'Basic Lead Qualification', 'Email Support'],
+        missing: ['CRM Integration', 'Custom Workflows', 'Priority Support'],
+    },
+    {
+        name: 'Growth',
+        price: '249',
+        perDay: '8',
+        popular: true,
+        desc: 'For scaling teams that need robust integrations and higher volume.',
+        features: ['3 AI Agents', 'Up to 2,000 conversations/mo', 'All Channels (WhatsApp, FB, IG)', 'Advanced Lead Qualification', 'CRM Integration (HubSpot, Salesforce)', 'Calendar Booking'],
+        missing: ['Dedicated Success Manager'],
+    },
+    {
+        name: 'Agency / White-Label',
+        price: '499',
+        perDay: '16.60',
+        desc: 'Full power automation for agencies and established enterprises.',
+        features: ['Unlimited AI Agents', 'Up to 10,000 conversations/mo', 'Custom Workflows & API Access', 'Priority Support (Slack)', 'Dedicated Success Manager', 'White-label Options'],
+        missing: [],
+    },
+];
+
 const PricingSection = () => {
-    const [isYearly, setIsYearly] = useState(false);
+    const [yearly, setYearly] = useState(false);
 
     return (
-        <section className="py-24 bg-gray-50 dark:bg-slate-900" id="pricing">
+        <section className="py-24 bg-[#070707]" id="pricing">
             <div className="max-w-7xl mx-auto px-6">
-                <div className="text-center mb-16">
-                    <h2 className="text-3xl md:text-5xl font-bold mb-6">Simple pricing, massive ROI</h2>
-                    <p className="text-xl text-gray-600 dark:text-gray-300 mb-4">
-                        Choose the plan that fits your growth stage.
-                    </p>
 
-                    {/* Agency Anchor — Door-in-the-Face / Anchoring */}
-                    <div className="inline-flex items-center gap-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700/40 rounded-xl px-5 py-3 mb-8 text-sm">
-                        <span className="text-amber-600 dark:text-amber-400 font-semibold">💡 A typical automation agency charges</span>
-                        <span className="line-through text-gray-400 font-bold">$3,000 – $8,000/mo</span>
-                        <span className="text-amber-600 dark:text-amber-400 font-semibold">for what you get below.</span>
+                {/* Heading — left-aligned editorial */}
+                <div className="mb-16 max-w-2xl">
+                    <span style={{ fontFamily:"'DM Mono',monospace", fontSize:10, letterSpacing:'0.18em', color:'#555', textTransform:'uppercase' }}>
+                        Pricing
+                    </span>
+                    <h2 className="mt-4 text-3xl md:text-5xl font-bold text-white leading-tight"
+                        style={{ fontFamily:"'Space Grotesk',sans-serif", letterSpacing:'-0.025em' }}>
+                        Simple pricing,<br /><span style={{ color:T }}>massive ROI</span>
+                    </h2>
+                    <div className="mt-6" style={{ width:48, height:2, background:T }} />
+
+                    {/* Anchor */}
+                    <div className="mt-6 inline-flex flex-wrap items-center gap-2 px-4 py-2.5 text-xs rounded"
+                        style={{ background:`${T}0D`, border:`1px solid ${T}25` }}>
+                        <span style={{ color:T, fontFamily:"'DM Mono',monospace" }}>A typical agency charges</span>
+                        <span className="line-through" style={{ color:'#555', fontFamily:"'DM Mono',monospace" }}>$3,000–$8,000/mo</span>
+                        <span style={{ color:T, fontFamily:"'DM Mono',monospace" }}>for what you get below.</span>
                     </div>
 
-                    <div className="flex items-center justify-center gap-4 mb-8">
-                        <span className={`text-sm font-semibold ${!isYearly ? 'text-indigo-600 dark:text-indigo-400' : 'text-gray-500'}`}>Monthly</span>
-                        <button
-                            onClick={() => setIsYearly(!isYearly)}
-                            className="w-14 h-8 bg-indigo-600 rounded-full relative transition-colors duration-300 focus:outline-none"
-                        >
-                            <div className={`absolute top-1 w-6 h-6 bg-white rounded-full transition-transform duration-300 ${isYearly ? 'left-7' : 'left-1'}`}></div>
+                    {/* Toggle */}
+                    <div className="flex items-center gap-4 mt-8">
+                        <span className="text-sm font-medium" style={{ color:!yearly?T:'#555' }}>Monthly</span>
+                        <button onClick={() => setYearly(v=>!v)}
+                            className="w-12 h-6 relative rounded-full transition-all" style={{ background:T }}>
+                            <div className={`absolute top-0.5 w-5 h-5 rounded-full bg-[#070707] transition-transform duration-300 ${yearly?'translate-x-6':'translate-x-0.5'}`} />
                         </button>
-                        <span className={`text-sm font-semibold ${isYearly ? 'text-indigo-600 dark:text-indigo-400' : 'text-gray-500'}`}>Yearly <span className="text-green-500 text-xs ml-1">(Save 20%)</span></span>
+                        <span className="text-sm font-medium" style={{ color:yearly?T:'#555' }}>
+                            Yearly <span className="text-xs ml-1 text-green-400">(Save 20%)</span>
+                        </span>
                     </div>
                 </div>
 
-                <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
-                    {[
-                        {
-                            name: "Starter",
-                            price: "99",
-                            perDay: "3.30",
-                            desc: "Perfect for small businesses just starting with automation.",
-                            features: [
-                                "1 AI Agent",
-                                "Up to 500 conversations/mo",
-                                "WhatsApp & Web Chat",
-                                "Basic Lead Qualification",
-                                "Email Support"
-                            ],
-                            notIncluded: ["CRM Integration", "Custom Workflows", "Priority Support"]
-                        },
-                        {
-                            name: "Growth",
-                            price: "249",
-                            perDay: "8",
-                            popular: true,
-                            desc: "For scaling teams that need robust integrations and higher volume.",
-                            features: [
-                                "3 AI Agents",
-                                "Up to 2,000 conversations/mo",
-                                "All Channels (WhatsApp, FB, IG)",
-                                "Advanced Lead Qualification",
-                                "CRM Integration (HubSpot, Salesforce)",
-                                "Calendar Booking"
-                            ],
-                            notIncluded: ["Dedicated Success Manager"]
-                        },
-                        {
-                            name: "Agency / White-Label",
-                            price: "499",
-                            perDay: "16.60",
-                            desc: "Full power automation for agencies and established enterprises.",
-                            features: [
-                                "Unlimited AI Agents",
-                                "Up to 10,000 conversations/mo",
-                                "Custom Workflows & API Access",
-                                "Priority Support (Slack)",
-                                "Dedicated Success Manager",
-                                "White-label Options"
-                            ],
-                            notIncluded: []
-                        }
-                    ].map((plan, idx) => (
+                {/* Cards */}
+                <div className="grid md:grid-cols-3 gap-5 max-w-6xl mx-auto">
+                    {plans.map((plan, idx) => (
                         <motion.div
                             key={idx}
-                            initial={{ opacity: 0, y: 30 }}
-                            whileInView={{ opacity: 1, y: 0 }}
-                            transition={{ duration: 0.5, delay: idx * 0.1 }}
-                            viewport={{ once: true }}
-                            whileHover={{ y: plan.popular ? -15 : -10 }}
-                            className={`relative bg-white dark:bg-slate-800 rounded-2xl p-8 border ${plan.popular ? 'border-indigo-500 shadow-xl ring-1 ring-indigo-500' : 'border-gray-200 dark:border-slate-700 shadow-sm'} flex flex-col`}
+                            initial={{ opacity:0, y:30 }} whileInView={{ opacity:1, y:0 }}
+                            transition={{ duration:0.45, delay:idx*0.08 }} viewport={{ once:true }}
+                            whileHover={{ y:-6 }}
+                            className="relative flex flex-col rounded p-7 transition-all duration-300"
+                            style={{
+                                background: plan.popular ? `${T}08` : '#0F0F0F',
+                                border: `1px solid ${plan.popular ? T : '#1E1E1E'}`,
+                                boxShadow: plan.popular ? `0 0 48px 0 ${T}12` : 'none',
+                            }}
                         >
                             {plan.popular && (
-                                <div className="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-gradient-to-r from-indigo-500 to-purple-500 text-white text-xs font-bold px-4 py-1 rounded-full uppercase tracking-wider whitespace-nowrap">
-                                    ⭐ Most Popular — Chosen by 68% of teams
+                                <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-4 py-1 text-xs font-bold uppercase tracking-widest rounded-sm whitespace-nowrap"
+                                    style={{ background:T, color:'#070707', fontFamily:"'DM Mono',monospace" }}>
+                                    Most Popular — 68% of teams
                                 </div>
                             )}
+
                             <div className="mb-8">
-                                <h3 className="text-xl font-bold mb-2">{plan.name}</h3>
-                                <p className="text-gray-500 dark:text-gray-400 text-sm mb-6 h-10">{plan.desc}</p>
-                                <div className="flex items-baseline">
-                                    <span className="text-4xl font-extrabold tracking-tight">$</span>
-                                    <span className="text-5xl font-extrabold tracking-tight">{isYearly ? (parseInt(plan.price) * 0.8).toFixed(0) : plan.price}</span>
-                                    <span className="text-gray-500 dark:text-gray-400 ml-1">/mo</span>
+                                <h3 className="text-lg font-bold text-white mb-1">{plan.name}</h3>
+                                <p className="text-sm text-white/40 mb-6 min-h-[40px]">{plan.desc}</p>
+                                <div className="flex items-baseline gap-1">
+                                    <span className="text-xl font-bold text-white/50" style={{ fontFamily:"'DM Mono',monospace" }}>$</span>
+                                    <span className="text-5xl font-extrabold text-white" style={{ fontFamily:"'DM Mono',monospace" }}>
+                                        {yearly ? (parseInt(plan.price)*0.8).toFixed(0) : plan.price}
+                                    </span>
+                                    <span className="text-white/40 text-sm">/mo</span>
                                 </div>
-                                {/* Mental Accounting: Per-day framing */}
-                                <p className="text-xs text-gray-400 mt-1">= just <strong className="text-gray-600 dark:text-gray-300">${isYearly ? (parseFloat(plan.perDay) * 0.8).toFixed(2) : plan.perDay}</strong>/day</p>
+                                <p className="mt-1 text-xs" style={{ color:'#555', fontFamily:"'DM Mono',monospace" }}>
+                                    = ${yearly ? (parseFloat(plan.perDay)*0.8).toFixed(2) : plan.perDay}/day
+                                </p>
                             </div>
-                            <ul className="space-y-4 mb-8 flex-1">
-                                {plan.features.map((feature, i) => (
+
+                            <ul className="space-y-3 mb-8 flex-1">
+                                {plan.features.map((f,i) => (
                                     <li key={i} className="flex items-start gap-3">
-                                        <Check size={18} className="text-green-500 mt-0.5 flex-shrink-0" />
-                                        <span className="text-sm text-gray-700 dark:text-gray-300">{feature}</span>
+                                        <Check size={13} className="mt-0.5 flex-shrink-0" style={{ color:T }} />
+                                        <span className="text-sm text-white/70">{f}</span>
                                     </li>
                                 ))}
-                                {plan.notIncluded.map((feature, i) => (
-                                    <li key={i} className="flex items-start gap-3 opacity-50">
-                                        <X size={18} className="text-gray-400 mt-0.5 flex-shrink-0" />
-                                        <span className="text-sm text-gray-500">{feature}</span>
+                                {plan.missing.map((f,i) => (
+                                    <li key={i} className="flex items-start gap-3 opacity-25">
+                                        <X size={13} className="mt-0.5 flex-shrink-0 text-white/30" />
+                                        <span className="text-sm text-white/40">{f}</span>
                                     </li>
                                 ))}
                             </ul>
-                            <button className={`w-full py-4 rounded-xl font-bold transition-all ${plan.popular ? 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg hover:shadow-indigo-500/30' : 'bg-gray-100 dark:bg-slate-700 hover:bg-gray-200 dark:hover:bg-slate-600 text-gray-900 dark:text-white'}`}>
+
+                            <button
+                                className="w-full py-3.5 rounded text-sm font-bold transition-all duration-200"
+                                style={plan.popular
+                                    ? { background:T, color:'#070707' }
+                                    : { background:'#1A1A1A', color:'#EFEFEF', border:'1px solid #2A2A2A' }}
+                                onMouseEnter={e => { if (!plan.popular) { e.currentTarget.style.borderColor=`${T}50`; e.currentTarget.style.color=T; } else { e.currentTarget.style.background='#35DFDF'; } }}
+                                onMouseLeave={e => { if (!plan.popular) { e.currentTarget.style.borderColor='#2A2A2A'; e.currentTarget.style.color='#EFEFEF'; } else { e.currentTarget.style.background=T; } }}
+                            >
                                 {plan.popular ? 'Start Closing More Deals' : 'Get Started'}
                             </button>
                         </motion.div>

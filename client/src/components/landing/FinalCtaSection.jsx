@@ -1,51 +1,67 @@
 import React from 'react';
-import { MessageCircle, Clock, ShieldCheck } from 'lucide-react';
+import { MessageCircle, ShieldCheck } from 'lucide-react';
 import ScrollReveal from '../ui/ScrollReveal';
 
-const FinalCtaSection = ({ onOpenBooking }) => {
-    return (
-        <section className="py-24 relative overflow-hidden bg-[#030303]">
-            <ScrollReveal className="max-w-4xl mx-auto px-6 text-center relative z-10">
+const T = '#26CECE';
 
+const FinalCtaSection = ({ onOpenBooking }) => (
+    <section className="py-24 relative overflow-hidden bg-[#070707]">
+        <ScrollReveal className="max-w-4xl mx-auto px-6 text-center relative z-10">
 
-                <h2 className="text-3xl md:text-5xl font-black mb-6 text-white uppercase tracking-tighter leading-[1.2]">
-                    Do you want to see how many more deals you can close if your follow-ups run <span className="text-indigo-500 font-black">100% on autopilot?</span>
-                </h2>
+            <span style={{ fontFamily:"'DM Mono',monospace", fontSize:10, letterSpacing:'0.18em', color:'#555', textTransform:'uppercase' }}>
+                Final Step
+            </span>
 
-                <p className="text-base text-white/60 mb-10 max-w-xl mx-auto font-medium leading-relaxed">
-                    Every lead that goes unanswered is revenue someone else is collecting. If we show you a live dashboard of your leads, follow-ups, and conversions in one screen — would 15 minutes be worth it?
-                </p>
+            <h2 className="mt-6 text-3xl md:text-5xl font-black text-white uppercase leading-tight"
+                style={{ fontFamily:"'Space Grotesk',sans-serif", letterSpacing:'-0.03em' }}>
+                Do you want to see how many more deals you can close if your follow-ups run{' '}
+                <span style={{ color:T }}>100% on autopilot?</span>
+            </h2>
 
-                <div className="flex flex-col items-center gap-8">
-                    <button
-                        onClick={onOpenBooking}
-                        className="audit-cta btn-primary px-12 py-5 rounded-full font-black text-xl transition-all shadow-2xl transform hover:-translate-y-1 w-full sm:w-auto uppercase tracking-tighter"
+            {/* Teal accent rule */}
+            <div className="mt-8 mb-8 mx-auto" style={{ width:48, height:2, background:T }} />
+
+            <p className="text-base text-white/50 mb-12 max-w-xl mx-auto leading-relaxed">
+                Every lead that goes unanswered is revenue someone else is collecting. If we show you a live dashboard of your leads, follow-ups, and conversions in one screen — would 15 minutes be worth it?
+            </p>
+
+            <div className="flex flex-col items-center gap-8">
+                <button
+                    onClick={onOpenBooking}
+                    className="audit-cta font-black text-xl uppercase tracking-tight transition-all hover:opacity-90 active:scale-[0.98] w-full sm:w-auto"
+                    style={{ background:T, color:'#070707', padding:'18px 56px', borderRadius:2, border:'none', cursor:'pointer', fontFamily:"'Space Grotesk',sans-serif" }}
+                    onMouseEnter={e => (e.currentTarget.style.background = '#35DFDF')}
+                    onMouseLeave={e => (e.currentTarget.style.background = T)}
+                >
+                    Get Free Audit
+                </button>
+
+                <div className="flex flex-col items-center gap-4">
+                    <a
+                        href="https://wa.me/917030951331"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-2 text-sm font-bold uppercase tracking-widest transition-colors"
+                        style={{ color:'#444', fontFamily:"'DM Mono',monospace" }}
+                        onMouseEnter={e => (e.currentTarget.style.color = T)}
+                        onMouseLeave={e => (e.currentTarget.style.color = '#444')}
                     >
-                        Claim My Free AI Audit
-                    </button>
-                    
-                    <div className="flex flex-col items-center gap-4">
-                        <a
-                            href="https://wa.me/917030951331"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-white/40 hover:text-white flex items-center gap-2 text-sm font-bold transition-colors uppercase tracking-widest"
-                        >
-                            <MessageCircle size={16} /> Prefer WhatsApp? Chat with our AI agent
-                        </a>
-                        
-                        <div className="flex items-center justify-center gap-2 text-white/30 text-[10px] font-bold uppercase tracking-widest bg-white/5 px-4 py-2 rounded-full border border-white/5">
-                            <ShieldCheck size={12} className="text-emerald-500/50" />
-                            No commitment. Cancel anytime. 30-day money back guarantee.
-                        </div>
+                        <MessageCircle size={14} /> Prefer WhatsApp? Chat with our AI agent
+                    </a>
+
+                    <div className="flex items-center gap-2 text-xs uppercase tracking-widest px-4 py-2 rounded"
+                        style={{ color:'#333', fontFamily:"'DM Mono',monospace", border:'1px solid #1E1E1E' }}>
+                        <ShieldCheck size={12} style={{ color:'#22c55e' }} />
+                        No commitment · Cancel anytime · 30-day money back guarantee
                     </div>
                 </div>
-            </ScrollReveal>
+            </div>
+        </ScrollReveal>
 
-            {/* Subtle Minimalist Background Effect */}
-            <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[1000px] h-[300px] bg-indigo-500/5 blur-[120px] rounded-full pointer-events-none" />
-        </section>
-    );
-};
+        {/* Teal ambient glow */}
+        <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[800px] h-[240px] rounded-full blur-[120px] pointer-events-none"
+            style={{ background:`${T}07` }} />
+    </section>
+);
 
 export default FinalCtaSection;

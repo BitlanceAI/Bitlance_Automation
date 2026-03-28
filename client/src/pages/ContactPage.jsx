@@ -13,17 +13,17 @@ import { trackContactFormSubmit, trackContactFormSuccess, trackContactFormError,
 const ContactCard = ({ icon: Icon, title, value, sub, color, href }) => (
     <a
         href={href || '#'}
-        className="flex lg:flex-col xl:flex-row gap-4 p-5 rounded-2xl bg-white/[0.03] border border-white/10
-                   hover:bg-white/[0.06] hover:border-white/20 transition-all duration-300 group"
+        className="flex lg:flex-col xl:flex-row gap-4 p-5 rounded-[2px] bg-[#111111] border border-[#1E1E1E]
+                   hover:bg-[#1A1A1A] hover:border-[#333] transition-all duration-300 group hover:-translate-y-1 hover:shadow-[4px_4px_0_0_#26cece]"
     >
-        <div className={`flex-shrink-0 w-12 h-12 rounded-xl bg-${color}-500/20 flex items-center
-                         justify-center border border-${color}-400/30 group-hover:scale-110 transition-transform`}>
-            <Icon className={`text-${color}-400`} size={22} />
+        <div className={`flex-shrink-0 w-12 h-12 rounded-[2px] bg-[#070707] flex items-center
+                         justify-center border border-[#333] group-hover:bg-[#26cece] group-hover:text-[#070707] transition-colors`}>
+            <Icon className="text-[#26cece] group-hover:text-[#070707] transition-colors" size={22} />
         </div>
         <div className="flex-1 min-w-0">
-            <p className="text-xs uppercase tracking-widest text-white/40 mb-1">{title}</p>
-            <p className="text-white font-semibold truncate" title={value}>{value}</p>
-            {sub && <p className="text-white/50 text-sm mt-0.5 whitespace-normal break-words">{sub}</p>}
+            <p className="text-[10px] uppercase font-mono tracking-widest text-gray-500 mb-1">{title}</p>
+            <p className="text-white font-bold font-['Space_Grotesk'] tracking-tight truncate max-w-full" title={value}>{value}</p>
+            {sub && <p className="text-gray-400 text-[13px] font-sans mt-0.5 whitespace-normal break-words">{sub}</p>}
         </div>
     </a>
 );
@@ -32,16 +32,16 @@ const ContactCard = ({ icon: Icon, title, value, sub, color, href }) => (
 const FaqItem = ({ q, a }) => {
     const [open, setOpen] = useState(false);
     return (
-        <div className="border border-white/10 rounded-2xl overflow-hidden">
+        <div className="border border-[#1E1E1E] bg-[#111111] rounded-[2px] overflow-hidden mb-3">
             <button
                 onClick={() => setOpen(!open)}
                 className="w-full flex items-center justify-between p-5 text-left
-                           hover:bg-white/[0.04] transition-colors"
+                           hover:bg-[#1A1A1A] transition-colors"
             >
-                <span className="font-semibold text-white/90">{q}</span>
+                <span className="font-bold text-white font-['Space_Grotesk'] tracking-tight">{q}</span>
                 <ChevronDown
                     size={18}
-                    className={`text-white/50 flex-shrink-0 ml-4 transition-transform duration-300 ${open ? 'rotate-180' : ''}`}
+                    className={`text-gray-500 flex-shrink-0 ml-4 transition-transform duration-300 ${open ? 'rotate-180' : ''}`}
                 />
             </button>
             <AnimatePresence>
@@ -53,7 +53,7 @@ const FaqItem = ({ q, a }) => {
                         transition={{ duration: 0.25 }}
                         className="overflow-hidden"
                     >
-                        <p className="px-5 pb-5 text-white/60 leading-relaxed">{a}</p>
+                        <p className="px-5 pb-5 text-gray-400 font-sans leading-relaxed text-[15px]">{a}</p>
                     </motion.div>
                 )}
             </AnimatePresence>
@@ -176,25 +176,25 @@ const ContactPage = () => {
     ];
 
     return (
-        <div className="min-h-screen bg-[#030303] text-white">
+        <div className="min-h-screen bg-[#070707] text-white">
 
             {/* ── Minimal Nav ── */}
-            <nav className="fixed top-0 w-full z-50 bg-[#030303]/80 backdrop-blur-md border-b border-white/10">
+            <nav className="fixed top-0 w-full z-50 bg-[#070707]/90 backdrop-blur-md border-b border-[#1E1E1E]">
                 <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
                     <button
                         onClick={() => navigate(-1)}
-                        className="flex items-center gap-2 text-white/70 hover:text-white transition-colors"
+                        className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors font-mono uppercase tracking-widest text-[12px]"
                     >
-                        <ArrowLeft size={20} />
-                        <span className="font-medium">Back</span>
+                        <ArrowLeft size={16} />
+                        <span>Back</span>
                     </button>
-                    <div className="text-xl font-bold tracking-tight">
-                        Bitlance<span className="text-violet-500">AI</span>
+                    <div className="text-xl font-bold tracking-tight font-['Space_Grotesk']">
+                        Bitlance<span className="text-[#26cece]">AI</span>
                     </div>
                     <button
                         onClick={() => { trackDemoClick('contact_nav'); navigate('/apply/real-estate'); }}
-                        className="px-6 py-2.5 bg-white text-black font-semibold rounded-full
-                                   hover:bg-gray-200 transition-colors text-sm"
+                        className="px-6 py-2 bg-[#26cece] text-[#070707] font-bold font-mono tracking-widest uppercase rounded-[2px]
+                                   hover:bg-white transition-colors text-[10px]"
                     >
                         Book Demo
                     </button>
@@ -203,29 +203,26 @@ const ContactPage = () => {
 
             {/* ── Hero ── */}
             <section className="pt-40 pb-20 relative overflow-hidden">
-                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[500px]
-                                bg-violet-600/15 rounded-full blur-[120px] pointer-events-none" />
-
                 <div className="max-w-7xl mx-auto px-6 relative z-10 text-center">
                     <motion.div
                         initial={{ opacity: 0, scale: 0.9 }}
                         animate={{ opacity: 1, scale: 1 }}
                         transition={{ duration: 0.5 }}
-                        className="inline-flex items-center gap-2 px-4 py-2 rounded-full
-                                   bg-white/5 border border-white/10 mb-8"
+                        className="inline-flex items-center gap-2 px-3 py-1 rounded-[2px]
+                                   bg-[#111] border border-[#333] mb-8 font-mono text-[10px] tracking-widest uppercase text-[#26cece]"
                     >
-                        <Zap size={16} className="text-violet-400" />
-                        <span className="text-sm font-medium text-white/80">We respond within 24 hours</span>
+                        <Zap size={12} className="text-[#26cece]" />
+                        <span>We respond within 24 hours</span>
                     </motion.div>
 
                     <motion.h1
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.5, delay: 0.1 }}
-                        className="text-5xl md:text-7xl font-extrabold tracking-tight mb-6"
+                        className="text-5xl md:text-7xl font-bold tracking-tighter mb-6 font-['Space_Grotesk'] uppercase"
                     >
                         Let's{' '}
-                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-violet-400 to-indigo-400">
+                        <span className="text-[#26cece]">
                             Talk
                         </span>
                     </motion.h1>
@@ -234,7 +231,7 @@ const ContactPage = () => {
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.5, delay: 0.2 }}
-                        className="text-xl text-white/60 leading-relaxed max-w-2xl mx-auto"
+                        className="text-xl text-gray-400 font-sans leading-relaxed max-w-2xl mx-auto"
                     >
                         Have a question, partnership idea, or just want to see our AI agents in action?
                         Drop us a message and our team will get back to you shortly.
@@ -281,14 +278,14 @@ const ContactPage = () => {
             </section>
 
             {/* ── Form + Illustration ── */}
-            <section className="py-24 border-t border-white/5">
+            <section className="py-24 border-t border-[#1E1E1E]">
                 <ScrollReveal className="max-w-7xl mx-auto px-6">
                     <div className="grid lg:grid-cols-2 gap-16 items-start">
 
                         {/* Left – Form */}
                         <div>
-                            <h2 className="text-3xl md:text-4xl font-bold mb-3">Send us a message</h2>
-                            <p className="text-white/50 mb-10 leading-relaxed">
+                            <h2 className="text-3xl md:text-[40px] font-bold mb-3 font-['Space_Grotesk'] tracking-tight">Send us a message</h2>
+                            <p className="text-gray-400 mb-10 leading-relaxed font-sans text-[16px]">
                                 Fill in the form below and one of our specialists will reach out to schedule a
                                 personalised session tailored to your business needs.
                             </p>
@@ -297,20 +294,19 @@ const ContactPage = () => {
                                 <motion.div
                                     initial={{ opacity: 0, y: 16 }}
                                     animate={{ opacity: 1, y: 0 }}
-                                    className="flex flex-col items-center gap-4 py-20 text-center"
+                                    className="flex flex-col items-center gap-4 py-20 text-center border border-[#1E1E1E] bg-[#111111] rounded-[2px]"
                                 >
-                                    <div className="w-20 h-20 rounded-full bg-emerald-500/20 border border-emerald-400/30
-                                                    flex items-center justify-center">
-                                        <CheckCircle size={40} className="text-emerald-400" />
+                                    <div className="w-16 h-16 bg-[#070707] border border-[#333] flex items-center justify-center text-[#26cece] mb-2 rounded-[2px]">
+                                        <CheckCircle size={32} />
                                     </div>
-                                    <h3 className="text-2xl font-bold">Message sent!</h3>
-                                    <p className="text-white/60 max-w-xs">
+                                    <h3 className="text-2xl font-bold font-['Space_Grotesk'] uppercase tracking-tight">Message sent!</h3>
+                                    <p className="text-gray-400 max-w-xs font-sans">
                                         Thanks for reaching out. We'll be in touch within 24 hours.
                                     </p>
                                     <button
                                         onClick={() => { setSubmitted(false); setForm({ name: '', email: '', company: '', message: '' }); setFormStartedTracked(false); }}
-                                        className="mt-4 px-6 py-2.5 rounded-xl border border-white/20 text-sm font-medium
-                                                   hover:bg-white/10 transition-colors"
+                                        className="mt-6 px-6 py-3 rounded-[2px] bg-[#070707] border border-[#333] text-[12px] font-mono tracking-widest uppercase
+                                                   hover:bg-[#26cece] hover:text-[#070707] transition-colors"
                                     >
                                         Send another message
                                     </button>
@@ -319,8 +315,8 @@ const ContactPage = () => {
                                 <form onSubmit={handleSubmit} className="space-y-5">
                                     <div className="grid sm:grid-cols-2 gap-5">
                                         <div>
-                                            <label className="block text-sm font-medium text-white/70 mb-2">
-                                                Full Name <span className="text-violet-400">*</span>
+                                            <label className="block text-[10px] font-mono tracking-widest uppercase text-gray-500 mb-2">
+                                                Full Name <span className="text-[#26cece]">*</span>
                                             </label>
                                             <input
                                                 type="text"
@@ -329,14 +325,14 @@ const ContactPage = () => {
                                                 onChange={handleChange}
                                                 onFocus={handleFocus}
                                                 placeholder="Jane Doe"
-                                                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white
-                                                           placeholder-white/30 focus:outline-none focus:border-violet-500/60
-                                                           focus:ring-1 focus:ring-violet-500/40 transition-all"
+                                                className="w-full bg-[#070707] border border-[#333] rounded-[2px] px-4 py-3 text-white
+                                                           placeholder-gray-600 focus:outline-none focus:border-[#26cece]
+                                                           focus:ring-0 transition-all font-mono text-[14px]"
                                             />
                                         </div>
                                         <div>
-                                            <label className="block text-sm font-medium text-white/70 mb-2">
-                                                Email <span className="text-violet-400">*</span>
+                                            <label className="block text-[10px] font-mono tracking-widest uppercase text-gray-500 mb-2">
+                                                Email <span className="text-[#26cece]">*</span>
                                             </label>
                                             <input
                                                 type="email"
@@ -344,15 +340,15 @@ const ContactPage = () => {
                                                 value={form.email}
                                                 onChange={handleChange}
                                                 placeholder="jane@yourcompany.com"
-                                                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white
-                                                           placeholder-white/30 focus:outline-none focus:border-violet-500/60
-                                                           focus:ring-1 focus:ring-violet-500/40 transition-all"
+                                                className="w-full bg-[#070707] border border-[#333] rounded-[2px] px-4 py-3 text-white
+                                                           placeholder-gray-600 focus:outline-none focus:border-[#26cece]
+                                                           focus:ring-0 transition-all font-mono text-[14px]"
                                             />
                                         </div>
                                     </div>
 
                                     <div>
-                                        <label className="block text-sm font-medium text-white/70 mb-2">
+                                        <label className="block text-[10px] font-mono tracking-widest uppercase text-gray-500 mb-2">
                                             Company / Organisation
                                         </label>
                                         <input
@@ -361,15 +357,15 @@ const ContactPage = () => {
                                             value={form.company}
                                             onChange={handleChange}
                                             placeholder="Acme Inc."
-                                            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white
-                                                       placeholder-white/30 focus:outline-none focus:border-violet-500/60
-                                                       focus:ring-1 focus:ring-violet-500/40 transition-all"
+                                            className="w-full bg-[#070707] border border-[#333] rounded-[2px] px-4 py-3 text-white
+                                                       placeholder-gray-600 focus:outline-none focus:border-[#26cece]
+                                                       focus:ring-0 transition-all font-mono text-[14px]"
                                         />
                                     </div>
 
                                     <div>
-                                        <label className="block text-sm font-medium text-white/70 mb-2">
-                                            How can we help? <span className="text-violet-400">*</span>
+                                        <label className="block text-[10px] font-mono tracking-widest uppercase text-gray-500 mb-2">
+                                            How can we help? <span className="text-[#26cece]">*</span>
                                         </label>
                                         <textarea
                                             name="message"
@@ -377,27 +373,27 @@ const ContactPage = () => {
                                             onChange={handleChange}
                                             rows={5}
                                             placeholder="Tell us about your project, challenge, or the AI solution you're looking for..."
-                                            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white
-                                                       placeholder-white/30 focus:outline-none focus:border-violet-500/60
-                                                       focus:ring-1 focus:ring-violet-500/40 transition-all resize-none"
+                                            className="w-full bg-[#070707] border border-[#333] rounded-[2px] px-4 py-3 text-white
+                                                       placeholder-gray-600 focus:outline-none focus:border-[#26cece]
+                                                       focus:ring-0 transition-all resize-none font-mono text-[14px]"
                                         />
                                     </div>
 
                                     {error && (
-                                        <p className="text-rose-400 text-sm">{error}</p>
+                                        <p className="text-rose-500 text-sm font-mono">{error}</p>
                                     )}
 
                                     <button
                                         type="submit"
                                         disabled={submitting}
-                                        className="w-full flex items-center justify-center gap-2 py-4 rounded-xl font-semibold
-                                                   bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500
+                                        className="w-full flex items-center justify-center gap-2 py-4 rounded-[2px] font-bold font-['Space_Grotesk'] tracking-widest uppercase
+                                                   bg-[#26cece] text-[#070707] hover:bg-white
                                                    disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300
-                                                   hover:shadow-[0_0_30px_rgba(139,92,246,0.4)] hover:scale-[1.02]"
+                                                   hover:-translate-y-1 hover:shadow-[4px_4px_0_0_#333]"
                                     >
                                         {submitting ? (
                                             <>
-                                                <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24" fill="none">
+                                                <svg className="animate-spin h-5 w-5 text-[#070707]" viewBox="0 0 24 24" fill="none">
                                                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                                                     <path className="opacity-75" fill="currentColor"
                                                         d="M4 12a8 8 0 018-8v8H4z" />
@@ -418,37 +414,31 @@ const ContactPage = () => {
                         {/* Right – Visual + social links */}
                         <div className="flex flex-col gap-10">
                             {/* Abstract radial visual */}
-                            <div className="relative w-full aspect-square max-w-[440px] mx-auto">
-                                <div className="absolute inset-0 bg-gradient-to-tr from-violet-600/20 to-indigo-600/20 rounded-full blur-3xl opacity-50" />
-                                <div className="absolute inset-4 border border-white/10 rounded-full animate-[spin_60s_linear_infinite]" />
-                                <div className="absolute inset-12 border border-violet-500/20 rounded-full animate-[spin_40s_linear_infinite_reverse]" />
-                                <div className="absolute inset-24 border border-indigo-500/30 rounded-full border-dashed animate-[spin_20s_linear_infinite]" />
-                                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2
-                                                w-28 h-28 bg-gradient-to-br from-violet-600 to-indigo-600 rounded-3xl
-                                                shadow-[0_0_50px_rgba(139,92,246,0.5)] flex items-center justify-center">
-                                    <MessageSquare size={48} className="text-white" />
+                            <div className="relative w-full aspect-square max-w-[440px] mx-auto bg-[#111111] border border-[#1E1E1E] flex items-center justify-center p-8 rounded-[2px]">
+                                <div className="w-24 h-24 bg-[#070707] border border-[#333] rounded-[2px] flex items-center justify-center text-[#26cece]">
+                                    <MessageSquare size={40} />
                                 </div>
                             </div>
 
                             {/* Quick links */}
                             <div className="space-y-4">
-                                <h3 className="text-lg font-semibold text-white/80">Connect with us</h3>
+                                <h3 className="text-lg font-bold text-white font-['Space_Grotesk'] uppercase tracking-tight">Connect with us</h3>
                                 <div className="grid grid-cols-2 gap-3">
                                     {[
-                                        { label: 'LinkedIn', href: 'https://linkedin.com', icon: Globe, color: 'indigo' },
-                                        { label: 'Twitter / X', href: 'https://twitter.com', icon: Globe, color: 'sky' },
-                                        { label: 'WhatsApp', href: 'https://wa.me/917391025059', icon: MessageSquare, color: 'emerald' },
-                                        { label: 'Book a Demo', href: '/apply/real-estate', icon: Zap, color: 'violet' },
-                                    ].map(({ label, href, icon: Icon, color }) => (
+                                        { label: 'LinkedIn', href: 'https://linkedin.com', icon: Globe },
+                                        { label: 'Twitter / X', href: 'https://twitter.com', icon: Globe },
+                                        { label: 'WhatsApp', href: 'https://wa.me/917391025059', icon: MessageSquare },
+                                        { label: 'Book a Demo', href: '/apply/real-estate', icon: Zap },
+                                    ].map(({ label, href, icon: Icon }) => (
                                         <a
                                             key={label}
                                             href={href}
                                             target={href.startsWith('http') ? '_blank' : undefined}
                                             rel="noopener noreferrer"
-                                            className={`flex items-center gap-2 p-3 rounded-xl bg-white/[0.03] border border-white/10
-                                                        hover:bg-${color}-500/10 hover:border-${color}-500/30 transition-all duration-300 text-sm font-medium text-white/80`}
+                                            className="flex items-center gap-3 p-4 rounded-[2px] bg-[#111111] border border-[#1E1E1E]
+                                                        hover:bg-[#1A1A1A] hover:border-[#333] hover:-translate-y-1 hover:shadow-[2px_2px_0_0_#26cece] transition-all duration-200 text-[11px] font-mono tracking-widest uppercase text-white"
                                         >
-                                            <Icon size={16} className={`text-${color}-400`} />
+                                            <Icon size={16} className="text-[#26cece]" />
                                             {label}
                                         </a>
                                     ))}
@@ -460,11 +450,11 @@ const ContactPage = () => {
             </section>
 
             {/* ── FAQ ── */}
-            <section className="py-24 bg-white/[0.02] border-y border-white/5">
+            <section className="py-24 bg-[#070707] border-y border-[#1E1E1E]">
                 <ScrollReveal className="max-w-3xl mx-auto px-6">
                     <div className="text-center mb-14">
-                        <h2 className="text-3xl md:text-5xl font-bold mb-4">Frequently asked questions</h2>
-                        <p className="text-white/50 text-lg">Can't find what you're looking for? Just ask us directly.</p>
+                        <h2 className="text-3xl md:text-[40px] font-bold mb-4 font-['Space_Grotesk'] tracking-tight">Frequently asked questions</h2>
+                        <p className="text-gray-400 font-sans text-lg">Can't find what you're looking for? Just ask us directly.</p>
                     </div>
                     <div className="space-y-3">
                         {faqs.map((faq, i) => <FaqItem key={i} {...faq} />)}
@@ -473,23 +463,21 @@ const ContactPage = () => {
             </section>
 
             {/* ── Bottom CTA ── */}
-            <section className="py-32 relative text-center px-6">
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2
-                                w-[600px] h-[400px] bg-violet-600/20 blur-[100px] pointer-events-none" />
-                <ScrollReveal className="relative z-10 max-w-3xl mx-auto">
-                    <h2 className="text-4xl md:text-6xl font-bold mb-6">
-                        Ready to see{' '}
-                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-violet-400 to-indigo-400">
+            <section className="py-32 flex justify-center text-center px-6">
+                <ScrollReveal className="relative z-10 w-full max-w-3xl border border-[#1E1E1E] bg-[#111111] p-16 rounded-[2px] shadow-[8px_8px_0_0_#26cece]">
+                    <h2 className="text-4xl md:text-[56px] font-bold mb-6 font-['Space_Grotesk'] uppercase tracking-tighter leading-none">
+                        Ready to see{' '} <br/>
+                        <span className="text-[#26cece]">
                             AI in action?
                         </span>
                     </h2>
-                    <p className="text-xl text-white/60 mb-10">
+                    <p className="text-[16px] text-gray-400 font-sans mb-10 max-w-xl mx-auto">
                         Book a free, no-obligation live demo and watch our agents handle real-world scenarios for your industry.
                     </p>
                     <button
                         onClick={() => { trackDemoClick('contact_cta'); navigate('/apply/real-estate'); }}
-                        className="inline-flex items-center gap-2 bg-white text-black px-10 py-4
-                                   rounded-full font-bold text-lg hover:scale-105 transition-transform"
+                        className="inline-flex items-center gap-2 bg-[#26cece] text-[#070707] px-10 py-5
+                                   rounded-[2px] font-bold font-['Space_Grotesk'] tracking-widest uppercase hover:-translate-y-1 hover:shadow-[4px_4px_0_0_#333] hover:bg-white transition-all duration-200"
                     >
                         Book Your Live Demo
                         <ArrowLeft size={20} className="rotate-180" />

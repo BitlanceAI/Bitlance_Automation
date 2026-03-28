@@ -2,24 +2,32 @@
 import React from 'react';
 import { Activity, Coins, FileText, Phone } from 'lucide-react';
 
-const StatCard = ({ title, value, icon: Icon, color, subtext }) => (
-    <div className="bg-white dark:bg-slate-800 rounded-2xl p-6 border border-gray-100 dark:border-slate-700 shadow-sm transition-all hover:shadow-md">
-        <div className="flex items-center justify-between mb-4">
-            <div className={`p-3 rounded-xl ${color} bg-opacity-10 dark:bg-opacity-20`}>
-                <Icon size={24} className={color.replace('bg-', 'text-')} />
+const StatCard = ({ title, value, icon: Icon, color, subtext }) => {
+    // Extract just the text color from the passed prop (e.g., "text-amber-500") for flat neon look
+    const iconColor = color.split(' ').find(c => c.startsWith('text-')) || 'text-[#26CECE]';
+    
+    return (
+        <div className="bg-[#111111] rounded-[2px] p-6 border border-[#1E1E1E] transition-all hover:border-[#333] hover:bg-[#151515] relative group overflow-hidden">
+            {/* Left Accent Bar on Hover */}
+            <div className="absolute top-0 left-0 w-1 h-full bg-[#26CECE] opacity-0 group-hover:opacity-100 transition-opacity"></div>
+            
+            <div className="flex items-center justify-between mb-5">
+                <div className={`text-white p-2 border border-[#222] bg-[#070707] rounded-[2px]`}>
+                    <Icon size={20} className={iconColor} />
+                </div>
+                {subtext && (
+                    <span className="text-[10px] font-mono tracking-widest uppercase text-gray-500 bg-[#1A1A1A] px-2 py-1 rounded-[2px] border border-[#222]">
+                        {subtext}
+                    </span>
+                )}
             </div>
-            {subtext && (
-                <span className="text-xs font-medium text-gray-400 bg-gray-50 dark:bg-slate-700 px-2 py-1 rounded-full">
-                    {subtext}
-                </span>
-            )}
+            <div>
+                <h3 className="text-[13px] font-sans font-medium text-gray-400 mb-2 font-['Space_Grotesk'] tracking-tight">{title}</h3>
+                <div className="text-[32px] font-mono font-medium text-white tracking-tight leading-none">{value}</div>
+            </div>
         </div>
-        <div>
-            <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">{title}</h3>
-            <div className="text-2xl font-bold text-gray-900 dark:text-white">{value}</div>
-        </div>
-    </div>
-);
+    );
+};
 
 const DashboardStats = ({ credits, articlesCount, callsCount }) => {
     return (

@@ -83,10 +83,10 @@ const FileUpload = ({ onUpload, type = 'image', currentUrl, onClear, label }) =>
 
     return (
         <div className="w-full">
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{label}</label>
+            <label className="block text-xs font-bold font-mono text-gray-400 uppercase tracking-wider mb-2">{label}</label>
 
             {currentUrl ? (
-                <div className="relative group rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-slate-800">
+                <div className="relative group overflow-hidden border-2 border-[#333333] bg-[#070707]">
                     {type === 'video' || currentUrl.endsWith('.mp4') || currentUrl.endsWith('.webm') ? (
                         <video src={currentUrl} controls className="w-full h-48 object-cover" />
                     ) : (
@@ -94,19 +94,19 @@ const FileUpload = ({ onUpload, type = 'image', currentUrl, onClear, label }) =>
                     )}
                     <button
                         onClick={(e) => { e.preventDefault(); onClear(); }}
-                        className="absolute top-2 right-2 p-1.5 bg-red-100/80 hover:bg-red-200 text-red-600 rounded-full transition-colors backdrop-blur-sm"
+                        className="absolute top-2 right-2 p-1.5 bg-[#111111] hover:bg-[#ce2626] border-2 border-[#333333] hover:border-[#111111] text-white transition-colors"
                     >
                         <X size={16} />
                     </button>
-                    <div className="absolute bottom-2 left-2 px-2 py-1 bg-black/50 text-white text-xs rounded backdrop-blur-md">
+                    <div className="absolute bottom-2 left-2 px-2 py-1 bg-[#111111] border-2 border-[#333333] text-[#26cece] font-mono font-bold text-xs uppercase tracking-wider">
                         {type === 'video' ? 'Video Asset' : 'Image Asset'}
                     </div>
                 </div>
             ) : (
                 <div
-                    className={`relative border-2 border-dashed rounded-lg p-6 text-center transition-colors cursor-pointer ${dragActive
-                        ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/10'
-                        : 'border-gray-300 dark:border-gray-600 hover:border-blue-400 dark:hover:border-blue-500 bg-white dark:bg-slate-900'
+                    className={`relative border-2 border-dashed p-6 text-center transition-colors cursor-pointer ${dragActive
+                        ? 'border-[#26cece] bg-[#26cece]/10'
+                        : 'border-[#333333] hover:border-[#26cece] bg-[#111111]'
                         }`}
                     onDragEnter={handleDrag}
                     onDragLeave={handleDrag}
@@ -125,18 +125,18 @@ const FileUpload = ({ onUpload, type = 'image', currentUrl, onClear, label }) =>
                     <div className="flex flex-col items-center gap-2">
                         {uploading ? (
                             <>
-                                <Loader2 className="animate-spin text-blue-600" size={32} />
-                                <p className="text-sm text-gray-500">Uploading...</p>
+                                <Loader2 className="animate-spin text-[#26cece]" size={32} />
+                                <p className="text-sm font-mono text-gray-400 uppercase tracking-wider">Uploading...</p>
                             </>
                         ) : (
                             <>
-                                <div className="p-3 bg-blue-50 dark:bg-blue-900/30 rounded-full mb-2">
-                                    <Upload className="text-blue-600 dark:text-blue-400" size={24} />
+                                <div className="p-3 bg-[#070707] border-2 border-[#333333] mb-2">
+                                    <Upload className="text-[#26cece]" size={24} />
                                 </div>
-                                <p className="text-sm font-medium text-gray-700 dark:text-gray-200">
+                                <p className="text-sm font-bold text-white uppercase tracking-wider">
                                     Click to upload {type} or drag and drop
                                 </p>
-                                <p className="text-xs text-gray-500">
+                                <p className="text-xs font-mono text-gray-500 uppercase tracking-wider">
                                     {type === 'video' ? 'MP4, WebM up to 50MB' : 'PNG, JPG, GIF up to 10MB'}
                                 </p>
                             </>
@@ -149,16 +149,16 @@ const FileUpload = ({ onUpload, type = 'image', currentUrl, onClear, label }) =>
 };
 
 export const CampaignFormBase = ({ formData, handleInputChange, availablePages = [], children }) => (
-    <div className="space-y-6">
+    <div className="space-y-8">
         <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Campaign Name</label>
+            <label className="block text-xs font-bold font-mono text-gray-400 uppercase tracking-wider mb-2">Campaign Name</label>
             <input
                 type="text"
                 name="name"
                 value={formData.name}
                 onChange={handleInputChange}
-                placeholder="e.g. Summer Campaign"
-                className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-slate-900 focus:ring-2 focus:ring-blue-500"
+                placeholder="e.g. SUMMER_CAMPAIGN_01"
+                className="w-full px-4 py-3 border-2 border-[#333333] bg-[#070707] text-white focus:border-[#26cece] focus:outline-none transition-colors font-mono"
                 required
             />
         </div>
@@ -170,24 +170,27 @@ export const CampaignFormBase = ({ formData, handleInputChange, availablePages =
 
 export const PageSelectionSection = ({ formData, handleInputChange, availablePages = [] }) => {
     return (
-        <div className="border-t border-gray-100 dark:border-gray-700 pt-6">
-            <h3 className="text-lg font-semibold mb-4 text-gray-800 dark:text-gray-200">Facebook Page</h3>
+        <div className="border-t-2 border-[#333333] pt-6">
+            <h3 className="text-lg font-bold mb-6 text-white uppercase tracking-wider font-mono flex items-center gap-3">
+                <span className="w-2 h-2 bg-[#26cece]"></span>
+                Facebook Page
+            </h3>
             <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Select Page for Ad Delivery</label>
+                <label className="block text-xs font-bold font-mono text-gray-400 uppercase tracking-wider mb-2">Select Page for Ad Delivery</label>
                 <select
                     name="page_id"
                     value={formData.page_id || ''}
                     onChange={handleInputChange}
-                    className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-slate-900 focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-4 py-3 border-2 border-[#333333] bg-[#070707] text-white focus:border-[#26cece] focus:outline-none transition-colors font-mono appearance-none"
                     required
                 >
-                    <option value="">-- Select a Facebook Page --</option>
+                    <option value="">-- SELECT A FACEBOOK PAGE --</option>
                     {availablePages?.map(page => (
                         <option key={page.id} value={page.id}>{page.name}</option>
                     ))}
                 </select>
                 {availablePages?.length === 0 && (
-                    <p className="text-sm text-yellow-600 mt-1">No pages found. Please connect your Meta account or ensure you have a Page.</p>
+                    <p className="text-xs font-mono text-yellow-500 mt-2 uppercase tracking-wider">! No pages found. Connect your Meta account.</p>
                 )}
             </div>
         </div>
@@ -210,73 +213,76 @@ export const TargetingSection = ({ formData, handleInputChange }) => {
     };
 
     return (
-        <div className="border-t border-gray-100 dark:border-gray-700 pt-6">
-            <h3 className="text-lg font-semibold mb-4 text-gray-800 dark:text-gray-200">Audience Targeting</h3>
-            <div className="space-y-4 bg-gray-50 dark:bg-slate-900/50 p-4 rounded-xl border border-gray-100 dark:border-gray-800">
+        <div className="border-t-2 border-[#333333] pt-6">
+            <h3 className="text-lg font-bold mb-6 text-white uppercase tracking-wider font-mono flex items-center gap-3">
+                <span className="w-2 h-2 bg-[#26cece]"></span>
+                Audience Targeting
+            </h3>
+            <div className="space-y-6 bg-[#111111] p-6 border-2 border-[#333333]">
 
                 {/* Locations */}
                 <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Locations</label>
+                    <label className="block text-xs font-bold font-mono text-gray-400 uppercase tracking-wider mb-2">Locations</label>
                     <input
                         type="text"
                         name="locations"
                         value={targeting.locations || ''}
                         onChange={handleTargetingChange}
-                        placeholder="e.g. India, US, London (Comma separated)"
-                        className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-slate-900 focus:ring-2 focus:ring-blue-500"
+                        placeholder="e.g. INDIA, US, LONDON (COMMA SEPARATED)"
+                        className="w-full px-4 py-3 border-2 border-[#333333] bg-[#070707] text-white focus:border-[#26cece] focus:outline-none transition-colors font-mono"
                     />
                 </div>
 
                 {/* Age Range */}
-                <div className="flex gap-4">
+                <div className="flex gap-6">
                     <div className="flex-1">
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Min Age</label>
+                        <label className="block text-xs font-bold font-mono text-gray-400 uppercase tracking-wider mb-2">Min Age</label>
                         <input
                             type="number"
                             name="age_min"
                             value={targeting.age_min || 18}
                             onChange={handleTargetingChange}
                             min="13" max="65"
-                            className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-slate-900 focus:ring-2 focus:ring-blue-500"
+                            className="w-full px-4 py-3 border-2 border-[#333333] bg-[#070707] text-white focus:border-[#26cece] focus:outline-none transition-colors font-mono"
                         />
                     </div>
                     <div className="flex-1">
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Max Age</label>
+                        <label className="block text-xs font-bold font-mono text-gray-400 uppercase tracking-wider mb-2">Max Age</label>
                         <input
                             type="number"
                             name="age_max"
                             value={targeting.age_max || 65}
                             onChange={handleTargetingChange}
                             min="13" max="65"
-                            className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-slate-900 focus:ring-2 focus:ring-blue-500"
+                            className="w-full px-4 py-3 border-2 border-[#333333] bg-[#070707] text-white focus:border-[#26cece] focus:outline-none transition-colors font-mono"
                         />
                     </div>
                 </div>
 
                 {/* Gender */}
                 <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Gender</label>
+                    <label className="block text-xs font-bold font-mono text-gray-400 uppercase tracking-wider mb-2">Gender</label>
                     <select
                         name="gender"
                         value={targeting.gender || 'ALL'}
                         onChange={handleTargetingChange}
-                        className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-slate-900 focus:ring-2 focus:ring-blue-500"
+                        className="w-full px-4 py-3 border-2 border-[#333333] bg-[#070707] text-white focus:border-[#26cece] focus:outline-none transition-colors font-mono appearance-none"
                     >
-                        <option value="ALL">All Genders</option>
-                        <option value="MALE">Men</option>
-                        <option value="FEMALE">Women</option>
+                        <option value="ALL">ALL GENDERS</option>
+                        <option value="MALE">MEN</option>
+                        <option value="FEMALE">WOMEN</option>
                     </select>
                 </div>
 
                 {/* Interests */}
                 <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Detailed Targeting (Interests)</label>
+                    <label className="block text-xs font-bold font-mono text-gray-400 uppercase tracking-wider mb-2">Detailed Targeting (Interests)</label>
                     <textarea
                         name="interests"
                         value={targeting.interests || ''}
                         onChange={handleTargetingChange}
-                        placeholder="e.g. Technology, Digital Marketing, E-commerce"
-                        className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-slate-900 focus:ring-2 focus:ring-blue-500 h-20"
+                        placeholder="e.g. TECHNOLOGY, DIGITAL MARKETING, E-COMMERCE"
+                        className="w-full px-4 py-3 border-2 border-[#333333] bg-[#070707] text-white focus:border-[#26cece] focus:outline-none transition-colors font-mono h-24 resize-none"
                     />
                 </div>
             </div>
@@ -314,56 +320,59 @@ export const CreativeAssetsSection = ({ formData, handleInputChange, showDestina
     };
 
     return (
-        <div className="border-t border-gray-100 dark:border-gray-700 pt-6">
-            <h3 className="text-lg font-semibold mb-4 text-gray-800 dark:text-gray-200">Creative Assets</h3>
+        <div className="border-t-2 border-[#333333] pt-6">
+            <h3 className="text-lg font-bold mb-6 text-white uppercase tracking-wider font-mono flex items-center gap-3">
+                <span className="w-2 h-2 bg-[#26cece]"></span>
+                Creative Assets
+            </h3>
 
-            <div className="space-y-4">
+            <div className="space-y-6">
                 <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Headline</label>
+                    <label className="block text-xs font-bold font-mono text-gray-400 uppercase tracking-wider mb-2">Headline</label>
                     <input
                         type="text"
                         name="headline"
                         value={formData.creative_assets?.headline || ''}
                         onChange={(e) => handleInputChange(e, 'creative_assets')}
-                        className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-slate-900 focus:ring-2 focus:ring-blue-500"
+                        className="w-full px-4 py-3 border-2 border-[#333333] bg-[#070707] text-white focus:border-[#26cece] focus:outline-none transition-colors font-mono"
                         required
                     />
                 </div>
                 <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Description</label>
+                    <label className="block text-xs font-bold font-mono text-gray-400 uppercase tracking-wider mb-2">Description</label>
                     <textarea
                         name="description"
                         value={formData.creative_assets?.description || ''}
                         onChange={(e) => handleInputChange(e, 'creative_assets')}
-                        className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-slate-900 focus:ring-2 focus:ring-blue-500 h-24"
+                        className="w-full px-4 py-3 border-2 border-[#333333] bg-[#070707] text-white focus:border-[#26cece] focus:outline-none transition-colors font-mono h-24 resize-none"
                     />
                 </div>
 
                 {/* Media Selection Tabs */}
                 <div className="space-y-4">
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Media Asset</label>
-                    <div className="flex gap-2 mb-2 p-1 bg-gray-100 dark:bg-slate-800 rounded-lg w-fit">
+                    <label className="block text-xs font-bold font-mono text-gray-400 uppercase tracking-wider mb-2">Media Asset</label>
+                    <div className="flex bg-[#111111] border-2 border-[#333333] w-fit">
                         <button
                             onClick={(e) => { e.preventDefault(); setActiveTab('upload'); }}
-                            className={`px-3 py-1.5 rounded-md text-sm font-medium flex items-center gap-2 transition-all ${activeTab === 'upload' ? 'bg-white dark:bg-slate-700 shadow text-blue-600 dark:text-blue-400' : 'text-gray-500 hover:text-gray-700'}`}
+                            className={`px-4 py-2 text-xs font-bold font-mono uppercase tracking-wider flex items-center gap-2 transition-all border-r-2 border-[#333333] last:border-r-0 ${activeTab === 'upload' ? 'bg-[#26cece] text-black' : 'text-gray-400 hover:text-white hover:bg-[#333333]'}`}
                         >
                             <ImageIcon size={16} /> Upload Image
                         </button>
                         <button
                             onClick={(e) => { e.preventDefault(); setActiveTab('video'); }}
-                            className={`px-3 py-1.5 rounded-md text-sm font-medium flex items-center gap-2 transition-all ${activeTab === 'video' ? 'bg-white dark:bg-slate-700 shadow text-blue-600 dark:text-blue-400' : 'text-gray-500 hover:text-gray-700'}`}
+                            className={`px-4 py-2 text-xs font-bold font-mono uppercase tracking-wider flex items-center gap-2 transition-all border-r-2 border-[#333333] last:border-r-0 ${activeTab === 'video' ? 'bg-[#26cece] text-black' : 'text-gray-400 hover:text-white hover:bg-[#333333]'}`}
                         >
                             <Film size={16} /> Upload Video
                         </button>
                         <button
                             onClick={(e) => { e.preventDefault(); setActiveTab('url'); }}
-                            className={`px-3 py-1.5 rounded-md text-sm font-medium flex items-center gap-2 transition-all ${activeTab === 'url' ? 'bg-white dark:bg-slate-700 shadow text-blue-600 dark:text-blue-400' : 'text-gray-500 hover:text-gray-700'}`}
+                            className={`px-4 py-2 text-xs font-bold font-mono uppercase tracking-wider flex items-center gap-2 transition-all border-r-2 border-[#333333] last:border-r-0 ${activeTab === 'url' ? 'bg-[#26cece] text-black' : 'text-gray-400 hover:text-white hover:bg-[#333333]'}`}
                         >
                             <Link size={16} /> Image URL
                         </button>
                         <button
                             onClick={(e) => { e.preventDefault(); setActiveTab('generated'); }}
-                            className={`px-3 py-1.5 rounded-md text-sm font-medium flex items-center gap-2 transition-all ${activeTab === 'generated' ? 'bg-white dark:bg-slate-700 shadow text-blue-600 dark:text-blue-400' : 'text-gray-500 hover:text-gray-700'}`}
+                            className={`px-4 py-2 text-xs font-bold font-mono uppercase tracking-wider flex items-center gap-2 transition-all border-r-2 border-[#333333] last:border-r-0 ${activeTab === 'generated' ? 'bg-[#26cece] text-black' : 'text-gray-400 hover:text-white hover:bg-[#333333]'}`}
                         >
                             <ImageIcon size={16} /> Generated Library
                         </button>
@@ -392,19 +401,19 @@ export const CreativeAssetsSection = ({ formData, handleInputChange, showDestina
 
                         {activeTab === 'url' && (
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Image URL</label>
+                                <label className="block text-xs font-bold font-mono text-gray-400 uppercase tracking-wider mb-2">Image URL</label>
                                 <div className="flex gap-2">
                                     <input
                                         type="text"
                                         name="imageUrl"
                                         value={formData.creative_assets?.imageUrl || ''}
                                         onChange={(e) => handleInputChange(e, 'creative_assets')}
-                                        placeholder="https://..."
-                                        className="flex-1 px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-slate-900 focus:ring-2 focus:ring-blue-500"
+                                        placeholder="HTTPS://..."
+                                        className="flex-1 px-4 py-3 border-2 border-[#333333] bg-[#070707] text-white focus:border-[#26cece] focus:outline-none transition-colors font-mono"
                                     />
                                 </div>
                                 {formData.creative_assets?.imageUrl && (
-                                    <div className="mt-2 rounded-lg overflow-hidden border border-gray-200 h-40 w-full relative bg-gray-50">
+                                    <div className="mt-4 border-2 border-[#333333] bg-[#070707] h-40 w-full relative">
                                         <img
                                             src={formData.creative_assets.imageUrl}
                                             alt="Preview"
@@ -417,22 +426,22 @@ export const CreativeAssetsSection = ({ formData, handleInputChange, showDestina
                         )}
 
                         {activeTab === 'generated' && (
-                            <div className="border-2 border-dashed border-blue-200 dark:border-blue-900 bg-blue-50 dark:bg-blue-900/10 rounded-lg p-6 text-center">
-                                <ImageIcon className="mx-auto h-12 w-12 text-blue-400 mb-3" />
-                                <h4 className="text-lg font-medium text-blue-900 dark:text-blue-100 mb-2">Select from Generated Graphics</h4>
-                                <p className="text-sm text-blue-700 dark:text-blue-300 mb-4">
+                            <div className="border-2 border-dashed border-[#26cece] bg-[#26cece]/10 p-6 text-center">
+                                <ImageIcon className="mx-auto h-12 w-12 text-[#26cece] mb-3" />
+                                <h4 className="text-lg font-bold text-white uppercase tracking-wider font-mono mb-2">Select from Generated Graphics</h4>
+                                <p className="text-xs font-mono text-gray-400 mb-6 uppercase tracking-wider">
                                     Choose a flyer you created with the Graphic Generator.
                                 </p>
                                 <button
                                     onClick={(e) => { e.preventDefault(); onOpenGraphicModal?.(); }}
-                                    className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors"
+                                    className="px-6 py-3 bg-[#26cece] hover:bg-[#111111] text-black hover:text-[#26cece] border-2 border-[#26cece] font-mono font-bold uppercase tracking-wider transition-colors inline-block"
                                 >
-                                    Open Library
+                                    OPEN LIBRARY
                                 </button>
                                 {formData.creative_assets?.imageUrl && formData.creative_assets.imageUrl.includes('flyer_') && (
-                                    <div className="mt-4 pt-4 border-t border-blue-200 dark:border-blue-800">
-                                        <p className="text-xs text-blue-600 dark:text-blue-400 mb-2">Selected Graphic:</p>
-                                        <div className="h-32 rounded-lg overflow-hidden inline-block border border-blue-200">
+                                    <div className="mt-6 pt-6 border-t-2 border-[#26cece]/30">
+                                        <p className="text-xs font-bold font-mono text-[#26cece] uppercase tracking-wider mb-2">SELECTED GRAPHIC:</p>
+                                        <div className="h-32 inline-block border-2 border-[#26cece] bg-[#070707]">
                                             <img
                                                 src={formData.creative_assets.imageUrl}
                                                 alt="Selected"
@@ -446,18 +455,18 @@ export const CreativeAssetsSection = ({ formData, handleInputChange, showDestina
                     </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     {/* Removed raw Image URL input from here, moved to tab above */}
                     {showDestination && (
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Destination URL</label>
+                            <label className="block text-xs font-bold font-mono text-gray-400 uppercase tracking-wider mb-2">Destination URL</label>
                             <input
                                 type="text"
                                 name="destination_url"
                                 value={formData.destination_url || ''}
                                 onChange={handleInputChange}
-                                placeholder="https://your-site.com"
-                                className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-slate-900 focus:ring-2 focus:ring-blue-500"
+                                placeholder="HTTPS://YOUR-SITE.COM"
+                                className="w-full px-4 py-3 border-2 border-[#333333] bg-[#070707] text-white focus:border-[#26cece] focus:outline-none transition-colors font-mono"
                             />
                         </div>
                     )}
@@ -470,9 +479,9 @@ export const CreativeAssetsSection = ({ formData, handleInputChange, showDestina
 // 1. Awareness Form
 export const AwarenessForm = ({ formData, handleInputChange, onOpenGraphicModal, availablePages }) => (
     <CampaignFormBase formData={formData} handleInputChange={handleInputChange} availablePages={availablePages}>
-        <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg mb-4">
-            <p className="text-sm text-blue-800 dark:text-blue-300">
-                <strong>Goal:</strong> Maximize brand visibility. Ads will be shown to people most likely to remember them.
+        <div className="bg-[#111111] border-l-4 border-[#26cece] p-4 mb-6">
+            <p className="text-sm font-mono text-gray-300">
+                <strong className="text-white uppercase">Goal:</strong> Maximize brand visibility. Ads will be shown to people most likely to remember them.
             </p>
         </div>
         <CreativeAssetsSection formData={formData} handleInputChange={handleInputChange} onOpenGraphicModal={onOpenGraphicModal} />
@@ -482,9 +491,9 @@ export const AwarenessForm = ({ formData, handleInputChange, onOpenGraphicModal,
 // 2. Traffic Form
 export const TrafficForm = ({ formData, handleInputChange, onOpenGraphicModal, availablePages }) => (
     <CampaignFormBase formData={formData} handleInputChange={handleInputChange} availablePages={availablePages}>
-        <div className="bg-green-50 dark:bg-green-900/20 p-4 rounded-lg mb-4">
-            <p className="text-sm text-green-800 dark:text-green-300">
-                <strong>Goal:</strong> Drive clicks to a website or landing page.
+        <div className="bg-[#111111] border-l-4 border-[#ce2626] p-4 mb-6">
+            <p className="text-sm font-mono text-gray-300">
+                <strong className="text-white uppercase">Goal:</strong> Drive clicks to a website or landing page.
             </p>
         </div>
         <CreativeAssetsSection formData={formData} handleInputChange={handleInputChange} showDestination={true} onOpenGraphicModal={onOpenGraphicModal} />
@@ -495,14 +504,14 @@ export const TrafficForm = ({ formData, handleInputChange, onOpenGraphicModal, a
 export const EngagementForm = ({ formData, handleInputChange, onOpenGraphicModal, availablePages }) => (
     <CampaignFormBase formData={formData} handleInputChange={handleInputChange} availablePages={availablePages}>
         <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Engagement Type</label>
+            <label className="block text-xs font-bold font-mono text-gray-400 uppercase tracking-wider mb-2">Engagement Type</label>
             <select
                 name="engagement_type" // Needs handling in parent or specialized state
-                className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-slate-900 focus:ring-2 focus:ring-blue-500"
+                className="w-full px-4 py-3 border-2 border-[#333333] bg-[#070707] text-white focus:border-[#26cece] focus:outline-none transition-colors font-mono appearance-none"
             >
-                <option value="post_engagement">Post Likes/Comments</option>
-                <option value="page_likes">Page Likes</option>
-                <option value="event_responses">Event Responses</option>
+                <option value="post_engagement">POST LIKES/COMMENTS</option>
+                <option value="page_likes">PAGE LIKES</option>
+                <option value="event_responses">EVENT RESPONSES</option>
             </select>
         </div>
         <CreativeAssetsSection formData={formData} handleInputChange={handleInputChange} onOpenGraphicModal={onOpenGraphicModal} />
@@ -513,12 +522,12 @@ export const EngagementForm = ({ formData, handleInputChange, onOpenGraphicModal
 export const LeadGenForm = ({ formData, handleInputChange, onOpenGraphicModal, availablePages }) => (
     <CampaignFormBase formData={formData} handleInputChange={handleInputChange} availablePages={availablePages}>
         <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Lead Form Type</label>
+            <label className="block text-xs font-bold font-mono text-gray-400 uppercase tracking-wider mb-2">Lead Form Type</label>
             <select
-                className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-slate-900 focus:ring-2 focus:ring-blue-500"
+                className="w-full px-4 py-3 border-2 border-[#333333] bg-[#070707] text-white focus:border-[#26cece] focus:outline-none transition-colors font-mono appearance-none"
             >
-                <option value="instant_form">Instant Form (On-Facebook)</option>
-                <option value="messenger_automated">Messenger Automated Chat</option>
+                <option value="instant_form">INSTANT FORM (ON-FACEBOOK)</option>
+                <option value="messenger_automated">MESSENGER AUTOMATED CHAT</option>
             </select>
         </div>
         <CreativeAssetsSection formData={formData} handleInputChange={handleInputChange} onOpenGraphicModal={onOpenGraphicModal} />
@@ -528,23 +537,23 @@ export const LeadGenForm = ({ formData, handleInputChange, onOpenGraphicModal, a
 // 5. Sales / Conversion Form
 export const SalesForm = ({ formData, handleInputChange, onOpenGraphicModal, availablePages }) => (
     <CampaignFormBase formData={formData} handleInputChange={handleInputChange} availablePages={availablePages}>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Conversion Event</label>
+                <label className="block text-xs font-bold font-mono text-gray-400 uppercase tracking-wider mb-2">Conversion Event</label>
                 <select
-                    className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-slate-900 focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-4 py-3 border-2 border-[#333333] bg-[#070707] text-white focus:border-[#26cece] focus:outline-none transition-colors font-mono appearance-none"
                 >
-                    <option value="purchase">Purchase</option>
-                    <option value="add_to_cart">Add to Cart</option>
-                    <option value="initiate_checkout">Initiate Checkout</option>
+                    <option value="purchase">PURCHASE</option>
+                    <option value="add_to_cart">ADD TO CART</option>
+                    <option value="initiate_checkout">INITIATE CHECKOUT</option>
                 </select>
             </div>
             <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Product Catalog ID</label>
+                <label className="block text-xs font-bold font-mono text-gray-400 uppercase tracking-wider mb-2">Product Catalog ID</label>
                 <input
                     type="text"
-                    placeholder="Optional"
-                    className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-slate-900 focus:ring-2 focus:ring-blue-500"
+                    placeholder="OPTIONAL"
+                    className="w-full px-4 py-3 border-2 border-[#333333] bg-[#070707] text-white focus:border-[#26cece] focus:outline-none transition-colors font-mono"
                 />
             </div>
         </div>
@@ -555,26 +564,26 @@ export const SalesForm = ({ formData, handleInputChange, onOpenGraphicModal, ava
 // 6. App Promotion Form
 export const AppPromotionForm = ({ formData, handleInputChange, onOpenGraphicModal, availablePages }) => (
     <CampaignFormBase formData={formData} handleInputChange={handleInputChange} availablePages={availablePages}>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">App Name</label>
+                <label className="block text-xs font-bold font-mono text-gray-400 uppercase tracking-wider mb-2">App Name</label>
                 <input
                     type="text"
                     name="app_name"
                     value={formData.app_name || ''}
                     onChange={handleInputChange}
-                    className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-slate-900 focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-4 py-3 border-2 border-[#333333] bg-[#070707] text-white focus:border-[#26cece] focus:outline-none transition-colors font-mono"
                     required
                 />
             </div>
             <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">App Store / Play Store URL</label>
+                <label className="block text-xs font-bold font-mono text-gray-400 uppercase tracking-wider mb-2">App Store / Play Store URL</label>
                 <input
                     type="text"
                     name="app_store_url"
                     value={formData.app_store_url || ''}
                     onChange={handleInputChange}
-                    className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-slate-900 focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-4 py-3 border-2 border-[#333333] bg-[#070707] text-white focus:border-[#26cece] focus:outline-none transition-colors font-mono"
                     required
                 />
             </div>
@@ -587,38 +596,38 @@ export const AppPromotionForm = ({ formData, handleInputChange, onOpenGraphicMod
 export const LocalBusinessForm = ({ formData, handleInputChange, onOpenGraphicModal, availablePages }) => (
     <CampaignFormBase formData={formData} handleInputChange={handleInputChange} availablePages={availablePages}>
         <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Business Address</label>
+            <label className="block text-xs font-bold font-mono text-gray-400 uppercase tracking-wider mb-2">Business Address</label>
             <input
                 type="text"
                 name="address"
                 value={formData.address || ''}
                 onChange={handleInputChange}
-                placeholder="123 Main St, City, Zip"
-                className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-slate-900 focus:ring-2 focus:ring-blue-500"
+                placeholder="123 MAIN ST, CITY, ZIP"
+                className="w-full px-4 py-3 border-2 border-[#333333] bg-[#070707] text-white focus:border-[#26cece] focus:outline-none transition-colors font-mono"
                 required
             />
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Call to Action Type</label>
+                <label className="block text-xs font-bold font-mono text-gray-400 uppercase tracking-wider mb-2">Call to Action Type</label>
                 <select
                     name="cta_type"
                     value={formData.cta_type || 'get_directions'}
                     onChange={handleInputChange}
-                    className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-slate-900 focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-4 py-3 border-2 border-[#333333] bg-[#070707] text-white focus:border-[#26cece] focus:outline-none transition-colors font-mono appearance-none"
                 >
-                    <option value="get_directions">Get Directions</option>
-                    <option value="call_now">Call Now</option>
+                    <option value="get_directions">GET DIRECTIONS</option>
+                    <option value="call_now">CALL NOW</option>
                 </select>
             </div>
             <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Radius (km)</label>
+                <label className="block text-xs font-bold font-mono text-gray-400 uppercase tracking-wider mb-2">Radius (km)</label>
                 <input
                     type="number"
                     name="radius_km"
                     value={formData.radius_km || 5}
                     onChange={handleInputChange}
-                    className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-slate-900 focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-4 py-3 border-2 border-[#333333] bg-[#070707] text-white focus:border-[#26cece] focus:outline-none transition-colors font-mono"
                 />
             </div>
         </div>
@@ -630,13 +639,13 @@ export const LocalBusinessForm = ({ formData, handleInputChange, onOpenGraphicMo
 export const RemarketingForm = ({ formData, handleInputChange, onOpenGraphicModal, availablePages }) => (
     <CampaignFormBase formData={formData} handleInputChange={handleInputChange} availablePages={availablePages}>
         <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Target Audience Source</label>
+            <label className="block text-xs font-bold font-mono text-gray-400 uppercase tracking-wider mb-2">Target Audience Source</label>
             <select
-                className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-slate-900 focus:ring-2 focus:ring-blue-500"
+                className="w-full px-4 py-3 border-2 border-[#333333] bg-[#070707] text-white focus:border-[#26cece] focus:outline-none transition-colors font-mono appearance-none"
             >
-                <option value="website_visitors">Website Visitors (Last 30 days)</option>
-                <option value="past_customers">Past Customers</option>
-                <option value="engagers">Video Viewers / Page Engagers</option>
+                <option value="website_visitors">WEBSITE VISITORS (LAST 30 DAYS)</option>
+                <option value="past_customers">PAST CUSTOMERS</option>
+                <option value="engagers">VIDEO VIEWERS / PAGE ENGAGERS</option>
             </select>
         </div>
         <CreativeAssetsSection formData={formData} handleInputChange={handleInputChange} showDestination={true} onOpenGraphicModal={onOpenGraphicModal} />
@@ -647,37 +656,37 @@ export const RemarketingForm = ({ formData, handleInputChange, onOpenGraphicModa
 export const OfferEventForm = ({ formData, handleInputChange, onOpenGraphicModal, availablePages }) => (
     <CampaignFormBase formData={formData} handleInputChange={handleInputChange} availablePages={availablePages}>
         <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Campaign Sub-Type</label>
+            <label className="block text-xs font-bold font-mono text-gray-400 uppercase tracking-wider mb-2">Campaign Sub-Type</label>
             <select
                 name="subtype" // needs handling
-                className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-slate-900 focus:ring-2 focus:ring-blue-500"
+                className="w-full px-4 py-3 border-2 border-[#333333] bg-[#070707] text-white focus:border-[#26cece] focus:outline-none transition-colors font-mono appearance-none"
             >
-                <option value="offer">Special Offer / Discount</option>
-                <option value="event">Event Promotion</option>
+                <option value="offer">SPECIAL OFFER / DISCOUNT</option>
+                <option value="event">EVENT PROMOTION</option>
             </select>
         </div>
 
         {/* Simplified conditional rendering assumes 'offer' for now or generic inputs */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Offer Title / Event Name</label>
+                <label className="block text-xs font-bold font-mono text-gray-400 uppercase tracking-wider mb-2">Offer Title / Event Name</label>
                 <input
                     type="text"
                     name="offer_title"
                     value={formData.offer_title || ''}
                     onChange={handleInputChange}
-                    className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-slate-900 focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-4 py-3 border-2 border-[#333333] bg-[#070707] text-white focus:border-[#26cece] focus:outline-none transition-colors font-mono"
                 />
             </div>
             <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Details (Date/Discount)</label>
+                <label className="block text-xs font-bold font-mono text-gray-400 uppercase tracking-wider mb-2">Details (Date/Discount)</label>
                 <input
                     type="text"
                     name="offer_details"
                     value={formData.offer_details || ''}
                     onChange={handleInputChange}
-                    placeholder="e.g. 20% Off or Dec 25th 2024"
-                    className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-slate-900 focus:ring-2 focus:ring-blue-500"
+                    placeholder="e.g. 20% OFF OR DEC 25TH 2024"
+                    className="w-full px-4 py-3 border-2 border-[#333333] bg-[#070707] text-white focus:border-[#26cece] focus:outline-none transition-colors font-mono"
                 />
             </div>
         </div>

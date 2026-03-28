@@ -18,54 +18,59 @@ const BroadcastPage = () => {
     ];
 
     const stats = [
-        { label: 'Templates', value: '—', icon: FileText, color: 'text-indigo-600 dark:text-indigo-400', bg: 'bg-indigo-50 dark:bg-indigo-900/30' },
-        { label: 'Total Sent', value: '—', icon: Send, color: 'text-green-600 dark:text-green-400', bg: 'bg-green-50 dark:bg-green-900/30' },
-        { label: 'Delivery Rate', value: '—', icon: Zap, color: 'text-amber-600 dark:text-amber-400', bg: 'bg-amber-50 dark:bg-amber-900/30' },
+        { label: 'Templates', value: '—', icon: FileText },
+        { label: 'Total Sent', value: '—', icon: Send },
+        { label: 'Delivery Rate', value: '—', icon: Zap },
     ];
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-indigo-50 dark:from-slate-950 dark:via-slate-900 dark:to-indigo-950 pt-24 pb-12 px-4 sm:px-6 lg:px-8">
+        <div className="min-h-screen bg-gray-100 dark:bg-[#070707] font-mono pt-24 pb-12 px-4 sm:px-6 lg:px-8">
             <SEOHead canonicalUrl="https://www.bitlancetechhub.com/dashboard/agents/social" noIndex={true} />
             <Navbar />
-            <div className="max-w-5xl mx-auto">
+            <div className="max-w-5xl mx-auto space-y-8">
                 {/* Header */}
-                <div className="text-center mb-10">
-                    <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-indigo-100 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 rounded-full text-sm font-medium mb-4">
-                        <Radio className="w-4 h-4" />
+                <div className="flex flex-col items-center justify-center text-center space-y-6 mb-12">
+                    <div className="inline-flex items-center gap-2 px-4 py-2 bg-[#26cece]/10 border border-[#26cece] text-[#26cece] text-[10px] font-bold tracking-widest uppercase shadow-[4px_4px_0_0_#26cece]">
+                        <Radio className="w-4 h-4 animate-pulse" />
                         WhatsApp Business API
                     </div>
-                    <h1 className="text-4xl font-extrabold text-gray-900 dark:text-white sm:text-5xl bg-clip-text">
-                        Broadcast Console
-                    </h1>
-                    <p className="mt-4 text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
-                        Send targeted WhatsApp broadcasts to your audience using approved templates or direct messages.
+                    
+                    <div>
+                        <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold font-['Space_Grotesk'] text-gray-900 dark:text-white uppercase tracking-tight">
+                            Broadcast Console
+                        </h1>
+                        <div className="w-full h-1 bg-[#26cece] mt-4 transform -skew-x-12"></div>
+                    </div>
+                    
+                    <p className="text-gray-600 dark:text-gray-400 font-mono tracking-widest text-sm max-w-2xl leading-relaxed uppercase">
+                        &gt; Send targeted WhatsApp broadcasts to your audience using approved templates or direct messages.
                     </p>
                 </div>
 
                 {/* Stats */}
-                <div className="grid grid-cols-3 gap-4 mb-8">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
                     {stats.map((stat) => (
-                        <div key={stat.label} className="bg-white dark:bg-slate-800 rounded-xl p-4 border border-gray-100 dark:border-slate-700 flex items-center gap-4 shadow-sm">
-                            <div className={`p-3 rounded-lg ${stat.bg}`}>
-                                <stat.icon className={`w-5 h-5 ${stat.color}`} />
+                        <div key={stat.label} className="bg-white dark:bg-[#111111] border border-gray-200 dark:border-[#333] p-6 hover:border-[#26cece] hover:shadow-[4px_4px_0_0_#26cece] transition-all group flex items-center gap-5">
+                            <div className="p-4 bg-gray-100 dark:bg-[#070707] border border-gray-200 dark:border-[#333] group-hover:bg-[#26cece] group-hover:border-[#26cece] transition-colors">
+                                <stat.icon className="w-6 h-6 text-[#26cece] group-hover:text-[#070707]" />
                             </div>
                             <div>
-                                <p className="text-2xl font-bold text-gray-900 dark:text-white">{stat.value}</p>
-                                <p className="text-xs text-gray-500 dark:text-gray-400">{stat.label}</p>
+                                <p className="text-sm font-bold font-mono tracking-widest uppercase text-gray-500 mb-1">{stat.label}</p>
+                                <p className="text-3xl font-extrabold font-['Space_Grotesk'] text-gray-900 dark:text-white tracking-tight">{stat.value}</p>
                             </div>
                         </div>
                     ))}
                 </div>
 
                 {/* Tabs */}
-                <div className="flex gap-1 p-1 bg-white dark:bg-slate-800 rounded-xl border border-gray-100 dark:border-slate-700 shadow-sm mb-6">
+                <div className="flex flex-col sm:flex-row gap-2 border border-gray-200 dark:border-[#333] bg-white dark:bg-[#111111] p-1 mb-6">
                     {tabs.map((tab) => (
                         <button
                             key={tab.id}
                             onClick={() => setActiveTab(tab.id)}
-                            className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-lg text-sm font-medium transition-all ${activeTab === tab.id
-                                ? 'bg-indigo-600 text-white shadow-md'
-                                : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-50 dark:hover:bg-slate-700'
+                            className={`flex-1 flex items-center justify-center gap-3 px-6 py-4 text-[10px] sm:text-xs font-bold font-mono tracking-widest uppercase transition-all ${activeTab === tab.id
+                                ? 'bg-[#26cece] text-[#070707] shadow-[2px_2px_0_0_#333] -translate-y-0.5'
+                                : 'text-gray-500 hover:text-gray-900 dark:hover:text-white border border-transparent hover:border-gray-300 dark:hover:border-[#333] bg-transparent'
                                 }`}
                         >
                             <tab.icon className="w-4 h-4" />
@@ -75,7 +80,7 @@ const BroadcastPage = () => {
                 </div>
 
                 {/* Tab Content */}
-                <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-gray-100 dark:border-slate-700 p-6 md:p-8">
+                <div className="bg-gray-100 dark:bg-[#070707] border border-gray-200 dark:border-[#333] shadow-[8px_8px_0_0_#26cece] p-6 md:p-8">
                     {activeTab === 'broadcast' && <BroadcastForm />}
                     {activeTab === 'templates' && <TemplateManager />}
                     {activeTab === 'history' && <BroadcastHistory />}

@@ -121,7 +121,7 @@ function TypingIndicator() {
 // ─────────────────────────────────────────────────────────────────────────────
 function Confetti({ active }) {
   if (!active) return null;
-  const colors = ["#5B4FE8", "#00E5A0", "#fff", "#a89fff", "#00c87a"];
+  const colors = ["#26CECE", "#1AAFAF", "#fff", "#7AEAEA", "#0D8A8A"];
   return (
     <>
       {Array.from({ length: 32 }).map((_, i) => (
@@ -196,7 +196,7 @@ function CalendlyOverlay({ url, onClose, onBooked }) {
       {!iframeLoaded && (
         <div style={styles.calLoading}>
           <div style={styles.calSpinner} />
-          <p style={{ color: "#7B78A0", fontSize: "0.85rem" }}>Loading calendar...</p>
+          <p style={{ color: "#888888", fontSize: "0.85rem" }}>Loading calendar...</p>
         </div>
       )}
 
@@ -385,6 +385,7 @@ export default function BitlanceChatbot({ isOpen: externalIsOpen, onToggle }) {
   const [confetti, setConfetti] = useState(false);   // booking confetti
   const [calUrl, setCalUrl] = useState(null);    // Calendly overlay URL
   const [inputText, setInputText] = useState("");      // footer text input
+  const [showDemoPopup, setShowDemoPopup] = useState(false); // book a demo popup
   const convoStartedRef = useRef(false);
 
   // ── Conversation state ─────────────────────────────────────────────────────
@@ -417,6 +418,16 @@ export default function BitlanceChatbot({ isOpen: externalIsOpen, onToggle }) {
   useEffect(() => {
     if (confetti) setTimeout(() => setConfetti(false), 1600);
   }, [confetti]);
+
+  // ── Show demo popup after 3s (hide when chat opens) ───────────────────────
+  useEffect(() => {
+    const t = setTimeout(() => { if (!isOpen && !hasOpened) setShowDemoPopup(true); }, 3000);
+    return () => clearTimeout(t);
+  }, []);
+
+  useEffect(() => {
+    if (isOpen) setShowDemoPopup(false);
+  }, [isOpen]);
 
   // ── Auto-open after 5 seconds if not already opened ─────────────────────
   useEffect(() => {
@@ -713,8 +724,9 @@ export default function BitlanceChatbot({ isOpen: externalIsOpen, onToggle }) {
             --cb-widget-width: calc(100% - 30px);
             --cb-widget-max-height: calc(100svh - 105px);
           }
+          .demo-popup { width: calc(100vw - 40px) !important; right: 20px !important; }
         }
-        @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap');
         @keyframes bubbleIn   { from{transform:scale(0);opacity:0} to{transform:scale(1);opacity:1} }
         @keyframes pulse      { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.5;transform:scale(1.4)} }
         @keyframes msgIn      { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
@@ -726,6 +738,60 @@ export default function BitlanceChatbot({ isOpen: externalIsOpen, onToggle }) {
         .btns-anim  { animation: msgIn 0.4s 0.1s cubic-bezier(0.34,1.3,0.64,1) both; }
         .bc-icon-anim { animation: popIn 0.5s 0.1s cubic-bezier(0.34,1.6,0.64,1) both; }
       `}</style>
+
+      {/* ── BOOK A DEMO POPUP ── */}
+      <div style={{
+        position: "fixed",
+        bottom: "calc(var(--cb-bubble-bottom) + 78px)",
+        right: "var(--cb-bubble-right)",
+        width: 260,
+        background: "#111111",
+        border: "1px solid #1E1E1E",
+        borderRadius: 14,
+        padding: "14px 16px",
+        boxShadow: "0 16px 48px rgba(0,0,0,0.6), 0 0 0 1px rgba(38,206,206,0.08)",
+        zIndex: 9998,
+        transform: showDemoPopup ? "translateY(0) scale(1)" : "translateY(12px) scale(0.95)",
+        opacity: showDemoPopup ? 1 : 0,
+        pointerEvents: showDemoPopup ? "all" : "none",
+        transition: "transform 0.35s cubic-bezier(0.34,1.3,0.64,1), opacity 0.25s ease",
+      }}>
+        {/* Dismiss button */}
+        <button
+          onClick={() => setShowDemoPopup(false)}
+          aria-label="Dismiss"
+          style={{ position: "absolute", top: 8, right: 10, background: "none", border: "none", cursor: "pointer", color: "#555", fontSize: "0.85rem", lineHeight: 1, padding: 2 }}
+        >✕</button>
+
+        {/* Teal accent bar */}
+        <div style={{ width: 28, height: 3, background: "#26CECE", borderRadius: 2, marginBottom: 10 }} />
+
+        <p style={{ fontFamily: "'DM Mono', monospace", fontSize: "0.82rem", fontWeight: 500, color: "#F0F0F0", margin: "0 0 4px", lineHeight: 1.4 }}>
+          See Bitlance in action
+        </p>
+        <p style={{ fontFamily: "DM Sans, sans-serif", fontSize: "0.75rem", color: "#888", margin: "0 0 12px", lineHeight: 1.5 }}>
+          Get a free 20-min strategy call — no commitment.
+        </p>
+
+        <button
+          onClick={() => { setShowDemoPopup(false); toggleWidget(); }}
+          style={{
+            width: "100%",
+            background: "#26CECE",
+            color: "#0A0A0A",
+            fontFamily: "'DM Mono', monospace",
+            fontSize: "0.78rem",
+            fontWeight: 700,
+            padding: "9px 14px",
+            border: "none",
+            borderRadius: 8,
+            cursor: "pointer",
+            letterSpacing: "0.03em",
+          }}
+        >
+          Book a Free Demo →
+        </button>
+      </div>
 
       {/* ── BUBBLE BUTTON (bottom-right fixed) ── */}
       <button
@@ -870,16 +936,16 @@ export default function BitlanceChatbot({ isOpen: externalIsOpen, onToggle }) {
 // 🎨  STYLES  ─ all inline, matching original CSS variables exactly
 // ─────────────────────────────────────────────────────────────────────────────
 const C = {
-  brand: "#5B4FE8",
-  brandDark: "#3D31CC",
-  brandGlow: "rgba(91,79,232,0.35)",
-  accent: "#00E5A0",
-  bg: "#0C0B14",
-  surface: "#141220",
-  surface2: "#1D1A2F",
-  border: "rgba(255,255,255,0.07)",
-  text: "#F0EEF8",
-  muted: "#7B78A0",
+  brand: "#26CECE",
+  brandDark: "#1AAFAF",
+  brandGlow: "rgba(38,206,206,0.25)",
+  accent: "#26CECE",
+  bg: "#0A0A0A",
+  surface: "#111111",
+  surface2: "#1A1A1A",
+  border: "#1E1E1E",
+  text: "#F0F0F0",
+  muted: "#888888",
 };
 
 const styles = {
@@ -904,7 +970,7 @@ const styles = {
     width: "var(--cb-widget-width)", maxHeight: "var(--cb-widget-max-height)",
     background: C.surface, border: `1px solid ${C.border}`,
     borderRadius: 18,
-    boxShadow: "0 24px 80px rgba(0,0,0,0.6), 0 0 0 1px rgba(91,79,232,0.1)",
+    boxShadow: "0 24px 80px rgba(0,0,0,0.7), 0 0 0 1px rgba(38,206,206,0.08)",
     display: "flex", flexDirection: "column", zIndex: 9998, overflow: "hidden",
     transition: "transform 0.35s cubic-bezier(0.34,1.3,0.64,1), opacity 0.25s ease",
   },
@@ -921,12 +987,12 @@ const styles = {
     fontSize: "1.2rem", border: "2px solid rgba(255,255,255,0.2)",
   },
   headerInfo: { flex: 1 },
-  headerName: { fontFamily: "Syne, sans-serif", fontSize: "0.95rem", fontWeight: 700, color: "#fff", display: "block" },
+  headerName: { fontFamily: "'DM Mono', monospace", fontSize: "0.95rem", fontWeight: 700, color: "#fff", display: "block" },
   headerSub: { fontSize: "0.72rem", color: "rgba(255,255,255,0.7)", display: "flex", alignItems: "center", gap: 5 },
   onlineDot: { width: 6, height: 6, background: C.accent, borderRadius: "50%", animation: "pulse 2s infinite" },
   // ── Progress ──
   progressBg: { height: 3, background: "rgba(255,255,255,0.1)", flexShrink: 0 },
-  progressFill: { height: "100%", background: `linear-gradient(90deg, ${C.accent}, #00c87a)`, transition: "width 0.6s ease" },
+  progressFill: { height: "100%", background: C.brand, transition: "width 0.6s ease" },
   // ── Messages ──
   messages: {
     flex: 1, overflowY: "auto", padding: "18px 16px 10px",
@@ -942,37 +1008,37 @@ const styles = {
   dot: { width: 7, height: 7, borderRadius: "50%", background: C.muted, display: "inline-block", animation: "bounce 1.2s infinite" },
   // ── Option buttons ──
   optionWrap: { display: "flex", flexDirection: "column", gap: 6 },
-  optBtn: { background: "transparent", border: `1px solid rgba(91,79,232,0.35)`, color: "#c4c0f0", fontFamily: "DM Sans, sans-serif", fontSize: "0.83rem", padding: "9px 14px", borderRadius: 10, cursor: "pointer", textAlign: "left", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, transition: "all 0.15s" },
+  optBtn: { background: "transparent", border: `1px solid #2A2A2A`, color: "#C0C0C0", fontFamily: "DM Sans, sans-serif", fontSize: "0.83rem", padding: "9px 14px", borderRadius: 10, cursor: "pointer", textAlign: "left", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, transition: "all 0.15s" },
   optBtnSingle: {},
   optBtnMulti: { paddingRight: 40 },
-  optBtnChecked: { background: "rgba(91,79,232,0.2)", borderColor: C.brand, color: "#fff" },
-  checkbox: { width: 18, height: 18, border: `2px solid rgba(91,79,232,0.5)`, borderRadius: 5, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "0.7rem", color: "#fff", flexShrink: 0 },
+  optBtnChecked: { background: "rgba(38,206,206,0.12)", borderColor: C.brand, color: "#fff" },
+  checkbox: { width: 18, height: 18, border: `2px solid rgba(38,206,206,0.4)`, borderRadius: 5, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "0.7rem", color: "#fff", flexShrink: 0 },
   checkboxChecked: { background: C.brand, borderColor: C.brand },
-  confirmBtn: { marginTop: 4, background: `linear-gradient(135deg,${C.brand},${C.brandDark})`, color: "#fff", fontFamily: "Syne, sans-serif", fontSize: "0.85rem", fontWeight: 700, padding: "11px 18px", border: "none", borderRadius: 10, cursor: "pointer", width: "100%", opacity: 0.4, pointerEvents: "none", letterSpacing: "0.02em" },
+  confirmBtn: { marginTop: 4, background: `linear-gradient(135deg,${C.brand},${C.brandDark})`, color: "#fff", fontFamily: "'DM Mono', monospace", fontSize: "0.85rem", fontWeight: 700, padding: "11px 18px", border: "none", borderRadius: 10, cursor: "pointer", width: "100%", opacity: 0.4, pointerEvents: "none", letterSpacing: "0.02em" },
   confirmBtnActive: { opacity: 1, pointerEvents: "all" },
   // ── Contact form ──
   contactForm: { background: C.surface2, border: `1px solid ${C.border}`, borderRadius: 14, padding: 14, display: "flex", flexDirection: "column", gap: 9 },
   cfInput: { background: C.bg, border: `1px solid ${C.border}`, color: C.text, fontFamily: "DM Sans, sans-serif", fontSize: "0.85rem", padding: "9px 12px", borderRadius: 9, outline: "none", width: "100%" },
   cfInputError: { borderColor: "#ff6b6b" },
-  cfBtn: { background: `linear-gradient(135deg,${C.brand},${C.brandDark})`, color: "#fff", fontFamily: "Syne, sans-serif", fontSize: "0.85rem", fontWeight: 700, padding: 10, border: "none", borderRadius: 9, cursor: "pointer", letterSpacing: "0.02em" },
+  cfBtn: { background: `linear-gradient(135deg,${C.brand},${C.brandDark})`, color: "#fff", fontFamily: "'DM Mono', monospace", fontSize: "0.85rem", fontWeight: 700, padding: 10, border: "none", borderRadius: 9, cursor: "pointer", letterSpacing: "0.02em" },
   // ── Calendly CTA ──
-  ctaCard: { background: `linear-gradient(135deg,rgba(0,229,160,0.1),rgba(91,79,232,0.15))`, border: `1px solid rgba(0,229,160,0.3)`, borderRadius: 14, padding: 16, textAlign: "center" },
+  ctaCard: { background: `rgba(38,206,206,0.06)`, border: `1px solid rgba(38,206,206,0.2)`, borderRadius: 14, padding: 16, textAlign: "center" },
   ctaMsg: { fontSize: "0.82rem", color: C.muted, marginBottom: 11, lineHeight: 1.5, fontFamily: "DM Sans, sans-serif" },
-  ctaBtn: { display: "inline-flex", alignItems: "center", gap: 7, background: `linear-gradient(135deg,${C.accent},#00c87a)`, color: C.bg, fontFamily: "Syne, sans-serif", fontSize: "0.85rem", fontWeight: 700, padding: "11px 22px", borderRadius: 999, border: "none", cursor: "pointer", boxShadow: "0 4px 20px rgba(0,229,160,0.3)", letterSpacing: "0.02em" },
+  ctaBtn: { display: "inline-flex", alignItems: "center", gap: 7, background: C.brand, color: C.bg, fontFamily: "'DM Mono', monospace", fontSize: "0.85rem", fontWeight: 700, padding: "11px 22px", borderRadius: 999, border: "none", cursor: "pointer", boxShadow: `0 4px 20px rgba(38,206,206,0.3)`, letterSpacing: "0.02em" },
   // ── Calendly overlay ──
   calOverlay: { position: "absolute", inset: 0, zIndex: 100, background: C.surface, display: "flex", flexDirection: "column", borderRadius: 18, overflow: "hidden", transition: "transform 0.35s cubic-bezier(0.32,0.72,0,1)" },
-  calHeader: { background: `linear-gradient(135deg,${C.brandDark},${C.brand})`, padding: "14px 16px", display: "flex", alignItems: "center", justifyContent: "space-between", flexShrink: 0 },
-  calHeaderTitle: { fontFamily: "Syne, sans-serif", fontSize: "0.9rem", fontWeight: 700, color: "#fff" },
-  calBackBtn: { background: "rgba(255,255,255,0.15)", border: "none", color: "#fff", fontSize: "0.8rem", fontWeight: 600, padding: "5px 12px", borderRadius: 999, cursor: "pointer", fontFamily: "DM Sans, sans-serif" },
+  calHeader: { background: "#111111", borderBottom: `1px solid #1E1E1E`, padding: "14px 16px", display: "flex", alignItems: "center", justifyContent: "space-between", flexShrink: 0 },
+  calHeaderTitle: { fontFamily: "'DM Mono', monospace", fontSize: "0.9rem", fontWeight: 500, color: C.text },
+  calBackBtn: { background: "transparent", border: `1px solid #2A2A2A`, color: C.muted, fontSize: "0.8rem", fontWeight: 500, padding: "5px 12px", borderRadius: 999, cursor: "pointer", fontFamily: "DM Sans, sans-serif" },
   calLoading: { flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 14, position: "absolute", inset: "56px 0 0 0" },
-  calSpinner: { width: 32, height: 32, borderRadius: "50%", border: `3px solid ${C.border}`, borderTopColor: C.brand, animation: "spin 0.8s linear infinite" },
+  calSpinner: { width: 32, height: 32, borderRadius: "50%", border: `3px solid #2A2A2A`, borderTopColor: C.brand, animation: "spin 0.8s linear infinite" },
   calIframe: { flex: 1, width: "100%", border: "none", background: "#fff", minHeight: 0, transition: "opacity 0.3s" },
   // ── Booking confirmed ──
-  bcCard: { background: "linear-gradient(135deg,rgba(0,229,160,0.12),rgba(91,79,232,0.18))", border: "1px solid rgba(0,229,160,0.35)", borderRadius: 16, padding: "22px 18px", textAlign: "center", display: "flex", flexDirection: "column", alignItems: "center", gap: 8 },
+  bcCard: { background: "rgba(38,206,206,0.06)", border: "1px solid rgba(38,206,206,0.2)", borderRadius: 16, padding: "22px 18px", textAlign: "center", display: "flex", flexDirection: "column", alignItems: "center", gap: 8 },
   bcIcon: { fontSize: "2.2rem" },
-  bcTitle: { fontFamily: "Syne, sans-serif", fontSize: "1.1rem", fontWeight: 800, color: C.accent },
+  bcTitle: { fontFamily: "'DM Mono', monospace", fontSize: "1.1rem", fontWeight: 700, color: C.brand },
   bcSub: { fontSize: "0.82rem", color: C.muted, lineHeight: 1.5, fontFamily: "DM Sans, sans-serif" },
-  bcLink: { marginTop: 6, display: "inline-block", border: "1px solid rgba(91,79,232,0.5)", color: "#a89fff", fontFamily: "Syne, sans-serif", fontSize: "0.8rem", fontWeight: 600, padding: "8px 18px", borderRadius: 999, textDecoration: "none" },
+  bcLink: { marginTop: 6, display: "inline-block", border: `1px solid rgba(38,206,206,0.35)`, color: C.brand, fontFamily: "'DM Mono', monospace", fontSize: "0.8rem", fontWeight: 600, padding: "8px 18px", borderRadius: 999, textDecoration: "none" },
   // ── Footer ──
   footer: { padding: "12px 14px", borderTop: `1px solid ${C.border}`, background: C.surface, flexShrink: 0, display: "flex", alignItems: "center", gap: 8 },
   footerInput: { flex: 1, background: C.surface2, border: `1px solid ${C.border}`, borderRadius: 999, padding: "9px 16px", color: C.text, fontFamily: "DM Sans, sans-serif", fontSize: "0.85rem", outline: "none" },

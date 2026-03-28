@@ -30,45 +30,45 @@ const SchedulePostModal = ({
     ];
 
     return (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-            <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4 font-mono">
+            <div className="bg-[#070707] border border-[#333] shadow-[8px_8px_0_0_#26cece] w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
                 {/* Header with Progress */}
-                <div className="p-6 border-b border-gray-200 dark:border-slate-700">
-                    <div className="flex items-center justify-between mb-6">
-                        <h3 className="text-2xl font-bold text-gray-900 dark:text-white">
-                            Schedule New Post
+                <div className="p-6 border-b border-[#333] bg-[#111111]">
+                    <div className="flex items-center justify-between mb-8">
+                        <h3 className="text-2xl font-extrabold font-['Space_Grotesk'] text-white uppercase tracking-tight pl-3 border-l-4 border-[#26cece]">
+                            Schedule Transmission
                         </h3>
                         <button
                             onClick={onClose}
-                            className="p-2 hover:bg-gray-100 dark:hover:bg-slate-700 rounded-xl transition-colors"
+                            className="p-2 border border-transparent hover:border-[#333] hover:text-red-500 hover:bg-red-500/10 text-gray-500 transition-colors"
                         >
-                            <X className="h-5 w-5 text-gray-500" />
+                            <X className="h-5 w-5" />
                         </button>
                     </div>
 
                     {/* Step Progress Bar */}
-                    <div className="flex items-center justify-between">
+                    <div className="flex items-center justify-between px-2">
                         {steps.map((step, idx) => (
                             <React.Fragment key={step.num}>
                                 <div className="flex flex-col items-center">
                                     <div
-                                        className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold transition-all ${currentStep > step.num
-                                            ? 'bg-green-500 text-white'
+                                        className={`w-8 h-8 border flex items-center justify-center text-[10px] font-bold transition-all uppercase tracking-widest ${currentStep > step.num
+                                            ? 'bg-[#333] border-[#26cece] text-white'
                                             : currentStep === step.num
-                                                ? 'bg-blue-600 text-white ring-4 ring-blue-100 dark:ring-blue-900/50'
-                                                : 'bg-gray-200 dark:bg-slate-700 text-gray-500'
+                                                ? 'bg-[#26cece] text-[#070707] border-[#070707] shadow-[2px_2px_0_0_#333]'
+                                                : 'bg-[#111111] border-[#333] text-gray-600'
                                             }`}
                                     >
                                         {currentStep > step.num ? (
-                                            <CheckCircle2 className="h-5 w-5" />
+                                            <CheckCircle2 className="h-4 w-4 text-[#26cece]" />
                                         ) : (
                                             step.num
                                         )}
                                     </div>
                                     <span
-                                        className={`text-xs mt-2 font-medium ${currentStep >= step.num
-                                            ? 'text-blue-600 dark:text-blue-400'
-                                            : 'text-gray-400'
+                                        className={`text-[10px] uppercase font-mono tracking-widest mt-3 font-bold ${currentStep >= step.num
+                                            ? 'text-[#26cece]'
+                                            : 'text-gray-600'
                                             }`}
                                     >
                                         {step.label}
@@ -76,9 +76,9 @@ const SchedulePostModal = ({
                                 </div>
                                 {idx < steps.length - 1 && (
                                     <div
-                                        className={`flex-1 h-1 mx-2 rounded-full transition-all ${currentStep > step.num
-                                            ? 'bg-green-500'
-                                            : 'bg-gray-200 dark:bg-slate-700'
+                                        className={`flex-1 h-px mx-4 transition-all ${currentStep > step.num
+                                            ? 'bg-[#26cece]'
+                                            : 'bg-[#333]'
                                             }`}
                                     />
                                 )}
@@ -88,20 +88,20 @@ const SchedulePostModal = ({
                 </div>
 
                 {/* Content Area */}
-                <div className="flex-1 overflow-y-auto p-6 custom-scrollbar">
+                <div className="flex-1 overflow-y-auto p-6 custom-scrollbar bg-[#070707]">
                     {children}
                 </div>
 
                 {/* Footer Navigation */}
-                <div className="p-6 border-t border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-900 flex justify-between">
+                <div className="p-6 border-t border-[#333] bg-[#070707] flex justify-between">
                     <button
                         onClick={() => {
                             if (currentStep > 1) setCurrentStep(currentStep - 1);
                             else onClose();
                         }}
-                        className="px-6 py-3 rounded-xl border border-gray-200 dark:border-slate-600 font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors"
+                        className="px-6 py-3 border border-[#333] bg-[#111111] text-gray-400 hover:bg-[#333] hover:text-white transition-all font-mono uppercase tracking-widest text-[10px]"
                     >
-                        {currentStep === 1 ? 'Cancel' : 'Back'}
+                        {currentStep === 1 ? 'Abort' : 'Revert'}
                     </button>
 
                     {currentStep < 5 ? (
@@ -116,17 +116,17 @@ const SchedulePostModal = ({
                                 }
                                 setCurrentStep(currentStep + 1);
                             }}
-                            className="px-6 py-3 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-medium hover:shadow-lg hover:shadow-blue-500/30 transition-all flex items-center gap-2"
+                            className="px-6 py-3 bg-[#26cece] border border-[#070707] text-[#070707] font-bold font-['Space_Grotesk'] uppercase tracking-widest text-[12px] hover:shadow-[4px_4px_0_0_#333] transition-all hover:-translate-y-1 flex items-center gap-2"
                         >
-                            Continue <ChevronRight className="h-4 w-4" />
+                            Proceed <ChevronRight className="h-4 w-4" />
                         </button>
                     ) : (
                         <button
                             onClick={onSubmit}
                             disabled={isSubmitting}
-                            className="px-8 py-3 rounded-xl bg-gradient-to-r from-green-600 to-emerald-600 text-white font-medium hover:shadow-lg hover:shadow-green-500/30 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="px-8 py-3 bg-[#26cece] border border-[#070707] font-bold font-['Space_Grotesk'] uppercase tracking-widest text-[#070707] hover:shadow-[4px_4px_0_0_#333] transition-all hover:-translate-y-1 disabled:opacity-50 disabled:hover:-translate-y-0 disabled:hover:shadow-none"
                         >
-                            {isSubmitting ? 'Scheduling...' : 'Schedule Post'}
+                            {isSubmitting ? 'Transmitting...' : 'Execute Queue'}
                         </button>
                     )}
                 </div>
