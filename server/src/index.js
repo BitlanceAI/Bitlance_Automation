@@ -29,14 +29,20 @@ const PORT = process.env.PORT || 3001;
 // Middleware
 // ── CORS ── allow origins from env var (comma-separated) or localhost in dev
 const allowedOrigins = process.env.ALLOWED_ORIGINS
-    ? process.env.ALLOWED_ORIGINS.split(',')
+    ? process.env.ALLOWED_ORIGINS.split(',').map(o => o.trim())
     : ['http://localhost:5173', 'http://localhost:5174', 'http://localhost:5176', 'http://localhost:3000', 'https://automation-dashboard-ten.vercel.app'];
+
+// Allow all Vercel preview deployments for this project
+const allowedOriginPatterns = [
+    /^https:\/\/automation-dashboard-.*-bitlanceais-projects\.vercel\.app$/,
+];
 
 app.use(cors({
     origin: (origin, callback) => {
         // Allow requests with no origin (mobile apps, curl, Postman)
         if (!origin) return callback(null, true);
         if (allowedOrigins.includes(origin)) return callback(null, true);
+        if (allowedOriginPatterns.some(pattern => pattern.test(origin))) return callback(null, true);
         return callback(new Error(`CORS: origin ${origin} not allowed`));
     },
     credentials: true,
