@@ -1,10 +1,11 @@
 import express from 'express';
-import { saveSettings, getSettings } from '../controllers/settingsController.js';
+import { saveSettings, getSettings, deleteSettings } from '../controllers/settingsController.js';
 import { authenticateUser } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
 
 router.post('/', authenticateUser, saveSettings);
-router.get('/', authenticateUser, getSettings);
+router.get('/:userId', authenticateUser, getSettings);
+router.delete('/:userId', authenticateUser, deleteSettings);
 
 export default router;

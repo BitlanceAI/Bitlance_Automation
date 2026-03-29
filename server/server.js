@@ -11,7 +11,7 @@ import axios from 'axios';
 import { encryptData, decryptData } from './utils/encryption.js';
 import metaRoutes from './src/routes/metaRoutes.js';
 import whatsappRoutes from './src/routes/whatsappRoutes.js';
-import blogRoutes from './src/routes/blogRoutes.js';
+import articleRoutes from './src/routes/articleRoutes.js';
 
 // Load environment variables
 dotenv.config();
@@ -42,7 +42,7 @@ app.use((req, res, next) => {
 // Mount Meta Ads API routes
 app.use('/api/meta', metaRoutes);
 app.use('/api/whatsapp', whatsappRoutes);
-app.use('/api/blogs', blogRoutes);
+app.use('/api', articleRoutes);
 
 const API_KEY = process.env.RETELL_API_KEY;
 
@@ -845,10 +845,10 @@ app.post('/api/credits/deduct', async (req, res) => {
 
 // ========== USER SETTINGS ENDPOINTS ==========
 
-// Save/Update User Google Sheets Settings
+// Save/Update User Settings (Google Sheets + WordPress)
 app.post('/api/user/settings', async (req, res) => {
     try {
-        const { userId, googleSheetId, googleServiceEmail, googlePrivateKey } = req.body;
+        const { userId, googleSheetId, googleServiceEmail, googlePrivateKey, wpUrl, wpUsername, wpAppPassword } = req.body;
 
         if (!userId) {
             return res.status(400).json({
@@ -857,30 +857,26 @@ app.post('/api/user/settings', async (req, res) => {
             });
         }
 
-        console.log(`💾 Saving Google Sheets settings for user: ${userId}`);
+        // Build update object with only provided fields (partial upsert — won't overwrite unrelated fields)
+        const updates = { user_id: userId, updated_at: new Date().toISOString() };
 
-        // Encrypt the private key before storing
-        const encryptedKey = googlePrivateKey ? encryptData(googlePrivateKey) : null;
+        if (googleSheetId !== undefined) updates.google_sheet_id = googleSheetId;
+        if (googleServiceEmail !== undefined) updates.google_service_email = googleServiceEmail;
+        if (googlePrivateKey) updates.google_private_key = encryptData(googlePrivateKey);
 
-        // Upsert settings to Supabase
-        const { data, error } = await supabase
+        if (wpUrl !== undefined) updates.wp_url = wpUrl || null;
+        if (wpUsername !== undefined) updates.wp_username = wpUsername || null;
+        if (wpAppPassword) updates.wp_app_password = encryptData(wpAppPassword);
+
+        console.log(`💾 Saving settings for user: ${userId} (fields: ${Object.keys(updates).filter(k => k !== 'user_id' && k !== 'updated_at').join(', ')})`);
+
+        const { error } = await supabase
             .from('user_settings')
-            .upsert({
-                user_id: userId,
-                google_sheet_id: googleSheetId,
-                google_service_email: googleServiceEmail,
-                google_private_key: encryptedKey,
-                updated_at: new Date().toISOString()
-            }, { onConflict: 'user_id' })
-            .select()
-            .single();
+            .upsert(updates, { onConflict: 'user_id' });
 
         if (error) throw error;
 
-        res.json({
-            success: true,
-            message: 'Settings saved successfully'
-        });
+        res.json({ success: true, message: 'Settings saved successfully' });
 
     } catch (error) {
         console.error('Error saving settings:', error);
@@ -930,7 +926,7 @@ app.get('/api/admin/users', async (req, res) => {
     }
 });
 
-// Get User Google Sheets Settings
+// Get User Settings (Google Sheets + WordPress)
 app.get('/api/user/settings/:userId', async (req, res) => {
     try {
         const { userId } = req.params;
@@ -939,40 +935,34 @@ app.get('/api/user/settings/:userId', async (req, res) => {
 
         const { data, error } = await supabase
             .from('user_settings')
-            .select('google_sheet_id, google_service_email, google_private_key')
+            .select('google_sheet_id, google_service_email, google_private_key, wp_url, wp_username, wp_app_password')
             .eq('user_id', userId)
             .single();
 
-        if (error && error.code !== 'PGRST116') { // PGRST116 = no rows returned
+        if (error && error.code !== 'PGRST116') {
             console.error('❌ Error fetching user settings:', error);
-            return res.status(500).json({
-                success: false,
-                error: error.message
-            });
+            return res.status(500).json({ success: false, error: error.message });
         }
 
         if (!data) {
-            return res.json({
-                success: true,
-                configured: false
-            });
+            return res.json({ success: true, configured: false });
         }
 
-        // Don't send back the private key, just confirm it exists
         res.json({
             success: true,
             configured: true,
             googleSheetId: data.google_sheet_id,
             googleServiceEmail: data.google_service_email,
-            hasPrivateKey: !!data.google_private_key
+            hasPrivateKey: !!data.google_private_key,
+            // WordPress — return URL and username only (never send password back)
+            wpUrl: data.wp_url || '',
+            wpUsername: data.wp_username || '',
+            wpConfigured: !!(data.wp_url && data.wp_username && data.wp_app_password),
         });
 
     } catch (error) {
         console.error('❌ Error in get settings endpoint:', error);
-        res.status(500).json({
-            success: false,
-            error: error.message
-        });
+        res.status(500).json({ success: false, error: error.message });
     }
 });
 

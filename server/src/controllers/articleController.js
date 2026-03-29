@@ -9,6 +9,7 @@ import axios from 'axios';
 import CreditLedgerService from '../services/creditLedgerService.js';
 import { sendPushNotification } from '../services/onesignalService.js';
 import { supabaseAdmin } from '../config/supabaseClient.js';
+import { decryptData } from '../utils/encryption.js';
 
 const ADMIN_ID = '0d396440-7d07-407c-89da-9cb93e353347';
 const PYTHON_API_URL = process.env.PYTHON_API_URL || 'http://localhost:8000';
@@ -24,6 +25,72 @@ const getTableName = (userId, targetTable) => {
 // Slug generator
 const generateSlug = (text) =>
     text.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+
+// Upload article to user's WordPress site (returns { link, postId } or null)
+const uploadToWordPress = async (wpUrl, wpUser, wpPassword, title, content, imageUrl) => {
+    try {
+        const base = wpUrl.replace(/\/+$/, '');
+        const authHeader = 'Basic ' + Buffer.from(`${wpUser}:${wpPassword}`).toString('base64');
+
+        // 1. Upload featured image to WP media library
+        let featuredMediaId = null;
+        if (imageUrl) {
+            try {
+                const imgRes = await axios.get(imageUrl, { responseType: 'arraybuffer', timeout: 15000 });
+                const imgBuffer = Buffer.from(imgRes.data);
+                const contentType = (imgRes.headers['content-type'] || 'image/png').split(';')[0];
+                const ext = contentType.split('/')[1] || 'png';
+                const filename = `blog-${Date.now()}.${ext}`;
+
+                // Use native FormData (Node 18+)
+                const formData = new FormData();
+                formData.append('file', new Blob([imgBuffer], { type: contentType }), filename);
+
+                const mediaRes = await fetch(`${base}/wp-json/wp/v2/media`, {
+                    method: 'POST',
+                    headers: { Authorization: authHeader },
+                    body: formData,
+                    signal: AbortSignal.timeout(30000),
+                });
+                if (mediaRes.ok) {
+                    const mediaData = await mediaRes.json();
+                    featuredMediaId = mediaData.id || null;
+                } else {
+                    console.warn('[WP Upload] Image upload returned:', mediaRes.status);
+                }
+            } catch (imgErr) {
+                console.warn('[WP Upload] Image upload failed (continuing without):', imgErr.message);
+            }
+        }
+
+        // 2. Create post as draft
+        const postPayload = {
+            title,
+            content,
+            status: 'draft',
+            excerpt: content.substring(0, 200).replace(/<[^>]*>/g, ''),
+            ...(featuredMediaId && { featured_media: featuredMediaId }),
+        };
+
+        const postRes = await fetch(`${base}/wp-json/wp/v2/posts`, {
+            method: 'POST',
+            headers: { Authorization: authHeader, 'Content-Type': 'application/json' },
+            body: JSON.stringify(postPayload),
+            signal: AbortSignal.timeout(30000),
+        });
+
+        if (!postRes.ok) {
+            const errText = await postRes.text();
+            throw new Error(`WP API ${postRes.status}: ${errText.substring(0, 200)}`);
+        }
+
+        const postData = await postRes.json();
+        return { link: postData.link, postId: postData.id };
+    } catch (err) {
+        console.error('[WP Upload] Failed:', err.message);
+        return null;
+    }
+};
 
 // Upload image URL (or base64 data URI) to Supabase Storage and return public URL
 const uploadImageToSupabase = async (imageUrl) => {
@@ -204,6 +271,35 @@ export const generateAndSaveArticleInternal = async ({
         ).catch(e => console.error('OneSignal Push fail:', e));
     }
 
+    // ── 7. Auto-upload to user's WordPress site (if credentials saved) ────────
+    let wpPostLink = null;
+    try {
+        const { data: userSettings } = await supabaseAdmin
+            .from('user_settings')
+            .select('wp_url, wp_username, wp_app_password')
+            .eq('user_id', userId)
+            .single();
+
+        if (userSettings?.wp_url && userSettings?.wp_username && userSettings?.wp_app_password) {
+            const decryptedPassword = decryptData(userSettings.wp_app_password);
+            console.log(`[WP Auto-Upload] Uploading article "${finalTopic}" to ${userSettings.wp_url}`);
+            const wpResult = await uploadToWordPress(
+                userSettings.wp_url,
+                userSettings.wp_username,
+                decryptedPassword,
+                seoTitle || finalTopic,
+                blogHtml,
+                imageUrl
+            );
+            if (wpResult) {
+                wpPostLink = wpResult.link;
+                console.log(`[WP Auto-Upload] Success: ${wpPostLink}`);
+            }
+        }
+    } catch (e) {
+        console.warn('[WP Auto-Upload] Skipped:', e.message);
+    }
+
     return {
         success: true,
         article: blogHtml,
@@ -216,6 +312,7 @@ export const generateAndSaveArticleInternal = async ({
         topic: finalTopic,
         creditsUsed: ledgerResult?.credits_deducted || 0,
         newBalance: ledgerResult?.new_balance || null,
+        wpPostLink,
     };
 };
 

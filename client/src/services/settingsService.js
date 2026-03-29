@@ -1,63 +1,61 @@
-import { supabase } from './supabaseClient';
-
 import API_BASE_URL from '../config.js';
+
+const getAuthHeaders = () => {
+    const token = localStorage.getItem('token');
+    return {
+        'Content-Type': 'application/json',
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    };
+};
 
 /**
  * Save or update user's Google Sheets settings
  */
 export async function saveUserSettings(userId, { googleSheetId, googleServiceEmail, googlePrivateKey }) {
-    try {
-        const response = await fetch(`${API_BASE_URL}/api/user/settings`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                userId,
-                googleSheetId,
-                googleServiceEmail,
-                googlePrivateKey
-            })
-        });
-
-        const data = await response.json();
-        return data;
-    } catch (error) {
-        console.error('Error saving user settings:', error);
-        throw error;
-    }
+    const response = await fetch(`${API_BASE_URL}/api/user/settings`, {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: JSON.stringify({ userId, googleSheetId, googleServiceEmail, googlePrivateKey })
+    });
+    return response.json();
 }
 
 /**
- * Get user's Google Sheets settings
+ * Save or update user's WordPress credentials
+ */
+export async function saveWordPressSettings(userId, { wpUrl, wpUsername, wpAppPassword }) {
+    const response = await fetch(`${API_BASE_URL}/api/user/settings`, {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: JSON.stringify({ userId, wpUrl, wpUsername, wpAppPassword })
+    });
+    return response.json();
+}
+
+/**
+ * Get all user settings (Google Sheets + WordPress)
  */
 export async function getUserSettings(userId) {
-    try {
-        const response = await fetch(`${API_BASE_URL}/api/user/settings/${userId}`);
-        const data = await response.json();
-        return data;
-    } catch (error) {
-        console.error('Error fetching user settings:', error);
-        throw error;
-    }
+    const response = await fetch(`${API_BASE_URL}/api/user/settings/${userId}`, {
+        headers: getAuthHeaders(),
+    });
+    return response.json();
 }
 
 /**
- * Delete user's Google Sheets settings
+ * Delete all user settings
  */
 export async function deleteUserSettings(userId) {
-    try {
-        const response = await fetch(`${API_BASE_URL}/api/user/settings/${userId}`, {
-            method: 'DELETE'
-        });
-        const data = await response.json();
-        return data;
-    } catch (error) {
-        console.error('Error deleting user settings:', error);
-        throw error;
-    }
+    const response = await fetch(`${API_BASE_URL}/api/user/settings/${userId}`, {
+        method: 'DELETE',
+        headers: getAuthHeaders(),
+    });
+    return response.json();
 }
 
 export default {
     saveUserSettings,
+    saveWordPressSettings,
     getUserSettings,
     deleteUserSettings
 };

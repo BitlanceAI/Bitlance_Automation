@@ -359,9 +359,13 @@ const SeoAgentPage = () => {
                 setWpUsername('');
                 setWpPassword('');
 
-                const message = sourceType === 'wordpress'
+                let message = sourceType === 'wordpress'
                     ? '✅ Article Generated, Uploaded to WordPress & Tracked in Google Sheets!'
                     : '✅ Article Generated & Saved!';
+                // Show auto-upload result if WordPress credentials are saved in settings
+                if (data.wpPostLink) {
+                    message = `✅ Article Generated & Auto-Uploaded to WordPress!\n\nDraft URL: ${data.wpPostLink}`;
+                }
                 alert(message);
             } else {
                 alert("Error: " + data.error);
