@@ -5,7 +5,7 @@ import { FullScreenSignup } from '../components/ui/full-screen-signup';
 import { trackSignup, trackSignupError } from '../lib/analytics';
 
 async function makeOutboundCall(phoneNumber, name, instructions, firstLine) {
-    const AGENT_API_URL = "http://pua3ipajtt6cplmdwh7z79eo.187.127.133.164.sslip.io/api/call/outbound";
+    const AGENT_API_URL = "https://pua3ipajtt6cplmdwh7z79eo.187.127.133.164.sslip.io/api/call/outbound";
 
     try {
         const response = await fetch(AGENT_API_URL, {
