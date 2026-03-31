@@ -29,3 +29,11 @@ stages:
         tags: |
           $(tag)
 
+    - task: DownloadBuildArtifacts@1
+      displayName: Publish an Artifact
+      inputs:
+        buildType: 'current'
+        downloadType: 'specific'
+        downloadPath: '$(System.ArtifactsDirectory)'
+        tags: |
+          $(tag)
