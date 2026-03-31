@@ -37,7 +37,7 @@ const BlogAgentSection = ({ onOpenBooking }) => {
     ];
 
     return (
-        <section className="py-24 relative overflow-hidden bg-[#070707]" style={{ borderTop: '1px solid #1E1E1E' }}>
+        <section className="py-12 relative overflow-hidden bg-[#070707]" style={{ borderTop: '1px solid #1E1E1E' }}>
             {/* Background glowing effects */}
             <div 
                 className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] rounded-full blur-[140px] pointer-events-none transition-opacity duration-1000 opacity-60"

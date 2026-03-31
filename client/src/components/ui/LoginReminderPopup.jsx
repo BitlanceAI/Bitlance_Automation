@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Sparkles, LogIn } from 'lucide-react';
+import { X, Sparkles } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 const LoginReminderPopup = ({ chatbotOpen }) => {
@@ -17,26 +17,20 @@ const LoginReminderPopup = ({ chatbotOpen }) => {
     }, []);
 
     useEffect(() => {
-        // Check if user has already closed the reminder
         const isClosed = localStorage.getItem('login_reminder_closed');
-
         if (!isClosed) {
-            // Show popup after 20 seconds
             const timer = setTimeout(() => {
                 setIsVisible(true);
             }, 20000);
-
             return () => clearTimeout(timer);
         }
     }, []);
 
     const handleClose = () => {
         setIsVisible(false);
-        // Persist the choice to hide it
         localStorage.setItem('login_reminder_closed', 'true');
     };
 
-    // On mobile/tablet, if the chatbot is open, hide the popup
     const shouldShow = isVisible && !(isSmallScreen && chatbotOpen);
 
     return (
@@ -47,50 +41,98 @@ const LoginReminderPopup = ({ chatbotOpen }) => {
                     animate={{ opacity: 1, y: 0, scale: 1, x: 0 }}
                     exit={{ opacity: 0, y: 20, scale: 0.9, transition: { duration: 0.2 } }}
                     className={`fixed z-[100] transition-all duration-300 ${
-                        isSmallScreen 
-                        ? "bottom-4 left-4 right-4 w-auto" 
+                        isSmallScreen
+                        ? "bottom-4 left-4 right-4 w-auto"
                         : "bottom-8 left-8 right-auto w-full max-w-[320px]"
                     }`}
                 >
-                    <div className={`relative bg-[#151515]/80 backdrop-blur-2xl border border-white/10 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] overflow-hidden ${
-                        isSmallScreen ? "p-5" : "p-6"
-                    }`}>
-                        {/* Background subtle glow */}
-                        <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/10 blur-[50px] pointer-events-none" />
+                    <div
+                        className={`relative overflow-hidden rounded-2xl backdrop-blur-2xl ${
+                            isSmallScreen ? "p-5" : "p-6"
+                        }`}
+                        style={{
+                            background: 'var(--surface)',
+                            border: '1px solid var(--border)',
+                            boxShadow: '0 20px 60px rgba(38,206,206,0.12), 0 4px 24px rgba(0,0,0,0.4)',
+                        }}
+                    >
+                        {/* Teal ambient glow */}
+                        <div
+                            className="absolute top-0 right-0 w-36 h-36 pointer-events-none"
+                            style={{ background: 'var(--accent)', opacity: 0.06, filter: 'blur(50px)' }}
+                        />
+                        {/* Top accent line */}
+                        <div
+                            className="absolute top-0 left-0 right-0 h-[2px]"
+                            style={{ background: 'linear-gradient(90deg, transparent, var(--accent), transparent)', opacity: 0.6 }}
+                        />
 
                         {/* Close Button */}
                         <button
                             onClick={handleClose}
-                            className="absolute top-4 right-4 text-white/40 hover:text-white transition-colors"
+                            className="absolute top-4 right-4 transition-colors"
+                            style={{ color: 'var(--muted)' }}
+                            onMouseEnter={e => e.currentTarget.style.color = 'var(--accent)'}
+                            onMouseLeave={e => e.currentTarget.style.color = 'var(--muted)'}
                         >
-                            <X size={18} />
+                            <X size={16} />
                         </button>
 
                         <div className="flex flex-col gap-4">
+                            {/* Header */}
                             <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 rounded-xl bg-indigo-500/20 flex items-center justify-center">
-                                    <Sparkles className="text-indigo-400" size={20} />
+                                <div
+                                    className="w-10 h-10 rounded-xl flex items-center justify-center"
+                                    style={{
+                                        background: 'var(--accent-muted)',
+                                        border: '1px solid color-mix(in srgb, var(--accent) 30%, transparent)',
+                                    }}
+                                >
+                                    <Sparkles size={18} style={{ color: 'var(--accent)' }} />
                                 </div>
                                 <div>
-                                    <h4 className="text-white font-bold text-sm tracking-tight">Ready to scale?</h4>
-                                    <p className="text-white/40 text-[11px] font-medium uppercase tracking-wider">Join 120+ businesses</p>
+                                    <h4 className="font-bold text-sm tracking-tight" style={{ color: 'var(--text)' }}>
+                                        Ready to scale?
+                                    </h4>
+                                    <p
+                                        className="text-[11px] font-semibold uppercase tracking-widest"
+                                        style={{ color: 'var(--accent)', opacity: 0.8 }}
+                                    >
+                                        Join 120+ Businesses
+                                    </p>
                                 </div>
                             </div>
 
-                            <p className="text-white/70 text-sm leading-relaxed">
+                            {/* Body */}
+                            <p className="text-sm leading-relaxed" style={{ color: 'var(--muted)', color: '#999' }}>
                                 Don't miss out on automated growth. Sign up or log in to access your custom AI dashboard.
                             </p>
 
-                            <div className="flex flex-col gap-2 mt-2">
+                            {/* CTAs */}
+                            <div className="flex flex-col gap-2 mt-1">
                                 <Link
                                     to="/login"
-                                    className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-xl text-center text-sm transition-all shadow-lg shadow-indigo-600/20"
+                                    className="btn-primary w-full py-3 rounded-xl text-center text-sm font-bold transition-all"
+                                    style={{ display: 'block' }}
                                 >
                                     Get Started
                                 </Link>
                                 <Link
                                     to="/signup"
-                                    className="w-full bg-white/5 hover:bg-white/10 text-white font-bold py-3 rounded-xl text-center text-sm transition-all border border-white/5"
+                                    className="w-full py-3 rounded-xl text-center text-sm font-semibold transition-all"
+                                    style={{
+                                        background: 'var(--surface-2)',
+                                        border: '1px solid var(--border)',
+                                        color: 'var(--text)',
+                                    }}
+                                    onMouseEnter={e => {
+                                        e.currentTarget.style.borderColor = 'var(--accent)';
+                                        e.currentTarget.style.color = 'var(--accent)';
+                                    }}
+                                    onMouseLeave={e => {
+                                        e.currentTarget.style.borderColor = 'var(--border)';
+                                        e.currentTarget.style.color = 'var(--text)';
+                                    }}
                                 >
                                     Create Account
                                 </Link>

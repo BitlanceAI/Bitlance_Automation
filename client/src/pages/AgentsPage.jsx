@@ -1,12 +1,21 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import AgentGrid from '../components/agent/AgentGrid';
 import { agents } from '../data/agentsData';
 import { Bot, Zap, Clock, ArrowRight } from 'lucide-react';
+import LoginPromptModal from '../components/ui/LoginPromptModal';
+import { Link } from 'react-router-dom';
 
 const AgentsPage = ({ onAgentSelect }) => {
     const { user } = useAuth();
+    const [loginModal, setLoginModal] = useState({ open: false, agentTitle: '' });
+
     const handleCardClick = (agent) => {
+        // If not logged in, show login prompt instead of navigating
+        if (!user) {
+            setLoginModal({ open: true, agentTitle: agent.title });
+            return;
+        }
         console.log('Agent clicked:', agent);
         if (onAgentSelect) {
             onAgentSelect(agent);
@@ -15,6 +24,13 @@ const AgentsPage = ({ onAgentSelect }) => {
 
     return (
         <div className="min-h-screen bg-[#070707] transition-colors duration-300">
+            {/* Login prompt modal for unauthenticated users */}
+            <LoginPromptModal
+                isOpen={loginModal.open}
+                onClose={() => setLoginModal({ open: false, agentTitle: '' })}
+                agentTitle={loginModal.agentTitle}
+            />
+
             {/* Header Section */}
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-32 pb-16">
                 <div className="text-center mb-16">
@@ -67,7 +83,7 @@ const AgentsPage = ({ onAgentSelect }) => {
                 {/* Grid Section */}
                 <AgentGrid agents={agents} onCardClick={handleCardClick} />
 
-                {/* CTA Section */}
+                {/* CTA Section for guests */}
                 {!user && (
                     <div className="mt-20 text-center animate-fade-in-up delay-300">
                         <div className="bg-[#111111] border border-[#1E1E1E] rounded-[2px] p-12 text-white relative overflow-hidden">
@@ -78,15 +94,18 @@ const AgentsPage = ({ onAgentSelect }) => {
                                 Start deploying AI agents today and transform your business operations
                                 with intelligent automation.
                             </p>
-                            <button className="
-                  relative z-10 flex items-center gap-2 mx-auto
-                  bg-[#26cece] text-[#070707] px-8 py-4 rounded-[2px] font-bold font-['Space_Grotesk'] uppercase tracking-widest
-                  hover:bg-white transition-all duration-200
-                  hover:-translate-y-1 hover:shadow-[4px_4px_0_0_#333]
-                ">
+                            <Link
+                                to="/login"
+                                className="
+                                  relative z-10 inline-flex items-center gap-2 mx-auto
+                                  bg-[#26cece] text-[#070707] px-8 py-4 rounded-[2px] font-bold font-['Space_Grotesk'] uppercase tracking-widest
+                                  hover:bg-white transition-all duration-200
+                                  hover:-translate-y-1 hover:shadow-[4px_4px_0_0_#333]
+                                "
+                            >
                                 Get Started Free
                                 <ArrowRight className="w-5 h-5" />
-                            </button>
+                            </Link>
                         </div>
                     </div>
                 )}

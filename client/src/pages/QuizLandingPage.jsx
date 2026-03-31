@@ -12,10 +12,137 @@
  * Avoids: purple-gradient SaaS, Inter, circular gauges, symmetrical card grids
  */
 
-import React, { useState, useEffect, useRef } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowRight, ChevronLeft, Download, CheckCircle } from 'lucide-react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { motion, AnimatePresence, useAnimationControls } from 'framer-motion';
+import { ArrowRight, ChevronLeft, Download, CheckCircle, LogIn, UserPlus, Zap } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import SEOHead from '../components/layout/SEOHead';
+
+// ── Floating ambient particles ────────────────────────────────────────────────
+const PARTICLES = Array.from({ length: 18 }, (_, i) => ({
+  id: i,
+  x: Math.random() * 100,
+  y: Math.random() * 100,
+  size: Math.random() * 3 + 1,
+  dur: Math.random() * 12 + 8,
+  delay: Math.random() * 6,
+  opacity: Math.random() * 0.25 + 0.05,
+}));
+
+function FloatingParticles({ accent }) {
+  return (
+    <div style={{ position: 'fixed', inset: 0, pointerEvents: 'none', overflow: 'hidden', zIndex: 0 }}>
+      {PARTICLES.map(p => (
+        <motion.div
+          key={p.id}
+          style={{
+            position: 'absolute',
+            left: `${p.x}%`,
+            top: `${p.y}%`,
+            width: p.size,
+            height: p.size,
+            borderRadius: '50%',
+            background: accent,
+            opacity: p.opacity,
+          }}
+          animate={{
+            y: [0, -40, 0],
+            x: [0, Math.random() > 0.5 ? 20 : -20, 0],
+            opacity: [p.opacity, p.opacity * 2.5, p.opacity],
+          }}
+          transition={{
+            duration: p.dur,
+            delay: p.delay,
+            repeat: Infinity,
+            ease: 'easeInOut',
+          }}
+        />
+      ))}
+      {/* Teal grid lines */}
+      <div style={{
+        position: 'absolute', inset: 0,
+        backgroundImage: `linear-gradient(${accent}08 1px, transparent 1px), linear-gradient(90deg, ${accent}08 1px, transparent 1px)`,
+        backgroundSize: '60px 60px',
+      }} />
+    </div>
+  );
+}
+
+// ── Confetti burst on answer pick ────────────────────────────────────────────
+function BurstDot({ x, y, color, angle, dist }) {
+  return (
+    <motion.div
+      style={{
+        position: 'fixed', left: x, top: y,
+        width: 6, height: 6, borderRadius: '50%',
+        background: color, pointerEvents: 'none', zIndex: 9999,
+      }}
+      initial={{ scale: 0, opacity: 1, x: 0, y: 0 }}
+      animate={{
+        scale: [0, 1, 0],
+        opacity: [1, 1, 0],
+        x: Math.cos(angle) * dist,
+        y: Math.sin(angle) * dist,
+      }}
+      transition={{ duration: 0.55, ease: 'easeOut' }}
+    />
+  );
+}
+
+function AnswerBurst({ pos, color, onDone }) {
+  const dots = Array.from({ length: 10 }, (_, i) => ({
+    angle: (i / 10) * Math.PI * 2,
+    dist: Math.random() * 60 + 30,
+    color: i % 3 === 0 ? '#ffffff' : color,
+  }));
+  useEffect(() => { const t = setTimeout(onDone, 600); return () => clearTimeout(t); }, [onDone]);
+  return <>{dots.map((d, i) => <BurstDot key={i} x={pos.x} y={pos.y} {...d} />)}</>;
+}
+
+// ── Canvas confetti rain (done screen) ───────────────────────────────────────
+function ConfettiRain({ accent }) {
+  const canvasRef = useRef(null);
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    const COLORS = [accent, '#ffffff', '#a78bfa', '#fbbf24', '#34d399'];
+    const pieces = Array.from({ length: 80 }, () => ({
+      x: Math.random() * canvas.width,
+      y: Math.random() * -canvas.height,
+      w: Math.random() * 8 + 4,
+      h: Math.random() * 4 + 2,
+      color: COLORS[Math.floor(Math.random() * COLORS.length)],
+      vy: Math.random() * 3 + 1.5,
+      vx: (Math.random() - 0.5) * 1.5,
+      rot: Math.random() * Math.PI * 2,
+      vr: (Math.random() - 0.5) * 0.15,
+      opacity: Math.random() * 0.7 + 0.3,
+    }));
+    let raf;
+    const draw = () => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      pieces.forEach(p => {
+        ctx.save();
+        ctx.globalAlpha = p.opacity;
+        ctx.translate(p.x + p.w / 2, p.y + p.h / 2);
+        ctx.rotate(p.rot);
+        ctx.fillStyle = p.color;
+        ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
+        ctx.restore();
+        p.x += p.vx; p.y += p.vy; p.rot += p.vr;
+        if (p.y > canvas.height) { p.y = -20; p.x = Math.random() * canvas.width; }
+      });
+      raf = requestAnimationFrame(draw);
+    };
+    draw();
+    const stop = setTimeout(() => cancelAnimationFrame(raf), 4000);
+    return () => { cancelAnimationFrame(raf); clearTimeout(stop); };
+  }, [accent]);
+  return <canvas ref={canvasRef} style={{ position: 'fixed', inset: 0, pointerEvents: 'none', zIndex: 9998 }} />;
+}
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:4000';
 
@@ -168,8 +295,11 @@ function OptionCard({ opt, selected, onClick, index }) {
   return (
     <motion.button
       onClick={onClick}
-      whileHover={{ x: 4 }}
-      whileTap={{ scale: 0.99 }}
+      initial={{ opacity: 0, x: -16 }}
+      animate={{ opacity: 1, x: 0 }}
+      transition={{ duration: 0.3, delay: index * 0.07, ease: [0.22, 1, 0.36, 1] }}
+      whileHover={{ x: 6, scale: 1.01 }}
+      whileTap={{ scale: 0.98 }}
       style={{
         width: '100%',
         display: 'flex',
@@ -257,8 +387,10 @@ export default function QuizLandingPage() {
   const [form, setForm]   = useState({ name: '', email: '', phone: '' });
   const [busy, setBusy]   = useState(false);
   const [err, setErr]     = useState('');
+  const [burst, setBurst] = useState(null); // { x, y } for answer burst effect
   const topRef = useRef(null);
   const up = () => topRef.current?.scrollIntoView({ behavior: 'smooth' });
+  const clearBurst = useCallback(() => setBurst(null), []);
 
   // Play entry sound on mount
   useEffect(() => {
@@ -317,8 +449,10 @@ export default function QuizLandingPage() {
   const meta = scoreMeta(pct);
   const displayed = useCountUp(stage === 'result' ? pct : 0, 1200);
 
-  const pickAnswer = (i) => {
-    playClickSound(); // Play sound effect on interaction
+  const pickAnswer = (i, e) => {
+    playClickSound();
+    // Capture click position for burst
+    if (e) setBurst({ x: e.clientX, y: e.clientY });
     const qId = QUESTIONS[qIdx].id;
     const next = { ...answers, [qId]: i };
     setAnswers(next);
@@ -382,6 +516,10 @@ export default function QuizLandingPage() {
         title="AI Automation Score Quiz | Get Your Free Blueprint"
         description="5 questions to discover your AI automation potential. Get a free personalised Blueprint delivered to your inbox."
       />
+      {/* Burst overlay */}
+      {burst && <AnswerBurst pos={burst} color={T.accent} onDone={clearBurst} />}
+      {/* Done screen confetti */}
+      {stage === 'done' && <ConfettiRain accent={T.accent} />}
 
       <div
         ref={topRef}
@@ -391,8 +529,11 @@ export default function QuizLandingPage() {
           color: T.text,
           fontFamily: T.font,
           paddingBottom: 80,
+          position: 'relative',
         }}
       >
+        {/* Ambient floating particles on every stage */}
+        <FloatingParticles accent={T.accent} />
         <AnimatePresence mode="wait">
 
           {/* ── INTRO ──────────────────────────────────────────────────────── */}
@@ -517,7 +658,7 @@ export default function QuizLandingPage() {
                     opt={opt}
                     index={i}
                     selected={answers[QUESTIONS[qIdx].id] === i}
-                    onClick={() => pickAnswer(i)}
+                    onClick={(e) => pickAnswer(i, e)}
                   />
                 ))}
               </div>
@@ -555,8 +696,35 @@ export default function QuizLandingPage() {
             >
               <Label>Your score</Label>
 
-              {/* Score — typographic, not a gauge */}
-              <div style={{ display: 'flex', alignItems: 'flex-end', gap: 16, margin: '16px 0 4px' }}>
+              {/* Score — typographic with pulsing glow ring */}
+              <div style={{ position: 'relative', display: 'inline-flex', alignItems: 'flex-end', gap: 16, margin: '16px 0 4px' }}>
+                {/* Pulsing ring */}
+                <motion.div
+                  style={{
+                    position: 'absolute',
+                    left: '50%', top: '50%',
+                    transform: 'translate(-50%, -50%)',
+                    width: 140, height: 140,
+                    borderRadius: '50%',
+                    border: `2px solid ${meta.color}`,
+                    pointerEvents: 'none',
+                  }}
+                  animate={{ scale: [1, 1.25, 1], opacity: [0.5, 0, 0.5] }}
+                  transition={{ duration: 2.2, repeat: Infinity, ease: 'easeInOut' }}
+                />
+                <motion.div
+                  style={{
+                    position: 'absolute',
+                    left: '50%', top: '50%',
+                    transform: 'translate(-50%, -50%)',
+                    width: 100, height: 100,
+                    borderRadius: '50%',
+                    border: `1px solid ${meta.color}50`,
+                    pointerEvents: 'none',
+                  }}
+                  animate={{ scale: [1, 1.5, 1], opacity: [0.4, 0, 0.4] }}
+                  transition={{ duration: 2.2, repeat: Infinity, ease: 'easeInOut', delay: 0.5 }}
+                />
                 <span style={{
                   fontFamily: T.mono,
                   fontWeight: 500,
@@ -838,24 +1006,61 @@ export default function QuizLandingPage() {
                 <Download size={18} /> Download Workbook Now
               </motion.a>
 
-              {/* Timeline — asymmetric left-aligned */}
-              <div style={{ textAlign: 'left', borderLeft: `2px solid ${T.border}`, paddingLeft: 24 }}>
-                {[
-                  { when: 'NOW',   text: 'Blueprint PDF + bonus checklist in your inbox' },
-                  { when: 'DAY 1', text: '3 quick-win automations you can build today' },
-                  { when: 'DAY 3', text: 'Sneak peek inside our AI Agent course' },
-                  { when: 'DAY 7', text: 'Exclusive subscriber-only offer — AI Agent training' },
-                ].map(({ when, text }) => (
-                  <div key={when} style={{ display: 'flex', gap: 20, marginBottom: 24, alignItems: 'flex-start' }}>
-                    <span style={{ fontFamily: T.mono, fontSize: 10, color: meta.color, letterSpacing: '0.12em', minWidth: 36, paddingTop: 2 }}>
-                      {when}
-                    </span>
-                    <span style={{ fontFamily: T.font, fontSize: 14, color: T.text, lineHeight: 1.5 }}>
-                      {text}
-                    </span>
-                  </div>
-                ))}
+              {/* Auth CTA */}
+              <div style={{ marginTop: 32, marginBottom: 8 }}>
+                <p style={{ fontFamily: T.mono, fontSize: 11, color: T.muted, letterSpacing: '0.12em', marginBottom: 16, textTransform: 'uppercase' }}>
+                  Ready to use your AI agents?
+                </p>
+                <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
+                  <Link
+                    to="/login"
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: 8,
+                      padding: '13px 28px',
+                      background: T.accent,
+                      color: T.bg,
+                      border: 'none',
+                      borderRadius: 2,
+                      fontFamily: T.font,
+                      fontWeight: 700,
+                      fontSize: 14,
+                      textDecoration: 'none',
+                      letterSpacing: '-0.01em',
+                      transition: 'background 0.15s',
+                    }}
+                    onMouseEnter={e => (e.currentTarget.style.background = '#35DFDF')}
+                    onMouseLeave={e => (e.currentTarget.style.background = T.accent)}
+                  >
+                    <LogIn size={15} /> Log In
+                  </Link>
+                  <Link
+                    to="/register"
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: 8,
+                      padding: '13px 28px',
+                      background: 'transparent',
+                      color: T.text,
+                      border: `1px solid ${T.border}`,
+                      borderRadius: 2,
+                      fontFamily: T.font,
+                      fontWeight: 600,
+                      fontSize: 14,
+                      textDecoration: 'none',
+                      letterSpacing: '-0.01em',
+                      transition: 'border-color 0.15s, color 0.15s',
+                    }}
+                    onMouseEnter={e => { e.currentTarget.style.borderColor = T.accent; e.currentTarget.style.color = T.accent; }}
+                    onMouseLeave={e => { e.currentTarget.style.borderColor = T.border; e.currentTarget.style.color = T.text; }}
+                  >
+                    <UserPlus size={15} /> Create Account
+                  </Link>
+                </div>
               </div>
+
 
               {/* Score recap */}
               <div style={{

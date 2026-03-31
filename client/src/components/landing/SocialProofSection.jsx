@@ -98,7 +98,7 @@ const StatCard = ({ delay, value, symbol, text, type, direction='up', start=0, c
 };
 
 const SocialProofSection = () => (
-    <section className="py-24 bg-[#070707] text-white relative overflow-hidden">
+    <section className="py-12 bg-[#070707] text-white relative overflow-hidden">
         {/* Single teal glow */}
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[300px] rounded-full blur-[120px] pointer-events-none"
             style={{ background:`${T}0A` }} />

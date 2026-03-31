@@ -72,22 +72,35 @@ const LandingPage = () => {
     const [isChatbotOpen, setIsChatbotOpen] = useState(false);
 
     return (
-        <div className="relative min-h-screen w-full overflow-hidden bg-[#030303] text-white">
+        <div className="relative min-h-screen w-full overflow-hidden bg-[#070707] text-white">
             <SEOHead
                 title="Bitlance Automation | AI Voice Bots & Business Automation"
                 description="Deploy autonomous AI agents, intelligent Voice Bots, and data-driven automation tools to capture leads, book appointments, and scale your business effortlessly."
                 canonicalUrl="https://www.bitlancetechhub.com/"
             />
-            {/* Background Gradients & Shapes */}
-            <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/[0.05] via-transparent to-rose-500/[0.05] blur-3xl pointer-events-none" />
+            {/* Global ambient glows — support glassmorphism across all sections */}
+            <div className="fixed inset-0 pointer-events-none overflow-hidden" style={{ zIndex: 0 }}>
+                {/* Teal core glow */}
+                <div className="absolute top-[20%] left-[15%] w-[500px] h-[500px] rounded-full blur-[180px]"
+                    style={{ background: 'rgba(38,206,206,0.06)' }} />
+                {/* Purple accent */}
+                <div className="absolute top-[60%] right-[10%] w-[400px] h-[400px] rounded-full blur-[160px]"
+                    style={{ background: 'rgba(139,92,246,0.05)' }} />
+                {/* Rose accent bottom */}
+                <div className="absolute bottom-[10%] left-[30%] w-[350px] h-[350px] rounded-full blur-[140px]"
+                    style={{ background: 'rgba(236,72,153,0.04)' }} />
+                {/* Subtle dot grid */}
+                <div className="absolute inset-0 opacity-[0.02]"
+                    style={{ backgroundImage: 'radial-gradient(circle, #26CECE 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
+            </div>
 
-            <div className="absolute inset-0 overflow-hidden pointer-events-none">
+            <div className="absolute inset-0 overflow-hidden pointer-events-none" style={{ zIndex: 0 }}>
                 <ElegantShape
                     delay={0.3}
                     width={600}
                     height={140}
                     rotate={12}
-                    gradient="from-indigo-500/[0.15]"
+                    gradient="from-cyan-500/[0.08]"
                     className="left-[-10%] md:left-[-5%] top-[15%] md:top-[20%]"
                 />
                 <ElegantShape
@@ -95,7 +108,7 @@ const LandingPage = () => {
                     width={500}
                     height={120}
                     rotate={-15}
-                    gradient="from-rose-500/[0.15]"
+                    gradient="from-violet-500/[0.07]"
                     className="right-[-5%] md:right-[0%] top-[70%] md:top-[75%]"
                 />
                 <ElegantShape
@@ -103,7 +116,7 @@ const LandingPage = () => {
                     width={300}
                     height={80}
                     rotate={-8}
-                    gradient="from-violet-500/[0.15]"
+                    gradient="from-violet-500/[0.06]"
                     className="left-[5%] md:left-[10%] bottom-[5%] md:bottom-[10%]"
                 />
                 <ElegantShape
@@ -111,16 +124,8 @@ const LandingPage = () => {
                     width={200}
                     height={60}
                     rotate={20}
-                    gradient="from-amber-500/[0.15]"
+                    gradient="from-cyan-500/[0.08]"
                     className="right-[15%] md:right-[20%] top-[10%] md:top-[15%]"
-                />
-                <ElegantShape
-                    delay={0.7}
-                    width={150}
-                    height={40}
-                    rotate={-25}
-                    gradient="from-cyan-500/[0.15]"
-                    className="left-[20%] md:left-[25%] top-[5%] md:top-[10%]"
                 />
             </div>
 

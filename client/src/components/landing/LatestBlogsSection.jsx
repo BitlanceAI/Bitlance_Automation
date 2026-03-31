@@ -35,7 +35,7 @@ const LatestBlogsSection = () => {
     }
 
     return (
-        <section className="py-24 bg-[#070707] border-t border-[#1E1E1E] relative z-10" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+        <section className="py-12 bg-[#070707] border-t border-[#1E1E1E] relative z-10" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
             <div className="max-w-7xl mx-auto px-6">
                 <div className="flex flex-col md:flex-row justify-between items-end mb-16 gap-8 text-left">
                     <div className="max-w-xl">

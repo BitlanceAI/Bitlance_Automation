@@ -38,9 +38,13 @@ const problems = [
 ];
 
 const ProblemSection = () => (
-    <section className="py-24 relative overflow-hidden bg-[#070707]">
-        <ScrollReveal className="max-w-7xl mx-auto px-6">
-            {/* Heading — left-aligned editorial */}
+    <section className="py-12 relative overflow-hidden bg-[#070707]">
+        {/* Glass ambient glow */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[300px] rounded-full blur-[140px] pointer-events-none"
+            style={{ background: `${T}08` }} />
+
+        <ScrollReveal className="max-w-7xl mx-auto px-6 relative z-10">
+            {/* Heading */}
             <div className="mb-16 max-w-2xl">
                 <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 10, letterSpacing: '0.18em', color: '#555', textTransform: 'uppercase' }}>
                     The Problem
@@ -63,17 +67,29 @@ const ProblemSection = () => (
                 </motion.p>
             </div>
 
-            {/* Cards */}
+            {/* Cards — glassmorphism */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 {problems.map((p, idx) => {
                     const Icon = p.icon;
                     return (
                         <TiltCard key={idx} className={`h-full ${idx === 3 ? 'hidden md:block' : ''}`}>
                             <div
-                                className="h-full flex flex-col p-6 rounded group transition-all duration-300"
-                                style={{ background: '#111', border: '1px solid #1E1E1E' }}
-                                onMouseEnter={e => (e.currentTarget.style.borderColor = `${T}40`)}
-                                onMouseLeave={e => (e.currentTarget.style.borderColor = '#1E1E1E')}
+                                className="h-full flex flex-col p-6 rounded-xl group transition-all duration-300"
+                                style={{
+                                    background: 'rgba(17,17,17,0.7)',
+                                    border: '1px solid rgba(255,255,255,0.06)',
+                                    backdropFilter: 'blur(16px)',
+                                    WebkitBackdropFilter: 'blur(16px)',
+                                    boxShadow: '0 4px 24px rgba(0,0,0,0.3)',
+                                }}
+                                onMouseEnter={e => {
+                                    e.currentTarget.style.borderColor = `${T}35`;
+                                    e.currentTarget.style.boxShadow = `0 4px 32px rgba(0,0,0,0.4), 0 0 20px ${T}12`;
+                                }}
+                                onMouseLeave={e => {
+                                    e.currentTarget.style.borderColor = 'rgba(255,255,255,0.06)';
+                                    e.currentTarget.style.boxShadow = '0 4px 24px rgba(0,0,0,0.3)';
+                                }}
                             >
                                 {/* Before */}
                                 <div className="mb-4">
@@ -86,11 +102,12 @@ const ProblemSection = () => (
                                 </div>
                                 {/* Divider */}
                                 <div className="flex items-center gap-3 my-4 opacity-30">
-                                    <div className="flex-1 h-px bg-[#1E1E1E]" />
-                                    <div className="w-6 h-6 rounded flex items-center justify-center" style={{ border: '1px solid #1E1E1E' }}>
+                                    <div className="flex-1 h-px" style={{ background: 'rgba(255,255,255,0.08)' }} />
+                                    <div className="w-6 h-6 rounded flex items-center justify-center"
+                                        style={{ border: '1px solid rgba(255,255,255,0.08)', background: 'rgba(38,206,206,0.05)' }}>
                                         <ArrowDown size={11} style={{ color: T }} />
                                     </div>
-                                    <div className="flex-1 h-px bg-[#1E1E1E]" />
+                                    <div className="flex-1 h-px" style={{ background: 'rgba(255,255,255,0.08)' }} />
                                 </div>
                                 {/* After */}
                                 <div>

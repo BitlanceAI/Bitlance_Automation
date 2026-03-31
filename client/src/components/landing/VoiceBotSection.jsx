@@ -10,7 +10,7 @@ const TEAL = '#26CECE';
 const VoiceBotSection = ({ onOpenBooking }) => {
     const navigate = useNavigate();
     return (
-        <section className="py-24 relative overflow-hidden bg-[#070707]">
+        <section className="py-12 relative overflow-hidden bg-[#070707]">
             {/* Background glowing effects */}
             <div 
                 className="absolute top-1/2 left-1/4 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full blur-[140px] pointer-events-none transition-opacity duration-1000"

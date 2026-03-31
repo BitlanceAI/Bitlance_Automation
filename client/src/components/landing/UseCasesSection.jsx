@@ -8,7 +8,7 @@ const TEAL = '#26CECE';
 
 const UseCasesSection = () => {
     return (
-        <section className="py-24 relative overflow-hidden bg-[#070707]" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+        <section className="py-12 relative overflow-hidden bg-[#070707]" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
             <ScrollReveal className="max-w-7xl mx-auto px-6">
                 <div className="text-center mb-16">
                     <motion.h2

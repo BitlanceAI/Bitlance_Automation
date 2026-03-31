@@ -2,8 +2,8 @@ import React, { useRef } from 'react';
 import { motion, useMotionValue, useSpring, useTransform } from 'framer-motion';
 import ScrollReveal from '../ui/ScrollReveal';
 
-const T = '#26CECE';      // logo teal — only accent
-const T2 = '#1AA8A8';     // darker teal for SVG depth
+const T = '#26CECE';
+const T2 = '#1AA8A8';
 
 // SVG per step — teal palette only
 const StepAnim = ({ step }) => {
@@ -75,25 +75,32 @@ const Card3D = ({ step, title, desc }) => {
             style={{ rotateY: rY, rotateX: rX, transformStyle:'preserve-3d' }}
             className="relative h-full min-h-[420px] w-full cursor-pointer group"
         >
-            <div style={{ transform:'translateZ(60px)', transformStyle:'preserve-3d',
-                background:'#111', border:'1px solid #1E1E1E', borderRadius:4 }}
-                className="absolute inset-3 grid place-content-center transition-all duration-300 group-hover:border-[#26CECE33]">
+            <div style={{
+                transform: 'translateZ(60px)',
+                transformStyle: 'preserve-3d',
+                background: '#ffffff',
+                border: '1px solid #E8F8F8',
+                borderRadius: 12,
+                boxShadow: '0 4px 24px rgba(38,206,206,0.08)',
+            }}
+                className="absolute inset-3 grid place-content-center transition-all duration-300 group-hover:shadow-[0_8px_40px_rgba(38,206,206,0.18)] group-hover:border-[#26CECE50]"
+            >
                 <div className="text-center p-6 flex flex-col items-center justify-between h-full"
-                    style={{ transform:'translateZ(40px)' }}>
+                    style={{ transform: 'translateZ(40px)' }}>
                     <div>
-                        {/* Step number — DM Mono */}
-                        <div className="w-14 h-14 mx-auto rounded flex items-center justify-center text-xl font-bold mb-6"
-                            style={{ fontFamily:"'DM Mono',monospace", background:`${T}15`, border:`1px solid ${T}30`, color:T }}>
+                        {/* Step number */}
+                        <div className="w-14 h-14 mx-auto rounded-xl flex items-center justify-center text-xl font-bold mb-6"
+                            style={{ fontFamily: "'DM Mono',monospace", background: `${T}15`, border: `1px solid ${T}40`, color: T }}>
                             0{step}
                         </div>
-                        <h3 className="text-lg font-bold mb-3 text-white" style={{ fontFamily:"'Space Grotesk',sans-serif" }}>
+                        <h3 className="text-lg font-bold mb-3" style={{ fontFamily: "'Space Grotesk',sans-serif", color: '#0A0A0A' }}>
                             {title}
                         </h3>
-                        <p className="text-white/50 text-sm max-w-[230px] mx-auto leading-relaxed">{desc}</p>
+                        <p className="text-sm max-w-[230px] mx-auto leading-relaxed" style={{ color: '#666' }}>{desc}</p>
                     </div>
                     {/* Anim box */}
-                    <div className="h-36 w-full mt-6 rounded flex items-center justify-center relative overflow-hidden"
-                        style={{ background:'#0A0A0A', border:'1px solid #1E1E1E' }}>
+                    <div className="h-36 w-full mt-6 rounded-xl flex items-center justify-center relative overflow-hidden"
+                        style={{ background: '#F0FEFE', border: `1px solid ${T}20` }}>
                         <div className="w-20 h-20 relative z-10"><StepAnim step={step} /></div>
                     </div>
                 </div>
@@ -103,20 +110,31 @@ const Card3D = ({ step, title, desc }) => {
 };
 
 const HowItWorksSection = () => (
-    <section className="py-24 md:py-32 relative overflow-hidden bg-[#070707]">
-        <ScrollReveal className="max-w-7xl mx-auto px-6">
+    /* ── WHITE SECTION ── */
+    <section className="py-12 relative overflow-hidden bg-[#F8FFFE]">
+        {/* Top teal line */}
+        <div className="absolute top-0 left-0 right-0 h-[2px] pointer-events-none"
+            style={{ background: `linear-gradient(90deg, transparent, ${T}60, transparent)` }} />
+        {/* Subtle teal glow */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[400px] rounded-full blur-[140px] -z-0 pointer-events-none"
+            style={{ background: 'rgba(38,206,206,0.07)' }} />
+        {/* Dot grid */}
+        <div className="absolute inset-0 pointer-events-none opacity-[0.04]"
+            style={{ backgroundImage: `radial-gradient(circle, ${T} 1px, transparent 1px)`, backgroundSize: '32px 32px' }} />
+
+        <ScrollReveal className="max-w-7xl mx-auto px-6 relative z-10">
             {/* Heading */}
             <div className="mb-20 max-w-2xl">
-                <span style={{ fontFamily:"'DM Mono',monospace", fontSize:10, letterSpacing:'0.18em', color:'#555', textTransform:'uppercase' }}>
+                <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 10, letterSpacing: '0.18em', color: T, textTransform: 'uppercase' }}>
                     Process
                 </span>
-                <h2 className="mt-4 text-4xl md:text-5xl lg:text-6xl font-extrabold text-white leading-tight"
-                    style={{ fontFamily:"'Space Grotesk',sans-serif", letterSpacing:'-0.03em' }}>
+                <h2 className="mt-4 text-4xl md:text-5xl lg:text-6xl font-extrabold leading-tight"
+                    style={{ fontFamily: "'Space Grotesk',sans-serif", letterSpacing: '-0.03em', color: '#0A0A0A' }}>
                     Go live in{' '}
                     <span style={{ color: T }}>3 simple steps</span>
                 </h2>
-                <div className="mt-6" style={{ width:48, height:2, background:T }} />
-                <p className="mt-6 text-base text-white/40 leading-relaxed">
+                <div className="mt-6" style={{ width: 48, height: 2, background: T }} />
+                <p className="mt-6 text-base leading-relaxed" style={{ color: '#666' }}>
                     We handle the complexity. You get a fully trained AI agent ready to close deals.
                 </p>
             </div>
@@ -128,10 +146,6 @@ const HowItWorksSection = () => (
                     { step:3, title:'Launch & Optimise',    desc:'Go live. We monitor performance and tweak the AI for maximum ROI.' },
                 ].map(item => <Card3D key={item.step} {...item} />)}
             </div>
-
-            {/* Subtle teal background glow */}
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[300px] rounded-full blur-[120px] -z-0 pointer-events-none"
-                style={{ background:`${T}08` }} />
         </ScrollReveal>
     </section>
 );

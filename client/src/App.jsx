@@ -204,9 +204,7 @@ function App() {
               </AuthGuard>
             } />
             <Route path="/agents" element={
-              <AuthGuard>
-                <AgentsPage onAgentSelect={handleAgentSelect} />
-              </AuthGuard>
+              <AgentsPage onAgentSelect={handleAgentSelect} />
             } />
             <Route path="/dashboard/agents/social" element={
               <AuthGuard>
