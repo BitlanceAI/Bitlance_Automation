@@ -214,39 +214,44 @@ const BlogPage = () => {
                         console.error('Error with WordPress/Sheets:', wpError);
                         alert('⚠️ Article generated but WordPress upload or Sheets tracking failed: ' + wpError.message);
                     }
+
+                    setShowForm(false);
+
+                    // Reset form
+                    setTopic('');
+                    setKeywords('');
+                    setWordpressUrl('');
+                    setWordpressUsername('');
+                    setWordpressPassword('');
+
+                    alert('✅ Article Generated, Uploaded to WordPress & Tracked in Google Sheets!');
+                } else {
+                    const savedArticle = await blogService.saveArticle({
+                        topic,
+                        seoTitle: data.seoTitle || topic,
+                        content: data.article,
+                        imageUrl: data.imageUrl || null,
+                        keywords,
+                        language,
+                        style: writingStyle,
+                        length: articleLength,
+                        audience: targetAudience
+                    });
+
+                    console.log('Article saved to Supabase:', savedArticle);
+
+                    // Add to articles list and select it
+                    const newArticles = [savedArticle.article, ...articles];
+                    setArticles(newArticles);
+                    setSelectedArticle(savedArticle.article);
+                    setShowForm(false);
+
+                    // Reset form
+                    setTopic('');
+                    setKeywords('');
+
+                    alert('✅ Article Generated & Saved to Supabase!');
                 }
-
-                const savedArticle = await blogService.saveArticle({
-                    topic,
-                    seoTitle: data.seoTitle || topic,
-                    content: data.article,
-                    imageUrl: data.imageUrl || null,
-                    keywords,
-                    language,
-                    style: writingStyle,
-                    length: articleLength,
-                    audience: targetAudience
-                });
-
-                console.log('Article saved to Supabase:', savedArticle);
-
-                // Add to articles list and select it
-                const newArticles = [savedArticle.article, ...articles];
-                setArticles(newArticles);
-                setSelectedArticle(savedArticle.article);
-                setShowForm(false);
-
-                // Reset form
-                setTopic('');
-                setKeywords('');
-                setWordpressUrl('');
-                setWordpressUsername('');
-                setWordpressPassword('');
-
-                const message = sourceType === 'wordpress'
-                    ? '✅ Article Generated, Uploaded to WordPress & Tracked in Google Sheets!'
-                    : '✅ Article Generated & Saved to Supabase!';
-                alert(message);
             } else {
                 alert('❌ Error: ' + data.error);
             }

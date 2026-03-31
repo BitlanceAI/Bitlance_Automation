@@ -1,7 +1,9 @@
 import API_BASE_URL from '../config.js';
+import { supabase } from './supabaseClient.js';
 
-const getAuthHeaders = () => {
-    const token = localStorage.getItem('token');
+const getAuthHeaders = async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    const token = session?.access_token;
     return {
         'Content-Type': 'application/json',
         ...(token ? { Authorization: `Bearer ${token}` } : {}),
@@ -12,9 +14,10 @@ const getAuthHeaders = () => {
  * Save or update user's Google Sheets settings
  */
 export async function saveUserSettings(userId, { googleSheetId, googleServiceEmail, googlePrivateKey }) {
+    const headers = await getAuthHeaders();
     const response = await fetch(`${API_BASE_URL}/api/user/settings`, {
         method: 'POST',
-        headers: getAuthHeaders(),
+        headers,
         body: JSON.stringify({ userId, googleSheetId, googleServiceEmail, googlePrivateKey })
     });
     return response.json();
@@ -24,9 +27,10 @@ export async function saveUserSettings(userId, { googleSheetId, googleServiceEma
  * Save or update user's WordPress credentials
  */
 export async function saveWordPressSettings(userId, { wpUrl, wpUsername, wpAppPassword }) {
+    const headers = await getAuthHeaders();
     const response = await fetch(`${API_BASE_URL}/api/user/settings`, {
         method: 'POST',
-        headers: getAuthHeaders(),
+        headers,
         body: JSON.stringify({ userId, wpUrl, wpUsername, wpAppPassword })
     });
     return response.json();
@@ -36,9 +40,13 @@ export async function saveWordPressSettings(userId, { wpUrl, wpUsername, wpAppPa
  * Get all user settings (Google Sheets + WordPress)
  */
 export async function getUserSettings(userId) {
+    const headers = await getAuthHeaders();
     const response = await fetch(`${API_BASE_URL}/api/user/settings/${userId}`, {
-        headers: getAuthHeaders(),
+        headers,
     });
+    if (!response.ok) {
+        throw new Error(`Failed to fetch settings: ${response.statusText}`);
+    }
     return response.json();
 }
 
@@ -46,9 +54,10 @@ export async function getUserSettings(userId) {
  * Delete all user settings
  */
 export async function deleteUserSettings(userId) {
+    const headers = await getAuthHeaders();
     const response = await fetch(`${API_BASE_URL}/api/user/settings/${userId}`, {
         method: 'DELETE',
-        headers: getAuthHeaders(),
+        headers,
     });
     return response.json();
 }

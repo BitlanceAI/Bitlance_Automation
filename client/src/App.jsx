@@ -154,7 +154,7 @@ function App() {
       <AuthProvider>
         <WorkspaceProvider>
         <Toaster position="top-right" reverseOrder={false} />
-        <div className={isDashboard ? 'bg-gray-50 dark:bg-slate-900 min-h-screen transition-colors duration-300' : 'bg-gray-50 dark:bg-slate-900 min-h-screen transition-colors duration-300'}>
+        <div className={isDashboard ? 'bg-gray-50 dark:bg-slate-900 min-h-screen transition-colors duration-300' : 'bg-gray-50 dark:bg-slate-900 min-h-screen transition-colors duration-300 pb-20 md:pb-0'}>
 
 
           {/* Temporary Debug Banner
