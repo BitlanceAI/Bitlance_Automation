@@ -24,6 +24,7 @@ stages:
       displayName: Build an image
       inputs:
         command: build
+        arguments: --no-cache
         dockerfile: '$(Build.SourcesDirectory)/client/Dockerfile'
         tags: |
           $(tag)
