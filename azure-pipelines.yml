@@ -25,6 +25,6 @@ stages:
       inputs:
         command: build
         arguments: --no-cache
-        dockerfile: '$(Build.SourcesDirectory)/client/Dockerfile'
+        dockerfile: '$(Build.SourcesDirectory)/server/Dockerfile'
         tags: |
           $(tag)
