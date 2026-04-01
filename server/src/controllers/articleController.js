@@ -43,13 +43,14 @@ const uploadToWordPress = async (wpUrl, wpUser, wpPassword, title, content, imag
                 const filename = `blog-${Date.now()}.${ext}`;
 
                 // Use native FormData (Node 18+)
-                const formData = new FormData();
-                formData.append('file', new Blob([imgBuffer], { type: contentType }), filename);
-
                 const mediaRes = await fetch(`${base}/wp-json/wp/v2/media`, {
                     method: 'POST',
-                    headers: { Authorization: authHeader },
-                    body: formData,
+                    headers: {
+                        Authorization: authHeader,
+                        'Content-Type': contentType,
+                        'Content-Disposition': `attachment; filename="${filename}"`,
+                    },
+                    body: Buffer.from(imgBuffer),
                     signal: AbortSignal.timeout(30000),
                 });
                 if (mediaRes.ok) {
@@ -271,34 +272,10 @@ export const generateAndSaveArticleInternal = async ({
         ).catch(e => console.error('OneSignal Push fail:', e));
     }
 
-    // ── 7. Auto-upload to user's WordPress site (if credentials saved) ────────
+    // ── 7. WordPress Auto-Upload Disabled ─────────────────────────────────────
+    // User requested to NOT automatically post to WordPress upon generation. 
+    // They will manually upload using the "Upload to WordPress" button instead.
     let wpPostLink = null;
-    try {
-        const { data: userSettings } = await supabaseAdmin
-            .from('user_settings')
-            .select('wp_url, wp_username, wp_app_password')
-            .eq('user_id', userId)
-            .single();
-
-        if (userSettings?.wp_url && userSettings?.wp_username && userSettings?.wp_app_password) {
-            const decryptedPassword = decryptData(userSettings.wp_app_password);
-            console.log(`[WP Auto-Upload] Uploading article "${finalTopic}" to ${userSettings.wp_url}`);
-            const wpResult = await uploadToWordPress(
-                userSettings.wp_url,
-                userSettings.wp_username,
-                decryptedPassword,
-                seoTitle || finalTopic,
-                blogHtml,
-                imageUrl
-            );
-            if (wpResult) {
-                wpPostLink = wpResult.link;
-                console.log(`[WP Auto-Upload] Success: ${wpPostLink}`);
-            }
-        }
-    } catch (e) {
-        console.warn('[WP Auto-Upload] Skipped:', e.message);
-    }
 
     return {
         success: true,

@@ -113,6 +113,9 @@ app.use('/api/leads', leadsRoutes);
 import pushRoutes from './routes/pushRoutes.js';
 app.use('/api/push', pushRoutes);
 
+import wordpressRoutes from './routes/wordpressRoutes.js';
+app.use('/api/wordpress', wordpressRoutes);
+
 
 
 // Legacy routes handling

@@ -28,6 +28,7 @@ import {
 import blogService from '../services/blogService';
 import API_BASE_URL from '../config.js';
 import ProfileSelection from '../components/dashboard/ProfileSelection';
+import WordPressProfileSelection from '../components/dashboard/WordPressProfileSelection';
 
 // Panel components for tabs
 import PushNotificationPanel from '../components/seo/PushNotificationPanel';
@@ -82,9 +83,15 @@ const SeoAgentPage = () => {
     const [sourceType, setSourceType] = useState('manual'); // 'manual' or 'wordpress'
 
     // WordPress Integration State
-    const [wpUrl, setWpUrl] = useState('');
-    const [wpUsername, setWpUsername] = useState('');
-    const [wpPassword, setWpPassword] = useState('');
+    const [selectedWpProfile, setSelectedWpProfile] = useState(null);
+    const [interlinkUrl, setInterlinkUrl] = useState('');
+
+    const handleWpProfileSelect = (selection) => {
+        setSelectedWpProfile(selection);
+        if (selection.profileData?.wp_url) {
+            setInterlinkUrl(selection.profileData.wp_url);
+        }
+    };
 
     // Firebase Article State
     const [articles, setArticles] = useState([]);
@@ -175,13 +182,8 @@ const SeoAgentPage = () => {
         }
 
         // Validate WordPress credentials if WordPress source is selected
-        if (sourceType === 'wordpress' && !wpUrl.trim()) {
-            alert('Please enter WordPress website URL');
-            return;
-        }
-
-        if (sourceType === 'wordpress' && (!wpUsername.trim() || !wpPassword.trim())) {
-            alert('Please enter WordPress username and password');
+        if (sourceType === 'wordpress' && !selectedWpProfile) {
+            alert('Please select or provide WordPress credentials');
             return;
         }
 
@@ -202,14 +204,14 @@ const SeoAgentPage = () => {
                 tags: tags.split(',').map(t => t.trim()).filter(Boolean),
                 source_type: sourceType,
                 // WordPress
-                wp_url: wpUrl,
-                wp_username: wpUsername,
-                wp_password: wpPassword,
+                wp_url: sourceType === 'wordpress' && selectedWpProfile ? selectedWpProfile.profileData?.wp_url : '',
+                wp_username: '',
+                wp_password: '',
                 // Image
                 image_option: imageOption,
                 custom_image_url: customImageUrl,
-                // Admin Target Table
-                target_table: (user?.id === ADMIN_ID && isCompanyBlog) ? 'company_articles' : 'articles'
+                // Admin Target Table (Prevent company blog save if WordPress is selected for a client)
+                target_table: (user?.id === ADMIN_ID && isCompanyBlog && sourceType !== 'wordpress') ? 'company_articles' : 'articles'
             };
 
             // Handle Profile Logic (Insert into payload)
@@ -283,15 +285,53 @@ const SeoAgentPage = () => {
                 // If WordPress source, upload to WordPress and send to Google Sheets
                 if (sourceType === 'wordpress') {
                     try {
+                        // Extract profile data
+                        let targetWpUrl = '';
+                        let targetWpUser = '';
+                        let targetWpPassword = '';
+
+                        if (selectedWpProfile) {
+                            if (selectedWpProfile.type === 'existing') {
+                                // Assuming we pass the full profile data or the backend resolves it
+                                targetWpUrl = selectedWpProfile.profileData.wp_url;
+                                targetWpUser = selectedWpProfile.profileData.wp_username;
+                                targetWpPassword = selectedWpProfile.profileData.wp_app_password; // Ensure API handles this safely
+                            } else if (selectedWpProfile.type === 'manual') {
+                                targetWpUrl = selectedWpProfile.profileData.wp_url;
+                                targetWpUser = selectedWpProfile.profileData.wp_username;
+                                targetWpPassword = selectedWpProfile.profileData.wp_app_password;
+
+                                // Save new WordPress profile if requested
+                                if (selectedWpProfile.saveAsNew) {
+                                    try {
+                                        await fetch(`${API_BASE_URL}/api/wordpress/profiles`, {
+                                            method: 'POST',
+                                            headers: {
+                                                'Content-Type': 'application/json',
+                                                'Authorization': `Bearer ${token}`
+                                            },
+                                            body: JSON.stringify(selectedWpProfile.profileData)
+                                        });
+                                    } catch (err) {
+                                        console.error('Failed to save WP profile:', err);
+                                    }
+                                }
+                            }
+                        }
+
                         // Upload to WordPress
                         console.log('Uploading to WordPress...');
-                        const wpResponse = await fetch(`${API_BASE_URL}/api/upload-to-wordpress`, {
+                        const wpResponse = await fetch(`${API_BASE_URL}/api/wordpress/upload`, {
                             method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${token}`
+                            },
                             body: JSON.stringify({
-                                wpUrl: wpUrl,
-                                wpUser: wpUsername,
-                                wpPassword: wpPassword,
+                                wpUrl: targetWpUrl,
+                                wpUser: targetWpUser,
+                                wpPassword: targetWpPassword,
+                                profileId: selectedWpProfile?.type === 'existing' ? selectedWpProfile.profileId : null,
                                 title: data.seoTitle || topic,
                                 content: data.article,
                                 imageUrl: data.imageUrl
@@ -306,23 +346,9 @@ const SeoAgentPage = () => {
                             console.error('❌ WordPress upload failed:', wpData.error);
                             alert('⚠️ Article generated but WordPress upload failed: ' + wpData.error);
                         }
-
-                        // Send to Google Sheets for tracking
-                        await fetch(`${API_BASE_URL}/api/add-to-google-sheet`, {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({
-                                niche: topic,
-                                keywords: data.keywords || '',
-                                title: data.seoTitle || topic,
-                                wordpressUrl: wpUrl,
-                                userId: user.id // Use real authenticated user ID
-                            })
-                        });
-                        console.log('✅ Data sent to Google Sheets');
                     } catch (wpError) {
-                        console.error('Error with WordPress/Sheets:', wpError);
-                        alert('⚠️ Article generated but WordPress upload or Sheets tracking failed: ' + wpError.message);
+                        console.error('Error with WordPress:', wpError);
+                        alert('⚠️ Article generated but WordPress upload failed: ' + wpError.message);
                     }
                 }
 
@@ -354,13 +380,11 @@ const SeoAgentPage = () => {
                 setCurrentImageUrl(newArticle.imageUrl);
                 setArticles([newArticle, ...articles]);
 
-                // Reset WordPress fields
-                setWpUrl('');
-                setWpUsername('');
-                setWpPassword('');
+                // Reset WordPress profile selection
+                setSelectedWpProfile(null);
 
                 let message = sourceType === 'wordpress'
-                    ? '✅ Article Generated, Uploaded to WordPress & Tracked in Google Sheets!'
+                    ? '✅ Article Generated & Uploaded to WordPress!'
                     : '✅ Article Generated & Saved!';
                 // Show auto-upload result if WordPress credentials are saved in settings
                 if (data.wpPostLink) {
@@ -380,8 +404,8 @@ const SeoAgentPage = () => {
     };
 
     const handleUploadToWordPress = async () => {
-        if (!wpUrl || !wpUsername || !wpPassword) {
-            alert('Please provide WordPress credentials');
+        if (!selectedWpProfile) {
+            alert('Please select or provide WordPress credentials');
             return;
         }
         if (!currentArticle) {
@@ -391,14 +415,36 @@ const SeoAgentPage = () => {
 
         setIsUploading(true);
         try {
-            const response = await fetch(`${API_BASE_URL}/api/upload-to-wordpress`, {
+            // Get session token for authentication
+            const { data: { session } } = await supabase.auth.getSession();
+            const token = session?.access_token;
+
+            let targetWpUrl = '';
+            let targetWpUser = '';
+            let targetWpPassword = '';
+
+            if (selectedWpProfile.type === 'existing') {
+                targetWpUrl = selectedWpProfile.profileData.wp_url;
+                targetWpUser = selectedWpProfile.profileData.wp_username;
+                targetWpPassword = selectedWpProfile.profileData.wp_app_password;
+            } else if (selectedWpProfile.type === 'manual') {
+                targetWpUrl = selectedWpProfile.profileData.wp_url;
+                targetWpUser = selectedWpProfile.profileData.wp_username;
+                targetWpPassword = selectedWpProfile.profileData.wp_app_password;
+            }
+
+            const response = await fetch(`${API_BASE_URL}/api/wordpress/upload`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
                 body: JSON.stringify({
-                    wpUrl,
-                    wpUser: wpUsername,
-                    wpPassword,
-                    title: currentSeoTitle,
+                    wpUrl: targetWpUrl,
+                    wpUser: targetWpUser,
+                    wpPassword: targetWpPassword,
+                    profileId: selectedWpProfile.type === 'existing' ? selectedWpProfile.profileId : null,
+                    title: currentSeoTitle || currentArticle.substring(0, 50),
                     content: currentArticle,
                     imageUrl: currentImageUrl
                 })
@@ -574,51 +620,7 @@ const SeoAgentPage = () => {
 
                                     {/* WordPress Credentials (conditional) */}
                                     {sourceType === 'wordpress' && (
-                                        <div className="bg-[#070707] border border-[#333] rounded-[2px] p-5 space-y-4">
-                                            <div className="flex items-center gap-2 mb-4">
-                                                <span className="text-2xl">🌐</span>
-                                                <h3 className="text-lg font-bold text-[#26cece] font-['Space_Grotesk'] tracking-tight">WordPress Auto-Upload Settings</h3>
-                                            </div>
-
-                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                                <div>
-                                                    <label className="block text-[10px] font-mono tracking-widest uppercase text-gray-500 mb-2">
-                                                        WordPress Username *
-                                                    </label>
-                                                    <input
-                                                        type="text"
-                                                        value={wpUsername}
-                                                        onChange={(e) => setWpUsername(e.target.value)}
-                                                        placeholder="admin"
-                                                        className="w-full px-4 py-3 rounded-[2px] bg-[#111111] border border-[#333] focus:ring-0 focus:border-[#26cece] outline-none transition-all font-mono text-[14px] text-white placeholder-gray-600"
-                                                    />
-                                                </div>
-
-                                                <div>
-                                                    <label className="block text-[10px] font-mono tracking-widest uppercase text-gray-500 mb-2">
-                                                        Application Password *
-                                                    </label>
-                                                    <input
-                                                        type="password"
-                                                        value={wpPassword}
-                                                        onChange={(e) => setWpPassword(e.target.value)}
-                                                        placeholder="xxxx xxxx xxxx xxxx"
-                                                        className="w-full px-4 py-3 rounded-[2px] bg-[#111111] border border-[#333] focus:ring-0 focus:border-[#26cece] outline-none transition-all font-mono text-[14px] text-white placeholder-gray-600"
-                                                    />
-                                                </div>
-                                            </div>
-
-                                            <div className="bg-[#111111] border border-[#333] rounded-[2px] p-4 mt-4">
-                                                <p className="text-[12px] font-mono text-gray-400 flex items-start gap-3">
-                                                    <span className="text-[14px] leading-none mt-0.5">ℹ️</span>
-                                                    <span>
-                                                        <strong className="text-white">Auto-Upload Enabled:</strong> Article will be automatically uploaded to WordPress as a draft and tracked in Google Sheets (Niche | Keywords | Title).
-                                                        <br />
-                                                        Ensure you have configured Google Sheets in <Link to="/settings" className="text-[#26cece] hover:text-white underline font-bold transition-colors">Settings</Link>.
-                                                    </span>
-                                                </p>
-                                            </div>
-                                        </div>
+                                        <WordPressProfileSelection onProfileSelect={handleWpProfileSelect} />
                                     )}
 
                                     {/* Interlinking Section (Available for all modes) */}
@@ -628,8 +630,8 @@ const SeoAgentPage = () => {
                                         </label>
                                         <input
                                             type="url"
-                                            value={wpUrl}
-                                            onChange={(e) => setWpUrl(e.target.value)}
+                                            value={interlinkUrl}
+                                            onChange={(e) => setInterlinkUrl(e.target.value)}
                                             placeholder="https://yourwebsite.com (Auto-fetches posts)"
                                             className="w-full px-4 py-3 rounded-[2px] bg-[#070707] border border-[#333] focus:ring-0 focus:border-[#26cece] outline-none transition-all text-white font-mono text-[14px] placeholder-gray-600"
                                         />
@@ -815,7 +817,7 @@ const SeoAgentPage = () => {
                                             />
                                         </div>
 
-                                        {user?.id === ADMIN_ID && (
+                                        {user?.id === ADMIN_ID && sourceType !== 'wordpress' && (
                                             <div className="md:col-span-2 flex items-start gap-4 p-5 bg-[#111111] rounded-[2px] border border-[#333]">
                                                 <input
                                                     type="checkbox"
@@ -890,7 +892,7 @@ const SeoAgentPage = () => {
 
                                     <button
                                         onClick={handleUploadToWordPress}
-                                        disabled={isUploading || !wpUrl || !wpUsername || !wpPassword}
+                                        disabled={isUploading || !selectedWpProfile}
                                         className="w-full bg-[#26cece] text-[#070707] font-bold font-['Space_Grotesk'] tracking-widest uppercase px-6 py-4 rounded-[2px] hover:bg-white hover:-translate-y-1 hover:shadow-[4px_4px_0_0_#333] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:hover:bg-[#26cece] disabled:hover:shadow-none transition-all flex items-center justify-center gap-2"
                                     >
                                         {isUploading ? (

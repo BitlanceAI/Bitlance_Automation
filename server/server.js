@@ -12,6 +12,7 @@ import { encryptData, decryptData } from './utils/encryption.js';
 import metaRoutes from './src/routes/metaRoutes.js';
 import whatsappRoutes from './src/routes/whatsappRoutes.js';
 import articleRoutes from './src/routes/articleRoutes.js';
+import wordpressRoutes from './src/routes/wordpressRoutes.js';
 
 // Load environment variables
 dotenv.config();
@@ -23,7 +24,7 @@ const app = express();
 app.use(express.json());
 app.use(cors({
     origin: [
-        'http://localhost:5173', 
+        'http://localhost:5173',
         'https://automation-dashboard-ten.vercel.app'
     ],
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
@@ -42,6 +43,7 @@ app.use((req, res, next) => {
 // Mount Meta Ads API routes
 app.use('/api/meta', metaRoutes);
 app.use('/api/whatsapp', whatsappRoutes);
+app.use('/api/wordpress', wordpressRoutes);
 app.use('/api', articleRoutes);
 
 const API_KEY = process.env.RETELL_API_KEY;
@@ -686,83 +688,6 @@ app.post('/api/upload-to-wordpress', async (req, res) => {
     }
 });
 
-// Google Sheets Endpoint for WordPress Article Tracking
-app.post('/api/add-to-google-sheet', async (req, res) => {
-    try {
-        const { niche, keywords, title, wordpressUrl, userId } = req.body;
-
-        if (!userId) {
-            return res.status(400).json({
-                success: false,
-                error: 'User ID is required'
-            });
-        }
-
-        console.log('📊 Adding to Google Sheets:', { niche, keywords, title, userId });
-
-        // Fetch user's Google Sheets credentials from database
-        const { data: settings, error: settingsError } = await supabase
-            .from('user_settings')
-            .select('*')
-            .eq('user_id', userId)
-            .single();
-
-        if (settingsError || !settings) {
-            console.log('❌ Google Sheets not configured for user');
-            return res.status(400).json({
-                success: false,
-                error: 'Google Sheets not configured. Please add your credentials in Settings.'
-            });
-        }
-
-        if (!settings.google_sheet_id || !settings.google_service_email || !settings.google_private_key) {
-            return res.status(400).json({
-                success: false,
-                error: 'Incomplete Google Sheets configuration. Please check your Settings.'
-            });
-        }
-
-        // Decrypt the private key
-        const privateKey = decryptData(settings.google_private_key);
-
-        // Initialize Google Sheets API with user's credentials
-        const auth = new google.auth.GoogleAuth({
-            credentials: {
-                client_email: settings.google_service_email,
-                private_key: privateKey.replace(/\\n/g, '\n'),
-            },
-            scopes: ['https://www.googleapis.com/auth/spreadsheets'],
-        });
-
-        const sheets = google.sheets({ version: 'v4', auth });
-
-        // Prepare the row data: Niche | Keywords | Titles
-        const values = [[niche, keywords, title]];
-
-        await sheets.spreadsheets.values.append({
-            spreadsheetId: settings.google_sheet_id,
-            range: 'Sheet1!A:C', // Niche, Keywords, Titles
-            valueInputOption: 'USER_ENTERED',
-            requestBody: {
-                values,
-            },
-        });
-
-        console.log('✅ Successfully added to user Google Sheet');
-
-        res.json({
-            success: true,
-            message: 'Data successfully added to your Google Sheet',
-        });
-
-    } catch (error) {
-        console.error('❌ Error adding to Google Sheets:', error);
-        res.status(500).json({
-            success: false,
-            error: error.message
-        });
-    }
-});
 
 // ========== CREDIT SYSTEM ENDPOINTS ==========
 

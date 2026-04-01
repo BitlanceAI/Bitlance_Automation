@@ -104,7 +104,7 @@ const LoginReminderPopup = ({ chatbotOpen }) => {
                             </div>
 
                             {/* Body */}
-                            <p className="text-sm leading-relaxed" style={{ color: 'var(--muted)', color: '#999' }}>
+                            <p className="text-sm leading-relaxed" style={{ color: 'var(--muted)' }}>
                                 Don't miss out on automated growth. Sign up or log in to access your custom AI dashboard.
                             </p>
 
