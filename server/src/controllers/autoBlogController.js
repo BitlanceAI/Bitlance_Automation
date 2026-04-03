@@ -85,13 +85,13 @@ export const toggleCron = async (req, res) => {
 // Add a new auto blog entry to the queue (manual single topic)
 export const scheduleAutoBlog = async (req, res) => {
     try {
-        const { niche = '', title, keywords = '', delay_after_minutes } = req.body;
+        const { niche = '', title, keywords = '', delay_after_minutes, interlink_urls = '' } = req.body;
 
         if (!title) {
             return res.status(400).json({ success: false, error: 'Title is required' });
         }
 
-        const insertData = { niche, title, keywords, status: 'pending' };
+        const insertData = { niche, title, keywords, interlink_urls, status: 'pending' };
         if (delay_after_minutes) insertData.delay_after_minutes = delay_after_minutes;
 
         const { data, error } = await supabaseAdmin

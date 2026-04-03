@@ -43,6 +43,7 @@ export default function WpAutoQueuePanel() {
 
     // Add topic form
     const [newTitle, setNewTitle] = useState('');
+    const [newInterlinkUrls, setNewInterlinkUrls] = useState('');
     const [bulkTopics, setBulkTopics] = useState('');
     const [addMode, setAddMode] = useState('single'); // 'single' | 'bulk'
     const [submitting, setSubmitting] = useState(false);
@@ -149,11 +150,12 @@ export default function WpAutoQueuePanel() {
             const res = await fetch(`${API_BASE}/api/admin/auto-blog/schedule`, {
                 method: 'POST',
                 headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-                body: JSON.stringify({ title: newTitle.trim() }),
+                body: JSON.stringify({ title: newTitle.trim(), interlink_urls: newInterlinkUrls.trim() }),
             });
             const data = await res.json();
             if (data.success) {
                 setNewTitle('');
+                setNewInterlinkUrls('');
                 setSubmitMsg({ type: 'success', text: 'Topic added to queue!' });
                 fetchQueue();
             } else {
@@ -361,6 +363,16 @@ export default function WpAutoQueuePanel() {
                                 placeholder="e.g. How AI is Changing Real Estate in 2025"
                                 className="w-full px-3 py-2.5 bg-[#070707] border border-[#333] focus:border-[#26cece] outline-none rounded-[2px] text-white font-mono text-[13px] placeholder-gray-600"
                             />
+                            <div>
+                                <p className="text-[10px] font-mono tracking-widest uppercase text-gray-500 mb-1.5">Interlink URLs <span className="normal-case text-gray-600">(optional)</span></p>
+                                <textarea
+                                    value={newInterlinkUrls}
+                                    onChange={e => setNewInterlinkUrls(e.target.value)}
+                                    placeholder={"One URL per line to interlink in the article:\nhttps://yoursite.com/page-1\nhttps://yoursite.com/page-2"}
+                                    rows={3}
+                                    className="w-full px-3 py-2 bg-[#070707] border border-[#333] focus:border-[#26cece] outline-none rounded-[2px] text-white font-mono text-[12px] placeholder-gray-600 resize-none"
+                                />
+                            </div>
                             <button
                                 type="submit"
                                 disabled={submitting}

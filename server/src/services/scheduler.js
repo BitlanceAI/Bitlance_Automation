@@ -269,7 +269,7 @@ const checkAndPublishAutoBlogs = async () => {
                 category: 'Technology',
                 target_table: 'company_articles',
                 is_published: true, // Automatically publish generated blogs
-                wp_url: settings.website_url // Pass website_url for auto-interlinking
+                wp_url: blogEntry.interlink_urls || settings.website_url // Per-topic interlink URLs, fallback to global setting
             });
 
             if (result && result.success) {
