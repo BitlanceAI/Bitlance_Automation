@@ -2,6 +2,70 @@ import { createClient } from '@supabase/supabase-js';
 import MetaService from './metaService.js';
 import { decryptData } from '../../utils/encryption.js';
 
+// Auto-post a generated article to WordPress using a saved profile
+const autoPostToWordPress = async (supabase, wpProfileId, article) => {
+    const { data: profile, error } = await supabase
+        .from('wordpress_profiles')
+        .select('wp_url, wp_username, wp_app_password')
+        .eq('id', wpProfileId)
+        .single();
+
+    if (error || !profile) {
+        throw new Error(`WordPress profile ${wpProfileId} not found`);
+    }
+
+    const baseUrl = profile.wp_url.replace(/\/+$/, '');
+    const password = decryptData(profile.wp_app_password);
+    const authHeader = 'Basic ' + Buffer.from(`${profile.wp_username}:${password}`).toString('base64');
+
+    // Upload featured image if available
+    let featuredMediaId = null;
+    if (article.imageUrl) {
+        try {
+            const imgRes = await fetch(article.imageUrl);
+            const imgBuffer = await imgRes.arrayBuffer();
+            const contentType = (imgRes.headers.get('content-type') || 'image/jpeg').split(';')[0];
+            const ext = contentType.split('/')[1] || 'jpg';
+            const mediaRes = await fetch(`${baseUrl}/wp-json/wp/v2/media`, {
+                method: 'POST',
+                headers: {
+                    Authorization: authHeader,
+                    'Content-Type': contentType,
+                    'Content-Disposition': `attachment; filename="blog-image-${Date.now()}.${ext}"`,
+                },
+                body: Buffer.from(imgBuffer),
+            });
+            if (mediaRes.ok) {
+                const mediaData = await mediaRes.json();
+                featuredMediaId = mediaData.id;
+            }
+        } catch (imgErr) {
+            console.warn(`[Scheduler] WP image upload failed (continuing without image): ${imgErr.message}`);
+        }
+    }
+
+    const postData = {
+        title: article.title || article.seoTitle,
+        content: article.content || article.article,
+        status: 'publish',
+        excerpt: (article.content || article.article || '').replace(/<[^>]*>/g, '').substring(0, 200),
+        ...(featuredMediaId ? { featured_media: featuredMediaId } : {}),
+    };
+
+    const wpRes = await fetch(`${baseUrl}/wp-json/wp/v2/posts`, {
+        method: 'POST',
+        headers: { Authorization: authHeader, 'Content-Type': 'application/json' },
+        body: JSON.stringify(postData),
+    });
+
+    if (!wpRes.ok) {
+        const errText = await wpRes.text();
+        throw new Error(`WordPress API ${wpRes.status}: ${errText.substring(0, 300)}`);
+    }
+
+    return await wpRes.json();
+};
+
 let supabase;
 
 const CHECK_INTERVAL = 60 * 1000; // 1 minute
@@ -217,24 +281,36 @@ const checkAndPublishAutoBlogs = async () => {
                     .update({ status: 'completed' })
                     .eq('id', blogEntry.id);
 
-                // Get slug from the published article to build the notification URL
-                const publishedSlug = result.slug || null;
+                // Auto-post to WordPress if a profile is configured
+                if (settings.wp_profile_id) {
+                    try {
+                        const wpPost = await autoPostToWordPress(supabase, settings.wp_profile_id, result);
+                        console.log(`🌐 [Scheduler] Auto-posted to WordPress: ${wpPost.link}`);
+                    } catch (wpErr) {
+                        console.warn(`⚠️ [Scheduler] WordPress auto-post failed for "${blogEntry.title}": ${wpErr.message}`);
+                    }
+                }
 
-                // Send push notification via OneSignal to all subscribers
-                try {
-                    const siteBase = (process.env.APP_URL || 'https://www.bitlancetechhub.com').replace(/\/$/, '');
-                    const blogUrl = publishedSlug ? `${siteBase}/blogs/${publishedSlug}` : siteBase;
-                    await sendPushNotification(
-                        `📝 New Blog Post: ${blogEntry.title}`,
-                        blogEntry.niche
-                            ? `A new article on ${blogEntry.niche} is now live. Read it now!`
-                            : 'A new blog post is now live. Check it out!',
-                        blogUrl,
-                        result.imageUrl || undefined
-                    );
-                    console.log(`🔔 [Scheduler] OneSignal push sent for auto blog: "${blogEntry.title}"`);
-                } catch (notifyError) {
-                    console.warn(`⚠️ [Scheduler] OneSignal push failed for "${blogEntry.title}": ${notifyError.message}`);
+                // Skip OneSignal push when posting to an external WordPress site
+                if (!settings.wp_profile_id) {
+                    const publishedSlug = result.slug || null;
+                    try {
+                        const siteBase = (process.env.APP_URL || 'https://www.bitlancetechhub.com').replace(/\/$/, '');
+                        const blogUrl = publishedSlug ? `${siteBase}/blogs/${publishedSlug}` : siteBase;
+                        await sendPushNotification(
+                            `📝 New Blog Post: ${blogEntry.title}`,
+                            blogEntry.niche
+                                ? `A new article on ${blogEntry.niche} is now live. Read it now!`
+                                : 'A new blog post is now live. Check it out!',
+                            blogUrl,
+                            result.imageUrl || undefined
+                        );
+                        console.log(`🔔 [Scheduler] OneSignal push sent for auto blog: "${blogEntry.title}"`);
+                    } catch (notifyError) {
+                        console.warn(`⚠️ [Scheduler] OneSignal push failed for "${blogEntry.title}": ${notifyError.message}`);
+                    }
+                } else {
+                    console.log(`🔕 [Scheduler] Push skipped — WordPress auto-post mode for "${blogEntry.title}"`);
                 }
             }
         } catch (genError) {

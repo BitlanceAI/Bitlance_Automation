@@ -28,12 +28,14 @@ export const getSettings = async (req, res) => {
 // Update settings (is_enabled and/or delay_minutes)
 export const updateSettings = async (req, res) => {
     try {
-        const { is_enabled, delay_minutes, website_url } = req.body;
+        const { is_enabled, delay_minutes, website_url, wp_profile_id } = req.body;
 
         const updates = {};
         if (typeof is_enabled === 'boolean') updates.is_enabled = is_enabled;
         if (typeof delay_minutes === 'number' && delay_minutes > 0) updates.delay_minutes = delay_minutes;
         if (website_url !== undefined) updates.website_url = website_url;
+        // wp_profile_id: null clears the profile, a UUID sets it
+        if (wp_profile_id !== undefined) updates.wp_profile_id = wp_profile_id || null;
 
         if (Object.keys(updates).length === 0) {
             return res.status(400).json({ success: false, error: 'No valid fields to update' });

@@ -63,6 +63,7 @@ import BlogEditorPage from './pages/BlogEditorPage';
 
 
 import CookieDemoPage from './pages/CookieDemoPage';
+import ESignDemoPage from './pages/ESignDemoPage';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { WorkspaceProvider } from './context/WorkspaceContext';
 import AuthGuard from './components/auth/AuthGuard';
@@ -190,6 +191,7 @@ function App() {
             } />
 
             <Route path="/cookie-demo" element={<CookieDemoPage />} />
+            <Route path="/esign-demo" element={<ESignDemoPage />} />
 
             {/* Push & Blog Routes */}
             <Route path="/push/send" element={

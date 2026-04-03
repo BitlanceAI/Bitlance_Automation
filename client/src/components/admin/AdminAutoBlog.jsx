@@ -36,6 +36,8 @@ const AdminAutoBlog = () => {
     // Settings state
     const [settingsDelay, setSettingsDelay] = useState(300);
     const [settingsWebsiteUrl, setSettingsWebsiteUrl] = useState('');
+    const [settingsWpProfileId, setSettingsWpProfileId] = useState('');
+    const [wpProfiles, setWpProfiles] = useState([]);
     const [settingsSaving, setSettingsSaving] = useState(false);
     const [settingsMsg, setSettingsMsg] = useState({ type: '', text: '' });
 
@@ -68,17 +70,21 @@ const AdminAutoBlog = () => {
     // ────────────────────────────────────────────────
     const fetchSettings = useCallback(async () => {
         try {
-            const res = await fetch(`${API_BASE}/api/admin/auto-blog/settings`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-            const data = await res.json();
+            const [settingsRes, profilesRes] = await Promise.all([
+                fetch(`${API_BASE}/api/admin/auto-blog/settings`, { headers: { 'Authorization': `Bearer ${token}` } }),
+                fetch(`${API_BASE}/api/wordpress/profiles`, { headers: { 'Authorization': `Bearer ${token}` } }),
+            ]);
+            const data = await settingsRes.json();
+            const profilesData = await profilesRes.json();
             if (data.success && data.settings) {
                 setIsCronEnabled(data.settings.is_enabled ?? false);
                 setDelayMinutes(data.settings.delay_minutes ?? 300);
                 setSettingsDelay(data.settings.delay_minutes ?? 300);
                 setLastRunAt(data.settings.last_run_at ?? null);
                 setSettingsWebsiteUrl(data.settings.website_url ?? '');
+                setSettingsWpProfileId(data.settings.wp_profile_id ?? '');
             }
+            if (profilesData.success) setWpProfiles(profilesData.profiles || []);
         } catch (err) {
             console.error('Failed to fetch cron settings:', err);
         }
@@ -139,7 +145,7 @@ const AdminAutoBlog = () => {
             const res = await fetch(`${API_BASE}/api/admin/auto-blog/settings`, {
                 method: 'PUT',
                 headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
-                body: JSON.stringify({ delay_minutes: parseInt(settingsDelay, 10), is_enabled: isCronEnabled, website_url: settingsWebsiteUrl })
+                body: JSON.stringify({ delay_minutes: parseInt(settingsDelay, 10), is_enabled: isCronEnabled, website_url: settingsWebsiteUrl, wp_profile_id: settingsWpProfileId || null })
             });
             const data = await res.json();
             if (data.success) {
@@ -541,6 +547,31 @@ const AdminAutoBlog = () => {
                                 placeholder="https://yourwebsite.com"
                                 className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-gray-300 dark:border-slate-600 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 dark:text-white"
                             />
+                        </div>
+
+                        {/* WordPress Auto-Post Profile */}
+                        <div className="border-t border-gray-200 dark:border-slate-700 pt-6">
+                            <h4 className="font-bold text-gray-900 dark:text-white flex items-center gap-2 mb-1">
+                                🌐 WordPress Auto-Post
+                            </h4>
+                            <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
+                                After each article is generated, automatically publish it to your WordPress site.
+                            </p>
+                            <select
+                                value={settingsWpProfileId}
+                                onChange={e => setSettingsWpProfileId(e.target.value)}
+                                className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-gray-300 dark:border-slate-600 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 dark:text-white"
+                            >
+                                <option value="">— Disabled (don't post to WordPress) —</option>
+                                {wpProfiles.map(p => (
+                                    <option key={p.id} value={p.id}>{p.name} ({p.wp_url})</option>
+                                ))}
+                            </select>
+                            {wpProfiles.length === 0 && (
+                                <p className="text-xs text-amber-600 dark:text-amber-400 mt-2">
+                                    No WordPress profiles found. Add one in Blog Manager → WordPress settings.
+                                </p>
+                            )}
                         </div>
 
                         <div className="border-t border-gray-200 dark:border-slate-700 pt-6">

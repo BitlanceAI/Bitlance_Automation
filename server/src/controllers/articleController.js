@@ -149,35 +149,10 @@ export const generateAndSaveArticleInternal = async ({
     }
     let genData;
     try {
-        // If wp_url provided, pre-fetch articles from Supabase to use as interlinks
-        // (works for any site, not just WordPress)
-        let prebuiltInterlinks = [];
-        if (wp_url) {
-            try {
-                const { data: recentArticles } = await supabaseAdmin
-                    .from('company_articles')
-                    .select('seo_title, slug')
-                    .eq('is_published', true)
-                    .order('created_at', { ascending: false })
-                    .limit(10);
-                if (recentArticles?.length) {
-                    const siteBase = (process.env.APP_URL || 'https://www.bitlancetechhub.com').replace(/\/$/, '');
-                    prebuiltInterlinks = recentArticles.map(a => ({
-                        title: a.seo_title,
-                        link: `${siteBase}/blogs/${a.slug}`
-                    }));
-                    console.log(`[Interlinks] Passing ${prebuiltInterlinks.length} articles from Supabase for interlinking`);
-                }
-            } catch (e) {
-                console.warn('[Interlinks] Could not fetch Supabase articles:', e.message);
-            }
-        }
-
         const genRes = await axios.post(
             `${PYTHON_API_URL}/api/blog/generate`,
             {
-                topic, industry, keywords, language, style, length, audience, image_option, custom_image_url, wp_url,
-                interlinks: prebuiltInterlinks.length ? prebuiltInterlinks : undefined
+                topic, industry, keywords, language, style, length, audience, image_option, custom_image_url, wp_url
             },
             { headers: { Authorization: `Bearer ${token}` }, timeout: 300000 }
         );
@@ -261,8 +236,8 @@ export const generateAndSaveArticleInternal = async ({
         }
     }
 
-    // ── 6. Push notification (non-blocking) ───────────────────────────────────
-    if (is_published) {
+    // ── 6. Push notification — only for admin-published articles ─────────────
+    if (userId === ADMIN_ID && is_published) {
         const articleUrl = `${process.env.APP_URL || 'https://www.bitlancetechhub.com'}/blogs/${slug}`;
         sendPushNotification(
             `New Article: ${finalTopic}`,
