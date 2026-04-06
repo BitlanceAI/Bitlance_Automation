@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import Navbar from '../components/layout/Navbar';
-import { Plus, Edit3, Trash2, Eye, Calendar, Bell, Send, X, Upload, ExternalLink, CheckCircle, AlertCircle, ChevronRight, Globe } from 'lucide-react';
+import { Plus, Edit3, Trash2, Eye, Calendar, Bell, Send, X, Upload, ExternalLink, CheckCircle, AlertCircle, Globe } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
 import { toast } from 'react-hot-toast';
@@ -22,9 +22,10 @@ const BlogManagerPage = () => {
     const [wpProfiles, setWpProfiles] = useState([]);
     const [wpProfilesLoading, setWpProfilesLoading] = useState(false);
     const [wpSelectedProfileId, setWpSelectedProfileId] = useState(null);
-    const [wpModalView, setWpModalView] = useState('select'); // 'select' | 'add'
+    const [wpModalView, setWpModalView] = useState('select'); // 'select' | 'add' | 'edit'
     const [wpNewProfile, setWpNewProfile] = useState({ name: '', url: '', username: '', password: '' });
     const [wpSavingProfile, setWpSavingProfile] = useState(false);
+    const [wpEditProfile, setWpEditProfile] = useState(null); // { id, name, url, username, password }
 
     const ADMIN_ID = '0d396440-7d07-407c-89da-9cb93e353347';
     const isAdmin = user?.id === ADMIN_ID;
@@ -188,6 +189,37 @@ const BlogManagerPage = () => {
             }
         } catch (err) {
             toast.error(err.response?.data?.error || 'Failed to save profile');
+        } finally {
+            setWpSavingProfile(false);
+        }
+    };
+
+    const handleEditWpProfile = (profile) => {
+        setWpEditProfile({ id: profile.id, name: profile.name, url: profile.wp_url, username: profile.wp_username, password: '' });
+        setWpModalView('edit');
+    };
+
+    const handleUpdateWpProfile = async () => {
+        const { id, name, url, username, password } = wpEditProfile;
+        if (!name || !url || !username) {
+            toast.error('Name, URL, and username are required');
+            return;
+        }
+        setWpSavingProfile(true);
+        try {
+            const res = await axios.put(
+                `${API_BASE_URL}/api/wordpress/profiles/${id}`,
+                { name, wp_url: url, wp_username: username, ...(password ? { wp_app_password: password } : {}) },
+                { headers: { Authorization: `Bearer ${token}` } }
+            );
+            if (res.data.success) {
+                setWpProfiles(prev => prev.map(p => p.id === id ? res.data.profile : p));
+                setWpModalView('select');
+                setWpEditProfile(null);
+                toast.success('WordPress site updated!');
+            }
+        } catch (err) {
+            toast.error(err.response?.data?.error || 'Failed to update profile');
         } finally {
             setWpSavingProfile(false);
         }
@@ -521,6 +553,71 @@ const BlogManagerPage = () => {
                             </div>
                         )}
 
+                        {/* Edit profile form */}
+                        {!wpResult && !wpProfilesLoading && wpModalView === 'edit' && wpEditProfile && (
+                            <div className="space-y-3">
+                                <p className="text-xs text-gray-500 dark:text-gray-400">
+                                    Update your WordPress site details. Leave password blank to keep existing.
+                                </p>
+                                <div>
+                                    <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Profile Name</label>
+                                    <input
+                                        type="text"
+                                        value={wpEditProfile.name}
+                                        onChange={e => setWpEditProfile(p => ({ ...p, name: e.target.value }))}
+                                        className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-white text-sm"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">WordPress URL</label>
+                                    <input
+                                        type="url"
+                                        value={wpEditProfile.url}
+                                        onChange={e => setWpEditProfile(p => ({ ...p, url: e.target.value }))}
+                                        className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-white text-sm"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Username</label>
+                                    <input
+                                        type="text"
+                                        value={wpEditProfile.username}
+                                        onChange={e => setWpEditProfile(p => ({ ...p, username: e.target.value }))}
+                                        className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-white text-sm"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">New App Password <span className="text-gray-400">(optional)</span></label>
+                                    <input
+                                        type="password"
+                                        placeholder="Leave blank to keep current"
+                                        value={wpEditProfile.password}
+                                        onChange={e => setWpEditProfile(p => ({ ...p, password: e.target.value }))}
+                                        className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-white text-sm"
+                                    />
+                                </div>
+                                <div className="flex gap-3 pt-1">
+                                    <button
+                                        onClick={() => { setWpModalView('select'); setWpEditProfile(null); }}
+                                        className="flex-1 px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 text-gray-700 dark:text-gray-300 text-sm font-medium hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors"
+                                    >
+                                        Back
+                                    </button>
+                                    <button
+                                        onClick={handleUpdateWpProfile}
+                                        disabled={wpSavingProfile}
+                                        className="flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold transition-colors disabled:opacity-60"
+                                    >
+                                        {wpSavingProfile ? (
+                                            <><div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white" /> Saving...</>
+                                        ) : (
+                                            <><CheckCircle className="w-4 h-4" /> Save Changes</>
+                                        )}
+                                    </button>
+                                </div>
+                            </div>
+                        )}
+
                         {/* Select profile view */}
                         {!wpResult && !wpProfilesLoading && wpModalView === 'select' && wpProfiles.length === 0 && (
                             <div className="text-center py-6 space-y-3">
@@ -547,10 +644,10 @@ const BlogManagerPage = () => {
                                 <div className="space-y-2">
                                     <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">Select Site</p>
                                     {wpProfiles.map(profile => (
-                                        <button
+                                        <div
                                             key={profile.id}
                                             onClick={() => setWpSelectedProfileId(profile.id)}
-                                            className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg border text-left transition-colors group ${
+                                            className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg border text-left transition-colors group cursor-pointer ${
                                                 wpSelectedProfileId === profile.id
                                                     ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
                                                     : 'border-gray-200 dark:border-slate-600 hover:border-blue-300 dark:hover:border-blue-700'
@@ -569,13 +666,20 @@ const BlogManagerPage = () => {
                                                 <CheckCircle className="w-4 h-4 text-blue-600 dark:text-blue-400 flex-shrink-0" />
                                             )}
                                             <button
+                                                onClick={e => { e.stopPropagation(); handleEditWpProfile(profile); }}
+                                                className="opacity-0 group-hover:opacity-100 p-1 hover:text-blue-500 text-gray-400 transition-opacity ml-1"
+                                                title="Edit"
+                                            >
+                                                <Edit3 className="w-3.5 h-3.5" />
+                                            </button>
+                                            <button
                                                 onClick={e => { e.stopPropagation(); handleDeleteWpProfile(profile.id); }}
                                                 className="opacity-0 group-hover:opacity-100 p-1 hover:text-red-500 text-gray-400 transition-opacity ml-1"
                                                 title="Remove"
                                             >
                                                 <X className="w-3.5 h-3.5" />
                                             </button>
-                                        </button>
+                                        </div>
                                     ))}
                                 </div>
 

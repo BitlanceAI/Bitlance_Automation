@@ -243,7 +243,10 @@ export default function WpAutoQueuePanel() {
                         <select
                             value={[30,60,120,300,720,1440,2880,10080].includes(delayMinutes) ? delayMinutes : 'custom'}
                             onChange={e => {
-                                if (e.target.value === 'custom') return;
+                                if (e.target.value === 'custom') {
+                                    setDelayMinutes(0); // 0 is not a preset → shows custom input
+                                    return;
+                                }
                                 const v = parseInt(e.target.value, 10);
                                 setDelayMinutes(v);
                                 saveSettings({ delay_minutes: v });
@@ -266,16 +269,17 @@ export default function WpAutoQueuePanel() {
                                 <input
                                     type="number"
                                     min="1"
-                                    value={delayMinutes}
-                                    onChange={e => setDelayMinutes(Math.max(1, parseInt(e.target.value, 10) || 1))}
-                                    onBlur={() => saveSettings({ delay_minutes: delayMinutes })}
-                                    className="w-20 px-2 py-2 bg-[#070707] border border-[#26cece] focus:border-[#26cece] outline-none rounded-[2px] text-[#26cece] font-mono text-[13px] text-center"
+                                    placeholder="mins"
+                                    value={delayMinutes || ''}
+                                    onChange={e => setDelayMinutes(parseInt(e.target.value, 10) || 0)}
+                                    onBlur={() => { if (delayMinutes > 0) saveSettings({ delay_minutes: delayMinutes }); }}
+                                    className="w-20 px-2 py-2 bg-[#070707] border border-[#26cece] focus:border-[#26cece] outline-none rounded-[2px] text-[#26cece] font-mono text-[13px] text-center placeholder-gray-600"
                                 />
                                 <span className="text-[11px] font-mono text-gray-500">min</span>
                             </div>
                         )}
                     </div>
-                    {![30,60,120,300,720,1440,2880,10080].includes(delayMinutes) && (
+                    {![30,60,120,300,720,1440,2880,10080].includes(delayMinutes) && delayMinutes > 0 && (
                         <p className="text-[10px] font-mono text-[#26cece] mt-1">= {formatDelay(delayMinutes)}</p>
                     )}
                 </div>

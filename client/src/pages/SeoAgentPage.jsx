@@ -90,8 +90,9 @@ const SeoAgentPage = () => {
 
     const handleWpProfileSelect = (selection) => {
         setSelectedWpProfile(selection);
-        if (selection.profileData?.wp_url) {
-            setInterlinkUrl(selection.profileData.wp_url);
+        const profile = selection.profileData;
+        if (profile) {
+            setInterlinkUrl(profile.interlink_url || profile.wp_url || '');
         }
     };
 

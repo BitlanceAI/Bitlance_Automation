@@ -1,5 +1,5 @@
 import React from 'react';
-import { Globe, User, Key } from 'lucide-react';
+import { Globe, User, Key, Link } from 'lucide-react';
 
 const WordPressProfileForm = ({ formData, setFormData, showSaveOption = true, saveAsProfile, setSaveAsProfile }) => {
     const handleChange = (e) => {
@@ -81,6 +81,23 @@ const WordPressProfileForm = ({ formData, setFormData, showSaveOption = true, sa
                             className="w-full pl-10 px-4 py-2.5 rounded-[2px] bg-[#070707] border border-[#333] focus:ring-0 focus:border-[#26cece] outline-none transition-all text-white font-mono text-[14px] placeholder-gray-600"
                         />
                     </div>
+                </div>
+            </div>
+
+            <div>
+                <label className="block text-[10px] font-mono tracking-widest uppercase text-gray-500 mb-2">
+                    Interlinking URL <span className="normal-case text-gray-600">(optional — overrides site URL for internal links)</span>
+                </label>
+                <div className="relative">
+                    <Link className="absolute left-3 top-2.5 text-gray-500" size={18} />
+                    <input
+                        type="url"
+                        name="interlink_url"
+                        value={formData.interlink_url || ''}
+                        onChange={handleChange}
+                        placeholder="https://yoursite.com (if different from WP URL)"
+                        className="w-full pl-10 px-4 py-2.5 rounded-[2px] bg-[#070707] border border-[#333] focus:ring-0 focus:border-[#26cece] outline-none transition-all text-white font-mono text-[14px] placeholder-gray-600"
+                    />
                 </div>
             </div>
 

@@ -14,7 +14,7 @@ router.get('/profiles', authenticateUser, async (req, res) => {
         const userId = req.user.id;
         const { data, error } = await supabaseAdmin
             .from('wordpress_profiles')
-            .select('id, name, wp_url, wp_username, created_at')
+            .select('id, name, wp_url, wp_username, interlink_url, created_at')
             .eq('user_id', userId)
             .order('created_at', { ascending: true });
 
@@ -33,7 +33,7 @@ router.get('/profiles', authenticateUser, async (req, res) => {
 router.post('/profiles', authenticateUser, async (req, res) => {
     try {
         const userId = req.user.id;
-        const { name, wp_url, wp_username, wp_app_password } = req.body;
+        const { name, wp_url, wp_username, wp_app_password, interlink_url } = req.body;
 
         if (!name || !wp_url || !wp_username || !wp_app_password) {
             return res.status(400).json({ success: false, error: 'All fields are required' });
@@ -49,14 +49,57 @@ router.post('/profiles', authenticateUser, async (req, res) => {
                 wp_url: wp_url.replace(/\/+$/, ''),
                 wp_username,
                 wp_app_password: encryptedPassword,
+                interlink_url: interlink_url || null,
             })
-            .select('id, name, wp_url, wp_username, created_at')
+            .select('id, name, wp_url, wp_username, interlink_url, created_at')
             .single();
 
         if (error) throw error;
         res.json({ success: true, profile: data });
     } catch (error) {
         console.error('[WordPress] Save profile error:', error.message);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+/**
+ * PUT /api/wordpress/profiles/:id
+ * Updates an existing WordPress profile (only the owner can update).
+ */
+router.put('/profiles/:id', authenticateUser, async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const { id } = req.params;
+        const { name, wp_url, wp_username, wp_app_password, interlink_url } = req.body;
+
+        if (!name || !wp_url || !wp_username) {
+            return res.status(400).json({ success: false, error: 'name, wp_url, and wp_username are required' });
+        }
+
+        const updateData = {
+            name,
+            wp_url: wp_url.replace(/\/+$/, ''),
+            wp_username,
+            interlink_url: interlink_url || null,
+        };
+
+        // Only update password if provided
+        if (wp_app_password) {
+            updateData.wp_app_password = encryptData(wp_app_password);
+        }
+
+        const { data, error } = await supabaseAdmin
+            .from('wordpress_profiles')
+            .update(updateData)
+            .eq('id', id)
+            .eq('user_id', userId)
+            .select('id, name, wp_url, wp_username, interlink_url, created_at')
+            .single();
+
+        if (error) throw error;
+        res.json({ success: true, profile: data });
+    } catch (error) {
+        console.error('[WordPress] Update profile error:', error.message);
         res.status(500).json({ success: false, error: error.message });
     }
 });
