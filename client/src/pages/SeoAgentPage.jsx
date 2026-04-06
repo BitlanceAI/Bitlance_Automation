@@ -208,6 +208,7 @@ const SeoAgentPage = () => {
                 source_type: sourceType,
                 // WordPress
                 wp_url: sourceType === 'wordpress' && selectedWpProfile ? selectedWpProfile.profileData?.wp_url : '',
+                wp_api_url: interlinkUrl || null,  // custom interlinking URL — Python fetches existing posts from here
                 wp_username: '',
                 wp_password: '',
                 // Image

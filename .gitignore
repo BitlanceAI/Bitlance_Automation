@@ -63,3 +63,9 @@ yarn-error.log*
 # ===============================
 Ai-agents/
 seo-agent-video/
+
+# ===============================
+# Python Virtual Environment
+# ===============================
+myenv/
+**/myenv/

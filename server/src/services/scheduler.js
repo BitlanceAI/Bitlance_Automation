@@ -269,7 +269,19 @@ const checkAndPublishAutoBlogs = async () => {
                 category: 'Technology',
                 target_table: 'company_articles',
                 is_published: true, // Automatically publish generated blogs
-                wp_url: blogEntry.interlink_urls || settings.website_url // Per-topic interlink URLs, fallback to global setting
+                interlinks: await (async () => {
+                    // Fetch published admin articles from Supabase to use as interlinks
+                    const { data: articles } = await supabase
+                        .from('company_articles')
+                        .select('seo_title, slug')
+                        .eq('is_published', true)
+                        .order('created_at', { ascending: false })
+                        .limit(10);
+                    return (articles || []).map(a => ({
+                        title: a.seo_title || a.slug,
+                        link: `https://www.bitlancetechhub.com/blogs/${a.slug}`
+                    }));
+                })()
             });
 
             if (result && result.success) {

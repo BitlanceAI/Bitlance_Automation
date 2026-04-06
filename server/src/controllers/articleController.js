@@ -137,7 +137,7 @@ const uploadImageToSupabase = async (imageUrl) => {
 // ─────────────────────────────────────────────────────────────────────────────
 export const generateAndSaveArticleInternal = async ({
     userId, token, topic, industry, keywords, language, style, length, audience,
-    image_option, custom_image_url, wp_url, author_name, author_bio, author_profile_id,
+    image_option, custom_image_url, wp_url, wp_api_url, interlinks, author_name, author_bio, author_profile_id,
     author_details, category = 'Technology', tags = [], is_published = false,
     custom_slug, target_table
 }) => {
@@ -152,7 +152,7 @@ export const generateAndSaveArticleInternal = async ({
         const genRes = await axios.post(
             `${PYTHON_API_URL}/api/blog/generate`,
             {
-                topic, industry, keywords, language, style, length, audience, image_option, custom_image_url, wp_url
+                topic, industry, keywords, language, style, length, audience, image_option, custom_image_url, wp_url, wp_api_url, interlinks
             },
             { headers: { Authorization: `Bearer ${token}` }, timeout: 300000 }
         );
@@ -293,11 +293,34 @@ export const generateArticle = async (req, res) => {
         }
     }
 
+    // ── 2. Pre-build interlinks for admin from published articles ─────────────
+    let interlinks = req.body.interlinks || null;
+    if (!interlinks && userId === ADMIN_ID) {
+        try {
+            const { data: articles } = await supabaseAdmin
+                .from('company_articles')
+                .select('seo_title, slug')
+                .eq('is_published', true)
+                .order('created_at', { ascending: false })
+                .limit(10);
+            if (articles && articles.length > 0) {
+                interlinks = articles.map(a => ({
+                    title: a.seo_title || a.slug,
+                    link: `https://www.bitlancetechhub.com/blogs/${a.slug}`
+                }));
+                console.log(`[Article] Pre-built ${interlinks.length} interlinks for admin`);
+            }
+        } catch (e) {
+            console.warn('[Article] Failed to pre-build interlinks:', e.message);
+        }
+    }
+
     try {
         const result = await generateAndSaveArticleInternal({
             userId,
             token,
             ...req.body,
+            interlinks,
             is_published: true  // Auto-publish immediately after generation
         });
         return res.json(result);
