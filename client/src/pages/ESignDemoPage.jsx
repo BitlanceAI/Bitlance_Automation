@@ -1,17 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import { jsPDF } from 'jspdf';
 import {
-  FileText, CheckCircle, Clock, ArrowRight, Upload,
-  User, Mail, Phone, Shield, Zap, AlertCircle, Loader2, Download
+  FileText, CheckCircle, ArrowRight,
+  User, Mail, Phone, Shield, Zap, AlertCircle, Loader2, Download, ExternalLink, Clock
 } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 
-const DEMO_AGENT = {
+const API = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+
+const AGENT = {
   name: 'SEO AI Agent',
   price: 'Rs. 4,999 / month',
   description: 'Automated SEO content generation & publishing pipeline.',
 };
 
-// ─── PDF generator ─────────────────────────────────────────────────────────────
+// ─── PDF builder ────────────────────────────────────────────────────────────────
 function buildPDF(fields = {}, signed = false) {
   const doc = new jsPDF({ unit: 'pt', format: 'a4' });
   const W = doc.internal.pageSize.getWidth();
@@ -20,19 +23,17 @@ function buildPDF(fields = {}, signed = false) {
   const contentW = W - margin * 2;
   let y = margin;
 
-  // ── Header band ──
   doc.setFillColor(15, 15, 15);
   doc.rect(0, 0, W, 70, 'F');
   doc.setFontSize(18);
   doc.setFont('helvetica', 'bold');
-  doc.setTextColor(38, 206, 206); // #26cece
+  doc.setTextColor(38, 206, 206);
   doc.text('AUTOMATION-BITLANCE', margin, 38);
   doc.setFontSize(8);
   doc.setFont('helvetica', 'normal');
   doc.setTextColor(120, 120, 120);
-  doc.text('automation-bitlance.com  |  Powered by Cashfree VRS e-Sign', margin, 54);
+  doc.text('automation-bitlance.com  |  Secured by Cashfree VRS e-Sign', margin, 54);
 
-  // Badge top-right
   doc.setFillColor(26, 158, 158);
   doc.roundedRect(W - 120, 18, 90, 22, 3, 3, 'F');
   doc.setFontSize(8);
@@ -42,212 +43,121 @@ function buildPDF(fields = {}, signed = false) {
 
   y = 95;
 
-  // ── Title ──
   doc.setFontSize(20);
   doc.setFont('helvetica', 'bold');
   doc.setTextColor(20, 20, 20);
   doc.text('SERVICE AGREEMENT', margin, y);
   y += 8;
-
-  // Underline
   doc.setDrawColor(38, 206, 206);
   doc.setLineWidth(2);
   doc.line(margin, y, margin + 200, y);
   y += 22;
 
-  // ── Info grid ──
   const infoRows = [
     ['Agreement No.', `AB-${Date.now().toString(36).toUpperCase().slice(-6)}`],
     ['Date', new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'long', year: 'numeric' })],
-    ['Service', DEMO_AGENT.name],
-    ['Price', DEMO_AGENT.price],
+    ['Service', AGENT.name],
+    ['Price', AGENT.price],
   ];
   doc.setFontSize(9);
   doc.setLineWidth(0.5);
   infoRows.forEach(([k, v], i) => {
     const rowY = y + i * 22;
-    if (i % 2 === 0) {
-      doc.setFillColor(248, 248, 248);
-      doc.rect(margin, rowY - 12, contentW, 20, 'F');
-    }
-    doc.setFont('helvetica', 'bold');
-    doc.setTextColor(80, 80, 80);
-    doc.text(k, margin + 6, rowY);
-    doc.setFont('helvetica', 'normal');
-    doc.setTextColor(20, 20, 20);
-    doc.text(v, margin + 140, rowY);
+    if (i % 2 === 0) { doc.setFillColor(248, 248, 248); doc.rect(margin, rowY - 12, contentW, 20, 'F'); }
+    doc.setFont('helvetica', 'bold'); doc.setTextColor(80, 80, 80); doc.text(k, margin + 6, rowY);
+    doc.setFont('helvetica', 'normal'); doc.setTextColor(20, 20, 20); doc.text(v, margin + 140, rowY);
   });
   y += infoRows.length * 22 + 20;
 
-  // ── Section helper ──
   const section = (title) => {
-    doc.setFontSize(10);
-    doc.setFont('helvetica', 'bold');
-    doc.setTextColor(15, 15, 15);
-    doc.setFillColor(240, 253, 253);
-    doc.rect(margin, y - 12, contentW, 18, 'F');
-    doc.setDrawColor(38, 206, 206);
-    doc.setLineWidth(3);
-    doc.line(margin, y - 12, margin, y + 6);
-    doc.text(title, margin + 10, y);
-    doc.setLineWidth(0.5);
-    y += 22;
+    doc.setFontSize(10); doc.setFont('helvetica', 'bold'); doc.setTextColor(15, 15, 15);
+    doc.setFillColor(240, 253, 253); doc.rect(margin, y - 12, contentW, 18, 'F');
+    doc.setDrawColor(38, 206, 206); doc.setLineWidth(3); doc.line(margin, y - 12, margin, y + 6);
+    doc.text(title, margin + 10, y); doc.setLineWidth(0.5); y += 22;
   };
-
-  // ── Para helper ──
   const para = (text) => {
-    doc.setFontSize(9);
-    doc.setFont('helvetica', 'normal');
-    doc.setTextColor(60, 60, 60);
+    doc.setFontSize(9); doc.setFont('helvetica', 'normal'); doc.setTextColor(60, 60, 60);
     const lines = doc.splitTextToSize(text, contentW - 10);
-    doc.text(lines, margin + 6, y);
-    y += lines.length * 13 + 6;
+    doc.text(lines, margin + 6, y); y += lines.length * 13 + 6;
   };
-
-  // ── Field helper (with placeholder highlight) ──
   const field = (label, value, isPlaceholder = false) => {
-    doc.setFontSize(9);
-    doc.setFont('helvetica', 'bold');
-    doc.setTextColor(80, 80, 80);
+    doc.setFontSize(9); doc.setFont('helvetica', 'bold'); doc.setTextColor(80, 80, 80);
     doc.text(`${label}:`, margin + 6, y);
-
+    const valX = margin + 130;
     if (isPlaceholder && !signed) {
-      // Amber highlight box for unfilled placeholder
-      const valX = margin + 130;
-      doc.setFillColor(254, 243, 199); // amber-100
-      doc.roundedRect(valX - 3, y - 10, 180, 14, 2, 2, 'F');
-      doc.setDrawColor(217, 119, 6);
-      doc.setLineWidth(0.5);
-      doc.roundedRect(valX - 3, y - 10, 180, 14, 2, 2, 'S');
-      doc.setFont('helvetica', 'italic');
-      doc.setTextColor(180, 83, 9);
-      doc.text(value, valX, y);
+      doc.setFillColor(254, 243, 199); doc.roundedRect(valX - 3, y - 10, 180, 14, 2, 2, 'F');
+      doc.setDrawColor(217, 119, 6); doc.setLineWidth(0.5); doc.roundedRect(valX - 3, y - 10, 180, 14, 2, 2, 'S');
+      doc.setFont('helvetica', 'italic'); doc.setTextColor(180, 83, 9); doc.text(value, valX, y);
+    } else if (signed && isPlaceholder) {
+      doc.setFillColor(220, 252, 231); doc.roundedRect(valX - 3, y - 10, 200, 14, 2, 2, 'F');
+      doc.setDrawColor(22, 163, 74); doc.setLineWidth(0.5); doc.roundedRect(valX - 3, y - 10, 200, 14, 2, 2, 'S');
+      doc.setFont('helvetica', 'normal'); doc.setTextColor(21, 128, 61); doc.text(value, valX, y);
     } else {
-      doc.setFont('helvetica', 'normal');
-      doc.setTextColor(20, 20, 20);
-      if (signed && isPlaceholder) {
-        // Green highlight for filled
-        const valX = margin + 130;
-        doc.setFillColor(220, 252, 231);
-        doc.roundedRect(valX - 3, y - 10, 200, 14, 2, 2, 'F');
-        doc.setDrawColor(22, 163, 74);
-        doc.setLineWidth(0.5);
-        doc.roundedRect(valX - 3, y - 10, 200, 14, 2, 2, 'S');
-        doc.setTextColor(21, 128, 61);
-        doc.text(value, valX, y);
-      } else {
-        doc.text(value, margin + 130, y);
-      }
+      doc.setFont('helvetica', 'normal'); doc.setTextColor(20, 20, 20); doc.text(value, valX, y);
     }
     y += 18;
   };
 
-  // ── 1. Client Details ──
   section('1. CLIENT DETAILS');
   field('Full Name', fields.name || '{{CLIENT_NAME}}', !fields.name);
   field('Email Address', fields.email || '{{CLIENT_EMAIL}}', !fields.email);
   field('Phone Number', fields.phone || '{{CLIENT_PHONE}}', !fields.phone);
   y += 6;
 
-  // ── 2. Scope ──
   section('2. SCOPE OF SERVICE');
-  para(
-    `Automation-Bitlance agrees to provide access to the "${DEMO_AGENT.name}" — ` +
-    `${DEMO_AGENT.description} The service includes onboarding, technical support ` +
-    `via email, and platform access for the duration of the active subscription.`
-  );
+  para(`Automation-Bitlance agrees to provide access to the "${AGENT.name}" — ${AGENT.description} The service includes onboarding, technical support via email, and platform access for the duration of the active subscription.`);
 
-  // ── 3. Payment ──
   section('3. PAYMENT TERMS');
-  para(
-    `The Client agrees to pay ${DEMO_AGENT.price} billed on the subscription start date. ` +
-    `Payments are processed securely via Cashfree Payments. All amounts are inclusive of ` +
-    `applicable GST. Subscriptions auto-renew unless cancelled 7 days prior to billing.`
-  );
+  para(`The Client agrees to pay ${AGENT.price} billed on the subscription start date. Payments are processed securely via Cashfree Payments. All amounts are inclusive of applicable GST. Subscriptions auto-renew unless cancelled 7 days prior to billing.`);
 
-  // ── 4. Confidentiality ──
   section('4. CONFIDENTIALITY');
-  para(
-    `Both parties agree to keep confidential any proprietary information shared during ` +
-    `the term of this agreement. The Client's data is processed in accordance with ` +
-    `Automation-Bitlance's Privacy Policy available at automation-bitlance.com/privacy.`
-  );
+  para(`Both parties agree to keep confidential any proprietary information shared during the term of this agreement. The Client's data is processed in accordance with Automation-Bitlance's Privacy Policy available at automation-bitlance.com/privacy.`);
 
-  // ── 5. e-Signature block ──
   section('5. ELECTRONIC SIGNATURE');
   para('By signing this document the Client confirms acceptance of all terms above.');
   y += 6;
 
-  // Signature box
-  doc.setDrawColor(200, 200, 200);
-  doc.setLineWidth(0.5);
+  doc.setDrawColor(200, 200, 200); doc.setLineWidth(0.5);
   doc.rect(margin, y, contentW / 2 - 10, 60);
   doc.rect(margin + contentW / 2 + 10, y, contentW / 2 - 10, 60);
-
-  // Left box - client sig
-  doc.setFontSize(8);
-  doc.setFont('helvetica', 'bold');
-  doc.setTextColor(80, 80, 80);
+  doc.setFontSize(8); doc.setFont('helvetica', 'bold'); doc.setTextColor(80, 80, 80);
   doc.text('CLIENT SIGNATURE', margin + 8, y + 14);
 
   if (signed && fields.name) {
-    doc.setFillColor(220, 252, 231);
-    doc.rect(margin + 1, y + 1, contentW / 2 - 12, 58, 'F');
-    doc.setFont('helvetica', 'bolditalic');
-    doc.setFontSize(16);
-    doc.setTextColor(21, 128, 61);
+    doc.setFillColor(220, 252, 231); doc.rect(margin + 1, y + 1, contentW / 2 - 12, 58, 'F');
+    doc.setFont('helvetica', 'bolditalic'); doc.setFontSize(16); doc.setTextColor(21, 128, 61);
     doc.text(fields.name, margin + 10, y + 38);
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(7);
-    doc.setTextColor(100, 100, 100);
+    doc.setFont('helvetica', 'normal'); doc.setFontSize(7); doc.setTextColor(100, 100, 100);
     doc.text(`Signed via Cashfree VRS  •  ${new Date().toLocaleString('en-IN')}`, margin + 8, y + 52);
   } else {
-    doc.setFillColor(254, 243, 199);
-    doc.rect(margin + 1, y + 1, contentW / 2 - 12, 58, 'F');
-    doc.setFont('helvetica', 'italic');
-    doc.setFontSize(9);
-    doc.setTextColor(180, 83, 9);
-    doc.text('{{CLIENT_SIGNATURE}}', margin + 10, y + 38);
+    doc.setFillColor(254, 243, 199); doc.rect(margin + 1, y + 1, contentW / 2 - 12, 58, 'F');
+    doc.setFont('helvetica', 'italic'); doc.setFontSize(9); doc.setTextColor(180, 83, 9);
+    doc.text('Awaiting Signature', margin + 10, y + 38);
   }
 
-  // Right box - date
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(8);
-  doc.setTextColor(80, 80, 80);
+  doc.setFont('helvetica', 'bold'); doc.setFontSize(8); doc.setTextColor(80, 80, 80);
   doc.text('DATE OF SIGNING', margin + contentW / 2 + 18, y + 14);
-
   if (signed) {
-    doc.setFillColor(220, 252, 231);
-    doc.rect(margin + contentW / 2 + 11, y + 1, contentW / 2 - 12, 58, 'F');
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(11);
-    doc.setTextColor(21, 128, 61);
+    doc.setFillColor(220, 252, 231); doc.rect(margin + contentW / 2 + 11, y + 1, contentW / 2 - 12, 58, 'F');
+    doc.setFont('helvetica', 'normal'); doc.setFontSize(11); doc.setTextColor(21, 128, 61);
     doc.text(new Date().toLocaleDateString('en-IN'), margin + contentW / 2 + 18, y + 38);
   } else {
-    doc.setFillColor(254, 243, 199);
-    doc.rect(margin + contentW / 2 + 11, y + 1, contentW / 2 - 12, 58, 'F');
-    doc.setFont('helvetica', 'italic');
-    doc.setFontSize(9);
-    doc.setTextColor(180, 83, 9);
-    doc.text('{{SIGN_DATE}}', margin + contentW / 2 + 18, y + 38);
+    doc.setFillColor(254, 243, 199); doc.rect(margin + contentW / 2 + 11, y + 1, contentW / 2 - 12, 58, 'F');
+    doc.setFont('helvetica', 'italic'); doc.setFontSize(9); doc.setTextColor(180, 83, 9);
+    doc.text('Awaiting Date', margin + contentW / 2 + 18, y + 38);
   }
-
   y += 80;
 
-  // ── Footer ──
-  doc.setFillColor(15, 15, 15);
-  doc.rect(0, pageH - 36, W, 36, 'F');
-  doc.setFontSize(7.5);
-  doc.setFont('helvetica', 'normal');
-  doc.setTextColor(120, 120, 120);
+  doc.setFillColor(15, 15, 15); doc.rect(0, pageH - 36, W, 36, 'F');
+  doc.setFontSize(7.5); doc.setFont('helvetica', 'normal'); doc.setTextColor(120, 120, 120);
   doc.text('Automation-Bitlance  |  automation-bitlance.com', margin, pageH - 17);
-  doc.text('e-Sign powered by Cashfree VRS  |  Confidential', W - margin, pageH - 17, { align: 'right' });
+  doc.text('e-Sign secured by Cashfree VRS  |  Confidential', W - margin, pageH - 17, { align: 'right' });
 
   return doc;
 }
 
-// ─── Steps ─────────────────────────────────────────────────────────────────────
-const steps = ['Fill Details', 'Review PDF', 'Pay & e-Sign', 'Done'];
+// ─── Step bar ───────────────────────────────────────────────────────────────────
+const steps = ['Your Details', 'Review Agreement', 'Sign'];
 
 const StepBar = ({ current }) => (
   <div className="flex items-center gap-0 mb-10">
@@ -273,10 +183,9 @@ const StepBar = ({ current }) => (
   </div>
 );
 
-// ─── PDF Viewer ─────────────────────────────────────────────────────────────────
+// ─── PDF Viewer ──────────────────────────────────────────────────────────────────
 const PDFViewer = ({ fields, signed }) => {
   const [url, setUrl] = useState(null);
-
   useEffect(() => {
     const doc = buildPDF(fields, signed);
     const blob = doc.output('blob');
@@ -290,24 +199,18 @@ const PDFViewer = ({ fields, signed }) => {
       <Loader2 className="w-6 h-6 text-[#26cece] animate-spin" />
     </div>
   );
-
-  return (
-    <iframe
-      src={url}
-      className="w-full h-[480px] rounded-[2px] border border-[#222]"
-      title="Service Agreement PDF"
-    />
-  );
+  return <iframe src={url} className="w-full h-[480px] rounded-[2px] border border-[#222]" title="Service Agreement" />;
 };
 
-// ─── Main Page ──────────────────────────────────────────────────────────────────
-const ESignDemoPage = () => {
+// ─── Main ────────────────────────────────────────────────────────────────────────
+const ESignPage = () => {
+  const { token } = useAuth();
   const [step, setStep] = useState(0);
   const [fields, setFields] = useState({ name: '', email: '', phone: '' });
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
   const [signStatus, setSignStatus] = useState('idle');
-  const [docId] = useState(`ESIGN-${Date.now().toString(36).toUpperCase()}`);
+  const [signError, setSignError] = useState('');
 
   const validate = () => {
     const e = {};
@@ -320,22 +223,36 @@ const ESignDemoPage = () => {
 
   const handleNext = () => {
     if (step === 0 && !validate()) return;
-    setStep((s) => s + 1);
+    setStep(s => s + 1);
   };
 
-  const handlePayAndSign = () => {
+  const handleSign = async () => {
     setLoading(true);
     setSignStatus('pending');
-    setTimeout(() => {
-      setLoading(false);
-      setSignStatus('success');
-      setStep(3);
-    }, 2800);
-  };
+    setSignError('');
+    try {
+      const doc = buildPDF(fields, false);
+      const pdfBase64 = doc.output('datauristring').split(',')[1];
 
-  const handleDownload = (signed = false) => {
-    const doc = buildPDF(fields, signed);
-    doc.save(`agreement-${signed ? 'signed' : 'draft'}.pdf`);
+      const res = await fetch(`${API}/api/esign/create-request`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({ name: fields.name, email: fields.email, phone: fields.phone, pdfBase64 }),
+      });
+      const data = await res.json();
+
+      if (!res.ok || !data.success) throw new Error(data.error || 'Failed to create sign request');
+
+      window.location.href = data.signUrl;
+    } catch (err) {
+      setSignStatus('error');
+      setSignError(err.message || 'Something went wrong. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -346,14 +263,13 @@ const ESignDemoPage = () => {
         <div className="text-center mb-10">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-[2px] border border-[#333] bg-[#111] text-[#26cece] font-mono text-[10px] uppercase tracking-widest mb-4">
             <Shield className="w-3 h-3" />
-            Cashfree VRS · e-Sign Demo
+            Secured by Cashfree VRS
           </div>
           <h1 className="text-3xl md:text-4xl font-extrabold font-['Space_Grotesk'] uppercase tracking-tight">
-            Buy Agent &amp; <span className="text-[#26cece]">Sign Agreement</span>
+            Sign Your <span className="text-[#26cece]">Service Agreement</span>
           </h1>
           <p className="text-gray-400 mt-3 text-sm max-w-lg mx-auto">
-            Purchase an agent → agreement PDF auto-generated with your details →
-            signed via Cashfree VRS e-sign → stored in Supabase.
+            Review and sign your service agreement digitally. Legally valid under the IT Act 2000.
           </p>
         </div>
 
@@ -363,31 +279,31 @@ const ESignDemoPage = () => {
             <Zap className="w-6 h-6 text-[#26cece]" />
           </div>
           <div className="flex-1">
-            <p className="font-bold font-['Space_Grotesk'] text-white">{DEMO_AGENT.name}</p>
-            <p className="text-gray-400 text-xs mt-0.5">{DEMO_AGENT.description}</p>
+            <p className="font-bold font-['Space_Grotesk'] text-white">{AGENT.name}</p>
+            <p className="text-gray-400 text-xs mt-0.5">{AGENT.description}</p>
           </div>
-          <span className="text-[#26cece] font-mono font-bold text-sm whitespace-nowrap">{DEMO_AGENT.price}</span>
+          <span className="text-[#26cece] font-mono font-bold text-sm whitespace-nowrap">{AGENT.price}</span>
         </div>
 
         <StepBar current={step} />
 
-        {/* ── Step 0: Fill details ── */}
+        {/* Step 0 — Details */}
         {step === 0 && (
           <div className="bg-[#111] border border-[#1E1E1E] rounded-[2px] p-6">
             <h2 className="text-lg font-bold font-['Space_Grotesk'] uppercase tracking-tight mb-5">Your Details</h2>
             {[
-              { key: 'name', label: 'Full Name', icon: User, placeholder: 'Rahul Sharma' },
-              { key: 'email', label: 'Email Address', icon: Mail, placeholder: 'rahul@example.com' },
-              { key: 'phone', label: 'Phone Number', icon: Phone, placeholder: '9876543210' },
-            ].map(({ key, label, icon: Icon, placeholder }) => (
+              { key: 'name', label: 'Full Name', icon: User, placeholder: 'Rahul Sharma', type: 'text' },
+              { key: 'email', label: 'Email Address', icon: Mail, placeholder: 'rahul@example.com', type: 'email' },
+              { key: 'phone', label: 'Phone Number', icon: Phone, placeholder: '9876543210', type: 'tel' },
+            ].map(({ key, label, icon: Icon, placeholder, type }) => (
               <div key={key} className="mb-4">
                 <label className="text-[11px] font-mono uppercase tracking-widest text-gray-400 mb-1 block">{label}</label>
                 <div className="relative">
                   <Icon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
                   <input
-                    type="text"
+                    type={type}
                     value={fields[key]}
-                    onChange={(e) => setFields({ ...fields, [key]: e.target.value })}
+                    onChange={e => setFields({ ...fields, [key]: e.target.value })}
                     placeholder={placeholder}
                     className={`w-full bg-[#0d0d0d] border ${errors[key] ? 'border-red-500' : 'border-[#222]'} rounded-[2px] pl-9 pr-3 py-2.5 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-[#26cece] transition-colors`}
                   />
@@ -403,155 +319,108 @@ const ESignDemoPage = () => {
               onClick={handleNext}
               className="mt-2 w-full bg-[#26cece] text-[#070707] font-bold font-['Space_Grotesk'] uppercase tracking-widest py-3 rounded-[2px] hover:bg-white transition-colors flex items-center justify-center gap-2"
             >
-              Preview PDF <ArrowRight className="w-4 h-4" />
+              Review Agreement <ArrowRight className="w-4 h-4" />
             </button>
           </div>
         )}
 
-        {/* ── Step 1: Review PDF ── */}
+        {/* Step 1 — Review PDF */}
         {step === 1 && (
           <div className="bg-[#111] border border-[#1E1E1E] rounded-[2px] p-6">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2">
                 <FileText className="w-5 h-5 text-[#26cece]" />
-                <h2 className="text-lg font-bold font-['Space_Grotesk'] uppercase tracking-tight">Agreement PDF</h2>
+                <h2 className="text-lg font-bold font-['Space_Grotesk'] uppercase tracking-tight">Service Agreement</h2>
               </div>
               <button
-                onClick={() => handleDownload(false)}
+                onClick={() => { const d = buildPDF(fields, false); d.save('agreement-draft.pdf'); }}
                 className="flex items-center gap-1.5 text-[11px] font-mono text-gray-400 hover:text-[#26cece] transition-colors"
               >
-                <Download className="w-3.5 h-3.5" /> Download Draft
+                <Download className="w-3.5 h-3.5" /> Save PDF
               </button>
-            </div>
-
-            {/* Legend */}
-            <div className="flex items-center gap-4 mb-3 text-[10px] font-mono">
-              <span className="flex items-center gap-1.5">
-                <span className="inline-block w-3 h-3 rounded-sm bg-amber-100 border border-amber-600" />
-                <span className="text-gray-400">Placeholder (unsigned)</span>
-              </span>
-              <span className="flex items-center gap-1.5">
-                <span className="inline-block w-3 h-3 rounded-sm bg-green-100 border border-green-600" />
-                <span className="text-gray-400">Filled after signing</span>
-              </span>
             </div>
 
             <PDFViewer fields={fields} signed={false} />
 
             <p className="text-[11px] text-gray-500 font-mono mt-3 mb-5 flex items-start gap-1.5">
               <Shield className="w-3 h-3 text-[#26cece] mt-0.5 flex-shrink-0" />
-              Amber fields are placeholders — they will be auto-filled when you complete Cashfree e-sign.
+              Please review all terms carefully before proceeding to sign.
             </p>
             <div className="flex gap-3">
               <button onClick={() => setStep(0)} className="flex-1 border border-[#333] text-gray-300 font-bold font-['Space_Grotesk'] uppercase tracking-widest py-3 rounded-[2px] hover:border-[#26cece] hover:text-[#26cece] transition-colors text-sm">
                 Back
               </button>
               <button onClick={handleNext} className="flex-1 bg-[#26cece] text-[#070707] font-bold font-['Space_Grotesk'] uppercase tracking-widest py-3 rounded-[2px] hover:bg-white transition-colors flex items-center justify-center gap-2 text-sm">
-                Proceed to Payment <ArrowRight className="w-4 h-4" />
+                I Agree — Proceed to Sign <ArrowRight className="w-4 h-4" />
               </button>
             </div>
           </div>
         )}
 
-        {/* ── Step 2: Pay & e-Sign ── */}
+        {/* Step 2 — Sign */}
         {step === 2 && (
           <div className="bg-[#111] border border-[#1E1E1E] rounded-[2px] p-6">
-            <h2 className="text-lg font-bold font-['Space_Grotesk'] uppercase tracking-tight mb-1">Payment &amp; e-Signature</h2>
-            <p className="text-gray-400 text-xs mb-6">Simulate Cashfree payment + automatic e-sign trigger.</p>
+            <h2 className="text-lg font-bold font-['Space_Grotesk'] uppercase tracking-tight mb-1">Sign Agreement</h2>
+            <p className="text-gray-400 text-sm mb-8">
+              You'll be redirected to a secure page to verify your identity and sign the agreement.
+            </p>
 
-            <div className="space-y-3 mb-6">
-              {[
-                { icon: Upload, label: 'PDF uploaded to Cashfree VRS', detail: 'POST /vrs/v2/esign/upload' },
-                { icon: User, label: 'Signer details mapped to placeholders', detail: 'name, email, phone → PDF fields' },
-                { icon: FileText, label: 'e-Sign link sent to customer', detail: 'OTP / Aadhaar based signing' },
-                { icon: CheckCircle, label: 'Signed PDF stored in Supabase', detail: 'agreements bucket · user_id indexed' },
-              ].map(({ icon: Icon, label, detail }, i) => (
-                <div key={i} className="flex items-start gap-3 bg-[#0d0d0d] border border-[#1a1a1a] rounded-[2px] px-4 py-3">
-                  <div className="w-7 h-7 rounded-[2px] bg-[#26cece]/10 flex items-center justify-center flex-shrink-0">
-                    <Icon className="w-3.5 h-3.5 text-[#26cece]" />
-                  </div>
-                  <div>
-                    <p className="text-sm text-white font-medium">{label}</p>
-                    <p className="text-[11px] text-gray-500 font-mono mt-0.5">{detail}</p>
-                  </div>
-                </div>
-              ))}
+            {/* Summary */}
+            <div className="bg-[#0d0d0d] border border-[#1a1a1a] rounded-[2px] p-4 space-y-3 mb-8">
+              <div className="flex justify-between text-sm">
+                <span className="text-gray-400">Name</span>
+                <span className="text-white font-medium">{fields.name}</span>
+              </div>
+              <div className="h-px bg-[#1a1a1a]" />
+              <div className="flex justify-between text-sm">
+                <span className="text-gray-400">Email</span>
+                <span className="text-white">{fields.email}</span>
+              </div>
+              <div className="h-px bg-[#1a1a1a]" />
+              <div className="flex justify-between text-sm">
+                <span className="text-gray-400">Phone</span>
+                <span className="text-white">{fields.phone}</span>
+              </div>
+              <div className="h-px bg-[#1a1a1a]" />
+              <div className="flex justify-between text-sm">
+                <span className="text-gray-400">Amount</span>
+                <span className="text-[#26cece] font-bold">{AGENT.price}</span>
+              </div>
             </div>
 
             <div className="flex gap-3">
-              <button onClick={() => setStep(1)} disabled={loading} className="flex-1 border border-[#333] text-gray-300 font-bold font-['Space_Grotesk'] uppercase tracking-widest py-3 rounded-[2px] hover:border-[#26cece] hover:text-[#26cece] transition-colors text-sm">
+              <button onClick={() => setStep(1)} disabled={loading} className="flex-1 border border-[#333] text-gray-300 font-bold font-['Space_Grotesk'] uppercase tracking-widest py-3 rounded-[2px] hover:border-[#26cece] hover:text-[#26cece] transition-colors text-sm disabled:opacity-40">
                 Back
               </button>
-              <button onClick={handlePayAndSign} disabled={loading} className="flex-1 bg-[#26cece] text-[#070707] font-bold font-['Space_Grotesk'] uppercase tracking-widest py-3 rounded-[2px] hover:bg-white transition-colors flex items-center justify-center gap-2 text-sm disabled:opacity-60">
-                {loading ? <><Loader2 className="w-4 h-4 animate-spin" /> Processing…</> : <>Pay &amp; Sign Now <Zap className="w-4 h-4" /></>}
+              <button onClick={handleSign} disabled={loading} className="flex-1 bg-[#26cece] text-[#070707] font-bold font-['Space_Grotesk'] uppercase tracking-widest py-3 rounded-[2px] hover:bg-white transition-colors flex items-center justify-center gap-2 text-sm disabled:opacity-60">
+                {loading
+                  ? <><Loader2 className="w-4 h-4 animate-spin" /> Please wait…</>
+                  : <><Shield className="w-4 h-4" /> Sign Securely <ExternalLink className="w-3.5 h-3.5" /></>}
               </button>
             </div>
 
             {signStatus === 'pending' && (
-              <div className="mt-4 bg-amber-500/5 border border-amber-500/20 rounded-[2px] px-4 py-3 flex items-center gap-2 text-amber-400 text-xs font-mono">
+              <div className="mt-4 bg-[#26cece]/5 border border-[#26cece]/20 rounded-[2px] px-4 py-3 flex items-center gap-2 text-[#26cece] text-xs font-mono">
                 <Clock className="w-3.5 h-3.5 flex-shrink-0" />
-                Waiting for Cashfree VRS e-sign confirmation…
+                Preparing your document · redirecting…
               </div>
             )}
+            {signStatus === 'error' && (
+              <div className="mt-4 bg-red-500/5 border border-red-500/20 rounded-[2px] px-4 py-3 flex items-start gap-2 text-red-400 text-xs">
+                <AlertCircle className="w-3.5 h-3.5 flex-shrink-0 mt-0.5" />
+                <span>{signError}</span>
+              </div>
+            )}
+
+            <p className="text-center text-gray-600 text-[10px] font-mono mt-6">
+              Secured by Cashfree VRS · Legally valid under IT Act 2000
+            </p>
           </div>
         )}
 
-        {/* ── Step 3: Done ── */}
-        {step === 3 && (
-          <div className="bg-[#111] border border-[#26cece]/30 rounded-[2px] p-6">
-            <div className="text-center mb-6">
-              <div className="w-14 h-14 rounded-[2px] bg-[#26cece]/10 border border-[#26cece]/30 flex items-center justify-center mx-auto mb-4">
-                <CheckCircle className="w-7 h-7 text-[#26cece]" />
-              </div>
-              <h2 className="text-2xl font-extrabold font-['Space_Grotesk'] uppercase tracking-tight mb-1">Agreement Signed!</h2>
-              <p className="text-gray-400 text-sm">Placeholders replaced · PDF stored in Supabase</p>
-            </div>
-
-            {/* Signed PDF preview */}
-            <div className="mb-5">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-[11px] font-mono text-gray-400 uppercase tracking-widest">Signed Document</span>
-                <button onClick={() => handleDownload(true)} className="flex items-center gap-1.5 text-[11px] font-mono text-[#26cece] hover:text-white transition-colors">
-                  <Download className="w-3.5 h-3.5" /> Download Signed PDF
-                </button>
-              </div>
-              <PDFViewer fields={fields} signed={true} />
-            </div>
-
-            <div className="bg-[#0d0d0d] border border-[#1a1a1a] rounded-[2px] p-4 space-y-2 mb-5 text-xs font-mono">
-              {[
-                ['Document ID', docId, 'text-[#26cece]'],
-                ['Signed By', fields.email, 'text-white'],
-                ['Timestamp', new Date().toLocaleString('en-IN'), 'text-white'],
-                ['Provider', 'Cashfree VRS', 'text-white'],
-                ['Storage', 'Supabase · agreements/', 'text-white'],
-              ].map(([k, v, cls]) => (
-                <div key={k} className="flex justify-between">
-                  <span className="text-gray-500">{k}</span>
-                  <span className={cls}>{v}</span>
-                </div>
-              ))}
-            </div>
-
-            <button
-              onClick={() => { setStep(0); setFields({ name: '', email: '', phone: '' }); setSignStatus('idle'); }}
-              className="w-full bg-[#26cece] text-[#070707] font-bold font-['Space_Grotesk'] uppercase tracking-widest px-8 py-3 rounded-[2px] hover:bg-white transition-colors text-sm"
-            >
-              Start Over (Demo)
-            </button>
-          </div>
-        )}
-
-        {/* API ref */}
-        <div className="mt-8 bg-[#0d0d0d] border border-[#1a1a1a] rounded-[2px] p-4 text-[11px] font-mono text-gray-500">
-          <span className="text-[#26cece] font-bold">API REF</span>&nbsp;
-          Cashfree VRS v2 · Upload:&nbsp;
-          <code className="text-gray-300">POST /vrs/v2/esign/upload</code>&nbsp;|&nbsp;
-          Status:&nbsp;<code className="text-gray-300">GET /vrs/v2/esign/&#123;docId&#125;</code>
-        </div>
       </div>
     </div>
   );
 };
 
-export default ESignDemoPage;
+export default ESignPage;

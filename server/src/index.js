@@ -116,6 +116,9 @@ app.use('/api/push', pushRoutes);
 import wordpressRoutes from './routes/wordpressRoutes.js';
 app.use('/api/wordpress', wordpressRoutes);
 
+import eSignRoutes from './routes/eSignRoutes.js';
+app.use('/api/esign', eSignRoutes);
+
 
 
 // Legacy routes handling

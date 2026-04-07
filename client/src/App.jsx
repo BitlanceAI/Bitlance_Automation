@@ -63,7 +63,8 @@ import BlogEditorPage from './pages/BlogEditorPage';
 
 
 import CookieDemoPage from './pages/CookieDemoPage';
-import ESignDemoPage from './pages/ESignDemoPage';
+import ESignPage from './pages/ESignDemoPage';
+import ESignCompletePage from './pages/ESignCompletePage';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { WorkspaceProvider } from './context/WorkspaceContext';
 import AuthGuard from './components/auth/AuthGuard';
@@ -191,7 +192,9 @@ function App() {
             } />
 
             <Route path="/cookie-demo" element={<CookieDemoPage />} />
-            <Route path="/esign-demo" element={<ESignDemoPage />} />
+            <Route path="/esign" element={<ESignPage />} />
+            <Route path="/esign-demo" element={<ESignPage />} />
+            <Route path="/esign/complete" element={<ESignCompletePage />} />
 
             {/* Push & Blog Routes */}
             <Route path="/push/send" element={
