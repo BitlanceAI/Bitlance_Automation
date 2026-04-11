@@ -1,20 +1,11 @@
 import { createClient } from '@supabase/supabase-js';
 import crypto from 'crypto';
-import MetaService from '../services/metaService.js';
 
 // Initialize Supabase (Service Role for writing events)
 const supabase = createClient(
     process.env.SUPABASE_URL,
     process.env.SUPABASE_SERVICE_ROLE_KEY
 );
-
-// Meta Config
-const META_PIXEL_ID = process.env.META_PIXEL_ID;
-const META_ACCESS_TOKEN = process.env.META_ACCESS_TOKEN;
-// Optional: Test code from Meta Events Manager "Test Events" tab
-const META_TEST_CODE = process.env.META_TEST_CODE;
-
-const metaService = new MetaService(META_ACCESS_TOKEN);
 
 /**
  * SHA-256 Hash Helper for User Data
@@ -88,20 +79,6 @@ export const trackEvent = async (req, res) => {
         if (dbError) {
             console.error('Supabase Tracking Log Error:', dbError);
             // Don't fail the request just because logging failed, but good to know
-        }
-
-        // 4. Send to Meta CAPI
-        if (META_PIXEL_ID && META_ACCESS_TOKEN) {
-            // we fire and forget or await? ideally we use a queue, but for now await
-            const capiResult = await metaService.sendConversionEvent(
-                META_PIXEL_ID,
-                [eventObject],
-                META_TEST_CODE
-            );
-
-            if (!capiResult.success) {
-                console.error('Meta CAPI Failed:', capiResult.error);
-            }
         }
 
         res.json({ success: true, eventId });

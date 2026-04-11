@@ -231,22 +231,25 @@ const ESignPage = () => {
     setSignStatus('pending');
     setSignError('');
     try {
-      const doc = buildPDF(fields, false);
-      const pdfBase64 = doc.output('datauristring').split(',')[1];
-
-      const res = await fetch(`${API}/api/esign/create-request`, {
+      const res = await fetch(`${API}/api/digilocker/create-url`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
-        body: JSON.stringify({ name: fields.name, email: fields.email, phone: fields.phone, pdfBase64 }),
+        body: JSON.stringify({ document_requested: ['AADHAAR'], user_flow: 'signup' }),
       });
       const data = await res.json();
 
-      if (!res.ok || !data.success) throw new Error(data.error || 'Failed to create sign request');
+      if (!res.ok || !data.success) throw new Error(data.error || 'Failed to create DigiLocker session');
 
-      window.location.href = data.signUrl;
+      // Store fields so DigiLockerCompletePage can generate the PDF
+      sessionStorage.setItem('digilocker_fields', JSON.stringify({
+        ...fields,
+        verificationId: data.verification_id,
+      }));
+
+      window.location.href = data.consentUrl;
     } catch (err) {
       setSignStatus('error');
       setSignError(err.message || 'Something went wrong. Please try again.');
@@ -357,12 +360,12 @@ const ESignPage = () => {
           </div>
         )}
 
-        {/* Step 2 — Sign */}
+        {/* Step 2 — Verify */}
         {step === 2 && (
           <div className="bg-[#111] border border-[#1E1E1E] rounded-[2px] p-6">
-            <h2 className="text-lg font-bold font-['Space_Grotesk'] uppercase tracking-tight mb-1">Sign Agreement</h2>
+            <h2 className="text-lg font-bold font-['Space_Grotesk'] uppercase tracking-tight mb-1">Verify Identity</h2>
             <p className="text-gray-400 text-sm mb-8">
-              You'll be redirected to a secure page to verify your identity and sign the agreement.
+              You'll be redirected to DigiLocker to verify your Aadhaar and confirm the agreement.
             </p>
 
             {/* Summary */}
@@ -395,14 +398,14 @@ const ESignPage = () => {
               <button onClick={handleSign} disabled={loading} className="flex-1 bg-[#26cece] text-[#070707] font-bold font-['Space_Grotesk'] uppercase tracking-widest py-3 rounded-[2px] hover:bg-white transition-colors flex items-center justify-center gap-2 text-sm disabled:opacity-60">
                 {loading
                   ? <><Loader2 className="w-4 h-4 animate-spin" /> Please wait…</>
-                  : <><Shield className="w-4 h-4" /> Sign Securely <ExternalLink className="w-3.5 h-3.5" /></>}
+                  : <><Shield className="w-4 h-4" /> Verify with DigiLocker <ExternalLink className="w-3.5 h-3.5" /></>}
               </button>
             </div>
 
             {signStatus === 'pending' && (
               <div className="mt-4 bg-[#26cece]/5 border border-[#26cece]/20 rounded-[2px] px-4 py-3 flex items-center gap-2 text-[#26cece] text-xs font-mono">
                 <Clock className="w-3.5 h-3.5 flex-shrink-0" />
-                Preparing your document · redirecting…
+                Creating DigiLocker session · redirecting…
               </div>
             )}
             {signStatus === 'error' && (

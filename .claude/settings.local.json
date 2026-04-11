@@ -1,7 +1,9 @@
 {
   "permissions": {
     "allow": [
-      "Bash(find D:automation-bitlanceclientsrc -type f -name *linkedin* -o -name *social* -o -name *post*)"
+      "Bash(find D:automation-bitlanceclientsrc -type f -name *linkedin* -o -name *social* -o -name *post*)",
+      "Bash(code-review-graph --help)",
+      "Bash(code-review-graph visualize:*)"
     ]
   }
 }

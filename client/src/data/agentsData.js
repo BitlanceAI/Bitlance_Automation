@@ -33,7 +33,7 @@ export const agents = [
       "Budget optimization",
       "Performance analytics"
     ],
-    status: "Available"
+    status: "Coming Soon"
   },
   {
     icon: MessageSquare,

@@ -47,7 +47,9 @@ app.use(cors({
     },
     credentials: true,
 }));
-app.use(express.json());
+app.use(express.json({
+    verify: (req, _res, buf) => { req.rawBody = buf; },
+}));
 
 // Routes will be imported here
 
@@ -63,7 +65,6 @@ import trackingRoutes from './routes/trackingRoutes.js';
 import adminRoutes from './routes/adminRoutes.js';
 import profileRoutes from './routes/profileRoutes.js';
 import authRoutes from './routes/authRoutes.js';
-import metaRoutes from './routes/metaRoutes.js';
 import linkedinRoutes from './routes/linkedinRoutes.js';
 import articleRoutes from './routes/articleRoutes.js';
 import geminiRoutes from './routes/gemini.js';
@@ -83,7 +84,6 @@ app.use('/api/track', trackingRoutes);
 
 app.use('/api/admin', adminRoutes);
 app.use('/api/profiles', profileRoutes);
-app.use('/api/meta', metaRoutes);
 app.use('/api/linkedin', linkedinRoutes);
 
 import twitterRoutes from './routes/twitterRoutes.js';
@@ -118,6 +118,27 @@ app.use('/api/wordpress', wordpressRoutes);
 
 import eSignRoutes from './routes/eSignRoutes.js';
 app.use('/api/esign', eSignRoutes);
+
+import digiLockerRoutes from './routes/digiLockerRoutes.js';
+app.use('/api/digilocker', digiLockerRoutes);
+
+import paymentRoutes from './routes/paymentRoutes.js';
+app.use('/api/payment', paymentRoutes);
+
+// Redirect bounces — Cashfree needs https, bounces to local React dev server
+// DigiLocker redirect bounce — Cashfree needs https, so it hits the ngrok server
+// which redirects the browser back to the local React dev server
+app.get('/digilocker/complete', (req, res) => {
+    const clientUrl = process.env.CLIENT_URL || 'http://localhost:5173';
+    const qs = new URLSearchParams(req.query).toString();
+    res.redirect(`${clientUrl}/digilocker/complete${qs ? `?${qs}` : ''}`);
+});
+
+app.get('/payment/complete', (req, res) => {
+    const clientUrl = process.env.CLIENT_URL || 'http://localhost:5173';
+    const qs = new URLSearchParams(req.query).toString();
+    res.redirect(`${clientUrl}/payment/complete${qs ? `?${qs}` : ''}`);
+});
 
 
 

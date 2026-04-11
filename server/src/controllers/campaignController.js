@@ -1,7 +1,5 @@
 import { supabase, supabaseAdmin } from '../config/supabaseClient.js';
 import AnalyticsService from '../services/analyticsService.js';
-import MetaService from '../services/metaService.js';
-import { decryptData } from '../utils/encryption.js';
 
 // Use admin client (bypasses RLS) since auth is already handled by middleware
 const db = supabaseAdmin || supabase;
@@ -83,82 +81,10 @@ export const createCampaign = async (req, res) => {
 
         console.log('✅ [Campaign] Local campaign created:', localCampaign.id);
 
-        // 2. Try to create on Meta (Async or Sync? Sync for now to return ID)
-        let metaResult = null;
-        try {
-            console.log('🔄 [Campaign] Checking for Meta connection...');
-            // Get connection
-            const { data: connection } = await db
-                .from('meta_connections')
-                .select('*')
-                .eq('user_id', userId)
-                .eq('is_active', true)
-                .single();
-
-            if (connection) {
-                console.log('🔐 [Campaign] Decrypting token...');
-                const decryptedToken = decryptData(connection.access_token);
-                if (decryptedToken) {
-                    const metaService = new MetaService(decryptedToken);
-
-                    const adAccountId = connection.ad_accounts?.[0]?.account_id;
-                    console.log(`📢 [Campaign] Using Ad Account: ${adAccountId}`);
-
-                    if (adAccountId) {
-                        const metaObjective = META_OBJECTIVE_MAP[dbType] || 'OUTCOME_AWARENESS';
-
-                        console.log(`🚀 [Campaign] Creating on Meta: ${name} (${metaObjective})`);
-
-                        // Convert budget to cents if provided (Meta expects 1000 for 10.00)
-                        // Assuming frontend sends float like 10.00
-                        const dailyBudget = budget ? Math.round(parseFloat(budget) * 100) : null;
-
-                        metaResult = await metaService.createCampaign(adAccountId, {
-                            name: name || 'Untitled Campaign',
-                            objective: metaObjective,
-                            status: 'ACTIVE', // Publish directly as ACTIVE
-                            special_ad_categories: [], // Required
-                            dailyBudget // Pass budget
-                        });
-
-                        if (metaResult.success) {
-                            console.log('✅ [Campaign] Meta Success:', metaResult.data);
-
-                            // Update local record with Meta ID
-                            await db
-                                .from('campaigns')
-                                .update({
-                                    meta_campaign_id: metaResult.data.id,
-                                    status: 'ACTIVE' // Sync status
-                                })
-                                .eq('id', localCampaign.id);
-
-                            localCampaign.meta_campaign_id = metaResult.data.id;
-                            localCampaign.status = 'ACTIVE';
-                        } else {
-                            console.error('❌ [Campaign] Meta Failed:', metaResult.error);
-                            // Keep local campaign but maybe log error?
-                            // Note: We intentionally swallow this error to avoid failing the local creation
-                        }
-                    } else {
-                        console.warn('⚠️ [Campaign] No Ad Account found for Meta connection');
-                    }
-                } else {
-                    console.error('❌ [Campaign] Token decryption failed');
-                }
-            } else {
-                console.log('ℹ️ [Campaign] No active Meta connection found, skipping Meta creation');
-            }
-        } catch (metaError) {
-            console.error('⚠️ [Campaign] Meta Integration Exception:', metaError);
-            // Don't fail the whole request check
-        }
-
         console.log('🏁 [Campaign] Sending response');
         res.status(201).json({
             success: true,
-            campaign: localCampaign,
-            meta_result: metaResult
+            campaign: localCampaign
         });
 
     } catch (error) {
@@ -273,29 +199,6 @@ export const stopCampaign = async (req, res) => {
             return res.status(400).json({ success: false, error: 'Campaign is already paused' });
         }
 
-        // Pause on Meta if linked
-        if (campaign.meta_campaign_id) {
-            try {
-                const { data: connection } = await db
-                    .from('meta_connections')
-                    .select('access_token')
-                    .eq('user_id', userId)
-                    .eq('is_active', true)
-                    .single();
-
-                if (connection) {
-                    const token = decryptData(connection.access_token);
-                    if (token) {
-                        const metaService = new MetaService(token);
-                        await metaService.updateCampaignStatus(campaign.meta_campaign_id, 'PAUSED');
-                    }
-                }
-            } catch (metaErr) {
-                console.warn('⚠️ [Campaign] Could not pause on Meta:', metaErr.message);
-                // Continue to update locally even if Meta fails
-            }
-        }
-
         // Update local status
         await db
             .from('campaigns')
@@ -326,30 +229,6 @@ export const deleteCampaign = async (req, res) => {
 
         if (campError || !campaign) {
             return res.status(404).json({ success: false, error: 'Campaign not found' });
-        }
-
-        // Delete from Meta if linked
-        if (campaign.meta_campaign_id) {
-            try {
-                const { data: connection } = await db
-                    .from('meta_connections')
-                    .select('access_token')
-                    .eq('user_id', userId)
-                    .eq('is_active', true)
-                    .single();
-
-                if (connection) {
-                    const token = decryptData(connection.access_token);
-                    if (token) {
-                        const metaService = new MetaService(token);
-                        // Meta requires campaign to be DELETED via status update
-                        await metaService.updateCampaignStatus(campaign.meta_campaign_id, 'DELETED');
-                    }
-                }
-            } catch (metaErr) {
-                console.warn('⚠️ [Campaign] Could not delete on Meta:', metaErr.message);
-                // Continue to delete locally even if Meta fails
-            }
         }
 
         // Delete from local DB
@@ -403,41 +282,6 @@ export const getCampaignStats = async (req, res) => {
         let clicks = clicksRes.count || 0;
         let spend = 0;
         let cpc = 0;
-
-        // Fetch Meta Stats if available
-        if (campaign.meta_campaign_id) {
-            try {
-                // Get connection to decrypt token
-                const { data: connection } = await db
-                    .from('meta_connections')
-                    .select('access_token')
-                    .eq('user_id', userId)
-                    .eq('is_active', true)
-                    .single();
-
-                if (connection) {
-                    const token = decryptData(connection.access_token);
-                    if (token) {
-                        const metaService = new MetaService(token);
-                        const insights = await metaService.getCampaignInsights(campaign.meta_campaign_id);
-
-                        if (insights.success && insights.data && insights.data.data && insights.data.data.length > 0) {
-                            const metaData = insights.data.data[0];
-                            // Merge or overwrite internal stats?
-                            // Usually Meta stats are authoritative for Meta campaigns.
-                            // But we might have internal tracking too.
-                            // For now, let's use Meta stats as they include spend.
-                            impressions = parseInt(metaData.impressions || 0);
-                            clicks = parseInt(metaData.clicks || 0);
-                            spend = parseFloat(metaData.spend || 0);
-                            cpc = parseFloat(metaData.cpc || 0);
-                        }
-                    }
-                }
-            } catch (metaStatsError) {
-                console.warn('Failed to fetch Meta stats:', metaStatsError);
-            }
-        }
 
         res.json({
             success: true,

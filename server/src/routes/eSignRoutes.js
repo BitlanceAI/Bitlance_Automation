@@ -9,9 +9,11 @@ import { authenticateUser } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
 
+// Public routes (auth optional — controller uses req.user?.id if present)
+router.post('/create-request', createSignRequest);
+router.get('/status/:orderId', getSignStatus);
+
 // Authenticated routes
-router.post('/create-request', authenticateUser, createSignRequest);
-router.get('/status/:orderId', authenticateUser, getSignStatus);
 router.get('/my-agreements', authenticateUser, myAgreements);
 
 // Cashfree callback — no auth, verified via HMAC signature inside controller

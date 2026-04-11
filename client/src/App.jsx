@@ -24,21 +24,7 @@ import SignupPage from './pages/SignupPage';
 import AdminDashboard from './pages/AdminDashboard';
 import ClientHistoryPage from './pages/ClientHistoryPage';
 import GraphicDesignerPage from './pages/GraphicDesignerPage';
-// import MetaAdsPage from './pages/MetaAdsPage'; // replaced by multipage layout
-import MetaAdsLayout from './pages/meta/MetaAdsLayout';
-import MetaOverviewPage from './pages/meta/MetaOverviewPage';
-import MetaCampaignsPage from './pages/meta/MetaCampaignsPage';
-import MetaScheduledPostsPage from './pages/meta/MetaScheduledPostsPage';
-import MetaInternalCampaignsPage from './pages/meta/MetaInternalCampaignsPage';
-import MetaSettingsPage from './pages/meta/MetaSettingsPage';
 import CampaignManagerPage from './pages/CampaignManagerPage';
-// Landing Pages
-import AwarenessLanding from './pages/landing/AwarenessLanding';
-import TrafficLanding from './pages/landing/TrafficLanding';
-import LeadGenLanding from './pages/landing/LeadGenLanding';
-import SalesLanding from './pages/landing/SalesLanding';
-import OfferLanding from './pages/landing/OfferLanding';
-import RealEstateLeadGen from './pages/landing/RealEstateLeadGen';
 import CampaignWizard from './components/campaigns/CampaignWizard';
 import PrivacyPolicy from './pages/PrivacyPolicy';
 import TermsPage from './pages/TermsPage';
@@ -62,9 +48,10 @@ import BlogManagerPage from './pages/BlogManagerPage';
 import BlogEditorPage from './pages/BlogEditorPage';
 
 
-import CookieDemoPage from './pages/CookieDemoPage';
 import ESignPage from './pages/ESignDemoPage';
 import ESignCompletePage from './pages/ESignCompletePage';
+import DigiLockerCompletePage from './pages/DigiLockerCompletePage';
+import PaymentCompletePage from './pages/PaymentCompletePage';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { WorkspaceProvider } from './context/WorkspaceContext';
 import AuthGuard from './components/auth/AuthGuard';
@@ -134,8 +121,6 @@ function App() {
       navigate('/dashboard/agents/seo');
     } else if (agent.title === 'Graphic Designer AI') {
       navigate('/dashboard/agents/design');
-    } else if (agent.title === 'Meta Ads Automation AI') {
-      navigate('/dashboard/agents/meta');
     }
   };
 
@@ -191,10 +176,11 @@ function App() {
               </PublicRoute>
             } />
 
-            <Route path="/cookie-demo" element={<CookieDemoPage />} />
             <Route path="/esign" element={<ESignPage />} />
             <Route path="/esign-demo" element={<ESignPage />} />
             <Route path="/esign/complete" element={<ESignCompletePage />} />
+            <Route path="/digilocker/complete" element={<DigiLockerCompletePage />} />
+            <Route path="/payment/complete" element={<PaymentCompletePage />} />
 
             {/* Push & Blog Routes */}
             <Route path="/push/send" element={
@@ -241,21 +227,6 @@ function App() {
                 <GraphicDesignerPage />
               </AuthGuard>
             } />
-            {/* Meta Ads — multipage layout */}
-            <Route
-              path="/dashboard/agents/meta"
-              element={
-                <AuthGuard>
-                  <MetaAdsLayout />
-                </AuthGuard>
-              }
-            >
-              <Route index element={<MetaOverviewPage />} />
-              <Route path="campaigns" element={<MetaCampaignsPage />} />
-              <Route path="posts" element={<MetaScheduledPostsPage />} />
-              <Route path="internal" element={<MetaInternalCampaignsPage />} />
-              <Route path="settings" element={<MetaSettingsPage />} />
-            </Route>
             <Route path="/settings" element={
               <AuthGuard>
                 <SettingsPage />
@@ -283,14 +254,6 @@ function App() {
               </AuthGuard>
             } />
 
-            {/* Landing Page Routes (No Auth Guard) */}
-            <Route path="/l/awareness/:campaignId" element={<AwarenessLanding />} />
-            <Route path="/l/traffic/:campaignId" element={<TrafficLanding />} />
-            <Route path="/l/leadgen/:campaignId" element={<LeadGenLanding />} />
-            <Route path="/l/sales/:campaignId" element={<SalesLanding />} />
-            <Route path="/l/offer/:campaignId" element={<OfferLanding />} />
-            {/* General Lead Gen Custom Funnel */}
-            <Route path="/apply/audit" element={<RealEstateLeadGen />} />
             <Route path="/apply" element={<QuizLandingPage />} />
             <Route path="/thank-you" element={<ThankYouPage />} />
 
