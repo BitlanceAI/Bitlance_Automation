@@ -14,6 +14,9 @@ const EmailGeneratorPage = () => {
     const [loading, setLoading] = useState(false);
     const [result, setResult] = useState('');
     const [copied, setCopied] = useState(false);
+    const [sendTo, setSendTo] = useState('');
+    const [sendLoading, setSendLoading] = useState(false);
+    const [sendSubject, setSendSubject] = useState('');
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
@@ -59,10 +62,31 @@ const EmailGeneratorPage = () => {
         setTimeout(() => setCopied(false), 2000);
     };
 
+    const handleSend = async () => {
+        if (!sendTo.trim()) return toast.error('Enter a recipient email');
+        if (!result) return toast.error('Generate an email first');
+        setSendLoading(true);
+        try {
+            const res = await fetch(`${API_BASE_URL}/api/mailtrap/send`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    to: sendTo.trim(),
+                    subject: sendSubject || formData.purpose || 'Message from Bitlance',
+                    html: `<div style="font-family:sans-serif;max-width:600px;margin:auto;padding:24px"><pre style="white-space:pre-wrap;font-family:inherit">${result}</pre></div>`,
+                }),
+            });
+            const data = await res.json();
+            if (data.success) toast.success(`✅ Email sent to ${sendTo}!`);
+            else toast.error(data.error || 'Send failed');
+        } catch { toast.error('Cannot reach server'); }
+        finally { setSendLoading(false); }
+    };
+
     return (
         <div className="min-h-screen bg-gray-50 dark:bg-slate-900 pt-24 pb-12 px-4 sm:px-6 lg:px-8 transition-colors duration-300">
             <SEOHead canonicalUrl="https://www.bitlancetechhub.com/email-generator" title="AI Email Generator" description="Draft professional emails in seconds with our AI Email Generator." />
-            
+
             <div className="max-w-4xl mx-auto">
                 <div className="text-center mb-10">
                     <div className="inline-flex justify-center items-center p-3 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 shadow-xl shadow-blue-500/20 mb-6 mt-4">
@@ -164,7 +188,7 @@ const EmailGeneratorPage = () => {
                                     </button>
                                 )}
                             </div>
-                            
+
                             <div className={`flex-1 min-h-[300px] p-5 rounded-2xl border ${result ? 'border-blue-100 dark:border-blue-900/50 bg-blue-50/30 dark:bg-blue-900/10' : 'border-dashed border-gray-200 dark:border-slate-700 bg-gray-50/50 dark:bg-slate-800/50 flex items-center justify-center'}`}>
                                 {loading ? (
                                     <div className="flex flex-col items-center text-gray-400 dark:text-gray-500">
@@ -181,6 +205,37 @@ const EmailGeneratorPage = () => {
                                     </p>
                                 )}
                             </div>
+
+                            {/* Send directly */}
+                            {result && (
+                                <div className="mt-4 space-y-2 border-t border-gray-100 dark:border-slate-700 pt-4">
+                                    <p className="text-sm font-semibold text-gray-700 dark:text-gray-300">Send this email</p>
+                                    <input
+                                        type="text"
+                                        value={sendSubject}
+                                        onChange={e => setSendSubject(e.target.value)}
+                                        placeholder={`Subject: ${formData.purpose || 'No subject'}`}
+                                        className="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-gray-900 dark:text-white placeholder-gray-400 outline-none focus:ring-2 focus:ring-blue-500 text-sm transition-all"
+                                    />
+                                    <div className="flex gap-2">
+                                        <input
+                                            type="email"
+                                            value={sendTo}
+                                            onChange={e => setSendTo(e.target.value)}
+                                            placeholder="Send to: recipient@email.com"
+                                            className="flex-1 px-4 py-2.5 rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-gray-900 dark:text-white placeholder-gray-400 outline-none focus:ring-2 focus:ring-blue-500 text-sm transition-all"
+                                        />
+                                        <button
+                                            onClick={handleSend}
+                                            disabled={sendLoading}
+                                            className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 text-white text-sm font-semibold shadow-md hover:shadow-emerald-500/40 hover:-translate-y-0.5 transition-all disabled:opacity-60 whitespace-nowrap"
+                                        >
+                                            {sendLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
+                                            {sendLoading ? 'Sending…' : 'Send Now'}
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
                         </div>
                     </div>
                 </div>

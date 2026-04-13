@@ -1,107 +1,144 @@
-import React, { useRef } from 'react';
+import { useRef } from 'react';
 import { motion, useMotionValue, useSpring, useTransform } from 'framer-motion';
 import ScrollReveal from '../ui/ScrollReveal';
 
 const T = '#26CECE';
 const T2 = '#1AA8A8';
 
-// SVG per step — teal palette only
-const StepAnim = ({ step }) => {
-    if (step === 1) return (
-        <svg viewBox="0 0 100 100" className="w-full h-full opacity-80 group-hover:opacity-100 transition-opacity">
-            <defs>
-                <linearGradient id="sh1" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" stopColor={T} /><stop offset="100%" stopColor={T2} />
-                </linearGradient>
-            </defs>
-            {[{cx:30,cy:40,r:8,dy:-5,dur:3},{cx:70,cy:30,r:10,dy:6,dur:4},{cx:50,cy:70,r:6,dy:-8,dur:3.5}].map((c,i)=>(
-                <motion.circle key={i} cx={c.cx} cy={c.cy} r={c.r} fill="url(#sh1)"
-                    animate={{y:[0,c.dy,0]}} transition={{repeat:Infinity,duration:c.dur,ease:'easeInOut'}} />
-            ))}
-            {[[30,40,70,30],[70,30,50,70],[50,70,30,40]].map(([x1,y1,x2,y2],i)=>(
-                <motion.line key={i} x1={x1} y1={y1} x2={x2} y2={y2} stroke="url(#sh1)" strokeWidth="2" strokeDasharray="4 4"
-                    animate={{strokeDashoffset:[0,i%2===0?20:-20]}} transition={{repeat:Infinity,duration:4,ease:'linear'}} />
-            ))}
-        </svg>
-    );
-    if (step === 2) return (
-        <svg viewBox="0 0 100 100" className="w-full h-full opacity-80 group-hover:opacity-100 transition-opacity">
-            <defs>
-                <linearGradient id="sh2" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" stopColor={T} /><stop offset="100%" stopColor={T2} />
-                </linearGradient>
-            </defs>
-            <motion.circle cx="50" cy="50" r="20" fill="none" stroke="url(#sh2)" strokeWidth="4" strokeDasharray="30 10"
-                animate={{rotate:360}} transition={{repeat:Infinity,duration:8,ease:'linear'}} style={{originX:'50px',originY:'50px'}} />
-            <motion.circle cx="50" cy="50" r="32" fill="none" stroke="url(#sh2)" strokeWidth="1.5" strokeDasharray="15 15" opacity="0.4"
-                animate={{rotate:-360}} transition={{repeat:Infinity,duration:14,ease:'linear'}} style={{originX:'50px',originY:'50px'}} />
-            <motion.rect x="45" y="45" width="10" height="10" rx="2" fill="url(#sh2)"
-                animate={{scale:[1,1.3,1]}} transition={{repeat:Infinity,duration:3,ease:'easeInOut'}} style={{originX:'50px',originY:'50px'}} />
-        </svg>
-    );
-    return (
-        <svg viewBox="0 0 100 100" className="w-full h-full opacity-80 group-hover:opacity-100 transition-opacity overflow-visible">
-            <defs>
-                <linearGradient id="sh3" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" stopColor={T} /><stop offset="100%" stopColor={T2} />
-                </linearGradient>
-            </defs>
-            <motion.path d="M 10 70 Q 30 30 50 50 T 90 20" fill="none" stroke="url(#sh3)" strokeWidth="3" strokeLinecap="round"
-                animate={{pathLength:[0,1],opacity:[0,1,0]}} transition={{repeat:Infinity,duration:3,ease:'easeInOut'}} />
-            <motion.circle cx="90" cy="20" r="5" fill="url(#sh3)"
-                animate={{scale:[0,1.5,0],opacity:[0,1,0]}} transition={{repeat:Infinity,duration:3,ease:'easeInOut',delay:1.5}} />
-            <motion.circle cx="50" cy="50" r="10" fill="none" stroke="url(#sh3)" strokeWidth="1"
-                animate={{scale:[1,5],opacity:[0.8,0]}} transition={{repeat:Infinity,duration:2,ease:'easeOut'}} />
-        </svg>
-    );
-};
+// ─── Animated SVG per service ────────────────────────────────────────────────
+const WhatsAppAnim = () => (
+    <svg viewBox="0 0 100 100" className="w-full h-full opacity-80 group-hover:opacity-100 transition-opacity">
+        <defs>
+            <linearGradient id="wa1" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stopColor={T} /><stop offset="100%" stopColor={T2} />
+            </linearGradient>
+        </defs>
+        {/* Phone outline */}
+        <rect x="30" y="15" width="40" height="65" rx="6" fill="none" stroke="url(#wa1)" strokeWidth="2.5" />
+        {/* Chat bubbles */}
+        {[
+            { x: 36, y: 32, w: 20, delay: 0 },
+            { x: 44, y: 46, w: 16, delay: 0.5 },
+            { x: 36, y: 60, w: 22, delay: 1 },
+        ].map((b, i) => (
+            <motion.rect key={i} x={b.x} y={b.y} width={b.w} height={7} rx="3" fill="url(#wa1)"
+                animate={{ opacity: [0, 1, 1, 0] }}
+                transition={{ repeat: Infinity, duration: 3, delay: b.delay, ease: 'easeInOut' }} />
+        ))}
+        {/* Signal dots */}
+        {[0, 1, 2].map(i => (
+            <motion.circle key={i} cx={44 + i * 6} cy={88} r="2" fill="url(#wa1)"
+                animate={{ scale: [1, 1.5, 1], opacity: [0.4, 1, 0.4] }}
+                transition={{ repeat: Infinity, duration: 1.2, delay: i * 0.2 }} />
+        ))}
+    </svg>
+);
 
-const Card3D = ({ step, title, desc }) => {
+const VoiceAnim = () => (
+    <svg viewBox="0 0 100 100" className="w-full h-full opacity-80 group-hover:opacity-100 transition-opacity">
+        <defs>
+            <linearGradient id="va1" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stopColor={T} /><stop offset="100%" stopColor={T2} />
+            </linearGradient>
+        </defs>
+        {/* Microphone body */}
+        <rect x="40" y="18" width="20" height="34" rx="10" fill="none" stroke="url(#va1)" strokeWidth="2.5" />
+        {/* Mic stand */}
+        <motion.path d="M30 52 Q30 70 50 70 Q70 70 70 52" fill="none" stroke="url(#va1)" strokeWidth="2.5" strokeLinecap="round" />
+        <line x1="50" y1="70" x2="50" y2="82" stroke="url(#va1)" strokeWidth="2.5" strokeLinecap="round" />
+        <line x1="38" y1="82" x2="62" y2="82" stroke="url(#va1)" strokeWidth="2.5" strokeLinecap="round" />
+        {/* Sound waves */}
+        {[14, 22, 30].map((r, i) => (
+            <motion.circle key={i} cx="50" cy="35" r={r} fill="none" stroke="url(#va1)" strokeWidth="1"
+                animate={{ opacity: [0, 0.6, 0], scale: [0.8, 1.1, 0.8] }}
+                transition={{ repeat: Infinity, duration: 2, delay: i * 0.4 }} />
+        ))}
+    </svg>
+);
+
+const ChatbotAnim = () => (
+    <svg viewBox="0 0 100 100" className="w-full h-full opacity-80 group-hover:opacity-100 transition-opacity">
+        <defs>
+            <linearGradient id="cb1" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stopColor={T} /><stop offset="100%" stopColor={T2} />
+            </linearGradient>
+        </defs>
+        {/* Chat bubble */}
+        <rect x="15" y="20" width="70" height="45" rx="10" fill="none" stroke="url(#cb1)" strokeWidth="2.5" />
+        <path d="M35 65 L28 78 L50 65" fill="none" stroke="url(#cb1)" strokeWidth="2.5" strokeLinejoin="round" />
+        {/* Bot face */}
+        <motion.circle cx="36" cy="40" r="5" fill="url(#cb1)"
+            animate={{ scale: [1, 1.2, 1] }} transition={{ repeat: Infinity, duration: 2, ease: 'easeInOut' }} />
+        <motion.circle cx="64" cy="40" r="5" fill="url(#cb1)"
+            animate={{ scale: [1, 1.2, 1] }} transition={{ repeat: Infinity, duration: 2, delay: 0.3, ease: 'easeInOut' }} />
+        {/* Smile */}
+        <motion.path d="M38 52 Q50 60 62 52" fill="none" stroke="url(#cb1)" strokeWidth="2.5" strokeLinecap="round"
+            animate={{ d: ['M38 52 Q50 60 62 52', 'M38 54 Q50 62 62 54', 'M38 52 Q50 60 62 52'] }}
+            transition={{ repeat: Infinity, duration: 2.5, ease: 'easeInOut' }} />
+    </svg>
+);
+
+// ─── 3D Tilt Card ────────────────────────────────────────────────────────────
+const ServiceCard = ({ icon: Icon, label, title, desc, badge }) => {
     const ref = useRef(null);
-    const x = useMotionValue(0); const y = useMotionValue(0);
-    const xs = useSpring(x); const ys = useSpring(y);
-    const rX = useTransform(ys,[-0.5,0.5],['15deg','-15deg']);
-    const rY = useTransform(xs,[-0.5,0.5],['-15deg','15deg']);
+    const x = useMotionValue(0);
+    const y = useMotionValue(0);
+    const xs = useSpring(x);
+    const ys = useSpring(y);
+    const rX = useTransform(ys, [-0.5, 0.5], ['12deg', '-12deg']);
+    const rY = useTransform(xs, [-0.5, 0.5], ['-12deg', '12deg']);
+
     const move = e => {
         const r = ref.current.getBoundingClientRect();
-        x.set((e.clientX - r.left)/r.width - 0.5);
-        y.set((e.clientY - r.top)/r.height - 0.5);
+        x.set((e.clientX - r.left) / r.width - 0.5);
+        y.set((e.clientY - r.top) / r.height - 0.5);
     };
     const leave = () => { x.set(0); y.set(0); };
 
     return (
         <motion.div
             ref={ref} onMouseMove={move} onMouseLeave={leave}
-            style={{ rotateY: rY, rotateX: rX, transformStyle:'preserve-3d' }}
-            className="relative h-full min-h-[420px] w-full cursor-pointer group"
+            style={{ rotateY: rY, rotateX: rX, transformStyle: 'preserve-3d' }}
+            className="relative h-full min-h-[400px] w-full cursor-pointer group"
         >
-            <div style={{
-                transform: 'translateZ(60px)',
-                transformStyle: 'preserve-3d',
-                background: '#ffffff',
-                border: '1px solid #E8F8F8',
-                borderRadius: 12,
-                boxShadow: '0 4px 24px rgba(38,206,206,0.08)',
-            }}
-                className="absolute inset-3 grid place-content-center transition-all duration-300 group-hover:shadow-[0_8px_40px_rgba(38,206,206,0.18)] group-hover:border-[#26CECE50]"
+            <div
+                style={{
+                    transform: 'translateZ(60px)',
+                    transformStyle: 'preserve-3d',
+                    background: '#ffffff',
+                    border: '1px solid #E8F8F8',
+                    borderRadius: 12,
+                    boxShadow: '0 4px 24px rgba(38,206,206,0.08)',
+                }}
+                className="absolute inset-3 transition-all duration-300 group-hover:shadow-[0_8px_40px_rgba(38,206,206,0.18)] group-hover:border-[#26CECE50]"
             >
-                <div className="text-center p-6 flex flex-col items-center justify-between h-full"
-                    style={{ transform: 'translateZ(40px)' }}>
-                    <div>
-                        {/* Step number */}
-                        <div className="w-14 h-14 mx-auto rounded-xl flex items-center justify-center text-xl font-bold mb-6"
-                            style={{ fontFamily: "'DM Mono',monospace", background: `${T}15`, border: `1px solid ${T}40`, color: T }}>
-                            0{step}
-                        </div>
-                        <h3 className="text-lg font-bold mb-3" style={{ fontFamily: "'Space Grotesk',sans-serif", color: '#0A0A0A' }}>
-                            {title}
-                        </h3>
-                        <p className="text-sm max-w-[230px] mx-auto leading-relaxed" style={{ color: '#666' }}>{desc}</p>
+                <div className="p-6 flex flex-col h-full" style={{ transform: 'translateZ(40px)' }}>
+                    {/* Badge */}
+                    <div className="flex items-center justify-between mb-5">
+                        <span className="text-[10px] font-bold uppercase tracking-widest px-2.5 py-1 rounded-sm"
+                            style={{ background: `${T}15`, color: T, fontFamily: "'DM Mono',monospace" }}>
+                            {label}
+                        </span>
+                        {badge && (
+                            <span className="text-[9px] font-bold uppercase tracking-widest px-2 py-1 rounded-sm"
+                                style={{ background: '#0A0A0A', color: '#26CECE', fontFamily: "'DM Mono',monospace" }}>
+                                {badge}
+                            </span>
+                        )}
                     </div>
-                    {/* Anim box */}
-                    <div className="h-36 w-full mt-6 rounded-xl flex items-center justify-center relative overflow-hidden"
-                        style={{ background: '#F0FEFE', border: `1px solid ${T}20` }}>
-                        <div className="w-20 h-20 relative z-10"><StepAnim step={step} /></div>
+
+                    {/* Title + desc */}
+                    <h3 className="text-xl font-bold mb-2" style={{ fontFamily: "'Space Grotesk',sans-serif", color: '#0A0A0A' }}>
+                        {title}
+                    </h3>
+                    <p className="text-sm leading-relaxed" style={{ color: '#666' }}>{desc}</p>
+
+                    {/* Animated illustration */}
+                    <div className="flex-1 mt-5 rounded-xl flex items-center justify-center relative overflow-hidden"
+                        style={{ background: '#F0FEFE', border: `1px solid ${T}20`, minHeight: 120 }}>
+                        <div className="w-20 h-20 relative z-10">
+                            <Icon />
+                        </div>
                     </div>
                 </div>
             </div>
@@ -109,42 +146,66 @@ const Card3D = ({ step, title, desc }) => {
     );
 };
 
+// ─── Section ─────────────────────────────────────────────────────────────────
+const services = [
+    {
+        icon: WhatsAppAnim,
+        label: 'WhatsApp Bot',
+        title: 'WhatsApp AI Agent',
+        desc: 'Instantly responds to every WhatsApp enquiry, qualifies leads, shares brochures, and books appointments — 24/7 with zero human involvement.',
+        badge: '0.4s response',
+    },
+    {
+        icon: VoiceAnim,
+        label: 'Voice Agent',
+        title: 'AI Voice Agent',
+        desc: 'Answers every inbound call, handles objections, and books appointments in a natural human voice. Never miss a lead during peak hours again.',
+        badge: '24/7 calls',
+    },
+    {
+        icon: ChatbotAnim,
+        label: 'Website Chatbot',
+        title: 'AI Chat Agent',
+        desc: 'Converts website visitors into leads with a smart chatbot trained on your business data. Handles FAQs, captures contacts, and routes hot leads instantly.',
+        badge: 'Live on site',
+    },
+];
+
 const HowItWorksSection = () => (
-    /* ── WHITE SECTION ── */
     <section className="py-12 relative overflow-hidden bg-[#F8FFFE]">
-        {/* Top teal line */}
         <div className="absolute top-0 left-0 right-0 h-[2px] pointer-events-none"
             style={{ background: `linear-gradient(90deg, transparent, ${T}60, transparent)` }} />
-        {/* Subtle teal glow */}
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[400px] rounded-full blur-[140px] -z-0 pointer-events-none"
             style={{ background: 'rgba(38,206,206,0.07)' }} />
-        {/* Dot grid */}
         <div className="absolute inset-0 pointer-events-none opacity-[0.04]"
             style={{ backgroundImage: `radial-gradient(circle, ${T} 1px, transparent 1px)`, backgroundSize: '32px 32px' }} />
 
         <ScrollReveal className="max-w-7xl mx-auto px-6 relative z-10">
-            {/* Heading */}
-            <div className="mb-20 max-w-2xl">
+            <div className="mb-16 max-w-2xl">
                 <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 10, letterSpacing: '0.18em', color: T, textTransform: 'uppercase' }}>
-                    Process
+                    Our Services
                 </span>
                 <h2 className="mt-4 text-4xl md:text-5xl lg:text-6xl font-extrabold leading-tight"
                     style={{ fontFamily: "'Space Grotesk',sans-serif", letterSpacing: '-0.03em', color: '#0A0A0A' }}>
-                    Go live in{' '}
-                    <span style={{ color: T }}>3 simple steps</span>
+                    Three agents,{' '}
+                    <span style={{ color: T }}>zero manual work</span>
                 </h2>
                 <div className="mt-6" style={{ width: 48, height: 2, background: T }} />
                 <p className="mt-6 text-base leading-relaxed" style={{ color: '#666' }}>
-                    We handle the complexity. You get a fully trained AI agent ready to close deals.
+                    Every enquiry answered. Every lead qualified. Every appointment booked — automatically across WhatsApp, phone, and your website.
                 </p>
             </div>
 
-            <div className="grid md:grid-cols-3 gap-8 md:gap-10 relative z-10 max-w-6xl mx-auto">
-                {[
-                    { step:1, title:'Strategy & Script',    desc:'We analyse your business and map out conversational flows that convert.' },
-                    { step:2, title:'Setup & Integrations', desc:'We connect the AI to your phone, website, CRM, and calendar instantly.' },
-                    { step:3, title:'Launch & Optimise',    desc:'Go live. We monitor performance and tweak the AI for maximum ROI.' },
-                ].map(item => <Card3D key={item.step} {...item} />)}
+            <div className="grid md:grid-cols-3 gap-8 md:gap-10 max-w-6xl mx-auto">
+                {services.map((s, i) => (
+                    <motion.div key={i}
+                        initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.45, delay: i * 0.1 }} viewport={{ once: true }}
+                        className="h-full"
+                    >
+                        <ServiceCard {...s} />
+                    </motion.div>
+                ))}
             </div>
         </ScrollReveal>
     </section>

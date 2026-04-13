@@ -12,7 +12,6 @@ import { useAuth } from '../context/AuthContext';
 const API = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 const MAX_POLLS = 24;
 const POLL_INTERVAL = 5000;
-const AMOUNT = 4999;
 
 async function loadCashfreeSDK() {
     if (window.Cashfree) return;
@@ -28,9 +27,10 @@ async function loadCashfreeSDK() {
 export default function DigiLockerCompletePage() {
     const [params] = useSearchParams();
     const orderId = params.get('order_id');
+    const bypass = params.get('bypass') === '1';
     const { token } = useAuth();
 
-    const [status, setStatus] = useState('POLLING');
+    const [status, setStatus] = useState(bypass ? 'AUTHENTICATED' : 'POLLING');
     const [pollCount, setPollCount] = useState(0);
     const [payLoading, setPayLoading] = useState(false);
     const [payError, setPayError] = useState('');
@@ -38,6 +38,8 @@ export default function DigiLockerCompletePage() {
 
     const savedFields = JSON.parse(sessionStorage.getItem('digilocker_fields') || '{}');
     const verificationId = orderId || savedFields.verificationId;
+    const planAmount = savedFields.planAmount || 4999;
+    const planName = savedFields.planName || 'Growth';
 
     const poll = async () => {
         if (!verificationId) return;
@@ -62,6 +64,8 @@ export default function DigiLockerCompletePage() {
     };
 
     useEffect(() => {
+        // DEV BYPASS — skip polling when bypass=1 in URL
+        if (bypass) return;
         if (!verificationId) { setStatus('ERROR'); return; }
         poll();
         intervalRef.current = setInterval(poll, POLL_INTERVAL);
@@ -84,7 +88,7 @@ export default function DigiLockerCompletePage() {
                     name: savedFields.name,
                     email: savedFields.email,
                     phone: savedFields.phone,
-                    amount: AMOUNT,
+                    amount: planAmount,
                 }),
             });
             const data = await res.json();
@@ -99,10 +103,10 @@ export default function DigiLockerCompletePage() {
 
             // 2. Load Cashfree JS SDK + open checkout
             await loadCashfreeSDK();
-            const cashfree = window.Cashfree({ mode: 'sandbox' });
+            const cashfree = window.Cashfree({ mode: 'production' });
             cashfree.checkout({
                 paymentSessionId: data.paymentSessionId,
-                returnUrl: `${API}/payment/complete?order_id=${data.orderId}&verification_id=${verificationId}`,
+                returnUrl: `${window.location.origin}/payment/complete?order_id=${data.orderId}&verification_id=${verificationId}`,
             });
         } catch (err) {
             setPayError(err.message || 'Payment could not be initiated. Please try again.');
@@ -163,8 +167,8 @@ export default function DigiLockerCompletePage() {
                                 {[
                                     ['Name', savedFields.name || '—'],
                                     ['Identity', 'DigiLocker · Aadhaar ✓'],
-                                    ['Plan', 'SEO AI Agent — Monthly'],
-                                    ['Amount', `₹${AMOUNT.toLocaleString('en-IN')}`],
+                                    ['Plan', `SEO AI Agent — ${planName}`],
+                                    ['Amount', `₹${planAmount.toLocaleString('en-IN')}`],
                                 ].map(([k, v]) => (
                                     <div key={k} className="flex justify-between gap-4">
                                         <span className="text-gray-500">{k}</span>
@@ -180,7 +184,7 @@ export default function DigiLockerCompletePage() {
                             >
                                 {payLoading
                                     ? <><Loader2 className="w-4 h-4 animate-spin" /> Preparing payment…</>
-                                    : <><CreditCard className="w-4 h-4" /> Pay ₹{AMOUNT.toLocaleString('en-IN')}</>}
+                                    : <><CreditCard className="w-4 h-4" /> Pay ₹{planAmount.toLocaleString('en-IN')}</>}
                             </button>
 
                             {payError && (

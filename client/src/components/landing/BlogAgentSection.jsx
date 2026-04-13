@@ -1,5 +1,5 @@
 import React from 'react';
-import { Database, FileText, Wand2, Globe, ArrowRight, Rss, ArrowDown } from 'lucide-react';
+import { Search, Tag, Wand2, ShieldCheck, Globe, ArrowRight, Rss, ArrowDown } from 'lucide-react';
 import { motion } from 'framer-motion';
 import ScrollReveal from '../ui/ScrollReveal';
 import { useNavigate } from 'react-router-dom';
@@ -11,27 +11,38 @@ const BlogAgentSection = ({ onOpenBooking }) => {
 
     const workflowSteps = [
         {
-            icon: <Database className="w-8 h-8" style={{ color: TEAL }} />,
-            title: "Data Ingestion",
-            desc: "Provide your niche or keyword list via Excel.",
+            icon: <Search className="w-8 h-8" style={{ color: TEAL }} />,
+            title: "Trending Topics",
+            badge: "SerpAPI",
+            desc: "Searches Google in real-time to find trending topics and People Also Ask questions for your industry.",
             delay: 0.2
         },
         {
-            icon: <FileText className="w-8 h-8" style={{ color: TEAL }} />,
-            title: "Outline & Research",
-            desc: "AI extracts trends and builds a structured outline.",
-            delay: 0.4
+            icon: <Tag className="w-8 h-8" style={{ color: TEAL }} />,
+            title: "Keyword Research",
+            badge: "SerpAPI",
+            desc: "Extracts related searches and PAA signals from Google to build a real, rankable keyword set.",
+            delay: 0.35
         },
         {
             icon: <Wand2 className="w-8 h-8" style={{ color: TEAL }} />,
             title: "Content Generation",
-            desc: "Crafts SEO-optimized content with engaging titles.",
-            delay: 0.6
+            badge: "Perplexity AI",
+            desc: "Injects SERP-sourced topic and keywords into a writing prompt to craft a fully SEO-optimized article.",
+            delay: 0.5
+        },
+        {
+            icon: <ShieldCheck className="w-8 h-8" style={{ color: TEAL }} />,
+            title: "Plagiarism Check",
+            badge: "SerpAPI",
+            desc: "Runs exact-phrase Google searches on key sentences to verify the content is original before publishing.",
+            delay: 0.65
         },
         {
             icon: <Globe className="w-8 h-8" style={{ color: TEAL }} />,
             title: "Auto-Publish",
-            desc: "Posts directly to your blog with images and tags.",
+            badge: "WordPress",
+            desc: "Posts directly to your website with images, SEO title, and tags — fully hands-free.",
             delay: 0.8
         }
     ];
@@ -93,17 +104,16 @@ const BlogAgentSection = ({ onOpenBooking }) => {
                 <div className="mt-20 relative max-w-6xl mx-auto pb-12">
 
                     {/* Connecting line (Desktop only) */}
-                    <div className="hidden md:block absolute top-[50px] left-[10%] right-[10%] h-[1px] border-t border-[#1E1E1E] z-0">
-                        {/* Animated gradient bar moving across the line */}
+                    <div className="hidden md:block absolute top-[50px] left-[8%] right-[8%] h-[1px] border-t border-[#1E1E1E] z-0">
                         <motion.div
-                            className="absolute inset-0 h-[1px] w-1/3 -top-[1px]"
+                            className="absolute inset-0 h-[1px] w-1/4 -top-[1px]"
                             style={{ background: `linear-gradient(90deg, transparent, ${TEAL}, transparent)` }}
-                            animate={{ left: ['-33%', '100%'] }}
+                            animate={{ left: ['-25%', '100%'] }}
                             transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
                         />
                     </div>
 
-                    <div className="grid md:grid-cols-4 gap-8 relative z-10">
+                    <div className="grid md:grid-cols-5 gap-6 relative z-10">
                         {workflowSteps.map((step, index) => (
                             <div key={index} className="flex flex-col items-center relative text-center group">
 
@@ -120,7 +130,7 @@ const BlogAgentSection = ({ onOpenBooking }) => {
                                     whileInView={{ opacity: 1, y: 0 }}
                                     transition={{ duration: 0.4, delay: step.delay }}
                                     viewport={{ once: true, margin: "-50px" }}
-                                    className="relative w-24 h-24 md:w-28 md:h-28 mb-8 flex items-center justify-center transition-transform duration-300 group-hover:-translate-y-2"
+                                    className="relative w-20 h-20 md:w-24 md:h-24 mb-6 flex items-center justify-center transition-transform duration-300 group-hover:-translate-y-2"
                                     style={{
                                         background: '#111',
                                         border: '1px solid #1E1E1E',
@@ -130,12 +140,11 @@ const BlogAgentSection = ({ onOpenBooking }) => {
                                 >
                                     {step.icon}
 
-                                    {/* Number Badge Brutalist */}
-                                    <div className="absolute -top-3 -right-3 w-8 h-8 flex items-center justify-center text-sm font-bold"
+                                    {/* Step number badge */}
+                                    <div className="absolute -top-3 -right-3 w-7 h-7 flex items-center justify-center text-xs font-bold"
                                         style={{
                                             background: TEAL,
                                             color: '#070707',
-                                            border: 'none',
                                             borderRadius: 2,
                                             fontFamily: "'DM Mono', monospace"
                                         }}>
@@ -150,8 +159,21 @@ const BlogAgentSection = ({ onOpenBooking }) => {
                                     transition={{ duration: 0.5, delay: step.delay + 0.2 }}
                                     viewport={{ once: true }}
                                 >
-                                    <h3 className="text-lg font-bold text-white mb-2" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>{step.title}</h3>
-                                    <p className="text-sm text-white/50 leading-relaxed px-2" style={{ fontFamily: "'DM Mono', monospace" }}>
+                                    <h3 className="text-base font-bold text-white mb-1" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+                                        {step.title}
+                                    </h3>
+                                    {/* Source badge (SerpAPI / Perplexity AI / WordPress) */}
+                                    <div className="inline-block mb-2 px-2 py-0.5 text-[10px] font-semibold tracking-widest uppercase"
+                                        style={{
+                                            background: `${TEAL}15`,
+                                            color: TEAL,
+                                            border: `1px solid ${TEAL}30`,
+                                            borderRadius: 2,
+                                            fontFamily: "'DM Mono', monospace"
+                                        }}>
+                                        {step.badge}
+                                    </div>
+                                    <p className="text-xs text-white/50 leading-relaxed px-1" style={{ fontFamily: "'DM Mono', monospace" }}>
                                         {step.desc}
                                     </p>
                                 </motion.div>

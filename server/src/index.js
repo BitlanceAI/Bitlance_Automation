@@ -116,6 +116,9 @@ app.use('/api/push', pushRoutes);
 import wordpressRoutes from './routes/wordpressRoutes.js';
 app.use('/api/wordpress', wordpressRoutes);
 
+import mailtrapRoutes from './routes/mailtrapRoutes.js';
+app.use('/api/mailtrap', mailtrapRoutes);
+
 import eSignRoutes from './routes/eSignRoutes.js';
 app.use('/api/esign', eSignRoutes);
 
@@ -124,6 +127,9 @@ app.use('/api/digilocker', digiLockerRoutes);
 
 import paymentRoutes from './routes/paymentRoutes.js';
 app.use('/api/payment', paymentRoutes);
+
+import sitemapRoutes from './routes/sitemapRoutes.js';
+app.use('/', sitemapRoutes);
 
 // Redirect bounces — Cashfree needs https, bounces to local React dev server
 // DigiLocker redirect bounce — Cashfree needs https, so it hits the ngrok server
@@ -183,6 +189,7 @@ import { startPostScheduler } from './services/scheduler.js';
 // Start Scheduler Service
 import SchedulerService from './services/scheduler/SchedulerService.js';
 import { startReminderCron } from './services/reminderCron.js';
+import { startEmailSequenceCron } from './services/emailSequenceCron.js';
 // Pass a default MetaService or handle inside Scheduler
 const scheduler = new SchedulerService();
 scheduler.start();
@@ -195,6 +202,9 @@ app.listen(PORT, () => {
 
     // Start 24h reminder cron
     startReminderCron();
+
+    // Start email sequence cron (welcome · nurture · re-engagement)
+    startEmailSequenceCron();
 });
 
 export default app;

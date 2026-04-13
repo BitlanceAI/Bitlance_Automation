@@ -6,6 +6,7 @@ import AdminRemarketing from '../components/admin/AdminRemarketing';
 import AdminLogs from '../components/admin/AdminLogs';
 import AdminAutoBlog from '../components/admin/AdminAutoBlog';
 import AdminLeads from '../components/admin/AdminLeads';
+import EmailAutomationPage from './EmailAutomationPage';
 import { useAuth } from '../context/AuthContext';
 import {
     LayoutDashboard,
@@ -387,6 +388,12 @@ const AdminDashboard = () => {
                         onClick={() => setCurrentView('leads')}
                     />
                     <NavItem
+                        icon={<Mail size={20} />}
+                        label="Email Automation"
+                        active={currentView === 'email-automation'}
+                        onClick={() => setCurrentView('email-automation')}
+                    />
+                    <NavItem
                         icon={<Megaphone size={20} />}
                         label="Campaigns"
                         active={false}
@@ -425,6 +432,7 @@ const AdminDashboard = () => {
                                 {currentView === 'logs' && <AdminLogs />}
                                 {currentView === 'autoblog' && <AdminAutoBlog />}
                                 {currentView === 'leads' && <AdminLeads />}
+                                {currentView === 'email-automation' && <EmailAutomationPage />}
                             </>
                         )}
                     </div>

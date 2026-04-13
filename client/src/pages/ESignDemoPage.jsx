@@ -8,14 +8,46 @@ import { useAuth } from '../context/AuthContext';
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 
-const AGENT = {
-  name: 'SEO AI Agent',
-  price: 'Rs. 4,999 / month',
-  description: 'Automated SEO content generation & publishing pipeline.',
-};
+// ─── Plans ───────────────────────────────────────────────────────────────────────
+const PLANS = [
+  {
+    id: 'starter',
+    name: 'Starter',
+    price: 1999,
+    label: '₹1,999 / month',
+    articles: 8,
+    sites: 1,
+    features: ['8 articles/month', '1 WordPress site', 'Basic keyword research', 'Plagiarism check', 'Email support'],
+    disabled: ['Auto-publish', 'Interlinking', 'Push notifications'],
+    for: 'Small businesses testing SEO automation',
+  },
+  {
+    id: 'growth',
+    name: 'Growth',
+    price: 4999,
+    label: '₹4,999 / month',
+    articles: 30,
+    sites: 3,
+    popular: true,
+    features: ['30 articles/month', '3 WordPress sites', 'SerpAPI trending topics', 'Plagiarism check', 'Auto-publish', 'Interlinking', 'Push notifications', 'Priority support'],
+    disabled: [],
+    for: 'Teams ready to dominate Google',
+  },
+  {
+    id: 'agency',
+    name: 'Agency',
+    price: 9999,
+    label: '₹9,999 / month',
+    articles: 100,
+    sites: null,
+    features: ['100 articles/month', 'Unlimited WordPress sites', 'SerpAPI + custom keywords', 'Plagiarism check', 'Auto-publish', 'Interlinking', 'Push notifications', 'Dedicated support'],
+    disabled: [],
+    for: 'Agencies & multi-site businesses',
+  },
+];
 
 // ─── PDF builder ────────────────────────────────────────────────────────────────
-function buildPDF(fields = {}, signed = false) {
+function buildPDF(fields = {}, plan = PLANS[1], signed = false) {
   const doc = new jsPDF({ unit: 'pt', format: 'a4' });
   const W = doc.internal.pageSize.getWidth();
   const pageH = doc.internal.pageSize.getHeight();
@@ -56,8 +88,10 @@ function buildPDF(fields = {}, signed = false) {
   const infoRows = [
     ['Agreement No.', `AB-${Date.now().toString(36).toUpperCase().slice(-6)}`],
     ['Date', new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'long', year: 'numeric' })],
-    ['Service', AGENT.name],
-    ['Price', AGENT.price],
+    ['Service', `SEO AI Agent — ${plan.name} Plan`],
+    ['Price', plan.label],
+    ['Articles/Month', `${plan.articles}`],
+    ['WordPress Sites', plan.sites ? `${plan.sites}` : 'Unlimited'],
   ];
   doc.setFontSize(9);
   doc.setLineWidth(0.5);
@@ -105,10 +139,10 @@ function buildPDF(fields = {}, signed = false) {
   y += 6;
 
   section('2. SCOPE OF SERVICE');
-  para(`Automation-Bitlance agrees to provide access to the "${AGENT.name}" — ${AGENT.description} The service includes onboarding, technical support via email, and platform access for the duration of the active subscription.`);
+  para(`Automation-Bitlance agrees to provide access to the "SEO AI Agent — ${plan.name} Plan". The service includes ${plan.articles} articles per month across ${plan.sites ? plan.sites + ' WordPress site(s)' : 'unlimited WordPress sites'}, automated SEO content generation, and publishing pipeline. The service includes onboarding, technical support, and platform access for the duration of the active subscription.`);
 
   section('3. PAYMENT TERMS');
-  para(`The Client agrees to pay ${AGENT.price} billed on the subscription start date. Payments are processed securely via Cashfree Payments. All amounts are inclusive of applicable GST. Subscriptions auto-renew unless cancelled 7 days prior to billing.`);
+  para(`The Client agrees to pay ${plan.label} billed on the subscription start date. Payments are processed securely via Cashfree Payments. All amounts are inclusive of applicable GST. Subscriptions auto-renew unless cancelled 7 days prior to billing.`);
 
   section('4. CONFIDENTIALITY');
   para(`Both parties agree to keep confidential any proprietary information shared during the term of this agreement. The Client's data is processed in accordance with Automation-Bitlance's Privacy Policy available at automation-bitlance.com/privacy.`);
@@ -157,7 +191,7 @@ function buildPDF(fields = {}, signed = false) {
 }
 
 // ─── Step bar ───────────────────────────────────────────────────────────────────
-const steps = ['Your Details', 'Review Agreement', 'Sign'];
+const steps = ['Choose Plan', 'Your Details', 'Review Agreement', 'Sign'];
 
 const StepBar = ({ current }) => (
   <div className="flex items-center gap-0 mb-10">
@@ -184,15 +218,15 @@ const StepBar = ({ current }) => (
 );
 
 // ─── PDF Viewer ──────────────────────────────────────────────────────────────────
-const PDFViewer = ({ fields, signed }) => {
+const PDFViewer = ({ fields, plan, signed }) => {
   const [url, setUrl] = useState(null);
   useEffect(() => {
-    const doc = buildPDF(fields, signed);
+    const doc = buildPDF(fields, plan, signed);
     const blob = doc.output('blob');
     const objUrl = URL.createObjectURL(blob);
     setUrl(objUrl);
     return () => URL.revokeObjectURL(objUrl);
-  }, [fields, signed]);
+  }, [fields, plan, signed]);
 
   if (!url) return (
     <div className="h-[480px] bg-[#0d0d0d] border border-[#222] rounded-[2px] flex items-center justify-center">
@@ -206,6 +240,7 @@ const PDFViewer = ({ fields, signed }) => {
 const ESignPage = () => {
   const { token } = useAuth();
   const [step, setStep] = useState(0);
+  const [selectedPlan, setSelectedPlan] = useState(PLANS[1]); // Growth default
   const [fields, setFields] = useState({ name: '', email: '', phone: '' });
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
@@ -222,7 +257,7 @@ const ESignPage = () => {
   };
 
   const handleNext = () => {
-    if (step === 0 && !validate()) return;
+    if (step === 1 && !validate()) return;
     setStep(s => s + 1);
   };
 
@@ -243,10 +278,12 @@ const ESignPage = () => {
 
       if (!res.ok || !data.success) throw new Error(data.error || 'Failed to create DigiLocker session');
 
-      // Store fields so DigiLockerCompletePage can generate the PDF
       sessionStorage.setItem('digilocker_fields', JSON.stringify({
         ...fields,
         verificationId: data.verification_id,
+        planId: selectedPlan.id,
+        planName: selectedPlan.name,
+        planAmount: selectedPlan.price,
       }));
 
       window.location.href = data.consentUrl;
@@ -260,7 +297,7 @@ const ESignPage = () => {
 
   return (
     <div className="min-h-screen bg-[#070707] text-white px-4 pt-28 pb-20">
-      <div className="max-w-2xl mx-auto">
+      <div className="max-w-4xl mx-auto">
 
         {/* Header */}
         <div className="text-center mb-10">
@@ -276,24 +313,84 @@ const ESignPage = () => {
           </p>
         </div>
 
-        {/* Agent card */}
-        <div className="bg-[#111] border border-[#1E1E1E] rounded-[2px] p-5 flex items-center gap-4 mb-8">
-          <div className="w-12 h-12 rounded-[2px] bg-[#26cece]/10 border border-[#26cece]/30 flex items-center justify-center">
-            <Zap className="w-6 h-6 text-[#26cece]" />
-          </div>
-          <div className="flex-1">
-            <p className="font-bold font-['Space_Grotesk'] text-white">{AGENT.name}</p>
-            <p className="text-gray-400 text-xs mt-0.5">{AGENT.description}</p>
-          </div>
-          <span className="text-[#26cece] font-mono font-bold text-sm whitespace-nowrap">{AGENT.price}</span>
-        </div>
-
         <StepBar current={step} />
 
-        {/* Step 0 — Details */}
+        {/* Step 0 — Choose Plan */}
         {step === 0 && (
+          <div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+              {PLANS.map((plan) => (
+                <button
+                  key={plan.id}
+                  onClick={() => setSelectedPlan(plan)}
+                  className={`text-left bg-[#111] border rounded-[2px] p-5 transition-all relative flex flex-col
+                    ${selectedPlan.id === plan.id
+                      ? 'border-[#26cece] ring-1 ring-[#26cece]/30'
+                      : 'border-[#1E1E1E] hover:border-[#333]'}`}
+                >
+                  {plan.popular && (
+                    <span className="absolute top-3 right-3 bg-[#26cece] text-[#070707] text-[9px] font-bold font-mono uppercase tracking-widest px-2 py-0.5 rounded-[2px]">
+                      Popular
+                    </span>
+                  )}
+
+                  {/* Radio dot */}
+                  <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center mb-4 transition-colors
+                    ${selectedPlan.id === plan.id ? 'border-[#26cece]' : 'border-[#444]'}`}>
+                    {selectedPlan.id === plan.id && (
+                      <div className="w-2 h-2 rounded-full bg-[#26cece]" />
+                    )}
+                  </div>
+
+                  {/* Plan name + price */}
+                  <p className="font-bold font-['Space_Grotesk'] text-white text-base mb-1">{plan.name}</p>
+                  <p className="text-[#26cece] font-mono font-bold text-lg mb-1">{plan.label}</p>
+                  <p className="text-gray-500 text-[11px] mb-4 leading-snug">{plan.for}</p>
+
+                  {/* Features */}
+                  <div className="space-y-1.5 mt-auto">
+                    {plan.features.map(f => (
+                      <div key={f} className="flex items-center gap-1.5 text-[11px] text-gray-300 font-mono">
+                        <CheckCircle className="w-3 h-3 text-[#26cece] flex-shrink-0" /> {f}
+                      </div>
+                    ))}
+                    {plan.disabled.map(f => (
+                      <div key={f} className="flex items-center gap-1.5 text-[11px] text-gray-600 font-mono line-through">
+                        <span className="w-3 h-3 flex-shrink-0 text-center">–</span> {f}
+                      </div>
+                    ))}
+                  </div>
+                </button>
+              ))}
+            </div>
+
+            <button
+              onClick={() => setStep(1)}
+              className="w-full bg-[#26cece] text-[#070707] font-bold font-['Space_Grotesk'] uppercase tracking-widest py-3 rounded-[2px] hover:bg-white transition-colors flex items-center justify-center gap-2"
+            >
+              Continue with {selectedPlan.name} — {selectedPlan.label} <ArrowRight className="w-4 h-4" />
+            </button>
+
+            <p className="text-center text-gray-600 text-[10px] font-mono mt-3">
+              20% off on annual billing · Cancel anytime
+            </p>
+          </div>
+        )}
+
+        {/* Step 1 — Details */}
+        {step === 1 && (
           <div className="bg-[#111] border border-[#1E1E1E] rounded-[2px] p-6">
-            <h2 className="text-lg font-bold font-['Space_Grotesk'] uppercase tracking-tight mb-5">Your Details</h2>
+            {/* Selected plan pill */}
+            <div className="flex items-center justify-between mb-5">
+              <h2 className="text-lg font-bold font-['Space_Grotesk'] uppercase tracking-tight">Your Details</h2>
+              <button
+                onClick={() => setStep(0)}
+                className="text-[11px] font-mono text-[#26cece] hover:underline flex items-center gap-1"
+              >
+                <Zap className="w-3 h-3" /> {selectedPlan.name} · {selectedPlan.label}
+              </button>
+            </div>
+
             {[
               { key: 'name', label: 'Full Name', icon: User, placeholder: 'Rahul Sharma', type: 'text' },
               { key: 'email', label: 'Email Address', icon: Mail, placeholder: 'rahul@example.com', type: 'email' },
@@ -327,8 +424,8 @@ const ESignPage = () => {
           </div>
         )}
 
-        {/* Step 1 — Review PDF */}
-        {step === 1 && (
+        {/* Step 2 — Review PDF */}
+        {step === 2 && (
           <div className="bg-[#111] border border-[#1E1E1E] rounded-[2px] p-6">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2">
@@ -336,21 +433,21 @@ const ESignPage = () => {
                 <h2 className="text-lg font-bold font-['Space_Grotesk'] uppercase tracking-tight">Service Agreement</h2>
               </div>
               <button
-                onClick={() => { const d = buildPDF(fields, false); d.save('agreement-draft.pdf'); }}
+                onClick={() => { const d = buildPDF(fields, selectedPlan, false); d.save('agreement-draft.pdf'); }}
                 className="flex items-center gap-1.5 text-[11px] font-mono text-gray-400 hover:text-[#26cece] transition-colors"
               >
                 <Download className="w-3.5 h-3.5" /> Save PDF
               </button>
             </div>
 
-            <PDFViewer fields={fields} signed={false} />
+            <PDFViewer fields={fields} plan={selectedPlan} signed={false} />
 
             <p className="text-[11px] text-gray-500 font-mono mt-3 mb-5 flex items-start gap-1.5">
               <Shield className="w-3 h-3 text-[#26cece] mt-0.5 flex-shrink-0" />
               Please review all terms carefully before proceeding to sign.
             </p>
             <div className="flex gap-3">
-              <button onClick={() => setStep(0)} className="flex-1 border border-[#333] text-gray-300 font-bold font-['Space_Grotesk'] uppercase tracking-widest py-3 rounded-[2px] hover:border-[#26cece] hover:text-[#26cece] transition-colors text-sm">
+              <button onClick={() => setStep(1)} className="flex-1 border border-[#333] text-gray-300 font-bold font-['Space_Grotesk'] uppercase tracking-widest py-3 rounded-[2px] hover:border-[#26cece] hover:text-[#26cece] transition-colors text-sm">
                 Back
               </button>
               <button onClick={handleNext} className="flex-1 bg-[#26cece] text-[#070707] font-bold font-['Space_Grotesk'] uppercase tracking-widest py-3 rounded-[2px] hover:bg-white transition-colors flex items-center justify-center gap-2 text-sm">
@@ -360,8 +457,8 @@ const ESignPage = () => {
           </div>
         )}
 
-        {/* Step 2 — Verify */}
-        {step === 2 && (
+        {/* Step 3 — Verify / Sign */}
+        {step === 3 && (
           <div className="bg-[#111] border border-[#1E1E1E] rounded-[2px] p-6">
             <h2 className="text-lg font-bold font-['Space_Grotesk'] uppercase tracking-tight mb-1">Verify Identity</h2>
             <p className="text-gray-400 text-sm mb-8">
@@ -386,13 +483,18 @@ const ESignPage = () => {
               </div>
               <div className="h-px bg-[#1a1a1a]" />
               <div className="flex justify-between text-sm">
+                <span className="text-gray-400">Plan</span>
+                <span className="text-white font-medium">SEO AI Agent — {selectedPlan.name}</span>
+              </div>
+              <div className="h-px bg-[#1a1a1a]" />
+              <div className="flex justify-between text-sm">
                 <span className="text-gray-400">Amount</span>
-                <span className="text-[#26cece] font-bold">{AGENT.price}</span>
+                <span className="text-[#26cece] font-bold">{selectedPlan.label}</span>
               </div>
             </div>
 
             <div className="flex gap-3">
-              <button onClick={() => setStep(1)} disabled={loading} className="flex-1 border border-[#333] text-gray-300 font-bold font-['Space_Grotesk'] uppercase tracking-widest py-3 rounded-[2px] hover:border-[#26cece] hover:text-[#26cece] transition-colors text-sm disabled:opacity-40">
+              <button onClick={() => setStep(2)} disabled={loading} className="flex-1 border border-[#333] text-gray-300 font-bold font-['Space_Grotesk'] uppercase tracking-widest py-3 rounded-[2px] hover:border-[#26cece] hover:text-[#26cece] transition-colors text-sm disabled:opacity-40">
                 Back
               </button>
               <button onClick={handleSign} disabled={loading} className="flex-1 bg-[#26cece] text-[#070707] font-bold font-['Space_Grotesk'] uppercase tracking-widest py-3 rounded-[2px] hover:bg-white transition-colors flex items-center justify-center gap-2 text-sm disabled:opacity-60">
@@ -401,6 +503,24 @@ const ESignPage = () => {
                   : <><Shield className="w-4 h-4" /> Verify with DigiLocker <ExternalLink className="w-3.5 h-3.5" /></>}
               </button>
             </div>
+
+            {/* DEV BYPASS — remove before production */}
+            <button
+              onClick={() => {
+                const bypassId = `BYPASS-${Date.now()}`;
+                sessionStorage.setItem('digilocker_fields', JSON.stringify({
+                  ...fields,
+                  verificationId: bypassId,
+                  planId: selectedPlan.id,
+                  planName: selectedPlan.name,
+                  planAmount: selectedPlan.price,
+                }));
+                window.location.href = `/digilocker/complete?order_id=${bypassId}&bypass=1`;
+              }}
+              className="mt-3 w-full border border-yellow-600/40 text-yellow-500 font-mono text-[10px] uppercase tracking-widest py-2 rounded-[2px] hover:border-yellow-500 transition-colors"
+            >
+              [DEV] Skip DigiLocker → Test Payment
+            </button>
 
             {signStatus === 'pending' && (
               <div className="mt-4 bg-[#26cece]/5 border border-[#26cece]/20 rounded-[2px] px-4 py-3 flex items-center gap-2 text-[#26cece] text-xs font-mono">

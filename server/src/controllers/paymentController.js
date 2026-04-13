@@ -13,6 +13,7 @@ const CF_CLIENT_ID = process.env.CASHFREE_CLIENT_ID;
 const CF_CLIENT_SECRET = process.env.CASHFREE_CLIENT_SECRET;
 const CF_API_VERSION = '2023-08-01';
 
+
 async function pgJson(method, path, body = null) {
     const res = await fetch(`${PG_BASE}${path}`, {
         method,
@@ -63,6 +64,7 @@ export async function createOrder(req, res) {
             order_note: `SEO AI Agent subscription — DigiLocker ID: ${verificationId}`,
         };
 
+        console.log('[Payment] URL:', PG_BASE, '| ID:', process.env.CASHFREE_CLIENT_ID?.slice(0, 10), '| SECRET:', process.env.CASHFREE_CLIENT_SECRET?.slice(0, 14));
         console.log('[Payment] createOrder body:', JSON.stringify(body));
         const data = await pgJson('POST', '/orders', body);
         console.log('[Payment] createOrder response:', JSON.stringify(data));

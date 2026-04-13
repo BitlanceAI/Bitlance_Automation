@@ -9,9 +9,9 @@ import HowItWorksSection from '../components/landing/HowItWorksSection';
 import SocialProofSection from '../components/landing/SocialProofSection';
 import TestimonialsSection from '../components/landing/TestimonialsSection';
 import FinalCtaSection from '../components/landing/FinalCtaSection';
-import LatestBlogsSection from '../components/landing/LatestBlogsSection';
 import BlogAgentSection from '../components/landing/BlogAgentSection';
 import WhyBitlanceSection from '../components/landing/WhyBitlanceSection';
+import AgentPricingSection from '../components/landing/AgentPricingSection';
 import Footer from '../components/landing/Footer';
 import ScrollToTopButton from '../components/ui/ScrollToTopButton';
 
@@ -74,9 +74,82 @@ const LandingPage = () => {
     return (
         <div className="relative min-h-screen w-full overflow-hidden bg-[#070707] text-white">
             <SEOHead
-                title="Bitlance Automation | AI Voice Bots & Business Automation"
-                description="Deploy autonomous AI agents, intelligent Voice Bots, and data-driven automation tools to capture leads, book appointments, and scale your business effortlessly."
+                title="AI Voice Bot & WhatsApp Chatbot for Indian Businesses | Bitlance"
+                description="Bitlance deploys AI Voice Agents and WhatsApp Chatbots that respond to leads in 0.4 seconds, qualify enquiries, and book appointments 24/7. Used by real estate, clinics & agencies across India."
                 canonicalUrl="https://www.bitlancetechhub.com/"
+                keywords="AI voice bot India, WhatsApp chatbot for business, AI lead generation, voice agent real estate, chatbot for clinics, AI appointment booking, business automation India"
+                ogImage="https://www.bitlancetechhub.com/og-image.jpg"
+                structuredData={{
+                    "@context": "https://schema.org",
+                    "@graph": [
+                        {
+                            "@type": "Organization",
+                            "@id": "https://www.bitlancetechhub.com/#organization",
+                            "name": "Bitlance Tech Hub",
+                            "url": "https://www.bitlancetechhub.com",
+                            "logo": "https://www.bitlancetechhub.com/logo/logo (1).jpg",
+                            "description": "Bitlance builds autonomous AI agents — Voice Bots, WhatsApp Chatbots, and SEO AI Agents — that capture, qualify, and follow up with leads automatically.",
+                            "foundingLocation": "India",
+                            "sameAs": ["https://twitter.com/bitlancetechhub"]
+                        },
+                        {
+                            "@type": "WebSite",
+                            "@id": "https://www.bitlancetechhub.com/#website",
+                            "url": "https://www.bitlancetechhub.com",
+                            "name": "Bitlance Tech Hub",
+                            "publisher": { "@id": "https://www.bitlancetechhub.com/#organization" }
+                        },
+                        {
+                            "@type": "Service",
+                            "name": "AI Voice Agent",
+                            "provider": { "@id": "https://www.bitlancetechhub.com/#organization" },
+                            "description": "24/7 AI voice bot that answers inbound calls, qualifies leads, and books appointments automatically. Never miss a call during peak hours.",
+                            "areaServed": "IN",
+                            "serviceType": "AI Business Automation"
+                        },
+                        {
+                            "@type": "Service",
+                            "name": "WhatsApp AI Chatbot",
+                            "provider": { "@id": "https://www.bitlancetechhub.com/#organization" },
+                            "description": "AI-powered WhatsApp chatbot that responds to enquiries in 0.4 seconds, captures leads, shares brochures, and books appointments automatically.",
+                            "areaServed": "IN",
+                            "serviceType": "AI Business Automation"
+                        },
+                        {
+                            "@type": "Service",
+                            "name": "SEO AI Agent",
+                            "provider": { "@id": "https://www.bitlancetechhub.com/#organization" },
+                            "description": "Automated SEO content generation and publishing pipeline. Researches trending topics, writes articles, checks plagiarism, and publishes to WordPress automatically.",
+                            "areaServed": "IN",
+                            "serviceType": "SEO Automation"
+                        },
+                        {
+                            "@type": "FAQPage",
+                            "mainEntity": [
+                                {
+                                    "@type": "Question",
+                                    "name": "How fast does the AI voice bot respond to leads?",
+                                    "acceptedAnswer": { "@type": "Answer", "text": "Bitlance AI agents respond to new leads in under 0.4 seconds, 24 hours a day, 7 days a week — including weekends and holidays." }
+                                },
+                                {
+                                    "@type": "Question",
+                                    "name": "Which businesses can use Bitlance AI agents?",
+                                    "acceptedAnswer": { "@type": "Answer", "text": "Bitlance works best for real estate agencies, clinics, local service businesses, education institutes, and agencies in India that receive daily enquiries and want to automate lead follow-up." }
+                                },
+                                {
+                                    "@type": "Question",
+                                    "name": "Does the AI voice agent work in Hindi?",
+                                    "acceptedAnswer": { "@type": "Answer", "text": "Yes. Bitlance AI voice agents support multiple Indian languages including Hindi, Marathi, and English, and can be configured to match your customer base." }
+                                },
+                                {
+                                    "@type": "Question",
+                                    "name": "How much does the AI voice bot cost in India?",
+                                    "acceptedAnswer": { "@type": "Answer", "text": "Bitlance Voice Agent plans start at ₹11,999 per month. Growth plans with inbound and outbound calling start at ₹24,999 per month. Enterprise pricing is available on request." }
+                                }
+                            ]
+                        }
+                    ]
+                }}
             />
             {/* Global ambient glows — support glassmorphism across all sections */}
             <div className="fixed inset-0 pointer-events-none overflow-hidden" style={{ zIndex: 0 }}>
@@ -141,8 +214,8 @@ const LandingPage = () => {
                 <UseCasesSection />
                 <HowItWorksSection />
                 <SocialProofSection />
+                <AgentPricingSection />
                 <FinalCtaSection onOpenBooking={handleOpenBooking} />
-                <LatestBlogsSection />
                 <Footer />
             </div>
 

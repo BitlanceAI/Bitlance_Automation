@@ -14,7 +14,6 @@ import {
     ChevronRight,
     Globe,
     PenTool,
-
     FileText,
     Users,
     LogOut,
@@ -22,7 +21,11 @@ import {
     Code,
     Clock,
     CheckCircle,
-    Layers
+    Sheet,
+    TableProperties,
+    Link2,
+    Play,
+    RefreshCw
 } from 'lucide-react';
 
 import blogService from '../services/blogService';
@@ -59,7 +62,6 @@ const SeoAgentPage = () => {
     const [writingStyle, setWritingStyle] = useState('Professional');
     const [articleLength, setArticleLength] = useState('Medium (500-1000 words)');
     const [targetAudience, setTargetAudience] = useState('General Public');
-    const [variants, setVariants] = useState('Max 3 for demo');
 
     // New Fields State
     const [authorName, setAuthorName] = useState('');
@@ -82,11 +84,21 @@ const SeoAgentPage = () => {
     const [customImageUrl, setCustomImageUrl] = useState('');
 
     // Source Type State
-    const [sourceType, setSourceType] = useState('manual'); // 'manual' or 'wordpress'
+    const [sourceType, setSourceType] = useState('manual'); // 'manual', 'wordpress', or 'sheets'
 
     // WordPress Integration State
     const [selectedWpProfile, setSelectedWpProfile] = useState(null);
     const [interlinkUrl, setInterlinkUrl] = useState('');
+
+    // ── Google Sheets State ─────────────────────────────────────────────────
+    const [sheetId, setSheetId] = useState('');
+    const [sheetInputCol, setSheetInputCol] = useState('A');
+    const [sheetOutputCol, setSheetOutputCol] = useState('B');
+    const [isGoogleConnected, setIsGoogleConnected] = useState(false);
+    const [isRunningSheet, setIsRunningSheet] = useState(false);
+    const [sheetResults, setSheetResults] = useState(null); // { processed, results }
+    const [sheetError, setSheetError] = useState('');
+    const [sheetPipelineMode, setSheetPipelineMode] = useState('seo'); // 'seo' | 'blog'
 
     const handleWpProfileSelect = (selection) => {
         setSelectedWpProfile(selection);
@@ -178,7 +190,7 @@ const SeoAgentPage = () => {
         }
 
         // Check credits
-        const CREDIT_COST = 5;
+        const CREDIT_COST = 10;
         if (!isAdmin && credits < CREDIT_COST) {
             alert(`⚠️ Insufficient credits! You need ${CREDIT_COST} credits to generate an article. Current balance: ${credits}`);
             return;
@@ -407,6 +419,137 @@ const SeoAgentPage = () => {
         }
     };
 
+    // ── Check if Google account is already connected ────────────────────────
+    useEffect(() => {
+        const params = new URLSearchParams(window.location.search);
+        if (params.get('google_connected') === 'true') {
+            setIsGoogleConnected(true);
+            // Clean the URL param without triggering a reload
+            window.history.replaceState({}, '', window.location.pathname);
+        }
+    }, []);
+
+    /** Redirect user to Google OAuth consent screen */
+    const handleConnectGoogle = async () => {
+        try {
+            // user.id comes from the AuthContext — no extra fetch needed
+            const userId = user?.id;
+            if (!userId) {
+                alert('Please log in before connecting Google.');
+                navigate('/login');
+                return;
+            }
+
+            // /auth-url accepts userId as a query param — no bearer header needed
+            const res = await fetch(
+                `${API_BASE_URL}/api/google-sheets/auth-url?userId=${encodeURIComponent(userId)}`
+            );
+            const json = await res.json();
+
+            if (json.url) {
+                // Redirect the browser to Google's consent screen
+                window.location.href = json.url;
+            } else {
+                alert('Failed to get Google auth URL: ' + (json.error || 'Unknown error'));
+            }
+        } catch (e) {
+            console.error('handleConnectGoogle error:', e);
+            alert('Failed to connect Google account: ' + e.message);
+        }
+    };
+
+    /**
+     * POST /api/google-sheets/run-seo
+     * Read titles from inputCol, generate SEO, write to outputCol.
+     */
+    const handleRunSEOSheet = async () => {
+        if (!sheetId.trim()) {
+            setSheetError('Please enter your Google Spreadsheet ID');
+            return;
+        }
+        setSheetError('');
+        setSheetResults(null);
+        setIsRunningSheet(true);
+        try {
+            await supabase.auth.refreshSession();
+            const { data: { session } } = await supabase.auth.getSession();
+            const token = session?.access_token;
+
+            const res = await fetch(`${API_BASE_URL}/api/google-sheets/run-seo`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    sheetId: sheetId.trim(),
+                    inputCol: sheetInputCol || 'A',
+                    outputCol: sheetOutputCol || 'B'
+                })
+            });
+            const data = await res.json();
+            if (data.success) {
+                setSheetResults(data);
+            } else {
+                setSheetError(data.error || 'SEO pipeline failed');
+            }
+        } catch (err) {
+            setSheetError(err.message);
+        } finally {
+            setIsRunningSheet(false);
+        }
+    };
+
+    /**
+     * POST /api/google-sheets/run-blog
+     * Read titles from sheet, auto-generate a full blog article per row,
+     * write a status back to the sheet, and stream progress in the UI.
+     */
+    const handleRunBlogSheet = async () => {
+        if (!sheetId.trim()) {
+            setSheetError('Please enter your Google Spreadsheet ID');
+            return;
+        }
+        setSheetError('');
+        setSheetResults(null);
+        setIsRunningSheet(true);
+        try {
+            await supabase.auth.refreshSession();
+            const { data: { session } } = await supabase.auth.getSession();
+            const token = session?.access_token;
+
+            const startTime = Date.now();
+            const res = await fetch(`${API_BASE_URL}/api/google-sheets/run-blog`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    sheetId: sheetId.trim(),
+                    inputCol: sheetInputCol || 'A',
+                    outputCol: sheetOutputCol || 'B',
+                    // pass generation settings from the form
+                    language,
+                    style: writingStyle,
+                    length: articleLength,
+                    audience: targetAudience,
+                })
+            });
+            const data = await res.json();
+            if (data.success) {
+                setSheetResults(data);
+            } else {
+                setSheetError(data.error || 'Auto Blog pipeline failed');
+            }
+        } catch (err) {
+            setSheetError(err.message);
+        } finally {
+            setIsRunningSheet(false);
+        }
+    };
+
+
     const handleUploadToWordPress = async () => {
         if (!selectedWpProfile) {
             alert('Please select or provide WordPress credentials');
@@ -514,7 +657,7 @@ const SeoAgentPage = () => {
                                             <span className="text-[#26cece] font-bold">{agentStats.totalUsageCount}</span>
                                         </div>
                                         <div className="text-gray-500 uppercase tracking-widest text-[10px] pt-2 mt-2 border-t border-[#333] text-center">
-                                            Cost: 5 credits/word
+                                            Cost: 10 credits/article
                                         </div>
                                     </div>
                                 </div>
@@ -599,26 +742,37 @@ const SeoAgentPage = () => {
                                     {/* Source Type Selector */}
                                     <div>
                                         <label className="block text-[10px] font-mono tracking-widest uppercase text-gray-500 mb-3">Source Type *</label>
-                                        <div className="grid grid-cols-2 gap-4">
+                                        <div className="grid grid-cols-3 gap-3">
                                             <button
                                                 type="button"
                                                 onClick={() => setSourceType('manual')}
-                                                className={`px-4 py-3 rounded-[2px] border font-bold font-mono tracking-widest uppercase text-[10px] transition-all ${sourceType === 'manual'
+                                                className={`px-3 py-3 rounded-[2px] border font-bold font-mono tracking-widest uppercase text-[10px] transition-all ${sourceType === 'manual'
                                                     ? 'border-[#26cece] bg-[#070707] text-[#26cece] shadow-[2px_2px_0_0_#26cece]'
                                                     : 'border-[#333] hover:border-[#555] text-gray-500 hover:text-white'
                                                     }`}
                                             >
-                                                📝 Manual Entry
+                                                📝 Manual
                                             </button>
                                             <button
                                                 type="button"
                                                 onClick={() => setSourceType('wordpress')}
-                                                className={`px-4 py-3 rounded-[2px] border font-bold font-mono tracking-widest uppercase text-[10px] transition-all ${sourceType === 'wordpress'
+                                                className={`px-3 py-3 rounded-[2px] border font-bold font-mono tracking-widest uppercase text-[10px] transition-all ${sourceType === 'wordpress'
                                                     ? 'border-[#26cece] bg-[#070707] text-[#26cece] shadow-[2px_2px_0_0_#26cece]'
                                                     : 'border-[#333] hover:border-[#555] text-gray-500 hover:text-white'
                                                     }`}
                                             >
-                                                🌐 WordPress Website
+                                                🌐 WordPress
+                                            </button>
+                                            <button
+                                                type="button"
+                                                disabled
+                                                className="px-3 py-3 rounded-[2px] border border-[#333] font-bold font-mono tracking-widest uppercase text-[10px] flex items-center justify-center gap-1.5 relative text-gray-600 cursor-not-allowed opacity-60"
+                                            >
+                                                <Sheet size={13} />
+                                                Sheets
+                                                <span className="absolute -top-2 -right-2 bg-yellow-500 text-[#070707] text-[7px] font-black font-mono uppercase tracking-wider px-1.5 py-0.5 rounded-sm leading-none">
+                                                    Soon
+                                                </span>
                                             </button>
                                         </div>
                                     </div>
@@ -626,6 +780,189 @@ const SeoAgentPage = () => {
                                     {/* WordPress Credentials (conditional) */}
                                     {sourceType === 'wordpress' && (
                                         <WordPressProfileSelection onProfileSelect={handleWpProfileSelect} />
+                                    )}
+
+                                    {/* ── Google Sheets Panel ──────────────────────────────── */}
+                                    {sourceType === 'sheets' && (
+                                        <div className="space-y-5 p-5 bg-[#070707] rounded-[2px] border border-[#26cece]/30">
+                                            {/* Header */}
+                                            <div className="flex items-center justify-between">
+                                                <div className="flex items-center gap-2">
+                                                    <TableProperties className="text-[#26cece]" size={18} />
+                                                    <span className="text-[11px] font-mono tracking-widest uppercase text-[#26cece] font-bold">
+                                                        Google Sheets SEO Pipeline
+                                                    </span>
+                                                </div>
+                                                {/* Connect / Status badge */}
+                                                {isGoogleConnected ? (
+                                                    <span className="flex items-center gap-1.5 text-[10px] font-mono tracking-widest text-emerald-400 border border-emerald-800 bg-emerald-950/40 px-2 py-1 rounded-[2px]">
+                                                        <CheckCircle size={11} /> Connected
+                                                    </span>
+                                                ) : (
+                                                    <button
+                                                        type="button"
+                                                        onClick={handleConnectGoogle}
+                                                        className="flex items-center gap-1.5 text-[10px] font-mono tracking-widest uppercase text-[#070707] bg-[#26cece] px-3 py-1.5 rounded-[2px] hover:bg-white transition-colors font-bold"
+                                                    >
+                                                        <Link2 size={11} /> Connect Google
+                                                    </button>
+                                                )}
+                                            </div>
+
+                                            <p className="text-[11px] text-gray-500 font-mono leading-relaxed">
+                                                Reads titles from column <strong className="text-white">{sheetInputCol || 'A'}</strong>, runs AI SEO on each, and writes results to column <strong className="text-white">{sheetOutputCol || 'B'}</strong>.
+                                                Empty rows are automatically skipped.
+                                            </p>
+
+                                            {/* Spreadsheet ID */}
+                                            <div className="space-y-2">
+                                                <label className="block text-[10px] font-mono tracking-widest uppercase text-gray-500">
+                                                    Spreadsheet ID <span className="text-[#26cece]">*</span>
+                                                </label>
+                                                <input
+                                                    type="text"
+                                                    value={sheetId}
+                                                    onChange={e => setSheetId(e.target.value)}
+                                                    placeholder="e.g. 1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgVE2upms"
+                                                    className="w-full px-4 py-3 rounded-[2px] bg-[#111111] border border-[#333] focus:border-[#26cece] outline-none transition-all text-white font-mono text-[13px] placeholder-gray-600"
+                                                />
+                                                <p className="text-[10px] text-gray-600 font-mono">
+                                                    Find it in your sheet URL: docs.google.com/spreadsheets/d/<strong className="text-gray-400">SPREADSHEET_ID</strong>/edit
+                                                </p>
+                                            </div>
+
+                                            {/* Column Mapping */}
+                                            <div className="grid grid-cols-2 gap-4">
+                                                <div className="space-y-2">
+                                                    <label className="block text-[10px] font-mono tracking-widest uppercase text-gray-500">
+                                                        Input Column (Titles)
+                                                    </label>
+                                                    <input
+                                                        type="text"
+                                                        maxLength={2}
+                                                        value={sheetInputCol}
+                                                        onChange={e => setSheetInputCol(e.target.value.toUpperCase())}
+                                                        placeholder="A"
+                                                        className="w-full px-4 py-3 rounded-[2px] bg-[#111111] border border-[#333] focus:border-[#26cece] outline-none transition-all text-white font-mono text-[14px] placeholder-gray-600 text-center uppercase"
+                                                    />
+                                                </div>
+                                                <div className="space-y-2">
+                                                    <label className="block text-[10px] font-mono tracking-widest uppercase text-gray-500">
+                                                        Output Column (SEO Result)
+                                                    </label>
+                                                    <input
+                                                        type="text"
+                                                        maxLength={2}
+                                                        value={sheetOutputCol}
+                                                        onChange={e => setSheetOutputCol(e.target.value.toUpperCase())}
+                                                        placeholder="B"
+                                                        className="w-full px-4 py-3 rounded-[2px] bg-[#111111] border border-[#333] focus:border-[#26cece] outline-none transition-all text-white font-mono text-[14px] placeholder-gray-600 text-center uppercase"
+                                                    />
+                                                </div>
+                                            </div>
+
+                                            {/* Pipeline Mode Selector */}
+                                            <div className="space-y-2">
+                                                <label className="block text-[10px] font-mono tracking-widest uppercase text-gray-500">
+                                                    Pipeline Mode
+                                                </label>
+                                                <div className="grid grid-cols-2 gap-3">
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => setSheetPipelineMode('seo')}
+                                                        className={`flex flex-col items-start gap-1 px-4 py-3 rounded-[2px] border font-mono transition-all ${sheetPipelineMode === 'seo'
+                                                            ? 'border-[#26cece] bg-[#070707] text-[#26cece] shadow-[2px_2px_0_0_#26cece]'
+                                                            : 'border-[#333] hover:border-[#555] text-gray-500 hover:text-white'
+                                                            }`}
+                                                    >
+                                                        <span className="text-[11px] font-bold tracking-widest uppercase flex items-center gap-1.5">
+                                                            <Zap size={11} /> SEO Titles
+                                                        </span>
+                                                        <span className="text-[10px] text-gray-500 font-normal">~1–3s per row</span>
+                                                    </button>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => setSheetPipelineMode('blog')}
+                                                        className={`flex flex-col items-start gap-1 px-4 py-3 rounded-[2px] border font-mono transition-all ${sheetPipelineMode === 'blog'
+                                                            ? 'border-[#26cece] bg-[#070707] text-[#26cece] shadow-[2px_2px_0_0_#26cece]'
+                                                            : 'border-[#333] hover:border-[#555] text-gray-500 hover:text-white'
+                                                            }`}
+                                                    >
+                                                        <span className="text-[11px] font-bold tracking-widest uppercase flex items-center gap-1.5">
+                                                            <Bot size={11} /> Auto Blog
+                                                        </span>
+                                                        <span className="text-[10px] text-gray-500 font-normal">~30–90s per row</span>
+                                                    </button>
+                                                </div>
+                                                {sheetPipelineMode === 'blog' && (
+                                                    <p className="text-[10px] text-amber-400/80 font-mono mt-1 flex items-center gap-1.5">
+                                                        <Clock size={10} />
+                                                        Full blog generation is slow — each article takes ~30–90s depending on length. Runs sequentially.
+                                                    </p>
+                                                )}
+                                            </div>
+
+                                            {/* Error */}
+                                            {sheetError && (
+                                                <div className="px-4 py-3 rounded-[2px] bg-red-950/40 border border-red-800 text-red-400 text-[11px] font-mono">
+                                                    ⚠️ {sheetError}
+                                                </div>
+                                            )}
+
+                                            {/* Run Button */}
+                                            <button
+                                                type="button"
+                                                onClick={sheetPipelineMode === 'blog' ? handleRunBlogSheet : handleRunSEOSheet}
+                                                disabled={isRunningSheet || !sheetId.trim()}
+                                                className={`w-full flex items-center justify-center gap-2 py-3 rounded-[2px] font-bold font-mono tracking-widest uppercase text-[12px] transition-all ${isRunningSheet || !sheetId.trim()
+                                                    ? 'bg-[#333] text-gray-600 cursor-not-allowed'
+                                                    : sheetPipelineMode === 'blog'
+                                                        ? 'bg-violet-600 text-white hover:bg-violet-500 hover:-translate-y-0.5 hover:shadow-[4px_4px_0_0_#333]'
+                                                        : 'bg-[#26cece] text-[#070707] hover:bg-white hover:-translate-y-0.5 hover:shadow-[4px_4px_0_0_#333]'
+                                                    }`}
+                                            >
+                                                {isRunningSheet ? (
+                                                    <><RefreshCw size={14} className="animate-spin" /> {sheetPipelineMode === 'blog' ? 'Generating Blogs...' : 'Running Pipeline...'}</>
+                                                ) : sheetPipelineMode === 'blog' ? (
+                                                    <><Bot size={14} /> Auto Blog from Sheet</>
+                                                ) : (
+                                                    <><Play size={14} fill="currentColor" /> Run SEO on Sheet</>
+                                                )}
+                                            </button>
+
+                                            {/* Results */}
+                                            {sheetResults && (
+                                                <div className="space-y-3">
+                                                    <div className="flex items-center justify-between">
+                                                        <div className="flex items-center gap-2 text-emerald-400 text-[11px] font-mono tracking-widest uppercase">
+                                                            <CheckCircle size={14} />
+                                                            {sheetResults.processed} titles processed &amp; written back to sheet
+                                                        </div>
+                                                        {sheetResults.results?.length > 0 && (
+                                                            <span className="text-[10px] font-mono text-gray-500">
+                                                                total: {sheetResults.results.reduce((acc, r) => acc + parseFloat(r.timeTakenSec || 0), 0).toFixed(2)}s
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                    <div className="max-h-52 overflow-y-auto space-y-2 custom-scrollbar">
+                                                        {sheetResults.results.map((r, i) => (
+                                                            <div key={i} className="p-3 rounded-[2px] border border-[#333] bg-[#111111] text-[11px] font-mono">
+                                                                <div className="flex items-center justify-between gap-2 mb-1">
+                                                                    <span className="text-gray-500 truncate">IN: {r.input}</span>
+                                                                    {r.timeTakenSec && (
+                                                                        <span className="shrink-0 flex items-center gap-1 text-[10px] font-mono text-amber-400 bg-amber-950/30 border border-amber-800/40 px-1.5 py-0.5 rounded-[2px]">
+                                                                            <Clock size={9} />
+                                                                            {r.timeTakenSec}s
+                                                                        </span>
+                                                                    )}
+                                                                </div>
+                                                                <div className="text-[#26cece] truncate">OUT: {r.output}</div>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </div>
                                     )}
 
                                     {/* Interlinking Section (Available for all modes) */}
@@ -731,22 +1068,6 @@ const SeoAgentPage = () => {
                                             </div>
                                         </div>
 
-                                        <div className="space-y-3 md:col-span-2">
-                                            <label className="text-[10px] font-mono tracking-widest uppercase text-gray-500">Variants</label>
-                                            <div className="relative">
-                                                <select
-                                                    value={variants}
-                                                    onChange={(e) => setVariants(e.target.value)}
-                                                    className="w-full px-4 py-3 rounded-[2px] bg-[#070707] border border-[#333] focus:ring-0 focus:border-[#26cece] outline-none transition-all appearance-none text-white font-mono text-[14px]"
-                                                >
-                                                    <option>1 Variant</option>
-                                                    <option>2 Variants</option>
-                                                    <option>Max 3 for demo</option>
-                                                </select>
-                                                <Layers className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none" size={16} />
-                                            </div>
-                                        </div>
-
                                         {/* Image Settings */}
                                         <div className="space-y-3 md:col-span-2">
                                             <label className="block text-[10px] font-mono tracking-widest uppercase text-gray-500">Featured Image Source</label>
@@ -843,6 +1164,18 @@ const SeoAgentPage = () => {
                                         )}
                                     </div>
 
+                                    {/* Credit cost row */}
+                                    <div className="flex items-center justify-between px-3 py-2 rounded-[2px] bg-[#0d0d0d] border border-[#1a1a1a] mb-3">
+                                        <div className="flex items-center gap-2 text-[11px] font-mono text-gray-500 uppercase tracking-widest">
+                                            <Zap size={11} className="text-[#26cece]" />
+                                            Generation cost
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                            <span className="text-[#26cece] font-bold font-mono text-sm">10 credits</span>
+                                            <span className="text-gray-600 font-mono text-[10px]">/ article</span>
+                                        </div>
+                                    </div>
+
                                     <button
                                         onClick={handleGenerate}
                                         disabled={isGenerating}
@@ -858,7 +1191,7 @@ const SeoAgentPage = () => {
                                                 <Zap fill="currentColor" size={24} />
                                                 Generate SEO Content
                                                 <span className="text-[12px] font-mono ml-2 opacity-70 border-l border-[#070707]/30 pl-2">
-                                                    Cost ~5,000 credits
+                                                    Cost 10 credits
                                                 </span>
                                             </>
                                         )}

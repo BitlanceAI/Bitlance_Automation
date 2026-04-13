@@ -33,3 +33,6 @@ User-agent: CCBot
 Disallow: /
 
 Sitemap: https://www.bitlancetechhub.com/sitemap.xml
+
+# Dynamic sitemap (includes all blog articles)
+Sitemap: https://api.bitlancetechhub.com/sitemap.xml
