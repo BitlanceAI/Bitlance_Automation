@@ -188,13 +188,11 @@ const BlogAgentSection = ({ onOpenBooking }) => {
                     whileInView={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.5, delay: 0.8 }}
                     viewport={{ once: true }}
-                    className="mt-16 flex justify-center"
+                    className="mt-16 flex flex-col sm:flex-row justify-center items-center gap-4"
                 >
                     <button
-                        onClick={() => navigate('/features/blog-agent')}
-                        whileHover={{ backgroundColor: '#35DFDF' }}
-                        whileTap={{ scale: 0.97 }}
-                        className="group inline-flex items-center gap-3 font-bold text-base transition-all mx-auto"
+                        onClick={() => navigate('/dashboard/agents/seo')}
+                        className="group inline-flex items-center gap-3 font-bold text-base transition-all"
                         style={{
                             background: TEAL,
                             color: '#070707',
@@ -206,7 +204,24 @@ const BlogAgentSection = ({ onOpenBooking }) => {
                             fontFamily: "'Space Grotesk', sans-serif",
                         }}
                     >
-                        See the Blog Agent in Action <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
+                        Try the SEO AI Agent <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
+                    </button>
+
+                    <button
+                        onClick={() => navigate('/features/blog-agent')}
+                        className="group inline-flex items-center gap-3 font-bold text-base transition-all"
+                        style={{
+                            background: 'transparent',
+                            color: TEAL,
+                            padding: '15px 32px',
+                            borderRadius: 2,
+                            border: `1px solid ${TEAL}50`,
+                            cursor: 'pointer',
+                            letterSpacing: '-0.01em',
+                            fontFamily: "'Space Grotesk', sans-serif",
+                        }}
+                    >
+                        How Our Agent Works <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
                     </button>
                 </motion.div>
 

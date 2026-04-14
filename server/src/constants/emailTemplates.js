@@ -452,6 +452,119 @@ export const REENGAGEMENT_EMAIL_TEMPLATES = [
 
 export const REENGAGEMENT_DELAYS = [0, 4, 9, 14];
 
+// ── SEO MARKETING SEQUENCE (5 emails · 14 days) ──────────────────────────────
+// Special sequence for importing leads interested in SEO AI Agent services
+export const SEO_MARKETING_EMAIL_TEMPLATES = [
+    // Step 0 — Immediate
+    {
+        subject: `Your AI SEO Agent is Ready 🚀`,
+        preview: `Generate SEO-optimized articles in minutes, not days.`,
+        html: (name) => emailLayout(`
+            ${p(`Hey ${name || 'there'},`)}
+            ${p(`Welcome to the Bitlance SEO AI Agent — the fastest way to generate SEO-optimized content at scale.`)}
+            ${p(`In just <strong>minutes</strong>, you can:`)}
+            <ul style="font-size:15px;color:#333;line-height:2;padding-left:20px;margin:0 0 16px;">
+              <li>Generate fully-researched blog posts optimized for Google</li>
+              <li>Auto-publish to WordPress with internal linking</li>
+              <li>Build topical authority across your site</li>
+              <li>Get SEO-optimized content without hiring writers</li>
+            </ul>
+            ${p(`Let me show you how it works.`)}
+            ${btn('See SEO Agent in Action', `${BASE_URL}/features/seo-agent`)}
+            ${p(`— Team Bitlance`)}
+        `)
+    },
+    // Step 1 — Day 1
+    {
+        subject: `Why content teams are choosing AI-powered SEO`,
+        preview: `Your competitors are already using it.`,
+        html: (name) => emailLayout(`
+            ${p(`Hey ${name || 'there'},`)}
+            ${p(`The question isn't whether AI content works for SEO anymore — it's whether you can afford to keep writing everything manually.`)}
+            ${p(`Here's what's happening right now:`)}
+            <ul style="font-size:15px;color:#333;line-height:2;padding-left:20px;margin:0 0 16px;">
+              <li><strong>Content at scale:</strong> Generate 50+ SEO articles per month instead of 5</li>
+              <li><strong>Research built-in:</strong> AI analyzes competitors and industry data automatically</li>
+              <li><strong>Publishing automated:</strong> Content goes live with internal links and formatting</li>
+              <li><strong>Rankings improve faster:</strong> More topical authority = faster SERP gains</li>
+            </ul>
+            ${p(`The Bitlance SEO Agent does all of this. You just pick a topic.`)}
+            ${btn('Try It Free', `${BASE_URL}/dashboard/agents/seo`)}
+            ${p(`— Team Bitlance`)}
+        `)
+    },
+    // Step 2 — Day 4
+    {
+        subject: `How much time will this actually save you?`,
+        preview: `(Spoiler: A lot).`,
+        html: (name) => emailLayout(`
+            ${p(`Hey ${name || 'there'},`)}
+            ${p(`Let's be concrete:`)}
+            <ul style="font-size:15px;color:#333;line-height:2;padding-left:20px;margin:0 0 16px;">
+              <li><strong>Writing one manual blog post:</strong> 4–6 hours (research, writing, editing)</li>
+              <li><strong>Publishing to WordPress:</strong> 30 minutes (formatting, SEO tags, internal links)</li>
+              <li><strong>Total per article:</strong> 5–7 hours</li>
+            </ul>
+            ${p(`With the SEO Agent:`)}
+            <ul style="font-size:15px;color:#333;line-height:2;padding-left:20px;margin:0 0 16px;">
+              <li><strong>AI generates article:</strong> 2 minutes</li>
+              <li><strong>Auto-publishes:</strong> 1 minute</li>
+              <li><strong>Total per article:</strong> 3 minutes</li>
+            </ul>
+            ${p(`That's 97% less time per article. Multiply that by 50 articles, and you get your life back.`)}
+            ${btn('Get Started', `${BASE_URL}/dashboard/agents/seo`)}
+            ${p(`— Team Bitlance`)}
+        `)
+    },
+    // Step 3 — Day 8
+    {
+        subject: `The AI content that actually ranks`,
+        preview: `E-E-A-T signals aren't just buzzwords.`,
+        html: (name) => emailLayout(`
+            ${p(`Hey ${name || 'there'},`)}
+            ${p(`Not all AI content is created equal. Google's algorithm now rewards E-E-A-T:`)}
+            <ul style="font-size:15px;color:#333;line-height:2;padding-left:20px;margin:0 0 16px;">
+              <li><strong>Experience:</strong> Content backed by real case studies</li>
+              <li><strong>Expertise:</strong> Author credentials and deep knowledge</li>
+              <li><strong>Authority:</strong> Citations and links from trusted sources</li>
+              <li><strong>Trustworthiness:</strong> Transparent, fact-checked information</li>
+            </ul>
+            ${p(`The Bitlance SEO Agent builds in E-E-A-T signals automatically:`)}
+            <ul style="font-size:15px;color:#333;line-height:2;padding-left:20px;margin:0 0 16px;">
+              <li>Research-backed claims with sources</li>
+              <li>Internal linking to establish topical authority</li>
+              <li>Competitor analysis included in strategy</li>
+              <li>Structured data for rich snippets</li>
+            </ul>
+            ${p(`This isn't just content. It's SEO-optimized content.`)}
+            ${btn('See It in Action', `${BASE_URL}/dashboard/agents/seo`)}
+            ${p(`— Team Bitlance`)}
+        `)
+    },
+    // Step 4 — Day 14
+    {
+        subject: `Ready to go from 5 articles a month to 50?`,
+        preview: `The time to start was yesterday. Today works too.`,
+        html: (name) => emailLayout(`
+            ${p(`Hey ${name || 'there'},`)}
+            ${p(`You've spent two weeks learning about the SEO Agent.`)}
+            ${p(`Time to go from learning to doing.`)}
+            ${p(`You have two options:`)}
+            <ul style="font-size:15px;color:#333;line-height:2;padding-left:20px;margin:0 0 16px;">
+              <li><strong>Option A:</strong> Keep writing 5 articles a month manually, spending 40 hours on content</li>
+              <li><strong>Option B:</strong> Use the SEO Agent to generate 50 articles per month in 2.5 hours</li>
+            </ul>
+            ${p(`The difference over a year? 480 extra hours. 45 extra SEO articles ranking for you.`)}
+            ${btn('Upgrade to SEO Premium', `${BASE_URL}/pricing`)}
+            ${p(`Questions? Reply to this email — a real person will answer.`)}
+            ${p(`— Team Bitlance`)}
+        `)
+    }
+];
+
+// Days from sequence start when each step fires
+export const SEO_MARKETING_DELAYS = [0, 1, 4, 8, 14];
+
 // ─────────────────────────────────────────────────────────────────────────────
 
 /**

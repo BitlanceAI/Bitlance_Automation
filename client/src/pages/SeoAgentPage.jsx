@@ -30,6 +30,7 @@ import {
 
 import blogService from '../services/blogService';
 import API_BASE_URL from '../config.js';
+import SeoAgentTour from '../components/seo/SeoAgentTour';
 import ProfileSelection from '../components/dashboard/ProfileSelection';
 import WordPressProfileSelection from '../components/dashboard/WordPressProfileSelection';
 
@@ -43,6 +44,9 @@ import WpAutoQueuePanel from '../components/seo/WpAutoQueuePanel';
 const SeoAgentPage = () => {
     const navigate = useNavigate();
     const { user, credits, isAdmin, refreshCredits } = useAuth();
+
+    // Tour state
+    const [showTour, setShowTour] = useState(false);
 
     // Tab State
     const [activeTab, setActiveTab] = useState('generate');
@@ -615,6 +619,7 @@ const SeoAgentPage = () => {
     return (
         <div className="min-h-screen bg-[#070707] text-white font-sans transition-colors duration-300">
             <SEOHead canonicalUrl="https://www.bitlancetechhub.com/dashboard/agents/seo" noIndex={true} />
+            {showTour && <SeoAgentTour onClose={() => setShowTour(false)} />}
 
             {/* Header / Navbar */}
             <header className="bg-[#111111] border-b border-[#1E1E1E] sticky top-0 z-10 transition-colors duration-300">
@@ -664,6 +669,18 @@ const SeoAgentPage = () => {
                             )}
                         </div>
                         <div className="h-6 w-px bg-[#1E1E1E] hidden md:block"></div>
+                        <button
+                            onClick={() => { setActiveTab('generate'); setShowTour(true); }}
+                            className="hidden md:flex items-center gap-2 px-4 py-2 font-mono text-[11px] tracking-widest uppercase font-bold transition-all hover:-translate-y-0.5"
+                            style={{
+                                background: 'transparent',
+                                color: '#26CECE',
+                                border: '1px solid rgba(38,206,206,0.4)',
+                                borderRadius: 2,
+                            }}
+                        >
+                            <Play size={12} fill="currentColor" /> How to Use
+                        </button>
                     </div>
                 </div>
 
@@ -740,7 +757,7 @@ const SeoAgentPage = () => {
 
                                 <div className="space-y-6">
                                     {/* Source Type Selector */}
-                                    <div>
+                                    <div data-tour="source-type">
                                         <label className="block text-[10px] font-mono tracking-widest uppercase text-gray-500 mb-3">Source Type *</label>
                                         <div className="grid grid-cols-3 gap-3">
                                             <button
@@ -983,7 +1000,7 @@ const SeoAgentPage = () => {
                                     </div>
 
                                     {/* Article Title — only required input */}
-                                    <div className="space-y-3">
+                                    <div className="space-y-3" data-tour="article-title">
                                         <label className="text-[10px] font-mono tracking-widest uppercase text-gray-500">
                                             Article Title <span className="text-[#26cece]">*</span>
                                         </label>
@@ -1002,7 +1019,7 @@ const SeoAgentPage = () => {
                                     </div>
 
                                     {/* Dropdowns Grid */}
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6" data-tour="article-options">
                                         <div className="space-y-3">
                                             <label className="text-[10px] font-mono tracking-widest uppercase text-gray-500">Language</label>
                                             <div className="relative">
@@ -1117,7 +1134,7 @@ const SeoAgentPage = () => {
                                         </div>
 
                                         {/* New Fields: Author & Category */}
-                                        <div className="space-y-3">
+                                        <div className="space-y-3" data-tour="profile-select">
                                             <ProfileSelection onProfileSelect={handleProfileSelect} />
                                         </div>
 
@@ -1177,6 +1194,7 @@ const SeoAgentPage = () => {
                                     </div>
 
                                     <button
+                                        data-tour="generate-btn"
                                         onClick={handleGenerate}
                                         disabled={isGenerating}
                                         className={`w-full bg-[#26cece] text-[#070707] font-bold py-4 rounded-[2px] transition-all font-['Space_Grotesk'] tracking-widest uppercase hover:bg-white hover:-translate-y-1 hover:shadow-[4px_4px_0_0_#333] text-[16px] flex items-center justify-center gap-3 ${isGenerating ? 'opacity-50 cursor-not-allowed hover:-translate-y-0 hover:shadow-none hover:bg-[#26cece]' : ''}`}
@@ -1201,7 +1219,7 @@ const SeoAgentPage = () => {
 
                             {/* Generated Article Display */}
                             {currentArticle && (
-                                <div className="bg-[#070707] rounded-[2px] border border-[#333] p-6 md:p-8 transition-colors duration-300">
+                                <div data-tour="article-output" className="bg-[#070707] rounded-[2px] border border-[#333] p-6 md:p-8 transition-colors duration-300">
                                     <h2 className="text-xl font-bold mb-4 text-[#26cece] font-['Space_Grotesk'] tracking-tight flex items-center gap-3">
                                         <CheckCircle size={28} />
                                         Article Generated Successfully
@@ -1229,6 +1247,7 @@ const SeoAgentPage = () => {
                                     />
 
                                     <button
+                                        data-tour="wp-upload"
                                         onClick={handleUploadToWordPress}
                                         disabled={isUploading || !selectedWpProfile}
                                         className="w-full bg-[#26cece] text-[#070707] font-bold font-['Space_Grotesk'] tracking-widest uppercase px-6 py-4 rounded-[2px] hover:bg-white hover:-translate-y-1 hover:shadow-[4px_4px_0_0_#333] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:hover:bg-[#26cece] disabled:hover:shadow-none transition-all flex items-center justify-center gap-2"

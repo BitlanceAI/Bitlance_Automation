@@ -209,12 +209,13 @@ const LandingPage = () => {
                 <ProblemSection />
                 <WhyBitlanceSection />
                 <TestimonialsSection />
-                <VoiceBotSection onOpenBooking={handleOpenBooking} />
+                
                 <BlogAgentSection onOpenBooking={handleOpenBooking} />
+                <VoiceBotSection onOpenBooking={handleOpenBooking} />
                 <UseCasesSection />
                 <HowItWorksSection />
                 <SocialProofSection />
-                <AgentPricingSection />
+                {/* <AgentPricingSection /> */}
                 <FinalCtaSection onOpenBooking={handleOpenBooking} />
                 <Footer />
             </div>

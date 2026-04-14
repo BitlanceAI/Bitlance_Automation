@@ -236,6 +236,11 @@ function App() {
                   <MetaAdsPage />
                 </AuthGuard>
               } />
+              <Route path="/dashboard/email-automation" element={
+                <AuthGuard>
+                  <EmailAutomationPage />
+                </AuthGuard>
+              } />
               <Route path="/settings" element={
                 <AuthGuard>
                   <SettingsPage />

@@ -1,10 +1,11 @@
 /**
  * emailSequenceService.js
  *
- * Handles three automated email sequences for Bitlance:
+ * Handles four automated email sequences for Bitlance:
  *   • welcome      — triggered when a new user signs up (7 emails / 14 days)
  *   • nurture      — triggered when a new lead is added   (8 emails / 21 days)
  *   • reengagement — triggered when a user is inactive 30+ days (4 emails / 14 days)
+ *   • seo_marketing — bulk import for SEO AI agent leads (5 emails / 14 days)
  *
  * Each run (called by emailSequenceCron):
  *   1. Enrols new candidates who don't yet have a sequence entry
@@ -21,6 +22,8 @@ import {
     NURTURE_DELAYS,
     REENGAGEMENT_EMAIL_TEMPLATES,
     REENGAGEMENT_DELAYS,
+    SEO_MARKETING_EMAIL_TEMPLATES,
+    SEO_MARKETING_DELAYS,
 } from '../constants/emailTemplates.js';
 
 // ─── helpers ─────────────────────────────────────────────────────────────────
@@ -174,6 +177,7 @@ const SEQUENCE_MAP = {
     welcome: { templates: WELCOME_EMAIL_TEMPLATES, delays: WELCOME_DELAYS },
     nurture: { templates: NURTURE_EMAIL_TEMPLATES, delays: NURTURE_DELAYS },
     reengagement: { templates: REENGAGEMENT_EMAIL_TEMPLATES, delays: REENGAGEMENT_DELAYS },
+    seo_marketing: { templates: SEO_MARKETING_EMAIL_TEMPLATES, delays: SEO_MARKETING_DELAYS },
 };
 
 export const sendDueEmails = async () => {

@@ -13,9 +13,10 @@ const SEQUENCE_COLORS = {
     welcome: { bg: 'bg-blue-50 dark:bg-blue-900/20', badge: 'bg-blue-100 dark:bg-blue-800 text-blue-700 dark:text-blue-300', dot: 'bg-blue-500' },
     nurture: { bg: 'bg-purple-50 dark:bg-purple-900/20', badge: 'bg-purple-100 dark:bg-purple-800 text-purple-700 dark:text-purple-300', dot: 'bg-purple-500' },
     reengagement: { bg: 'bg-amber-50 dark:bg-amber-900/20', badge: 'bg-amber-100 dark:bg-amber-800 text-amber-700 dark:text-amber-300', dot: 'bg-amber-500' },
+    seo_marketing: { bg: 'bg-emerald-50 dark:bg-emerald-900/20', badge: 'bg-emerald-100 dark:bg-emerald-800 text-emerald-700 dark:text-emerald-300', dot: 'bg-emerald-500' },
 };
 
-const SEQ_STEPS = { welcome: 7, nurture: 8, reengagement: 4 };
+const SEQ_STEPS = { welcome: 7, nurture: 8, reengagement: 4, seo_marketing: 5 };
 
 const formatDate = (iso) => {
     if (!iso) return '—';
@@ -51,6 +52,10 @@ const EmailAutomationPage = () => {
     // Enrol form
     const [enrolForm, setEnrolForm] = useState({ email: '', name: '', sequence_type: 'welcome' });
     const [enrolling, setEnrolling] = useState(false);
+
+    // Import SEO leads form
+    const [seoImportForm, setSeoImportForm] = useState({ sheetId: '', emailColumn: 'email', nameColumn: 'name' });
+    const [importingSeo, setImportingSeo] = useState(false);
 
     // ── Fetch sequences ──────────────────────────────────────────────────────
 
@@ -144,6 +149,33 @@ const EmailAutomationPage = () => {
             if (data.success) { toast.success(data.message); fetchSequences(); }
             else toast.error(data.error || 'Delete failed');
         } catch { toast.error('Cannot reach server'); }
+    };
+
+    // ── Import SEO leads from Google Sheets ───────────────────────────────────
+
+    const handleImportSeoLeads = async (e) => {
+        e.preventDefault();
+        if (!seoImportForm.sheetId) return toast.error('Sheet ID is required');
+        setImportingSeo(true);
+        try {
+            const res = await fetch(`${API_BASE_URL}/api/admin/email-sequences/import-seo-leads`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(seoImportForm),
+            });
+            const data = await res.json();
+            if (data.success) {
+                toast.success(`✅ Imported ${data.enrolled} emails for SEO marketing sequence`);
+                setSeoImportForm({ sheetId: '', emailColumn: 'email', nameColumn: 'name' });
+                fetchSequences();
+                if (data.skippedRows?.length > 0) {
+                    console.log('Skipped rows:', data.skippedRows);
+                }
+            } else {
+                toast.error(data.error || 'Import failed');
+            }
+        } catch { toast.error('Cannot reach server'); }
+        finally { setImportingSeo(false); }
     };
 
     // ─── Render ──────────────────────────────────────────────────────────────
@@ -257,6 +289,7 @@ const EmailAutomationPage = () => {
                                     <option value="welcome">Welcome (7 emails / 14 days)</option>
                                     <option value="nurture">Nurture (8 emails / 21 days)</option>
                                     <option value="reengagement">Re-engagement (4 emails / 14 days)</option>
+                                    <option value="seo_marketing">SEO Marketing (5 emails / 14 days)</option>
                                 </select>
                             </div>
                             <button type="submit" disabled={enrolling}
@@ -266,6 +299,58 @@ const EmailAutomationPage = () => {
                             </button>
                         </form>
                     </div>
+                </div>
+
+                {/* Import SEO Leads from Google Sheets */}
+                <div className="bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-emerald-900/20 dark:to-teal-900/20 rounded-2xl shadow-sm border border-emerald-200 dark:border-emerald-800 p-6">
+                    <div className="flex items-center gap-2 mb-5">
+                        <div className="p-2 rounded-lg bg-emerald-500/20">
+                            <Users className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+                        </div>
+                        <div>
+                            <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Import SEO Marketing Leads</h2>
+                            <p className="text-xs text-gray-600 dark:text-gray-400">Bulk import emails from Google Sheets to send SEO AI agent marketing sequence</p>
+                        </div>
+                    </div>
+                    <form onSubmit={handleImportSeoLeads} className="space-y-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Google Sheet ID *</label>
+                                <input type="text" required value={seoImportForm.sheetId}
+                                    onChange={e => setSeoImportForm(p => ({ ...p, sheetId: e.target.value }))}
+                                    placeholder="1a2b3c4d5e6f7g8h9i0j..."
+                                    className="w-full px-4 py-2.5 rounded-xl border border-emerald-200 dark:border-emerald-700 bg-white dark:bg-slate-900 text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-emerald-500 transition-all text-sm"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Email Column Name</label>
+                                <input type="text" value={seoImportForm.emailColumn}
+                                    onChange={e => setSeoImportForm(p => ({ ...p, emailColumn: e.target.value }))}
+                                    placeholder="email"
+                                    className="w-full px-4 py-2.5 rounded-xl border border-emerald-200 dark:border-emerald-700 bg-white dark:bg-slate-900 text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-emerald-500 transition-all text-sm"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Name Column Name</label>
+                                <input type="text" value={seoImportForm.nameColumn}
+                                    onChange={e => setSeoImportForm(p => ({ ...p, nameColumn: e.target.value }))}
+                                    placeholder="name"
+                                    className="w-full px-4 py-2.5 rounded-xl border border-emerald-200 dark:border-emerald-700 bg-white dark:bg-slate-900 text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-emerald-500 transition-all text-sm"
+                                />
+                            </div>
+                        </div>
+                        <div className="flex items-start gap-3 p-3 bg-white/50 dark:bg-slate-900/50 rounded-xl border border-emerald-100 dark:border-emerald-800">
+                            <AlertCircle className="w-4 h-4 text-emerald-600 dark:text-emerald-400 mt-0.5 flex-shrink-0" />
+                            <p className="text-xs text-emerald-700 dark:text-emerald-300">
+                                Make sure your Google Sheet has email and name columns. First row will be treated as headers. After import, run "Run Sequence Cycle" to send the first email immediately.
+                            </p>
+                        </div>
+                        <button type="submit" disabled={importingSeo}
+                            className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 text-white text-sm font-semibold shadow-md hover:shadow-emerald-500/40 transition-all disabled:opacity-60">
+                            {importingSeo ? <Loader2 className="w-4 h-4 animate-spin" /> : <UserPlus className="w-4 h-4" />}
+                            {importingSeo ? 'Importing…' : 'Import & Enrol'}
+                        </button>
+                    </form>
                 </div>
 
                 {/* Sequence List */}
