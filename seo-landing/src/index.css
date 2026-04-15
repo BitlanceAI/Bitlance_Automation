@@ -1,0 +1,116 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --brand: #26CECE;
+  --brand-dark: #1AACAC;
+  --dark: #0A0A0A;
+  --surface: #111111;
+  --card: #1A1A1A;
+  --border: rgba(38, 206, 206, 0.15);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  background-color: #0A0A0A;
+  color: #fff;
+  font-family: 'Inter', system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: #111; }
+::-webkit-scrollbar-thumb { background: #26CECE44; border-radius: 2px; }
+::-webkit-scrollbar-thumb:hover { background: #26CECE; }
+
+/* Selection */
+::selection { background: rgba(38, 206, 206, 0.3); color: #fff; }
+
+/* Grid background */
+.grid-bg {
+  background-image:
+    linear-gradient(rgba(38, 206, 206, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(38, 206, 206, 0.03) 1px, transparent 1px);
+  background-size: 60px 60px;
+}
+
+/* Glow orbs */
+.orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Gradient text */
+.gradient-text {
+  background: linear-gradient(135deg, #26CECE 0%, #2DD4BF 50%, #5EEAD4 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Card hover */
+.card-hover {
+  transition: all 0.3s ease;
+}
+.card-hover:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 20px 40px rgba(38, 206, 206, 0.1);
+  border-color: rgba(38, 206, 206, 0.4) !important;
+}
+
+/* Animated border */
+.animated-border {
+  position: relative;
+  border: 1px solid transparent;
+  background: linear-gradient(#1A1A1A, #1A1A1A) padding-box,
+              linear-gradient(90deg, #26CECE, #1AACAC, #26CECE) border-box;
+  background-size: 200% 100%;
+  animation: borderFlow 4s linear infinite;
+}
+
+/* Shimmer button */
+.shimmer-btn {
+  position: relative;
+  overflow: hidden;
+}
+.shimmer-btn::after {
+  content: '';
+  position: absolute;
+  top: 0; left: -100%;
+  width: 60%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent);
+  animation: shimmerPass 2.5s ease-in-out infinite;
+}
+@keyframes shimmerPass {
+  0% { left: -100%; }
+  100% { left: 200%; }
+}
+
+/* Prose */
+.prose-dark { color: rgba(255,255,255,0.7); line-height: 1.75; }
+
+/* Focus ring */
+*:focus-visible { outline: 2px solid #26CECE; outline-offset: 2px; }
+
+/* Remotion Player overrides */
+.remotion-player-container {
+  border-radius: 12px;
+  overflow: hidden;
+}
