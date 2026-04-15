@@ -10,7 +10,9 @@
     "remotion:preview": "remotion preview src/remotion/index.jsx"
   },
   "dependencies": {
+    "@radix-ui/react-slot": "^1.2.4",
     "@remotion/player": "^4.0.290",
+    "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "framer-motion": "^11.0.0",
     "lucide-react": "^0.462.0",

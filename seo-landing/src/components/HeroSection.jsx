@@ -1,7 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
-import { ArrowRight, Play, Send, Search, ShieldCheck, RefreshCw } from 'lucide-react';
-import { HeroVideoDialog } from './ui/hero-video-dialog';
+import { ArrowRight, Send, Search, ShieldCheck, RefreshCw } from 'lucide-react';
 
 const APP_URL = 'https://www.bitlancetechhub.com';
 const BRAND = '#26CECE';
@@ -47,8 +46,24 @@ const useTypewriter = (words, speed = 120, pause = 1800) => {
   return displayed;
 };
 
-export default function HeroSection({ onWatchDemo }) {
+export default function HeroSection() {
   const verb = useTypewriter(['Automatically.', 'Effortlessly.', 'Hands-Free.']);
+  const videoRef = useRef(null);
+  const [manualPause, setManualPause] = useState(false);
+
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+    const obs = new IntersectionObserver(
+      ([e]) => {
+        if (e.isIntersecting) { if (!manualPause) video.play().catch(() => {}); }
+        else { video.pause(); }
+      },
+      { threshold: 0.3 }
+    );
+    obs.observe(video);
+    return () => { if (video) obs.unobserve(video); };
+  }, [manualPause]);
 
   return (
     <section className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden grid-bg pt-20 pb-12 px-4">
@@ -118,25 +133,14 @@ export default function HeroSection({ onWatchDemo }) {
           </span>
         </motion.h1>
 
-        {/* Sub-headline */}
-        <motion.p
-          initial={{ opacity: 0, y: 16 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ delay: 0.3, duration: 0.6 }}
-          className="text-sm sm:text-lg md:text-xl text-white/60 max-w-2xl leading-relaxed mb-8"
-        >
-          Turn any keyword into a fully-researched, SEO-optimised blog post.
-          Auto-publish to WordPress and watch organic traffic climb — completely hands-free.
-        </motion.p>
 
-        {/* Feature pills */}
+        {/* Feature pills — below sub-headline */}
         <motion.div
           initial={{ opacity: 0, y: 12 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ delay: 0.45, duration: 0.5 }}
-          className="flex flex-wrap justify-center gap-3 mb-10"
+          className="flex flex-wrap justify-center gap-3"
         >
           {PILLS.map(({ icon, text }, i) => (
             <motion.div
@@ -158,37 +162,80 @@ export default function HeroSection({ onWatchDemo }) {
           ))}
         </motion.div>
 
-        {/* CTA buttons */}
-        <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ delay: 0.6, duration: 0.5 }}
-          className="flex flex-col sm:flex-row items-center gap-4"
+      </div>
+
+      {/* Video */}
+      <motion.div
+        initial={{ opacity: 0, y: 40 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, margin: "-100px" }}
+        transition={{ delay: 0.7, duration: 0.8 }}
+        className="relative z-10 mt-12 w-full max-w-5xl mx-auto group"
+      >
+        {/* Outer teal glow */}
+        <div
+          className="absolute -inset-3 rounded-3xl blur-2xl -z-10 opacity-60 group-hover:opacity-100 transition-opacity duration-700"
+          style={{ background: 'rgba(38,206,206,0.12)' }}
+        />
+
+        {/* Glass frame */}
+        <div
+          className="p-[6px] rounded-3xl"
+          style={{
+            background: 'rgba(255,255,255,0.03)',
+            border: '1px solid rgba(38,206,206,0.2)',
+            backdropFilter: 'blur(12px)',
+            boxShadow: '0 40px 100px -20px rgba(38,206,206,0.2), 0 0 0 1px rgba(255,255,255,0.04) inset',
+          }}
         >
-          <a
-            href={`${APP_URL}/login`}
-            className="shimmer-btn group flex items-center gap-2 px-8 py-4 font-bold text-base rounded-xl transition-all shadow-xl hover:scale-105"
-            style={{
-              background: BRAND,
-              color: '#000',
-              boxShadow: `0 8px 32px rgba(38,206,206,0.3)`,
-            }}
+          <div
+            className="aspect-video w-full rounded-[1.4rem] overflow-hidden relative"
+            style={{ background: '#0A0A0A' }}
           >
-            Start Free Trial
-            <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
-          </a>
+            <video
+              ref={videoRef}
+              src="/SEO_AI_agent-_implementation.mp4"
+              className="w-full h-full object-cover"
+              controls
+              loop
+              playsInline
+              muted
+              onPlay={() => setManualPause(false)}
+              onPause={() => {
+                if (videoRef.current) {
+                  const r = videoRef.current.getBoundingClientRect();
+                  if (r.top >= 0 && r.bottom <= window.innerHeight) setManualPause(true);
+                }
+              }}
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent pointer-events-none" />
+          </div>
+        </div>
+      </motion.div>
 
-        </motion.div>
-
-        {/* Social proof (Avatars) */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          viewport={{ once: true }}
-          transition={{ delay: 0.9, duration: 0.6 }}
-          className="mt-10 flex flex-col items-center gap-3"
+      {/* CTA + Social proof — below video */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+        transition={{ delay: 0.9, duration: 0.6 }}
+        className="relative z-10 mt-12 flex flex-col items-center gap-6"
+      >
+        <a
+          href={`${APP_URL}/login`}
+          className="shimmer-btn group flex items-center gap-2 px-8 py-4 font-bold text-base rounded-xl transition-all shadow-xl hover:scale-105"
+          style={{
+            background: BRAND,
+            color: '#000',
+            boxShadow: `0 8px 32px rgba(38,206,206,0.3)`,
+          }}
         >
+          Start Free Trial
+          <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
+        </a>
+
+        {/* Social proof */}
+        <div className="flex flex-col items-center gap-2">
           <div className="flex -space-x-3">
             {[
               '/testimonals/suyash_nyati.jpeg',
@@ -205,36 +252,17 @@ export default function HeroSection({ onWatchDemo }) {
               />
             ))}
           </div>
-          <div className="flex items-center gap-2 mt-1">
+          <div className="flex items-center gap-2">
             <div className="flex gap-0.5">
-               {/* 5 stars */}
-               {[...Array(5)].map((_, i) => (
-                  <svg key={i} width="16" height="16" viewBox="0 0 20 20" fill="#F59E0B">
-                    <path d="M10 1l2.5 5.5L18 7.6l-4 3.9 1 5.5L10 14.2l-5 2.8 1-5.5-4-3.9 5.5-.9L10 1z" />
-                  </svg>
-               ))}
+              {[...Array(5)].map((_, i) => (
+                <svg key={i} width="16" height="16" viewBox="0 0 20 20" fill="#F59E0B">
+                  <path d="M10 1l2.5 5.5L18 7.6l-4 3.9 1 5.5L10 14.2l-5 2.8 1-5.5-4-3.9 5.5-.9L10 1z" />
+                </svg>
+              ))}
             </div>
             <span className="text-white/70 text-sm font-medium">Loved by top founders</span>
           </div>
-        </motion.div>
-
-      </div>
-
-      {/* HeyGen Video Hero */}
-      <motion.div
-        initial={{ opacity: 0, y: 40 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true, margin: "-100px" }}
-        transition={{ delay: 1.1, duration: 0.8 }}
-        className="relative z-10 mt-16 w-full max-w-5xl mx-auto rounded-2xl p-1 bg-white/5 border border-white/10 backdrop-blur-md"
-        style={{ boxShadow: "0 20px 80px rgba(38,206,206,0.15)" }}
-      >
-        <HeroVideoDialog
-          animationStyle="from-center"
-          videoSrc="/SEO_AI_agent-_implementation.mp4"
-          thumbnailSrc="https://images.unsplash.com/photo-1460925895917-afdab827c52f?q=80&w=2015&auto=format&fit=crop"
-          thumbnailAlt="Bitlance SEO AI Demo Dashboard"
-        />
+        </div>
       </motion.div>
     </section>
   );
