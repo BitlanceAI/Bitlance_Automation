@@ -1,15 +1,16 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { ArrowRight, Play } from 'lucide-react';
+import { ArrowRight, Play, Send, Search, ShieldCheck, RefreshCw } from 'lucide-react';
+import { HeroVideoDialog } from './ui/hero-video-dialog';
 
-const APP_URL = 'https://app.bitlancetechhub.com';
+const APP_URL = 'https://www.bitlancetechhub.com';
 const BRAND = '#26CECE';
 
 const PILLS = [
-  { icon: '🚀', text: 'Auto-Publish' },
-  { icon: '🔍', text: 'Keyword Research' },
-  { icon: '✅', text: 'Plagiarism Check' },
-  { icon: '🔗', text: 'WordPress Sync' },
+  { icon: <Send size={15} />, text: 'Auto-Publish' },
+  { icon: <Search size={15} />, text: 'Keyword Research' },
+  { icon: <ShieldCheck size={15} />, text: 'Plagiarism Check' },
+  { icon: <RefreshCw size={15} />, text: 'WordPress Sync' },
 ];
 
 const STATS = [
@@ -62,7 +63,8 @@ export default function HeroSection({ onWatchDemo }) {
           key={label}
           className={`absolute ${pos} hidden sm:block z-20`}
           initial={{ opacity: 0, scale: 0.7 }}
-          animate={{ opacity: 1, scale: 1 }}
+          whileInView={{ opacity: 1, scale: 1 }}
+          viewport={{ once: true, margin: "0px" }}
           transition={{ delay: 0.8 + i * 0.15, duration: 0.5, type: 'spring', stiffness: 120 }}
         >
           <div
@@ -85,7 +87,8 @@ export default function HeroSection({ onWatchDemo }) {
         {/* Badge */}
         <motion.div
           initial={{ opacity: 0, y: -12 }}
-          animate={{ opacity: 1, y: 0 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
           transition={{ duration: 0.5 }}
           className="inline-flex items-center gap-2 px-4 py-2 rounded-full mb-8"
           style={{ background: 'rgba(38,206,206,0.08)', border: '1px solid rgba(38,206,206,0.25)' }}
@@ -97,7 +100,8 @@ export default function HeroSection({ onWatchDemo }) {
         {/* Headline */}
         <motion.h1
           initial={{ opacity: 0, y: 24 }}
-          animate={{ opacity: 1, y: 0 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
           transition={{ delay: 0.15, duration: 0.6 }}
           className="text-3xl sm:text-5xl md:text-6xl lg:text-7xl font-black leading-[1.08] tracking-tight mb-4"
         >
@@ -117,7 +121,8 @@ export default function HeroSection({ onWatchDemo }) {
         {/* Sub-headline */}
         <motion.p
           initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
           transition={{ delay: 0.3, duration: 0.6 }}
           className="text-sm sm:text-lg md:text-xl text-white/60 max-w-2xl leading-relaxed mb-8"
         >
@@ -128,7 +133,8 @@ export default function HeroSection({ onWatchDemo }) {
         {/* Feature pills */}
         <motion.div
           initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
           transition={{ delay: 0.45, duration: 0.5 }}
           className="flex flex-wrap justify-center gap-3 mb-10"
         >
@@ -136,7 +142,8 @@ export default function HeroSection({ onWatchDemo }) {
             <motion.div
               key={text}
               initial={{ opacity: 0, x: 16 }}
-              animate={{ opacity: 1, x: 0 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
               transition={{ delay: 0.5 + i * 0.08 }}
               className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold"
               style={{
@@ -154,12 +161,13 @@ export default function HeroSection({ onWatchDemo }) {
         {/* CTA buttons */}
         <motion.div
           initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
           transition={{ delay: 0.6, duration: 0.5 }}
           className="flex flex-col sm:flex-row items-center gap-4"
         >
           <a
-            href={`${APP_URL}/esign`}
+            href={`${APP_URL}/login`}
             className="shimmer-btn group flex items-center gap-2 px-8 py-4 font-bold text-base rounded-xl transition-all shadow-xl hover:scale-105"
             style={{
               background: BRAND,
@@ -170,45 +178,64 @@ export default function HeroSection({ onWatchDemo }) {
             Start Free Trial
             <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
           </a>
-          <button
-            onClick={onWatchDemo}
-            className="group flex items-center gap-3 px-8 py-4 font-semibold text-base rounded-xl transition-all"
-            style={{
-              background: 'rgba(255,255,255,0.05)',
-              border: '1px solid rgba(255,255,255,0.1)',
-              color: '#fff',
-            }}
-            onMouseEnter={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.1)')}
-            onMouseLeave={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.05)')}
-          >
-            <div
-              className="w-8 h-8 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform"
-              style={{ background: 'rgba(38,206,206,0.15)', border: '1px solid rgba(38,206,206,0.35)' }}
-            >
-              <Play size={13} className="ml-0.5" style={{ color: BRAND, fill: BRAND }} />
-            </div>
-            Watch 2-min Demo
-          </button>
+
         </motion.div>
 
-        {/* Social proof */}
+        {/* Social proof (Avatars) */}
         <motion.div
           initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
+          whileInView={{ opacity: 1 }}
+          viewport={{ once: true }}
           transition={{ delay: 0.9, duration: 0.6 }}
-          className="mt-8 flex flex-col items-center gap-2"
+          className="mt-10 flex flex-col items-center gap-3"
         >
-          <div className="flex items-center gap-1.5">
-            {[...Array(5)].map((_, i) => (
-              <svg key={i} width="15" height="15" viewBox="0 0 20 20" fill="#F59E0B">
-                <path d="M10 1l2.5 5.5L18 7.6l-4 3.9 1 5.5L10 14.2l-5 2.8 1-5.5-4-3.9 5.5-.9L10 1z" />
-              </svg>
+          <div className="flex -space-x-3">
+            {[
+              '/testimonals/suyash_nyati.jpeg',
+              '/testimonals/akshay_lakde.jpeg',
+              '/testimonals/sahil_guhane.jpeg',
+              '/testimonals/deepak_chaudhari.jpeg',
+              '/testimonals/tejaunsh_nyati.jpeg',
+            ].map((src, i) => (
+              <img
+                key={i}
+                src={src}
+                alt="User"
+                className="w-10 h-10 sm:w-12 sm:h-12 rounded-full border-2 border-black object-cover relative z-10 hover:z-20 transition-transform hover:scale-110"
+              />
             ))}
-            <span className="text-white/50 text-sm ml-1">4.9/5 from 200+ users</span>
           </div>
-          <p className="text-white/35 text-xs">No credit card required · Cancel anytime</p>
+          <div className="flex items-center gap-2 mt-1">
+            <div className="flex gap-0.5">
+               {/* 5 stars */}
+               {[...Array(5)].map((_, i) => (
+                  <svg key={i} width="16" height="16" viewBox="0 0 20 20" fill="#F59E0B">
+                    <path d="M10 1l2.5 5.5L18 7.6l-4 3.9 1 5.5L10 14.2l-5 2.8 1-5.5-4-3.9 5.5-.9L10 1z" />
+                  </svg>
+               ))}
+            </div>
+            <span className="text-white/70 text-sm font-medium">Loved by top founders</span>
+          </div>
         </motion.div>
+
       </div>
+
+      {/* HeyGen Video Hero */}
+      <motion.div
+        initial={{ opacity: 0, y: 40 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, margin: "-100px" }}
+        transition={{ delay: 1.1, duration: 0.8 }}
+        className="relative z-10 mt-16 w-full max-w-5xl mx-auto rounded-2xl p-1 bg-white/5 border border-white/10 backdrop-blur-md"
+        style={{ boxShadow: "0 20px 80px rgba(38,206,206,0.15)" }}
+      >
+        <HeroVideoDialog
+          animationStyle="from-center"
+          videoSrc="/SEO_AI_agent-_implementation.mp4"
+          thumbnailSrc="https://images.unsplash.com/photo-1460925895917-afdab827c52f?q=80&w=2015&auto=format&fit=crop"
+          thumbnailAlt="Bitlance SEO AI Demo Dashboard"
+        />
+      </motion.div>
     </section>
   );
 }

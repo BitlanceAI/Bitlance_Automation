@@ -1,43 +1,44 @@
 import { motion } from 'framer-motion';
+import { Search, PenTool, Rocket, Link2, Shield, BarChart2 } from 'lucide-react';
 
 const features = [
   {
-    icon: '🔍',
+    icon: <Search size={22} />,
     title: 'Intelligent Keyword Research',
     desc: 'SerpAPI integration surfaces trending topics and high-volume, low-competition keywords your competitors are missing.',
     bullets: ['Real-time SERP analysis', 'Competitor gap detection', 'Search volume & difficulty scores'],
     accent: '#26CECE',
   },
   {
-    icon: '✍️',
+    icon: <PenTool size={22} />,
     title: 'AI Article Writer',
     desc: 'GPT-4o generates fully structured, 1,500+ word articles with proper H1–H6 hierarchy, bullet points, and natural keyword density.',
     bullets: ['1,500–3,000 word depth', 'Schema-ready structure', 'E-E-A-T optimized content'],
     accent: '#2DD4BF',
   },
   {
-    icon: '🚀',
+    icon: <Rocket size={22} />,
     title: 'One-Click Auto-Publish',
     desc: 'Direct WordPress REST API integration. Articles, featured images, categories, and tags — all pushed live automatically.',
     bullets: ['WordPress REST API', 'Auto-featured images', 'Categories & tag sync'],
     accent: '#5EEAD4',
   },
   {
-    icon: '🔗',
+    icon: <Link2 size={22} />,
     title: 'Smart Internal Linking',
     desc: 'Automatically scans your existing posts and weaves relevant internal links into every new article to boost domain authority.',
     bullets: ['Contextual anchor text', 'Domain authority boost', 'Crawl depth optimization'],
     accent: '#26CECE',
   },
   {
-    icon: '🛡️',
+    icon: <Shield size={22} />,
     title: 'Plagiarism Protection',
     desc: 'Every article passes through our plagiarism engine before publishing. Your reputation stays clean — always.',
     bullets: ['Pre-publish scanning', '100% originality guarantee', 'Rewrite on detection'],
     accent: '#2DD4BF',
   },
   {
-    icon: '📊',
+    icon: <BarChart2 size={22} />,
     title: 'Performance Dashboard',
     desc: 'Track article rankings, organic traffic, word counts, and publishing history from one beautiful dashboard.',
     bullets: ['Ranking tracker', 'Traffic analytics', 'Publishing history'],

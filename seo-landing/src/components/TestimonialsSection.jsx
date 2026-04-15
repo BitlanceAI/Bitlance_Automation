@@ -3,63 +3,54 @@ import { motion, useInView, AnimatePresence } from 'framer-motion';
 
 const testimonials = [
   {
-    name: 'Priya Sharma',
-    role: 'Founder, GrowthLabs India',
-    avatar: 'PS',
+    name: 'Akshay Lakde',
+    role: 'Founder',
+    avatar: '/testimonals/akshay_lakde.jpeg',
     rating: 5,
     text: 'We went from 0 to 3,400 monthly organic visitors in 60 days using Bitlance SEO. The auto-publish feature alone saves us 15 hours a week.',
     metric: '+3,400 organic/month',
     metricLabel: 'in 60 days',
   },
   {
-    name: 'Arjun Mehta',
-    role: 'Head of Marketing, TechStar SaaS',
-    avatar: 'AM',
+    name: 'Deepak Chaudhari',
+    role: 'Head of Marketing',
+    avatar: '/testimonals/deepak_chaudhari.jpeg',
     rating: 5,
     text: "I was skeptical about AI-written content but the quality blew me away. Every article ranks within 2 weeks. Our content costs dropped by 80%.",
     metric: '-80%',
     metricLabel: 'content costs',
   },
   {
-    name: 'Neha Agarwal',
-    role: 'Digital Marketing Lead, EduPlus',
-    avatar: 'NA',
+    name: 'Sahil Guhane',
+    role: 'Digital Marketing Lead',
+    avatar: '/testimonals/sahil_guhane.jpeg',
     rating: 5,
     text: 'The internal linking alone boosted our domain rating from 18 to 34 in 3 months. Plus the plagiarism check gives us peace of mind.',
     metric: 'DR 18 → 34',
     metricLabel: 'in 3 months',
   },
   {
-    name: 'Rohan Kapoor',
-    role: 'CEO, StyleCart.in',
-    avatar: 'RK',
+    name: 'Suyash Nyati',
+    role: 'CEO',
+    avatar: '/testimonals/suyash_nyati.jpeg',
     rating: 5,
-    text: "100 articles published with zero manual effort. Our WordPress site now gets 12,000 organic visits monthly. This tool is a game-changer for ecommerce SEO.",
+    text: "100 articles published with zero manual effort. Our WordPress site now gets 12,000 organic visits monthly. This tool is a game-changer.",
     metric: '12,000',
     metricLabel: 'organic visits/month',
   },
   {
-    name: 'Deepa Nair',
+    name: 'Tejaunsh Nyati',
     role: 'SEO Consultant',
-    avatar: 'DN',
+    avatar: '/testimonals/tejaunsh_nyati.jpeg',
     rating: 5,
     text: "I use Bitlance for all my client sites. The keyword research + auto-publish saves me 3 hours per article. My clients see page-1 rankings within weeks.",
     metric: 'Page 1',
     metricLabel: 'rankings in weeks',
   },
-  {
-    name: 'Vikram Joshi',
-    role: 'Marketing Director, FinEdge',
-    avatar: 'VJ',
-    rating: 5,
-    text: 'The SerpAPI integration is brilliant — it picks up trending finance topics before competitors. Our blog traffic tripled in a quarter.',
-    metric: '3x',
-    metricLabel: 'blog traffic in 90 days',
-  },
 ];
 
 function TestimonialCard({ t, index, inView }) {
-  const colors = ['#26CECE', '#2DD4BF', '#5EEAD4', '#0EA5E9', '#8B5CF6', '#EC4899'];
+  const colors = ['#26CECE', '#2DD4BF', '#5EEAD4', '#0EA5E9', '#8B5CF6'];
   const color = colors[index % colors.length];
 
   return (
@@ -91,13 +82,12 @@ function TestimonialCard({ t, index, inView }) {
       </div>
 
       {/* Author */}
-      <div className="flex items-center gap-3">
-        <div
-          className="w-9 h-9 rounded-full flex items-center justify-center text-xs font-bold text-black flex-shrink-0"
-          style={{ background: color }}
-        >
-          {t.avatar}
-        </div>
+      <div className="flex items-center gap-3 mt-2">
+        <img
+          src={t.avatar}
+          alt={t.name}
+          className="w-10 h-10 rounded-full border border-white/10 object-cover flex-shrink-0"
+        />
         <div>
           <div className="text-white font-semibold text-sm">{t.name}</div>
           <div className="text-white/40 text-xs">{t.role}</div>

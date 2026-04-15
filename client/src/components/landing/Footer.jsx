@@ -33,9 +33,9 @@ const Footer = () => {
                     <div>
                         <h4 className="text-white font-bold mb-3 text-xs uppercase tracking-widest" style={{ fontFamily: "'DM Mono',monospace" }}>Company</h4>
                         <ul className="space-y-2 text-xs">
-                            <li><Link to="/blogs" className="hover:text-[#26CECE] transition-colors">Blog</Link></li>
-                            <li><Link to="/privacy-policy" className="hover:text-[#26CECE] transition-colors">Privacy Policy</Link></li>
-                            <li><Link to="/terms-policy" className="hover:text-[#26CECE] transition-colors">Terms of Service</Link></li>
+                            <li><Link to="/blogs" onClick={() => window.scrollTo(0, 0)} className="hover:text-[#26CECE] transition-colors">Blog</Link></li>
+                            <li><a href="https://www.bitlancetechhub.com/privacy-policy" className="hover:text-[#26CECE] transition-colors">Privacy Policy</a></li>
+                            <li><a href="https://www.bitlancetechhub.com/terms-policy" className="hover:text-[#26CECE] transition-colors">Terms of Service</a></li>
                         </ul>
                     </div>
 
@@ -87,8 +87,8 @@ const Footer = () => {
                 <div className="border-t border-[#1E1E1E] pt-4 flex flex-col md:flex-row items-center justify-between text-xs text-white/40" style={{ fontFamily: "'DM Mono', monospace" }}>
                     <p>&copy; {new Date().getFullYear()} Bitlance. All rights reserved.</p>
                     <div className="flex gap-6 mt-3 md:mt-0">
-                        <Link to="/privacy-policy" className="hover:text-white transition-colors">Privacy Policy</Link>
-                        <Link to="/terms-policy" className="hover:text-white transition-colors">Terms of Service</Link>
+                        <a href="https://www.bitlancetechhub.com/privacy-policy" className="hover:text-white transition-colors">Privacy Policy</a>
+                        <a href="https://www.bitlancetechhub.com/terms-policy" className="hover:text-white transition-colors">Terms of Service</a>
                     </div>
                 </div>
             </div>

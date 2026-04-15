@@ -1,8 +1,8 @@
 import { useRef, useState } from 'react';
 import { motion, useInView } from 'framer-motion';
-import { Play, X } from 'lucide-react';
+import { Play, X, Clapperboard, Timer, Bot, UploadCloud } from 'lucide-react';
 
-const VIDEO_URL = 'https://app.heygen.com/embeds/7981e04d73cc48c8b6a3f9bc13895398';
+const VIDEO_URL = '/SEO_AI_agent-_implementation.mp4';
 const THUMBNAIL_URL = null; // Set to a real thumbnail URL or null for gradient placeholder
 
 export default function VideoSection({ videoRef: externalRef }) {
@@ -43,14 +43,24 @@ export default function VideoSection({ videoRef: externalRef }) {
         >
           {playing ? (
             <>
-              <iframe
-                src={VIDEO_URL}
-                title="Bitlance SEO AI Agent Demo"
-                className="absolute inset-0 w-full h-full"
-                style={{ border: 'none' }}
-                allow="encrypted-media; fullscreen"
-                allowFullScreen
-              />
+              {VIDEO_URL?.includes('.mp4') ? (
+                <video
+                  src={VIDEO_URL}
+                  autoPlay
+                  controls
+                  playsInline
+                  className="absolute inset-0 w-full h-full object-contain bg-black"
+                />
+              ) : (
+                <iframe
+                  src={VIDEO_URL}
+                  title="Bitlance SEO AI Agent Demo"
+                  className="absolute inset-0 w-full h-full"
+                  style={{ border: 'none' }}
+                  allow="encrypted-media; fullscreen"
+                  allowFullScreen
+                />
+              )}
               <button
                 onClick={() => setPlaying(false)}
                 className="absolute top-4 right-4 w-10 h-10 bg-black/60 backdrop-blur-sm rounded-full flex items-center justify-center text-white hover:bg-black/80 transition-all z-10"
@@ -92,8 +102,10 @@ export default function VideoSection({ videoRef: externalRef }) {
               </div>
 
               {!THUMBNAIL_URL && (
-                <div className="relative z-10 mb-6 text-center">
-                  <div className="text-7xl mb-4">🎬</div>
+                <div className="relative z-10 mb-6 text-center flex flex-col items-center">
+                  <div className="mb-4 text-brand">
+                    <Clapperboard size={56} strokeWidth={1.5} />
+                  </div>
                   <p className="text-white/40 text-sm">SEO AI Agent — Live Demo</p>
                 </div>
               )}
@@ -113,9 +125,9 @@ export default function VideoSection({ videoRef: externalRef }) {
         {/* Feature callouts below video */}
         <div className="mt-8 grid grid-cols-1 sm:grid-cols-3 gap-4">
           {[
-            { icon: '⚡', text: 'Real-time generation in 3 minutes' },
-            { icon: '🤖', text: 'No prompting or editing required' },
-            { icon: '📤', text: 'Publishes directly to WordPress' },
+            { icon: <Timer size={20} className="text-brand" />, text: 'Real-time generation in 3 minutes' },
+            { icon: <Bot size={20} className="text-brand" />, text: 'No prompting or editing required' },
+            { icon: <UploadCloud size={20} className="text-brand" />, text: 'Publishes directly to WordPress' },
           ].map((item, i) => (
             <motion.div
               key={i}
@@ -124,7 +136,7 @@ export default function VideoSection({ videoRef: externalRef }) {
               transition={{ delay: 0.4 + i * 0.1 }}
               className="flex items-center gap-3 bg-card border border-white/5 rounded-xl px-4 py-3"
             >
-              <span className="text-xl">{item.icon}</span>
+              <span className="flex-shrink-0">{item.icon}</span>
               <span className="text-sm text-white/60 font-medium">{item.text}</span>
             </motion.div>
           ))}

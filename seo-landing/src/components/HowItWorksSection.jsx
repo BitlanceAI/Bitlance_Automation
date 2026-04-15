@@ -1,38 +1,39 @@
 import { useRef } from 'react';
 import { motion, useInView } from 'framer-motion';
+import { Target, Microscope, PenTool, Shield, Rocket } from 'lucide-react';
 
 const steps = [
   {
     number: '01',
-    icon: '🎯',
+    icon: <Target size={24} className="text-white" />,
     title: 'Enter Your Keyword',
     desc: 'Type any topic or keyword. Optionally pick a target audience, writing style, and article length.',
     detail: 'Supports manual input, WordPress auto-queue, or Google Sheets bulk import.',
   },
   {
     number: '02',
-    icon: '🔬',
+    icon: <Microscope size={24} className="text-white" />,
     title: 'AI Researches the Topic',
     desc: 'SerpAPI fetches the top-ranking content. The AI identifies gaps, outlines the article, and gathers supporting data.',
     detail: 'Uses GPT-4o with a custom SEO-tuned prompt for maximum relevance and depth.',
   },
   {
     number: '03',
-    icon: '✍️',
+    icon: <PenTool size={24} className="text-white" />,
     title: 'Article is Written',
     desc: 'A 1,500–3,000 word article is generated with proper structure, keyword density, headers, and meta description.',
     detail: 'Includes title tag, meta description, slug suggestion, and featured image prompt.',
   },
   {
     number: '04',
-    icon: '🛡️',
+    icon: <Shield size={24} className="text-white" />,
     title: 'Plagiarism Scan',
     desc: 'The article is scanned for originality before publishing. If anything flags, it gets rewritten automatically.',
     detail: '100% original content — no risk of Google penalties.',
   },
   {
     number: '05',
-    icon: '🚀',
+    icon: <Rocket size={24} className="text-white" />,
     title: 'Auto-Published',
     desc: "Article, image, categories, tags, and internal links are pushed directly to your WordPress site via REST API.",
     detail: 'Works with any WordPress installation. No plugin required beyond REST API access.',

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Navigate, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import HeroSection from '../components/landing/HeroSection';
@@ -18,7 +18,166 @@ import ScrollToTopButton from '../components/ui/ScrollToTopButton';
 import { ElegantShape } from '../components/ui/shape-landing-hero';
 import SEOHead from '../components/layout/SEOHead';
 import LoginReminderPopup from '../components/ui/LoginReminderPopup';
-import BitlanceChatbot from '../components/ui/BitlanceChatbot';
+// import BitlanceChatbot from '../components/ui/BitlanceChatbot';
+
+const WA_NUMBER = "917697762374";
+const WA_MESSAGE = "Hi Bitlance! 👋 I'd like to know more about your AI automation services.";
+
+const whatsappStyles = `
+@keyframes wa-pop-in {
+  0%   { opacity: 0; transform: translateY(12px) scale(0.92); }
+  100% { opacity: 1; transform: translateY(0)   scale(1); }
+}
+@keyframes wa-bounce {
+  0%, 100% { transform: scale(1); }
+  50%       { transform: scale(1.12); }
+}
+.wa-btn {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 9999;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: #25D366;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.28);
+  cursor: pointer;
+  border: none;
+  padding: 0;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.wa-btn:hover { transform: scale(1.1); box-shadow: 0 6px 24px rgba(0,0,0,0.38); }
+.wa-bubble {
+  position: fixed;
+  bottom: 92px;
+  right: 20px;
+  z-index: 9998;
+  width: 260px;
+  background: #fff;
+  border-radius: 16px 16px 4px 16px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+  padding: 14px 14px 12px 14px;
+  animation: wa-pop-in 0.28s ease both;
+}
+.wa-bubble-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+.wa-avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: #25D366;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.wa-name { font-weight: 700; font-size: 14px; color: #111; line-height: 1.2; }
+.wa-status { font-size: 11px; color: #25D366; }
+.wa-close {
+  margin-left: auto;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #999;
+  font-size: 18px;
+  line-height: 1;
+  padding: 0 2px;
+}
+.wa-close:hover { color: #333; }
+.wa-msg {
+  font-size: 13px;
+  color: #333;
+  line-height: 1.5;
+  background: #f0faf3;
+  border-radius: 8px;
+  padding: 8px 10px;
+  margin-bottom: 10px;
+}
+.wa-cta {
+  display: block;
+  width: 100%;
+  background: #25D366;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 9px 0;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  text-align: center;
+  text-decoration: none;
+  transition: background 0.15s;
+}
+.wa-cta:hover { background: #1ebe5d; }
+.wa-tail {
+  position: absolute;
+  bottom: -10px;
+  right: 22px;
+  width: 0;
+  height: 0;
+  border-left: 10px solid transparent;
+  border-top: 10px solid #fff;
+  filter: drop-shadow(0 3px 4px rgba(0,0,0,0.08));
+}
+`;
+
+const WhatsAppButton = () => {
+    const [open, setOpen] = useState(false);
+
+    useEffect(() => {
+        const t = setTimeout(() => setOpen(true), 3000);
+        return () => clearTimeout(t);
+    }, []);
+
+    const href = `https://wa.me/${WA_NUMBER}?text=${encodeURIComponent(WA_MESSAGE)}`;
+
+    return (
+        <>
+            <style>{whatsappStyles}</style>
+            {open && (
+                <div className="wa-bubble">
+                    <div className="wa-bubble-header">
+                        <div className="wa-avatar">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white" width="22" height="22">
+                                <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <div className="wa-name">Bitlance Support</div>
+                            <div className="wa-status">● Online</div>
+                        </div>
+                        <button className="wa-close" onClick={() => setOpen(false)} aria-label="Close">×</button>
+                    </div>
+                    <div className="wa-msg">
+                        👋 Hi there! Need help with AI automation?<br />
+                        Chat with us on WhatsApp — we reply instantly!
+                    </div>
+                    <a href={href} target="_blank" rel="noopener noreferrer" className="wa-cta">
+                        💬 Start Chat
+                    </a>
+                    <div className="wa-tail" />
+                </div>
+            )}
+            <button
+                className="wa-btn"
+                onClick={() => setOpen(v => !v)}
+                aria-label="Chat on WhatsApp"
+            >
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white" width="30" height="30">
+                    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+                </svg>
+            </button>
+        </>
+    );
+};
 
 const LandingPage = () => {
     const { user, loading } = useAuth();
@@ -69,7 +228,7 @@ const LandingPage = () => {
         navigate('/apply');
     };
 
-    const [isChatbotOpen, setIsChatbotOpen] = useState(false);
+
 
     return (
         <div className="relative min-h-screen w-full overflow-hidden bg-[#070707] text-white">
@@ -221,8 +380,8 @@ const LandingPage = () => {
             </div>
 
             <ScrollToTopButton />
-            <LoginReminderPopup chatbotOpen={isChatbotOpen} />
-            <BitlanceChatbot isOpen={isChatbotOpen} onToggle={setIsChatbotOpen} />
+            <LoginReminderPopup chatbotOpen={false} />
+            <WhatsAppButton />
             
 
         </div>

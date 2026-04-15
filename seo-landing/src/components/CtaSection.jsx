@@ -1,6 +1,6 @@
 import { useRef } from 'react';
 import { motion, useInView } from 'framer-motion';
-import { ArrowRight, MessageCircle } from 'lucide-react';
+import { ArrowRight, MessageCircle, Check } from 'lucide-react';
 
 const APP_URL = 'https://www.bitlancetechhub.com';
 const WA_URL = 'https://wa.me/917697762374?text=Hi%20Bitlance!%20I%27d%20like%20to%20know%20more%20about%20the%20SEO%20AI%20Agent.';
@@ -79,12 +79,13 @@ export default function CtaSection() {
           className="flex flex-wrap justify-center gap-6 text-sm text-white/30"
         >
           {[
-            '✓ No credit card required',
-            '✓ Cancel anytime',
-            '✓ 7-day free trial',
-            '✓ WordPress-ready',
+            'No credit card required',
+            'Cancel anytime',
+            '7-day free trial',
+            'WordPress-ready',
           ].map((item, i) => (
-            <span key={i} className="flex items-center gap-1">
+            <span key={i} className="flex items-center gap-1.5">
+              <Check size={14} className="text-brand" />
               {item}
             </span>
           ))}
