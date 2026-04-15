@@ -56,7 +56,7 @@ export default function HeroSection() {
     if (!video) return;
     const obs = new IntersectionObserver(
       ([e]) => {
-        if (e.isIntersecting) { if (!manualPause) video.play().catch(() => {}); }
+        if (e.isIntersecting) { if (!manualPause) video.play().catch(() => { }); }
         else { video.pause(); }
       },
       { threshold: 0.3 }
@@ -222,7 +222,7 @@ export default function HeroSection() {
         className="relative z-10 mt-12 flex flex-col items-center gap-6"
       >
         <a
-          href={`${APP_URL}/login`}
+          href={`${APP_URL}/signup`}
           className="shimmer-btn group flex items-center gap-2 px-8 py-4 font-bold text-base rounded-xl transition-all shadow-xl hover:scale-105"
           style={{
             background: BRAND,
