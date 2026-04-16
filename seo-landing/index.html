@@ -62,6 +62,44 @@
 
       gtag('config', 'G-YSDNWG5S2S');
     </script>
+
+    <!-- OneSignal Push Notifications -->
+    <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
+    <script>
+      window.OneSignalDeferred = window.OneSignalDeferred || [];
+      OneSignalDeferred.push(async function (OneSignal) {
+        await OneSignal.init({
+          appId: "b8119755-1466-495a-a428-2259043b9ed9",
+          safari_web_id: "web.onesignal.auto.6401d2fc-b951-4213-a02c-03159c046b78",
+          allowLocalhostAsSecureOrigin: true,
+          notifyButton: {
+            enable: true,
+          },
+          promptOptions: {
+            slidedown: {
+              prompts: [
+                {
+                  type: "push",
+                  autoPrompt: true,
+                  text: {
+                    actionMessage: "Get notified about the latest SEO tips and updates from Bitlance.",
+                    acceptButton: "Allow",
+                    cancelButton: "No Thanks",
+                  },
+                  delay: {
+                    pageViews: 1,
+                    timeDelay: 3,
+                  },
+                },
+              ],
+            },
+          },
+        });
+        // Explicitly trigger the Slidedown Prompt
+        OneSignal.Slidedown.promptPush();
+      });
+    </script>
+    <!-- End OneSignal -->
   </head>
   <body>
     <div id="root"></div>
