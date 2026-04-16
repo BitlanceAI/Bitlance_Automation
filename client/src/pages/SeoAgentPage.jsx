@@ -216,7 +216,6 @@ const SeoAgentPage = () => {
                 style: writingStyle,
                 length: articleLength,
                 audience: targetAudience,
-                variants: variants === 'Max 3 for demo' ? 3 : 1,
                 // New fields
                 author_name: authorName,
                 category,
