@@ -315,14 +315,11 @@ app.post('/api/articles/generate', async (req, res) => {
             style = "conversational",
             length = "Medium (500-1000 words)",
             audience = "general public",
-            variants: rawVariants = 1,
             image_option = "auto",
             custom_image_url = ""
         } = req.body;
 
         const userId = user.id;
-        const variants = parseInt(rawVariants) || 1;
-
         // Validations
 
         const lengthNum = lengthMapping[length] || 500;
@@ -423,7 +420,6 @@ Content:`;
                         { role: "user", content: prompt },
                     ],
                     max_tokens: 4000,
-                    n: variants,
                 },
                 {
                     headers: {

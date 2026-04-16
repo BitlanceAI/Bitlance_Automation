@@ -187,7 +187,7 @@ export const generateAndSaveArticleInternal = async ({
         keywords: finalKeywords,
         content: blogHtml,
         seo_title: seoTitle,
-        seo_description: `Read about ${finalTopic}. ${wordCount} words.`,
+        seo_description: genData.seoDescription || `Read about ${finalTopic}. ${wordCount} words.`,
         image_url: imageUrl,
         featured_image: imageUrl,
         word_count: wordCount,
