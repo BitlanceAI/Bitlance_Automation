@@ -12,6 +12,7 @@ import LandingPage from './pages/LandingPage';
 // ... existing imports
 
 
+import SeoLandingPage from './pages/SeoLandingPage';
 import AgentsPage from './pages/AgentsPage';
 import MetaAdsPage from './pages/MetaAdsPage';
 import BroadcastPage from './pages/BroadcastPage';
@@ -139,7 +140,8 @@ function App() {
     normalizedPath.includes('push') ||
     normalizedPath.startsWith('/l/') ||
     normalizedPath.includes('/apply/audit') ||
-    normalizedPath.includes('/apply'); // Hide Main Nav for Landing Pages and Audit Funnel
+    normalizedPath.includes('/apply') || // Hide Main Nav for Landing Pages and Audit Funnel
+    normalizedPath === '/seo'; // SEO landing has its own NavBar
 
   return (
     <ThemeProvider>
@@ -160,6 +162,7 @@ function App() {
             <Routes>
               {/* Public Routes */}
               <Route path="/" element={<RootRedirect />} />
+              <Route path="/seo" element={<SeoLandingPage />} />
               <Route path="/privacy-policy" element={<PrivacyPolicy />} />
               <Route path="/terms-policy" element={<TermsPage />} />
               <Route path="/contact" element={<ContactPage />} />

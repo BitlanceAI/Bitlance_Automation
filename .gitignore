@@ -63,6 +63,7 @@ yarn-error.log*
 # ===============================
 Ai-agents/
 seo-agent-video/
+seo-landing-page/
 
 # ===============================
 # Python Virtual Environment
