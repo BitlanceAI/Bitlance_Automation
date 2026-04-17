@@ -20,7 +20,7 @@ import SEOHead from '../components/layout/SEOHead';
 import LoginReminderPopup from '../components/ui/LoginReminderPopup';
 // import BitlanceChatbot from '../components/ui/BitlanceChatbot';
 
-const WA_NUMBER = "917697762374";
+const WA_NUMBER = "917030951331";
 const WA_MESSAGE = "Hi Bitlance! 👋 I'd like to know more about your AI automation services.";
 
 const whatsappStyles = `
