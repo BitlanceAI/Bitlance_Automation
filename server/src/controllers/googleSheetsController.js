@@ -43,6 +43,7 @@ function _buildOAuthClient() {
 
 const SCOPES = [
     'https://www.googleapis.com/auth/spreadsheets',
+    'https://www.googleapis.com/auth/webmasters.readonly',
     'openid',
     'email',
     'profile',

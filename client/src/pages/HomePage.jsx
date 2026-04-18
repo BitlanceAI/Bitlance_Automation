@@ -114,12 +114,20 @@ const HomePage = () => {
 
     const agents = [
         {
-            title: 'Social Media Automation',
-            description: 'Automate your social presence with AI-generated content and scheduling.',
+            title: 'SEO AI Agent',
+            description: 'Dominate search rankings with automated content and SEO optimization.',
+            icon: Search,
+            path: '/dashboard/agents/seo',
+            color: 'from-amber-500 to-orange-500',
+            stats: 'Keyword Rankings'
+        },
+        {
+            title: 'WhatsApp Automation',
+            description: 'AI-powered bulk messaging, follow-ups, and lead engagement on WhatsApp.',
             icon: MessageSquare,
-            path: '/dashboard/agents/social',
-            color: 'from-blue-500 to-cyan-500',
-            stats: 'Active Campaigns'
+            path: '/dashboard/agents/whatsapp',
+            color: 'from-green-500 to-emerald-500',
+            stats: 'Active Broadcasts'
         },
         {
             title: 'AI Voice Agent',
@@ -128,14 +136,6 @@ const HomePage = () => {
             path: '/dashboard/agents/voice',
             color: 'from-purple-500 to-pink-500',
             stats: 'Call Analytics'
-        },
-        {
-            title: 'SEO AI Agent',
-            description: 'Dominate search rankings with automated content and SEO optimization.',
-            icon: Search,
-            path: '/dashboard/agents/seo',
-            color: 'from-amber-500 to-orange-500',
-            stats: 'Keyword Rankings'
         }
     ];
 

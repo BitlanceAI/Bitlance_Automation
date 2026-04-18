@@ -2,10 +2,14 @@
  * src/routes/googleSheetsRoutes.js
  *
  * Routes:
- *   POST /api/google-sheets/add          — legacy append row (service account)
- *   GET  /api/google-sheets/auth         — start OAuth2 consent flow
- *   GET  /api/google-sheets/callback     — OAuth2 callback (no auth middleware — Google calls this)
- *   POST /api/google-sheets/run-seo      — AI SEO pipeline
+ *   POST   /api/google-sheets/add          — legacy append row (service account)
+ *   GET    /api/google-sheets/auth         — start OAuth2 consent flow
+ *   GET    /api/google-sheets/auth-url     — returns consent URL as JSON
+ *   GET    /api/google-sheets/callback     — OAuth2 callback (no auth middleware)
+ *   GET    /api/google-sheets/status       — check if user has connected Google
+ *   DELETE /api/google-sheets/disconnect   — remove stored OAuth tokens
+ *   POST   /api/google-sheets/run-seo      — AI SEO pipeline
+ *   POST   /api/google-sheets/run-blog     — Auto Blog pipeline
  */
 
 import express from 'express';
@@ -18,6 +22,7 @@ import {
     runBlog,
 } from '../controllers/googleSheetsController.js';
 import { authenticateUser } from '../middleware/authMiddleware.js';
+import { supabaseAdmin } from '../config/supabaseClient.js';
 
 const router = express.Router();
 
@@ -25,15 +30,40 @@ const router = express.Router();
 router.post('/add', authenticateUser, addToSheet);
 
 // ── OAuth Flow ───────────────────────────────────────────────────────────────
-// /auth requires a logged-in user so we know whose tokens to store
 router.get('/auth', authenticateUser, startGoogleAuth);
-
-// /auth-url returns the consent URL as JSON — no auth needed, userId comes as ?userId=
 router.get('/auth-url', getGoogleAuthUrl);
-
-// /callback is called BY Google — no Supabase token is present.
-// The user_id is in the `state` query param (embedded in the auth URL above).
 router.get('/callback', handleGoogleCallback);
+
+// ── Connection Status ─────────────────────────────────────────────────────────
+router.get('/status', authenticateUser, async (req, res) => {
+    try {
+        const { data, error } = await supabaseAdmin
+            .from('google_oauth_tokens')
+            .select('user_id, refresh_token')
+            .eq('user_id', req.user.id)
+            .single();
+
+        const connected = !error && !!data?.refresh_token;
+        res.json({ success: true, connected });
+    } catch {
+        res.json({ success: true, connected: false });
+    }
+});
+
+// ── Disconnect ────────────────────────────────────────────────────────────────
+router.delete('/disconnect', authenticateUser, async (req, res) => {
+    try {
+        const { error } = await supabaseAdmin
+            .from('google_oauth_tokens')
+            .delete()
+            .eq('user_id', req.user.id);
+
+        if (error) throw error;
+        res.json({ success: true, message: 'Google account disconnected' });
+    } catch (err) {
+        res.status(500).json({ success: false, error: err.message });
+    }
+});
 
 // ── SEO Pipeline & Auto Blog ──────────────────────────────────────────────────
 router.post('/run-seo', authenticateUser, runSEO);

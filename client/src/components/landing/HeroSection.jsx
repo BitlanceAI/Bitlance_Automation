@@ -6,37 +6,29 @@ const TEAL = '#26CECE';
 
 const slides = [
     {
+        id: 'seo-agent',
+        title1: 'Automate Your Traffic with the',
+        title2: 'SEO AI Agent',
+        icon: Edit3,
+        description: 'Stop writing manually. Our autonomous agent runs keyword research and turns them into fully-formatted, SEO-optimised blog posts.',
+        features: ['Keyword Research', 'Auto-Publishing', 'SERP Tracking'],
+    },
+    {
         id: 'voice-agent',
         title1: 'Turn Missed Opportunities Into',
         title2: 'Closed Deals',
         icon: Mic,
-        description: 'Deploy a 24/7 AI Voice Bot that talks to your leads, answers questions, and books appointments automatically over the phone.',
+        description: 'Deploy a 24/7 AI Voice Agent that talks to your leads, answers questions, and books appointments automatically over the phone.',
         features: ['Inbound & Outbound Calling', 'Natural Human Voices', 'Appointment Scheduling'],
     },
     {
-        id: 'chat-agent',
+        id: 'whatsapp-agent',
         title1: 'Engage Website Visitors with',
-        title2: 'Smart Chatbots',
+        title2: 'WhatsApp Automation',
         icon: MessageSquare,
-        description: "Capture leads instantly and provide instant customer support with an AI agent trained specifically on your company's proprietary data.",
-        features: ['24/7 Instant Responses', 'Fulfils Support Tickets', 'Multi-lingual Support'],
-    },
-    {
-        id: 'blog-agent',
-        title1: 'Automate Your SEO with the',
-        title2: 'Blog AI Agent',
-        icon: Edit3,
-        description: 'Stop writing manually. Our autonomous agent takes your keywords and turns them into fully-formatted, SEO-optimised blog posts.',
-        features: ['Keyword Research', 'Auto-Publishing', 'High-Ranking Content'],
-    },
-    {
-        id: 'social-agent',
-        title1: 'Dominate Every Feed with the',
-        title2: 'Social Media Agent',
-        icon: Share2,
-        description: 'Maintain a non-stop social presence. From crafting viral tweets to scheduling daily LinkedIn carousel posts, completely hands-free.',
-        features: ['Multi-platform Scheduling', 'AI Copywriting', 'Analytics Reporting'],
-    },
+        description: "Capture leads instantly and follow up with a WhatsApp broadcasting AI trained on your company's proprietary data.",
+        features: ['Bulk Broadcasting', 'Instant Responses', 'Lead Segmentation'],
+    }
 ];
 
 const HeroSection = ({ onOpenBooking }) => {

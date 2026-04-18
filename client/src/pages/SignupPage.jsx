@@ -96,20 +96,18 @@ const SignupPage = () => {
                 console.error('Webhook error:', webhookError);
             }
 
-            setSuccess('Account created successfully! Please check your email for verification.');
+            setSuccess('Account created! Please check your email and click the verification link before logging in.');
 
-            setTimeout(() => {
-                makeOutboundCall(
-                    formData.phone,
-                    formData.name,
-                    "You are the Bitlance platform onboarding AI. You just saw the user sign up 20 seconds ago. Greet them, welcome them to the platform, and ask if they need any assistance to get started.",
-                    `Hi ${formData.name}, this is the Bitlance onboarding assistant calling to welcome you! Thanks for signing up.`
-                );
-            }, 20000);
-
-            setTimeout(() => {
-                navigate('/login');
-            }, 3000);
+            if (formData.phone) {
+                setTimeout(() => {
+                    makeOutboundCall(
+                        formData.phone,
+                        formData.name,
+                        "You are the Bitlance platform onboarding AI. You just saw the user sign up 20 seconds ago. Greet them, welcome them to the platform, and ask if they need any assistance to get started.",
+                        `Hi ${formData.name}, this is the Bitlance onboarding assistant calling to welcome you! Thanks for signing up.`
+                    );
+                }, 20000);
+            }
         } catch (error) {
             trackSignupError(error.message);
             setError(error.message);

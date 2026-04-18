@@ -24,14 +24,14 @@ export const agents = [
     status: "Available"
   },
   {
-    icon: Target,
-    title: "Meta Ads Automation AI",
-    description: "Automates AI-driven Facebook & Instagram campaign workflows.",
+    icon: Mic,
+    title: "AI Voice Agent",
+    description: "Automated phone calls and voice interactions with real-time analytics.",
     features: [
-      "Campaign creation",
-      "Dynamic audience targeting",
-      "Budget optimization",
-      "Performance analytics"
+      "Inbound/Outbound calls",
+      "Real-time transcription",
+      "Sentiment analysis",
+      "Call recording & logs"
     ],
     status: "Available"
   },
@@ -48,6 +48,20 @@ export const agents = [
     ],
     status: "Available"
   },
+
+  {
+    icon: Target,
+    title: "Meta Ads Automation AI",
+    description: "Automates AI-driven Facebook & Instagram campaign workflows.",
+    features: [
+      "Campaign creation",
+      "Dynamic audience targeting",
+      "Budget optimization",
+      "Performance analytics"
+    ],
+    status: "Coming Soon"
+  },
+
   {
     icon: Video,
     title: "UGC Video AI Agent",
@@ -60,18 +74,7 @@ export const agents = [
     ],
     status: "Coming Soon"
   },
-  {
-    icon: Mic,
-    title: "AI Voice Agent",
-    description: "Automated phone calls and voice interactions with real-time analytics.",
-    features: [
-      "Inbound/Outbound calls",
-      "Real-time transcription",
-      "Sentiment analysis",
-      "Call recording & logs"
-    ],
-    status: "Available"
-  },
+
 
   {
     icon: Palette,
@@ -83,7 +86,7 @@ export const agents = [
       "AI copywriting",
       "Multi-format export"
     ],
-    status: "Available"
+    status: "Coming Soon"
   },
   {
     icon: MessageCircle,

@@ -5,6 +5,7 @@ import {
     Clock, Zap, RefreshCw, Timer, BarChart2, Settings, Play, Pause
 } from 'lucide-react';
 import API_BASE_URL from '../../config.js';
+import KeywordSuggestions from './KeywordSuggestions.jsx';
 
 const API_BASE = API_BASE_URL;
 
@@ -43,6 +44,7 @@ export default function WpAutoQueuePanel() {
 
     // Add topic form
     const [newTitle, setNewTitle] = useState('');
+    const [newKeywords, setNewKeywords] = useState('');
     const [newInterlinkUrls, setNewInterlinkUrls] = useState('');
     const [bulkTopics, setBulkTopics] = useState('');
     const [addMode, setAddMode] = useState('single'); // 'single' | 'bulk'
@@ -150,11 +152,16 @@ export default function WpAutoQueuePanel() {
             const res = await fetch(`${API_BASE}/api/admin/auto-blog/schedule`, {
                 method: 'POST',
                 headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-                body: JSON.stringify({ title: newTitle.trim(), interlink_urls: newInterlinkUrls.trim() }),
+                body: JSON.stringify({
+                    title: newTitle.trim(),
+                    keywords: newKeywords.trim(),
+                    interlink_urls: newInterlinkUrls.trim(),
+                }),
             });
             const data = await res.json();
             if (data.success) {
                 setNewTitle('');
+                setNewKeywords('');
                 setNewInterlinkUrls('');
                 setSubmitMsg({ type: 'success', text: 'Topic added to queue!' });
                 fetchQueue();
@@ -367,6 +374,32 @@ export default function WpAutoQueuePanel() {
                                 placeholder="e.g. How AI is Changing Real Estate in 2025"
                                 className="w-full px-3 py-2.5 bg-[#070707] border border-[#333] focus:border-[#26cece] outline-none rounded-[2px] text-white font-mono text-[13px] placeholder-gray-600"
                             />
+
+                            {/* Keyword suggestions based on title */}
+                            <KeywordSuggestions
+                                query={newTitle}
+                                token={token}
+                                activeKws={newKeywords}
+                                onAdd={(kw) => setNewKeywords(prev => {
+                                    const existing = prev.split(',').map(k => k.trim()).filter(Boolean);
+                                    if (existing.includes(kw)) return prev;
+                                    return [...existing, kw].join(', ');
+                                })}
+                            />
+
+                            <div>
+                                <p className="text-[10px] font-mono tracking-widest uppercase text-gray-500 mb-1.5">
+                                    Focus Keywords <span className="normal-case text-gray-600">(optional — comma separated)</span>
+                                </p>
+                                <input
+                                    type="text"
+                                    value={newKeywords}
+                                    onChange={e => setNewKeywords(e.target.value)}
+                                    placeholder="e.g. AI real estate, property automation, 2025"
+                                    className="w-full px-3 py-2 bg-[#070707] border border-[#333] focus:border-[#26cece] outline-none rounded-[2px] text-white font-mono text-[12px] placeholder-gray-600"
+                                />
+                            </div>
+
                             <div>
                                 <p className="text-[10px] font-mono tracking-widest uppercase text-gray-500 mb-1.5">Interlink URLs <span className="normal-case text-gray-600">(optional)</span></p>
                                 <textarea

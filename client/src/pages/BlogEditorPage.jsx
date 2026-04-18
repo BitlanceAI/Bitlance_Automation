@@ -1,11 +1,185 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import Navbar from '../components/layout/Navbar';
-import { Save, ArrowLeft, Calendar, FileText, Image as ImageIcon, Bell } from 'lucide-react';
+import { Save, ArrowLeft, Calendar, FileText, Image as ImageIcon, Bell, BarChart2, CheckCircle, XCircle, AlertCircle } from 'lucide-react';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import axios from 'axios';
 import { toast } from 'react-hot-toast';
 import { useAuth } from '../context/AuthContext';
 import API_BASE_URL from '../config.js';
+
+function stripHtml(html) {
+    return html.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+}
+
+function countWords(text) {
+    return text.split(/\s+/).filter(Boolean).length;
+}
+
+function avgWordsPerSentence(text) {
+    const sentences = text.split(/[.!?]+/).filter(s => s.trim().length > 0);
+    if (!sentences.length) return 0;
+    return countWords(text) / sentences.length;
+}
+
+function keywordDensity(text, keyword) {
+    if (!keyword || !text) return 0;
+    const kw = keyword.toLowerCase();
+    const words = text.toLowerCase().split(/\s+/).filter(Boolean);
+    const matches = words.filter(w => w.includes(kw)).length;
+    return words.length ? ((matches / words.length) * 100) : 0;
+}
+
+function computeSeoScore(formData) {
+    const plain = stripHtml(formData.content);
+    const wordCount = countWords(plain);
+    const primaryKw = (formData.keywords || '').split(',')[0].trim().toLowerCase();
+    const titleLen = formData.title.length;
+    const metaLen = formData.seo_description.length;
+    const seoTitleLen = formData.seo_title.length;
+    const density = keywordDensity(plain, primaryKw);
+    const avgSent = avgWordsPerSentence(plain);
+
+    const checks = [
+        {
+            label: 'Title length (50–60 chars)',
+            pass: titleLen >= 50 && titleLen <= 60,
+            warn: titleLen >= 30 && titleLen < 50,
+            detail: `${titleLen} chars`,
+            points: 15,
+            earned: titleLen >= 50 && titleLen <= 60 ? 15 : titleLen >= 30 ? 8 : 0,
+        },
+        {
+            label: 'SEO title set',
+            pass: seoTitleLen >= 10,
+            warn: false,
+            detail: seoTitleLen ? `${seoTitleLen} chars` : 'Missing',
+            points: 10,
+            earned: seoTitleLen >= 10 ? 10 : 0,
+        },
+        {
+            label: 'Meta description (120–160 chars)',
+            pass: metaLen >= 120 && metaLen <= 160,
+            warn: metaLen >= 50 && metaLen < 120,
+            detail: metaLen ? `${metaLen} chars` : 'Missing',
+            points: 15,
+            earned: metaLen >= 120 && metaLen <= 160 ? 15 : metaLen >= 50 ? 7 : 0,
+        },
+        {
+            label: 'Focus keyword set',
+            pass: !!primaryKw,
+            warn: false,
+            detail: primaryKw || 'None',
+            points: 10,
+            earned: primaryKw ? 10 : 0,
+        },
+        {
+            label: 'Keyword in title',
+            pass: !!primaryKw && formData.title.toLowerCase().includes(primaryKw),
+            warn: false,
+            detail: primaryKw ? (formData.title.toLowerCase().includes(primaryKw) ? 'Found' : 'Not found') : 'No keyword',
+            points: 10,
+            earned: primaryKw && formData.title.toLowerCase().includes(primaryKw) ? 10 : 0,
+        },
+        {
+            label: 'Keyword density (1–3%)',
+            pass: density >= 1 && density <= 3,
+            warn: density > 0 && (density < 1 || density > 3),
+            detail: primaryKw ? `${density.toFixed(1)}%` : 'No keyword',
+            points: 10,
+            earned: density >= 1 && density <= 3 ? 10 : density > 0 ? 4 : 0,
+        },
+        {
+            label: 'Content length (600+ words)',
+            pass: wordCount >= 600,
+            warn: wordCount >= 300 && wordCount < 600,
+            detail: `${wordCount} words`,
+            points: 15,
+            earned: wordCount >= 1000 ? 15 : wordCount >= 600 ? 12 : wordCount >= 300 ? 6 : 0,
+        },
+        {
+            label: 'Readability (avg sentence)',
+            pass: avgSent > 0 && avgSent <= 20,
+            warn: avgSent > 20 && avgSent <= 25,
+            detail: avgSent ? `~${Math.round(avgSent)} words/sentence` : 'No content',
+            points: 15,
+            earned: avgSent > 0 && avgSent <= 20 ? 15 : avgSent > 20 && avgSent <= 25 ? 7 : 0,
+        },
+    ];
+
+    const score = checks.reduce((sum, c) => sum + c.earned, 0);
+    const maxScore = checks.reduce((sum, c) => sum + c.points, 0);
+    const pct = Math.round((score / maxScore) * 100);
+
+    return { checks, score, maxScore, pct, wordCount, density, primaryKw };
+}
+
+function SeoScorePanel({ formData }) {
+    const { checks, pct, wordCount, density, primaryKw } = useMemo(
+        () => computeSeoScore(formData),
+        [formData.title, formData.seo_title, formData.seo_description, formData.content, formData.keywords]
+    );
+
+    const scoreColor = pct >= 80 ? '#22c55e' : pct >= 50 ? '#f59e0b' : '#ef4444';
+    const scoreLabel = pct >= 80 ? 'Good' : pct >= 50 ? 'Needs work' : 'Poor';
+
+    return (
+        <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm p-6 border border-gray-100 dark:border-slate-700">
+            <h2 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white flex items-center gap-2">
+                <BarChart2 className="w-5 h-5" />
+                SEO Score
+            </h2>
+
+            {/* Score ring */}
+            <div className="flex items-center gap-4 mb-4">
+                <div className="relative w-16 h-16 flex-shrink-0">
+                    <svg viewBox="0 0 36 36" className="w-16 h-16 -rotate-90">
+                        <circle cx="18" cy="18" r="15.9" fill="none" stroke="#e5e7eb" strokeWidth="3" className="dark:stroke-slate-700" />
+                        <circle
+                            cx="18" cy="18" r="15.9" fill="none"
+                            stroke={scoreColor} strokeWidth="3"
+                            strokeDasharray={`${pct} ${100 - pct}`}
+                            strokeLinecap="round"
+                            style={{ transition: 'stroke-dasharray 0.4s ease' }}
+                        />
+                    </svg>
+                    <span className="absolute inset-0 flex items-center justify-center text-sm font-bold" style={{ color: scoreColor }}>
+                        {pct}
+                    </span>
+                </div>
+                <div>
+                    <p className="font-semibold text-gray-900 dark:text-white" style={{ color: scoreColor }}>{scoreLabel}</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">{wordCount} words · {primaryKw ? `"${primaryKw}"` : 'no keyword'}</p>
+                    {primaryKw && <p className="text-xs text-gray-500 dark:text-gray-400">Density: {density.toFixed(1)}%</p>}
+                </div>
+            </div>
+
+            {/* Score bar */}
+            <div className="h-1.5 w-full rounded-full bg-gray-100 dark:bg-slate-700 mb-4 overflow-hidden">
+                <div
+                    className="h-1.5 rounded-full transition-all duration-500"
+                    style={{ width: `${pct}%`, backgroundColor: scoreColor }}
+                />
+            </div>
+
+            {/* Checks */}
+            <div className="space-y-2">
+                {checks.map((chk, i) => {
+                    const Icon = chk.pass ? CheckCircle : chk.warn ? AlertCircle : XCircle;
+                    const iconColor = chk.pass ? 'text-green-500' : chk.warn ? 'text-amber-500' : 'text-red-400';
+                    return (
+                        <div key={i} className="flex items-start gap-2">
+                            <Icon className={`w-3.5 h-3.5 mt-0.5 flex-shrink-0 ${iconColor}`} />
+                            <div className="min-w-0 flex-1">
+                                <p className="text-xs text-gray-700 dark:text-gray-300 leading-tight">{chk.label}</p>
+                                <p className="text-xs text-gray-400 dark:text-gray-500">{chk.detail}</p>
+                            </div>
+                        </div>
+                    );
+                })}
+            </div>
+        </div>
+    );
+}
 
 const BlogEditorPage = () => {
     const { id } = useParams(); // If present, we are editing
@@ -251,6 +425,9 @@ const BlogEditorPage = () => {
 
                     {/* Sidebar */}
                     <div className="space-y-6">
+                        {/* SEO Score Panel */}
+                        <SeoScorePanel formData={formData} />
+
                         {/* Admin Options */}
                         {user?.id === ADMIN_ID && (
                             <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm p-6 border border-gray-100 dark:border-slate-700">

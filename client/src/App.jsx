@@ -117,7 +117,7 @@ function App() {
   const handleAgentSelect = (agent) => {
     trackAgentOpen(agent.title);
     if (agent.title === 'WhatsApp Broadcasting Automation') {
-      navigate('/dashboard/agents/social');
+      navigate('/dashboard/agents/whatsapp');
     } else if (agent.title === 'AI Voice Agent') {
       navigate('/dashboard/agents/voice');
     } else if (agent.title === 'SEO AI Agent') {
@@ -204,7 +204,7 @@ function App() {
               <Route path="/agents" element={
                 <AgentsPage onAgentSelect={handleAgentSelect} />
               } />
-              <Route path="/dashboard/agents/social" element={
+              <Route path="/dashboard/agents/whatsapp" element={
                 <AuthGuard>
                   <BroadcastPage />
                 </AuthGuard>

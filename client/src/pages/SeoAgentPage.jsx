@@ -25,7 +25,8 @@ import {
     TableProperties,
     Link2,
     Play,
-    RefreshCw
+    RefreshCw,
+    TrendingUp
 } from 'lucide-react';
 
 import blogService from '../services/blogService';
@@ -40,6 +41,7 @@ import PushNotificationPanel from '../components/seo/PushNotificationPanel';
 import BlogManagerPanel from '../components/seo/BlogManagerPanel';
 import SEOHead from '../components/layout/SEOHead';
 import WpAutoQueuePanel from '../components/seo/WpAutoQueuePanel';
+import RankTrackerPanel from '../components/seo/RankTrackerPanel';
 
 const SeoAgentPage = () => {
     const navigate = useNavigate();
@@ -55,6 +57,7 @@ const SeoAgentPage = () => {
         { id: 'generate', label: 'Generate', icon: Zap },
         { id: 'blogs', label: 'Blog Manager', icon: FileText },
         { id: 'queue', label: 'Auto Queue', icon: Clock },
+        { id: 'ranks', label: 'Rank Tracker', icon: TrendingUp },
         { id: 'push', label: 'Send Push', icon: Bell },
     ];
 
@@ -733,6 +736,7 @@ const SeoAgentPage = () => {
                 {/* Non-generate tab content */}
                 {activeTab === 'blogs' && <BlogManagerPanel />}
                 {activeTab === 'queue' && <WpAutoQueuePanel />}
+                {activeTab === 'ranks' && <RankTrackerPanel />}
                 {activeTab === 'push' && <PushNotificationPanel />}
 
 

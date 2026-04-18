@@ -119,6 +119,12 @@ app.use('/api/wordpress', wordpressRoutes);
 import mailtrapRoutes from './routes/mailtrapRoutes.js';
 app.use('/api/mailtrap', mailtrapRoutes);
 
+import keywordRoutes from './routes/keywordRoutes.js';
+app.use('/api/keywords', keywordRoutes);
+
+import seoRankRoutes from './routes/seoRankRoutes.js';
+app.use('/api/seo', seoRankRoutes);
+
 import eSignRoutes from './routes/eSignRoutes.js';
 app.use('/api/esign', eSignRoutes);
 

@@ -171,12 +171,11 @@ export const FullScreenSignup = ({
                                     onChange={handleChange}
                                     onFocus={(e) => e.target.style.borderColor = TEAL}
                                     onBlur={(e) => { markTouched('phone'); e.target.style.borderColor = fieldBorder('phone'); }}
-                                    required
                                 />
                                 <Phone className="absolute left-4 top-1/2 -translate-y-1/2 text-[#555]" size={18} />
                             </div>
                             <p className="mt-1 text-xs" style={{ color: '#555', fontFamily: "'DM Mono', monospace" }}>
-                                Our AI agent will call to guide you through setup
+                                {'Optional - Used for onboarding assistance only'}
                             </p>
                         </div>
 
