@@ -6,55 +6,55 @@ import { ThemeProvider } from './context/ThemeContext';
 import Navbar from './components/layout/Navbar';
 import SplashScreen from './components/layout/SplashScreen';
 import Footer from './components/layout/Footer';
-import ShapeHeroDemo from './pages/ShapeHeroDemo';
-import LandingPage from './pages/LandingPage';
+import ShapeHeroDemo from './pages/demos/ShapeHeroDemo';
+import LandingPage from './pages/landing/LandingPage';
+import SeoLandingPage from './pages/landing/SeoLandingPage';
+import QuizLandingPage from './pages/landing/QuizLandingPage';
+import ThankYouPage from './pages/landing/ThankYouPage';
 
-// ... existing imports
+import LoginPage from './pages/auth/LoginPage';
+import SignupPage from './pages/auth/SignupPage';
 
-
-import SeoLandingPage from './pages/SeoLandingPage';
-import AgentsPage from './pages/AgentsPage';
-import MetaAdsPage from './pages/MetaAdsPage';
-import BroadcastPage from './pages/BroadcastPage';
-import SalesDashboard from './pages/SalesDashboard';
-import SocialDashboard from './pages/SocialDashboard';
-import SeoAgentPage from './pages/SeoAgentPage';
-import BlogPage from './pages/BlogPage';
-import SettingsPage from './pages/SettingsPage';
-import LoginPage from './pages/LoginPage';
-import SignupPage from './pages/SignupPage';
-import AdminDashboard from './pages/AdminDashboard';
-import ClientHistoryPage from './pages/ClientHistoryPage';
-import GraphicDesignerPage from './pages/GraphicDesignerPage';
-import CampaignManagerPage from './pages/CampaignManagerPage';
+import AdminDashboard from './pages/admin/AdminDashboard';
+import ClientHistoryPage from './pages/admin/ClientHistoryPage';
+import CampaignManagerPage from './pages/admin/CampaignManagerPage';
 import CampaignWizard from './components/campaigns/CampaignWizard';
-import PrivacyPolicy from './pages/PrivacyPolicy';
-import TermsPage from './pages/TermsPage';
-import TestimonialDemo from './pages/TestimonialDemo';
-import ThankYouPage from './pages/ThankYouPage';
-import QuizLandingPage from './pages/QuizLandingPage';
-import VoiceBotFeaturesPage from './pages/VoiceBotFeaturesPage';
-import BlogAgentFeaturesPage from './pages/BlogAgentFeaturesPage';
-import ContactPage from './pages/ContactPage';
-import TextGeneratorPage from './pages/TextGeneratorPage';
-import EmailGeneratorPage from './pages/EmailGeneratorPage';
-import EmailAutomationPage from './pages/EmailAutomationPage';
 
+import HomePage from './pages/dashboard/HomePage';
+import SalesDashboard from './pages/dashboard/SalesDashboard';
+import SocialDashboard from './pages/dashboard/SocialDashboard';
+import AgentsPage from './pages/dashboard/AgentsPage';
+import BroadcastPage from './pages/dashboard/BroadcastPage';
+import SeoAgentPage from './pages/dashboard/SeoAgentPage';
+import GraphicDesignerPage from './pages/dashboard/GraphicDesignerPage';
+import MetaAdsPage from './pages/dashboard/MetaAdsPage';
+import EmailAutomationPage from './pages/dashboard/EmailAutomationPage';
 
+import BlogPage from './pages/blog/BlogPage';
+import BlogManagerPage from './pages/blog/BlogManagerPage';
+import BlogEditorPage from './pages/blog/BlogEditorPage';
+import BlogAgentFeaturesPage from './pages/blog/BlogAgentFeaturesPage';
+import PublicBlogListPage from './pages/blog/PublicBlogListPage';
+import PublicArticlePage from './pages/blog/PublicArticlePage';
 
-import HomePage from './pages/HomePage'; // Import HomePage
-import PublicBlogListPage from './pages/PublicBlogListPage';
-import PublicArticlePage from './pages/PublicArticlePage';
-import PushNotificationPage from './pages/PushNotificationPage';
-import DeviceTokensPage from './pages/DeviceTokensPage';
-import BlogManagerPage from './pages/BlogManagerPage';
-import BlogEditorPage from './pages/BlogEditorPage';
+import SettingsPage from './pages/settings/SettingsPage';
 
+import ContactPage from './pages/public/ContactPage';
+import PrivacyPolicy from './pages/public/PrivacyPolicy';
+import TermsPage from './pages/public/TermsPage';
+import TextGeneratorPage from './pages/public/TextGeneratorPage';
+import EmailGeneratorPage from './pages/public/EmailGeneratorPage';
 
-import ESignPage from './pages/ESignDemoPage';
-import ESignCompletePage from './pages/ESignCompletePage';
-import DigiLockerCompletePage from './pages/DigiLockerCompletePage';
-import PaymentCompletePage from './pages/PaymentCompletePage';
+import PushNotificationPage from './pages/push/PushNotificationPage';
+import DeviceTokensPage from './pages/push/DeviceTokensPage';
+
+import ESignPage from './pages/esign/ESignDemoPage';
+import ESignCompletePage from './pages/esign/ESignCompletePage';
+import DigiLockerCompletePage from './pages/esign/DigiLockerCompletePage';
+import PaymentCompletePage from './pages/esign/PaymentCompletePage';
+
+import VoiceBotFeaturesPage from './pages/features/VoiceBotFeaturesPage';
+import TestimonialDemo from './pages/demos/TestimonialDemo';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { WorkspaceProvider } from './context/WorkspaceContext';
 import AuthGuard from './components/auth/AuthGuard';
