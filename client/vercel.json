@@ -1,6 +1,14 @@
 {
     "rewrites": [
         {
+            "source": "/sitemap.xml",
+            "destination": "https://automation-dashboard-s3m6.onrender.com/sitemap.xml"
+        },
+        {
+            "source": "/blog-sitemap.xml",
+            "destination": "https://automation-dashboard-s3m6.onrender.com/blog-sitemap.xml"
+        },
+        {
             "source": "/(.*)",
             "destination": "/index.html"
         }
