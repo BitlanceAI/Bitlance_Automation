@@ -12,7 +12,7 @@ const features = [
 ];
 
 const SolutionSection = () => (
-    <section className="py-24 relative overflow-hidden bg-[#070707]">
+    <section className="py-24 relative overflow-hidden bg-transparent">
         <ScrollReveal className="max-w-7xl mx-auto px-6">
             {/* Heading */}
             <div className="mb-16 max-w-3xl">
@@ -22,7 +22,7 @@ const SolutionSection = () => (
                 <motion.h2
                     initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.45 }} viewport={{ once: true }}
-                    className="mt-4 text-3xl md:text-5xl font-bold text-white leading-tight"
+                    className="mt-4 text-3xl md:text-5xl font-extrabold text-black leading-tight"
                     style={{ fontFamily: "'Space Grotesk',sans-serif", letterSpacing: '-0.025em' }}
                 >
                     What would happen to your revenue if every lead got a response in under 5 minutes, automatically?
@@ -50,11 +50,11 @@ const SolutionSection = () => (
                                 <Icon size={20} style={{ color: T }} />
                             </div>
                             <div>
-                                <h3 className="text-lg font-bold mb-2 text-white transition-colors group-hover:text-[#26CECE]"
+                                <h3 className="text-lg font-extrabold mb-2 text-black transition-colors group-hover:text-[#26CECE]"
                                     style={{ fontFamily: "'Space Grotesk',sans-serif" }}>
                                     {f.title}
                                 </h3>
-                                <p className="text-white/50 leading-relaxed text-sm">{f.desc}</p>
+                                <p className="text-black/50 leading-relaxed text-sm">{f.desc}</p>
                             </div>
                         </motion.div>
                     );

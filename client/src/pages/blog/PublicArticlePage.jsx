@@ -143,23 +143,23 @@ const PublicArticlePage = () => {
 
     if (loading) {
         return (
-            <div className="min-h-screen flex justify-center items-center bg-[#070707]">
-                <Loader2 className="animate-spin text-white/20" size={48} />
+            <div className="min-h-screen flex justify-center items-center bg-white">
+                <Loader2 className="animate-spin text-gray-300" size={48} />
             </div>
         );
     }
 
     if (error || !article) {
         return (
-            <div className="min-h-screen flex flex-col justify-center items-center bg-[#070707] px-6" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
-                <h1 className="text-5xl font-extrabold text-white tracking-tight uppercase mb-4">404 NOT FOUND</h1>
-                <p className="text-lg text-white/40 mb-8 font-medium uppercase tracking-widest" style={{ fontFamily: "'DM Mono', monospace" }}>
+            <div className="min-h-screen flex flex-col justify-center items-center bg-white px-6" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+                <h1 className="text-5xl font-extrabold text-black tracking-tight uppercase mb-4">404 NOT FOUND</h1>
+                <p className="text-lg text-gray-500 mb-8 font-medium uppercase tracking-widest" style={{ fontFamily: "'DM Mono', monospace" }}>
                     {error || 'Article not found'}
                 </p>
                 <Link 
                     to="/blogs" 
-                    className="px-8 py-4 font-bold uppercase tracking-widest text-xs transition-all hover:bg-[#1A1A1A]"
-                    style={{ background: '#111', color: TEAL, border: '1px solid #1E1E1E', fontFamily: "'DM Mono', monospace" }}
+                    className="px-8 py-4 font-bold uppercase tracking-widest text-xs transition-all hover:bg-gray-100"
+                    style={{ background: '#f9fafb', color: TEAL, border: '1px solid #e5e7eb', fontFamily: "'DM Mono', monospace" }}
                 >
                     Back to Blogs
                 </Link>
@@ -174,7 +174,7 @@ const PublicArticlePage = () => {
 
 
     return (
-        <div className="min-h-screen bg-[#070707] pb-20">
+        <div className="min-h-screen bg-white pb-20">
             <SEOHead
                 title={article.seo_title || article.topic}
                 description={article.content ? article.content.replace(/<[^>]+>/g, '').substring(0, 160) : ''}
@@ -212,7 +212,7 @@ const PublicArticlePage = () => {
             />
 
             {/* Header Image & Title */}
-            <div className="bg-[#070707] border-b border-[#1E1E1E]">
+            <div className="bg-white border-b border-gray-200">
                 <div className="max-w-7xl mx-auto px-6 py-12 md:py-24 lg:px-8">
                     <Link 
                         to="/blogs" 
@@ -224,13 +224,13 @@ const PublicArticlePage = () => {
                     </Link>
 
                     <h1 
-                        className="text-4xl md:text-5xl lg:text-6xl font-extrabold text-white mb-8 tracking-tighter uppercase leading-[1.1]" 
+                        className="text-4xl md:text-5xl lg:text-6xl font-extrabold text-black mb-8 tracking-tighter uppercase leading-[1.1]" 
                         style={{ fontFamily: "'Space Grotesk', sans-serif" }}
                     >
                         {article.seo_title || article.topic}
                     </h1>
 
-                    <div className="flex flex-wrap items-center gap-6 text-[11px] text-white/40 mb-10 tracking-widest uppercase font-bold" style={{ fontFamily: "'DM Mono', monospace" }}>
+                    <div className="flex flex-wrap items-center gap-6 text-[11px] text-gray-500 mb-10 tracking-widest uppercase font-bold" style={{ fontFamily: "'DM Mono', monospace" }}>
                         <span className="flex items-center gap-2">
                             <User size={14} />
                             {article.author_name || (article.user_id === 'anonymous' ? 'AI Agent' : 'Bitlance Source')}
@@ -256,18 +256,18 @@ const PublicArticlePage = () => {
                             </span>
                         )}
                         {(article.updated_at && article.updated_at !== article.created_at) && (
-                            <span className="px-2 py-1" style={{ background: '#111', color: '#888', border: '1px solid #333' }}>
+                            <span className="px-2 py-1" style={{ background: '#f9fafb', color: '#6b7280', border: '1px solid #d1d5db' }}>
                                 UPD {new Date(article.updated_at).toLocaleDateString('en-US', { year: '2-digit', month: '2-digit', day: '2-digit' })}
                             </span>
                         )}
                     </div>
 
                     {article.image_url && (
-                        <div className="w-full mt-10 p-2" style={{ background: '#111', border: '1px solid #1E1E1E' }}>
+                        <div className="w-full mt-10 p-2" style={{ background: '#f9fafb', border: '1px solid #e5e7eb' }}>
                             <img
                                 src={article.image_url}
                                 alt={article.seo_title || article.topic}
-                                className="w-full h-auto object-cover max-h-[600px] grayscale hover:grayscale-0 transition-all duration-700"
+                                className="w-full h-auto object-cover max-h-[600px] transition-all duration-700"
                                 onError={(e) => e.target.style.display = 'none'}
                             />
                         </div>
@@ -281,7 +281,7 @@ const PublicArticlePage = () => {
                 {/* Article Content */}
                 <article className="flex-1 max-w-3xl">
                     <div
-                        className="prose prose-lg max-w-none prose-headings:font-extrabold prose-headings:text-white prose-headings:uppercase prose-headings:tracking-tight prose-a:no-underline hover:prose-a:underline prose-img:border prose-img:border-[#1E1E1E] prose-img:p-1 prose-img:bg-[#111] text-white/80 whitespace-pre-wrap leading-relaxed marker:text-[#26CECE]"
+                        className="prose prose-lg max-w-none prose-headings:font-extrabold prose-headings:text-black prose-headings:uppercase prose-headings:tracking-tight prose-a:no-underline hover:prose-a:underline prose-img:border prose-img:border-gray-200 prose-img:p-1 prose-img:bg-gray-50 text-gray-700 whitespace-pre-wrap leading-relaxed marker:text-[#26CECE]"
                         style={{ fontFamily: "'Space Grotesk', sans-serif" }}
                         dangerouslySetInnerHTML={{ __html: article.content }}
                     />
@@ -289,22 +289,22 @@ const PublicArticlePage = () => {
                     {/* Inject teal color for prose links manually or via custom tag class */}
                     <style dangerouslySetInnerHTML={{__html: `
                         .prose a { color: ${TEAL}; font-weight: bold; }
-                        .prose strong { color: #ffffff; }
-                        .prose blockquote { border-left-color: ${TEAL}; background: #111; padding: 1rem; color: #ccc; }
-                        .prose code { color: ${TEAL}; background: #111; padding: 0.2rem 0.4rem; border: 1px solid #1E1E1E; }
-                        .prose pre { background: #070707; border: 1px solid #1E1E1E; }
+                        .prose strong { color: #000000; }
+                        .prose blockquote { border-left-color: ${TEAL}; background: #f9fafb; padding: 1rem; color: #4b5563; }
+                        .prose code { color: ${TEAL}; background: #f9fafb; padding: 0.2rem 0.4rem; border: 1px solid #e5e7eb; }
+                        .prose pre { background: #ffffff; border: 1px solid #e5e7eb; }
                     `}} />
 
                     {/* Tags Section */}
                     {article.tags && article.tags.length > 0 && (
                         <div className="mb-16 mt-16">
-                            <h4 className="text-[11px] font-bold text-white/40 uppercase tracking-widest mb-6" style={{ fontFamily: "'DM Mono', monospace" }}>
+                            <h4 className="text-[11px] font-bold text-gray-500 uppercase tracking-widest mb-6" style={{ fontFamily: "'DM Mono', monospace" }}>
                                 [ METADATA_TAGS ]
                             </h4>
                             <div className="flex flex-wrap gap-3" style={{ fontFamily: "'DM Mono', monospace" }}>
                                 {article.tags.map((tag, index) => (
-                                    <span key={index} className="flex items-center gap-2 px-3 py-1.5 text-xs font-bold uppercase tracking-widest transition-colors cursor-pointer hover:bg-[#1A1A1A]"
-                                        style={{ background: '#111', color: TEAL, border: '1px solid #1E1E1E' }}
+                                    <span key={index} className="flex items-center gap-2 px-3 py-1.5 text-xs font-bold uppercase tracking-widest transition-colors cursor-pointer hover:bg-gray-100"
+                                        style={{ background: '#f9fafb', color: TEAL, border: '1px solid #e5e7eb' }}
                                     >
                                         <Tag size={12} />
                                         {tag}
@@ -344,30 +344,30 @@ const PublicArticlePage = () => {
                     </div>
 
                     {/* Author Profile Section */}
-                    <div className="mt-20 pt-16 border-t border-[#1E1E1E]">
-                        <h4 className="text-[11px] font-bold text-white/40 uppercase tracking-widest mb-6" style={{ fontFamily: "'DM Mono', monospace" }}>
+                    <div className="mt-20 pt-16 border-t border-gray-200">
+                        <h4 className="text-[11px] font-bold text-gray-500 uppercase tracking-widest mb-6" style={{ fontFamily: "'DM Mono', monospace" }}>
                             [ AUTHOR_ID ]
                         </h4>
 
-                        <div className="flex flex-col md:flex-row gap-8 items-start p-8" style={{ background: '#111', border: '1px solid #1E1E1E' }}>
+                        <div className="flex flex-col md:flex-row gap-8 items-start p-8" style={{ background: '#f9fafb', border: '1px solid #e5e7eb' }}>
                             <div className="flex-shrink-0">
                                 {(article.author?.profile_image || article.author_details?.profile_image) ? (
-                                    <div className="w-24 h-24 md:w-32 md:h-32 p-1" style={{ border: '1px solid #1E1E1E', background: '#070707' }}>
+                                    <div className="w-24 h-24 md:w-32 md:h-32 p-1" style={{ border: '1px solid #e5e7eb', background: '#ffffff' }}>
                                         <img
                                             src={article.author?.profile_image || article.author_details?.profile_image}
                                             alt={article.author_name}
-                                            className="w-full h-full object-cover grayscale"
+                                            className="w-full h-full object-cover"
                                         />
                                     </div>
                                 ) : (
-                                    <div className="w-24 h-24 md:w-32 md:h-32 flex items-center justify-center font-black text-4xl" style={{ border: '1px solid #1E1E1E', background: '#070707', color: TEAL, fontFamily: "'DM Mono', monospace" }}>
+                                    <div className="w-24 h-24 md:w-32 md:h-32 flex items-center justify-center font-black text-4xl" style={{ border: '1px solid #e5e7eb', background: '#ffffff', color: TEAL, fontFamily: "'DM Mono', monospace" }}>
                                         usr
                                     </div>
                                 )}
                             </div>
 
                             <div className="flex-1" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
-                                <h4 className="text-2xl md:text-3xl font-black text-white uppercase tracking-tight mb-2">
+                                <h4 className="text-2xl md:text-3xl font-black text-black uppercase tracking-tight mb-2">
                                     {article.author?.name || article.author_details?.name || article.author_name || 'System Operator'}
                                 </h4>
                                 {(article.author?.role || article.author_details?.role) && (
@@ -375,7 +375,7 @@ const PublicArticlePage = () => {
                                         {article.author?.role || article.author_details?.role}
                                     </p>
                                 )}
-                                <div className="text-white/60 leading-relaxed mb-6 font-medium">
+                                <div className="text-gray-600 leading-relaxed mb-6 font-medium">
                                     <p>{article.author?.bio || article.author_details?.bio || article.author_bio || 'Maintains the grid.'}</p>
                                 </div>
 
@@ -385,13 +385,13 @@ const PublicArticlePage = () => {
                                     return (
                                         <div className="flex flex-wrap gap-4">
                                             {socials.twitter && (
-                                                <a href={socials.twitter} target="_blank" rel="noopener noreferrer" className="text-white/40 hover:text-white transition-colors"><Twitter size={20} /></a>
+                                                <a href={socials.twitter} target="_blank" rel="noopener noreferrer" className="text-gray-500 hover:text-black transition-colors"><Twitter size={20} /></a>
                                             )}
                                             {socials.linkedin && (
-                                                <a href={socials.linkedin} target="_blank" rel="noopener noreferrer" className="text-white/40 hover:text-white transition-colors"><Linkedin size={20} /></a>
+                                                <a href={socials.linkedin} target="_blank" rel="noopener noreferrer" className="text-gray-500 hover:text-black transition-colors"><Linkedin size={20} /></a>
                                             )}
                                             {socials.website && (
-                                                <a href={socials.website} target="_blank" rel="noopener noreferrer" className="text-white/40 hover:text-white transition-colors"><Globe size={20} /></a>
+                                                <a href={socials.website} target="_blank" rel="noopener noreferrer" className="text-gray-500 hover:text-black transition-colors"><Globe size={20} /></a>
                                             )}
                                         </div>
                                     );
@@ -410,36 +410,36 @@ const PublicArticlePage = () => {
                                     navigator.clipboard.writeText(window.location.href); alert('COPIED!');
                                 }
                             }}
-                            className="flex items-center gap-3 px-6 py-4 font-bold uppercase tracking-widest text-xs transition-all hover:bg-[#1A1A1A]"
-                            style={{ background: '#111', color: TEAL, border: '1px solid #1E1E1E', fontFamily: "'DM Mono', monospace" }}
+                            className="flex items-center gap-3 px-6 py-4 font-bold uppercase tracking-widest text-xs transition-all hover:bg-gray-100"
+                            style={{ background: '#f9fafb', color: TEAL, border: '1px solid #e5e7eb', fontFamily: "'DM Mono', monospace" }}
                         >
                             <Share2 size={16} /> SHARE_LOG
                         </button>
                     </div>
 
                     {/* Comments Section */}
-                    <div className="mt-20 pt-16 border-t border-[#1E1E1E]">
-                        <h4 className="text-[11px] font-bold text-white/40 uppercase tracking-widest mb-10" style={{ fontFamily: "'DM Mono', monospace" }}>
+                    <div className="mt-20 pt-16 border-t border-gray-200">
+                        <h4 className="text-[11px] font-bold text-gray-500 uppercase tracking-widest mb-10" style={{ fontFamily: "'DM Mono', monospace" }}>
                             [ COMM_LOGS : {comments.length} ]
                         </h4>
 
-                        <div className="p-8 mb-12" style={{ background: '#111', border: '1px solid #1E1E1E' }}>
+                        <div className="p-8 mb-12" style={{ background: '#f9fafb', border: '1px solid #e5e7eb' }}>
                             <form onSubmit={handlePostComment} className="space-y-6" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
                                 <div>
-                                    <label className="block text-[11px] font-bold text-white/40 uppercase tracking-widest mb-2" style={{ fontFamily: "'DM Mono', monospace" }}>ID_NAME</label>
+                                    <label className="block text-[11px] font-bold text-gray-500 uppercase tracking-widest mb-2" style={{ fontFamily: "'DM Mono', monospace" }}>ID_NAME</label>
                                     <input
                                         type="text" required value={commentName} onChange={(e) => setCommentName(e.target.value)}
                                         placeholder="GUEST"
-                                        className="w-full px-4 py-4 bg-[#070707] border border-[#1E1E1E] focus:border-[#26CECE] outline-none transition-all text-white font-bold"
+                                        className="w-full px-4 py-4 bg-white border border-gray-200 focus:border-[#26CECE] outline-none transition-all text-black font-bold"
                                         style={{ fontFamily: "'DM Mono', monospace" }}
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-[11px] font-bold text-white/40 uppercase tracking-widest mb-2" style={{ fontFamily: "'DM Mono', monospace" }}>PAYLOAD</label>
+                                    <label className="block text-[11px] font-bold text-gray-500 uppercase tracking-widest mb-2" style={{ fontFamily: "'DM Mono', monospace" }}>PAYLOAD</label>
                                     <textarea
                                         required value={newComment} onChange={(e) => setNewComment(e.target.value)}
                                         placeholder="> ENTER INPUT..." rows="4"
-                                        className="w-full px-4 py-4 bg-[#070707] border border-[#1E1E1E] focus:border-[#26CECE] outline-none transition-all text-white resize-none font-medium"
+                                        className="w-full px-4 py-4 bg-white border border-gray-200 focus:border-[#26CECE] outline-none transition-all text-black resize-none font-medium"
                                     ></textarea>
                                 </div>
                                 <button
@@ -456,21 +456,21 @@ const PublicArticlePage = () => {
 
                         <div className="space-y-6">
                             {comments.length === 0 ? (
-                                <p className="text-white/40 font-medium uppercase tracking-widest text-sm" style={{ fontFamily: "'DM Mono', monospace" }}>
+                                <p className="text-gray-500 font-medium uppercase tracking-widest text-sm" style={{ fontFamily: "'DM Mono', monospace" }}>
                                     NO LOGS FOUND.
                                 </p>
                             ) : (
                                 comments.map(comment => (
-                                    <div key={comment.id} className="flex gap-6 p-6 md:p-8" style={{ background: '#111', border: '1px solid #1E1E1E' }}>
+                                    <div key={comment.id} className="flex gap-6 p-6 md:p-8" style={{ background: '#f9fafb', border: '1px solid #e5e7eb' }}>
                                         <div className="flex-1" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
-                                            <div className="flex items-baseline justify-between mb-4 border-b border-[#1E1E1E] pb-4">
-                                                <h5 className="font-black text-white uppercase tracking-wider text-xl">{comment.author_name}</h5>
-                                                <span className="text-[10px] text-white/40 font-bold uppercase tracking-widest flex items-center gap-2" style={{ fontFamily: "'DM Mono', monospace" }}>
+                                            <div className="flex items-baseline justify-between mb-4 border-b border-gray-200 pb-4">
+                                                <h5 className="font-black text-black uppercase tracking-wider text-xl">{comment.author_name}</h5>
+                                                <span className="text-[10px] text-gray-500 font-bold uppercase tracking-widest flex items-center gap-2" style={{ fontFamily: "'DM Mono', monospace" }}>
                                                     <Clock size={12} />
                                                     {new Date(comment.created_at).toLocaleDateString(undefined, { month: '2-digit', day: '2-digit', year: '2-digit' })}
                                                 </span>
                                             </div>
-                                            <p className="text-white/80 leading-relaxed font-medium">
+                                            <p className="text-gray-700 leading-relaxed font-medium">
                                                 {comment.text}
                                             </p>
                                         </div>
@@ -483,24 +483,24 @@ const PublicArticlePage = () => {
 
                 {/* Sidebar */}
                 <aside className="w-full lg:w-[320px] flex-shrink-0 pt-16 lg:pt-0">
-                    <h4 className="text-[11px] font-bold text-white/40 uppercase tracking-widest mb-10" style={{ fontFamily: "'DM Mono', monospace" }}>
+                    <h4 className="text-[11px] font-bold text-gray-500 uppercase tracking-widest mb-10" style={{ fontFamily: "'DM Mono', monospace" }}>
                         [ SYS_RELATED_LOGS ]
                     </h4>
 
                     {loadingLatest ? (
                         <div className="flex py-10">
-                            <Loader2 className="animate-spin text-white/20" size={32} />
+                            <Loader2 className="animate-spin text-gray-300" size={32} />
                         </div>
                     ) : latestBlogs.length > 0 ? (
                         <div className="flex flex-col gap-8">
                             {latestBlogs.map((blog) => (
                                 <Link to={`/blogs/${blog.id}`} key={blog.id} className="group block focus:outline-none">
-                                    <div className="flex flex-col gap-4 p-4 transition-all hover:bg-[#111] hover:border-[#26CECE]" style={{ border: '1px solid transparent' }}>
-                                        <div className="overflow-hidden aspect-[16/9] border border-[#1E1E1E] p-1 bg-[#111]">
+                                    <div className="flex flex-col gap-4 p-4 transition-all hover:bg-gray-50 hover:border-[#26CECE]" style={{ border: '1px solid transparent' }}>
+                                        <div className="overflow-hidden aspect-[16/9] border border-gray-200 p-1 bg-gray-50">
                                             <img
                                                 src={blog.image_url || 'https://via.placeholder.com/600x400?text=Blog'}
                                                 alt={blog.seo_title || blog.topic}
-                                                className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500"
+                                                className="w-full h-full object-cover transition-all duration-500"
                                                 onError={(e) => { e.target.src = 'https://via.placeholder.com/600x400?text=No+Image' }}
                                             />
                                         </div>
@@ -510,10 +510,10 @@ const PublicArticlePage = () => {
                                                     {blog.category}
                                                 </span>
                                             )}
-                                            <h4 className="font-extrabold text-white line-clamp-2 uppercase tracking-tight group-hover:text-[#26CECE] transition-colors leading-tight mb-3">
+                                            <h4 className="font-extrabold text-black line-clamp-2 uppercase tracking-tight group-hover:text-[#26CECE] transition-colors leading-tight mb-3">
                                                 {blog.seo_title || blog.topic}
                                             </h4>
-                                            <div className="text-[10px] text-white/40 font-bold flex items-center gap-2 uppercase tracking-widest" style={{ fontFamily: "'DM Mono', monospace" }}>
+                                            <div className="text-[10px] text-gray-500 font-bold flex items-center gap-2 uppercase tracking-widest" style={{ fontFamily: "'DM Mono', monospace" }}>
                                                 {new Date(blog.publish_date || blog.created_at).toLocaleDateString('en-US', { year: '2-digit', month: '2-digit', day: '2-digit' })}
                                             </div>
                                         </div>
@@ -522,7 +522,7 @@ const PublicArticlePage = () => {
                             ))}
                         </div>
                     ) : (
-                        <div className="text-white/40 uppercase tracking-widest font-bold text-xs" style={{ fontFamily: "'DM Mono', monospace" }}>
+                        <div className="text-gray-500 uppercase tracking-widest font-bold text-xs" style={{ fontFamily: "'DM Mono', monospace" }}>
                             DATA OFFLINE.
                         </div>
                     )}

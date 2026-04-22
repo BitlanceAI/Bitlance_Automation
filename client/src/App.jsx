@@ -5,7 +5,7 @@ import { trackAgentOpen } from './lib/analytics';
 import { ThemeProvider } from './context/ThemeContext';
 import Navbar from './components/layout/Navbar';
 import SplashScreen from './components/layout/SplashScreen';
-import Footer from './components/layout/Footer';
+import Footer from './components/landing/Footer';
 import ShapeHeroDemo from './pages/demos/ShapeHeroDemo';
 import LandingPage from './pages/landing/LandingPage';
 import SeoLandingPage from './pages/landing/SeoLandingPage';

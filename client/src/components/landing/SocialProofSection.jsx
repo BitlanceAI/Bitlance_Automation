@@ -66,7 +66,7 @@ const StatCard = ({ delay, value, symbol, text, type, direction='up', start=0, c
         <motion.div
             ref={ref} onMouseMove={mv}
             onMouseLeave={e => { ml(); e.currentTarget.style.borderColor = '#1E1E1E'; }}
-            style={{ rotateY:rY, rotateX:rX, transformStyle:'preserve-3d', background:'#0F0F0F', border:'1px solid #1E1E1E' }}
+            style={{ rotateY:rY, rotateX:rX, transformStyle:'preserve-3d', background:'#ffffff', border: '1px solid #e5e7eb' }}
             initial={{ opacity:0, y:20 }} whileInView={{ opacity:1, y:0 }}
             transition={{ duration:0.45, delay }} viewport={{ once:true }}
             className="group relative p-7 rounded flex flex-col items-center justify-center gap-2 overflow-hidden transition-all duration-300"
@@ -84,12 +84,12 @@ const StatCard = ({ delay, value, symbol, text, type, direction='up', start=0, c
             </div>
 
             <p style={{ transform:'translateZ(16px)', fontFamily:"'Space Grotesk',sans-serif" }}
-                className="relative z-10 text-white/60 text-center text-sm max-w-[180px] leading-relaxed">
+                className="relative z-10 font-medium text-black text-center text-sm max-w-[180px] leading-relaxed">
                 {text}
             </p>
             {contrast && (
                 <p style={{ transform:'translateZ(12px)', fontFamily:"'DM Mono',monospace", fontSize:10, letterSpacing:'0.08em' }}
-                    className="relative z-10 text-white/25 text-center mt-1 max-w-[180px]">
+                    className="relative z-10 text-black/50 text-center mt-1 max-w-[180px]">
                     {contrast}
                 </p>
             )}
@@ -98,7 +98,7 @@ const StatCard = ({ delay, value, symbol, text, type, direction='up', start=0, c
 };
 
 const SocialProofSection = () => (
-    <section className="py-12 bg-[#070707] text-white relative overflow-hidden">
+    <section className="py-12 bg-transparent text-black relative overflow-hidden">
         {/* Single teal glow */}
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[300px] rounded-full blur-[120px] pointer-events-none"
             style={{ background:`${T}0A` }} />
@@ -112,7 +112,7 @@ const SocialProofSection = () => (
                 <motion.h2
                     initial={{ opacity:0, y:20 }} whileInView={{ opacity:1, y:0 }}
                     transition={{ duration:0.45 }} viewport={{ once:true }}
-                    className="mt-4 text-3xl md:text-5xl font-extrabold text-white leading-tight"
+                    className="mt-4 text-3xl md:text-5xl font-black text-black leading-tight"
                     style={{ fontFamily:"'Space Grotesk',sans-serif", letterSpacing:'-0.03em' }}
                 >
                     Teams closing <span style={{ color:T }}>more deals</span><br />with less effort
@@ -135,9 +135,9 @@ const SocialProofSection = () => (
             {/* Logo marquee */}
             <div className="relative flex overflow-hidden">
                 <div className="absolute left-0 top-0 bottom-0 w-24 z-10 pointer-events-none"
-                    style={{ background:'linear-gradient(to right, #070707, transparent)' }} />
+                    style={{ background:'linear-gradient(to right, #ffffff, transparent)' }} />
                 <div className="absolute right-0 top-0 bottom-0 w-24 z-10 pointer-events-none"
-                    style={{ background:'linear-gradient(to left, #070707, transparent)' }} />
+                    style={{ background:'linear-gradient(to left, #ffffff, transparent)' }} />
 
                 <motion.div
                     className="flex gap-16 items-center whitespace-nowrap"
@@ -155,8 +155,8 @@ const SocialProofSection = () => (
                                 { icon:Award,      name:'TopTier' },
                                 { icon:TrendingUp, name:'GrowthX' },
                             ].map(({ icon:Icon, name }) => (
-                                <div key={name} className="flex items-center gap-2 opacity-25 hover:opacity-70 transition-opacity"
-                                    style={{ fontFamily:"'Space Grotesk',sans-serif", fontWeight:700, fontSize:18, color:'#EFEFEF' }}>
+                                <div key={name} className="flex items-center gap-2 opacity-50 hover:opacity-100 transition-opacity"
+                                    style={{ fontFamily:"'Space Grotesk',sans-serif", fontWeight:700, fontSize:18, color:'#000000' }}>
                                     <Icon size={20} style={{ color:T }} />
                                     {name}
                                 </div>

@@ -87,7 +87,7 @@ const CRMDashboardAnimation = () => {
                 initial={{ rotateX: 10, y: 20, opacity: 0 }}
                 animate={{ rotateX: 0, y: 0, opacity: 1 }}
                 transition={{ duration: 1, ease: "easeOut" }}
-                className="bg-[#0f0f13] border border-white/10 rounded-2xl overflow-hidden shadow-2xl shadow-violet-900/20 flex flex-col md:flex-row"
+                className="bg-[#0f0f13] border border-gray-200 rounded-2xl overflow-hidden shadow-2xl shadow-violet-900/20 flex flex-col md:flex-row"
             >
                 {/* Left Sidebar: AI Call Agent Console */}
                 <div className="w-full md:w-1/3 bg-[#17171c] border-b md:border-b-0 md:border-r border-white/5 p-6 flex flex-col relative overflow-hidden">
@@ -101,10 +101,10 @@ const CRMDashboardAnimation = () => {
                             <Phone className="text-violet-400" size={20} />
                         </div>
                         <div>
-                            <h3 className="font-semibold text-white">AI Voice Agent</h3>
+                            <h3 className="font-semibold text-black">AI Voice Agent</h3>
                             <div className="flex items-center gap-2">
                                 <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                                <span className="text-xs text-white/50">Online & Active</span>
+                                <span className="text-xs text-black/50">Online & Active</span>
                             </div>
                         </div>
                     </div>
@@ -123,8 +123,8 @@ const CRMDashboardAnimation = () => {
                                         <div className="absolute inset-0 border-2 border-indigo-500/50 rounded-full animate-[spin_3s_linear_infinite]"></div>
                                         <User className="text-indigo-400" size={28} />
                                     </div>
-                                    <p className="text-sm font-medium text-white mb-1">Inbound Call</p>
-                                    <p className="text-xs text-white/50 mb-6">Alex Thompson</p>
+                                    <p className="text-sm font-medium text-black mb-1">Inbound Call</p>
+                                    <p className="text-xs text-black/50 mb-6">Alex Thompson</p>
 
                                     {/* Call duration bar */}
                                     <div className="w-full bg-white/5 rounded-full h-1.5 overflow-hidden">
@@ -147,9 +147,9 @@ const CRMDashboardAnimation = () => {
                                     className="text-center py-6"
                                 >
                                     <div className="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center mx-auto mb-4">
-                                        <Phone className="text-white/30" size={28} />
+                                        <Phone className="text-black/30" size={28} />
                                     </div>
-                                    <p className="text-sm text-white/60">Waiting for calls...</p>
+                                    <p className="text-sm font-medium text-black">Waiting for calls...</p>
                                 </motion.div>
                             )}
                         </AnimatePresence>
@@ -160,11 +160,11 @@ const CRMDashboardAnimation = () => {
                 <div className="w-full md:w-2/3 p-6 bg-[#0f0f13] relative">
                     <div className="flex items-center justify-between mb-8">
                         <div>
-                            <h3 className="font-semibold text-white text-lg flex items-center gap-2">
-                                <Calendar className="text-white/40" size={20} />
+                            <h3 className="font-semibold text-black text-lg flex items-center gap-2">
+                                <Calendar className="text-gray-500" size={20} />
                                 Upcoming Meetings
                             </h3>
-                            <p className="text-xs text-white/50">Automatically synced from voice agent</p>
+                            <p className="text-xs text-black/50">Automatically synced from voice agent</p>
                         </div>
                         <div className="px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-medium flex items-center gap-1.5">
                             <CheckCircle2 size={14} /> CRM Synced
@@ -181,32 +181,32 @@ const CRMDashboardAnimation = () => {
                                     animate={{
                                         opacity: 1,
                                         x: 0,
-                                        backgroundColor: meeting.status === 'just_added' ? 'rgba(139, 92, 246, 0.15)' : 'rgba(255, 255, 255, 0.03)',
-                                        borderColor: meeting.status === 'just_added' ? 'rgba(139, 92, 246, 0.4)' : 'rgba(255, 255, 255, 0.05)'
+                                        backgroundColor: meeting.status === 'just_added' ? 'rgba(139, 92, 246, 0.15)' : 'rgba(0, 0, 0, 0.03)',
+                                        borderColor: meeting.status === 'just_added' ? 'rgba(139, 92, 246, 0.4)' : 'rgba(0, 0, 0, 0.05)'
                                     }}
                                     exit={{ opacity: 0, x: 20 }}
                                     transition={{ duration: 0.4 }}
                                     className={`p-4 mb-3 rounded-xl border flex items-center justify-between ${meeting.status === 'just_added' ? 'shadow-[0_0_20px_rgba(139,92,246,0.2)] z-10 relative' : ''}`}
                                 >
                                     <div className="flex items-center gap-4">
-                                        <div className={`w-10 h-10 rounded-full flex items-center justify-center ${meeting.status === 'just_added' ? 'bg-violet-500/20 text-violet-400' : 'bg-white/5 text-white/40'}`}>
+                                        <div className={`w-10 h-10 rounded-full flex items-center justify-center ${meeting.status === 'just_added' ? 'bg-violet-500/20 text-violet-400' : 'bg-white/5 text-gray-500'}`}>
                                             <User size={18} />
                                         </div>
                                         <div>
-                                            <h4 className="font-medium text-white text-sm">{meeting.name}</h4>
-                                            <p className="text-xs text-white/50 mt-0.5">{meeting.type}</p>
+                                            <h4 className="font-medium text-black text-sm">{meeting.name}</h4>
+                                            <p className="text-xs text-black/50 mt-0.5">{meeting.type}</p>
                                         </div>
                                     </div>
                                     <div className="flex items-center gap-6">
-                                        <div className="flex items-center gap-1.5 text-xs text-white/60">
-                                            <Clock size={14} className="text-white/40" />
+                                        <div className="flex items-center gap-1.5 text-xs font-medium text-black">
+                                            <Clock size={14} className="text-gray-500" />
                                             {meeting.time}
                                         </div>
                                         {meeting.status === 'just_added' && (
                                             <motion.div
                                                 initial={{ scale: 0.8, opacity: 0 }}
                                                 animate={{ scale: 1, opacity: 1 }}
-                                                className="text-[10px] font-bold uppercase tracking-wider text-violet-300 bg-violet-500/20 px-2 py-1 rounded-md border border-violet-500/30"
+                                                className="text-[10px] font-extrabold uppercase tracking-wider text-violet-300 bg-violet-500/20 px-2 py-1 rounded-md border border-violet-500/30"
                                             >
                                                 New Booking
                                             </motion.div>
@@ -226,7 +226,7 @@ const CRMDashboardAnimation = () => {
                             }}
                             transition={{ duration: 1, repeat: Infinity }}
                         >
-                            <ArrowRight size={24} className="text-white/30" />
+                            <ArrowRight size={24} className="text-black/30" />
                         </motion.div>
                     </div>
                 </div>

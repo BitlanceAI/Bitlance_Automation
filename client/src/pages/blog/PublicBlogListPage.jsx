@@ -49,7 +49,7 @@ const PublicBlogListPage = () => {
     };
 
     return (
-        <div className="min-h-screen bg-[#070707] pb-20">
+        <div className="min-h-screen bg-white pb-20">
             <SEOHead
                 title="AI & Automation Blog — Expert Insights by Bitlance Tech Hub"
                 description="Expert guides on AI voice agents, automated SEO content, and business automation. Learn how companies use AI to scale lead generation, reduce costs, and automate repetitive workflows."
@@ -71,12 +71,12 @@ const PublicBlogListPage = () => {
             />
 
             {/* Hero Section */}
-            <div className="bg-[#070707] border-b border-[#1E1E1E] py-16 md:py-24 px-6 mb-12 relative z-10" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+            <div className="bg-white border-b border-gray-200 py-16 md:py-24 px-6 mb-12 relative z-10" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
                 <div className="max-w-7xl mx-auto text-center">
-                    <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold mb-6 text-white tracking-tight uppercase">
+                    <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold mb-6 text-black tracking-tight uppercase">
                         AI &amp; Automation <span style={{ color: TEAL }}>Blog</span>
                     </h1>
-                    <p className="text-lg md:text-xl text-white/60 max-w-2xl mx-auto leading-relaxed">
+                    <p className="text-lg md:text-xl text-gray-600 max-w-2xl mx-auto leading-relaxed">
                         Expert guides on AI voice agents, automated SEO content, and business automation — written by the Bitlance Tech Hub team to help you scale smarter.
                     </p>
                 </div>
@@ -87,7 +87,7 @@ const PublicBlogListPage = () => {
 
                 {/* Search/Filter (Placeholder for future) */}
                 <div className="flex justify-between items-center mb-10">
-                    <h2 className="text-3xl font-extrabold text-white tracking-tight uppercase">
+                    <h2 className="text-3xl font-extrabold text-black tracking-tight uppercase">
                         Recent Articles
                     </h2>
                 </div>
@@ -95,7 +95,7 @@ const PublicBlogListPage = () => {
                 {/* Loading State */}
                 {loading ? (
                     <div className="flex justify-center py-20">
-                        <Loader2 className="animate-spin text-white/20" size={48} />
+                        <Loader2 className="animate-spin text-gray-300" size={48} />
                     </div>
                 ) : articles.length > 0 ? (
                     <>
@@ -111,28 +111,28 @@ const PublicBlogListPage = () => {
                             <button
                                 onClick={() => handlePageChange(currentPage - 1)}
                                 disabled={!pagination.hasPrevPage}
-                                className="px-6 py-3 uppercase tracking-widest font-bold text-xs transition-all disabled:opacity-30 disabled:cursor-not-allowed hover:bg-[#1A1A1A]"
+                                className="px-6 py-3 uppercase tracking-widest font-bold text-xs transition-all disabled:opacity-30 disabled:cursor-not-allowed hover:bg-gray-100"
                                 style={{
-                                    background: '#111111',
+                                    background: '#f9fafb',
                                     color: TEAL,
-                                    border: '1px solid #1E1E1E'
+                                    border: '1px solid #e5e7eb'
                                 }}
                             >
                                 Previous
                             </button>
 
-                            <span className="flex items-center px-4 font-bold text-white/40 tracking-widest uppercase text-xs">
+                            <span className="flex items-center px-4 font-bold text-gray-500 tracking-widest uppercase text-xs">
                                 Page {pagination.currentPage} of {pagination.totalPages}
                             </span>
 
                             <button
                                 onClick={() => handlePageChange(currentPage + 1)}
                                 disabled={!pagination.hasNextPage}
-                                className="px-6 py-3 uppercase tracking-widest font-bold text-xs transition-all disabled:opacity-30 disabled:cursor-not-allowed hover:bg-[#1A1A1A]"
+                                className="px-6 py-3 uppercase tracking-widest font-bold text-xs transition-all disabled:opacity-30 disabled:cursor-not-allowed hover:bg-gray-100"
                                 style={{
-                                    background: '#111111',
+                                    background: '#f9fafb',
                                     color: TEAL,
-                                    border: '1px solid #1E1E1E'
+                                    border: '1px solid #e5e7eb'
                                 }}
                             >
                                 Next
@@ -141,10 +141,10 @@ const PublicBlogListPage = () => {
                     </>
                 ) : (
                     /* Empty State */
-                    <div className="text-center py-24 bg-[#111111] border border-[#1E1E1E]">
+                    <div className="text-center py-24 bg-gray-50 border border-gray-200">
                         <div className="text-6xl mb-6 opacity-50">/&gt;</div>
-                        <h3 className="text-2xl font-extrabold text-white mb-2 uppercase tracking-tight">No Articles Yet</h3>
-                        <p className="text-white/40 font-medium" style={{ fontFamily: "'DM Mono', monospace" }}>
+                        <h3 className="text-2xl font-extrabold text-black mb-2 uppercase tracking-tight">No Articles Yet</h3>
+                        <p className="text-gray-500 font-medium" style={{ fontFamily: "'DM Mono', monospace" }}>
                             CHECK BACK SOON FOR NEW CONTENT
                         </p>
                     </div>

@@ -41,14 +41,10 @@ const Navbar = () => {
     return (
         <>
             {/* ── Top Navbar ── */}
-            <nav className={`fixed left-0 right-0 z-50 transition-all duration-500 ease-in-out ${
-                scrolled ? 'top-4 py-2.5' : 'top-0 py-5 bg-transparent'
+            <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+                scrolled ? 'py-4 bg-white/90 backdrop-blur-md border-b border-gray-200 shadow-sm' : 'py-5 bg-transparent'
             }`}>
-                <div className={`mx-auto px-6 flex justify-between items-center transition-all duration-500 ${
-                    scrolled
-                        ? 'w-[92%] max-w-6xl bg-white/80 dark:bg-[#0A0A0A]/80 backdrop-blur-xl shadow-2xl shadow-black/10 dark:shadow-black/40 rounded-2xl py-2 border border-[#E0E0E0] dark:border-[#1E1E1E]'
-                        : 'w-full max-w-7xl px-6'
-                }`}>
+                <div className="mx-auto px-6 flex justify-between items-center w-full max-w-7xl">
 
                     {/* Logo */}
                     <Link to="/" className="flex items-center gap-2 group">
@@ -96,14 +92,7 @@ const Navbar = () => {
 
                     {/* Desktop right side */}
                     <div className="hidden md:flex items-center gap-3">
-                        {/* Theme toggle */}
-                        <button
-                            onClick={toggleTheme}
-                            className="w-8 h-8 flex items-center justify-center rounded-lg text-gray-500 dark:text-gray-400 hover:text-[#26CECE] dark:hover:text-[#26CECE] hover:bg-[#26CECE]/10 transition-all"
-                            title={theme === 'dark' ? 'Switch to light' : 'Switch to dark'}
-                        >
-                            {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
-                        </button>
+
 
                         {user ? (
                             <div className="flex items-center gap-3">
@@ -147,12 +136,7 @@ const Navbar = () => {
 
                     {/* Mobile top-right: theme + user avatar / login */}
                     <div className="md:hidden flex items-center gap-2">
-                        <button
-                            onClick={toggleTheme}
-                            className="w-8 h-8 flex items-center justify-center rounded-lg text-gray-500 dark:text-gray-400 hover:text-[#26CECE] transition-colors"
-                        >
-                            {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
-                        </button>
+
                         {user ? (
                             <div
                                 className="w-8 h-8 rounded-full flex items-center justify-center text-[#070707] font-bold text-xs shadow-md"

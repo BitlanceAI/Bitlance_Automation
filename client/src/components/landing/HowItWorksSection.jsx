@@ -115,23 +115,23 @@ const ServiceCard = ({ icon: Icon, label, title, desc, badge }) => {
                 <div className="p-6 flex flex-col h-full" style={{ transform: 'translateZ(40px)' }}>
                     {/* Badge */}
                     <div className="flex items-center justify-between mb-5">
-                        <span className="text-[10px] font-bold uppercase tracking-widest px-2.5 py-1 rounded-sm"
+                        <span className="text-[10px] font-extrabold uppercase tracking-widest px-2.5 py-1 rounded-sm"
                             style={{ background: `${T}15`, color: T, fontFamily: "'DM Mono',monospace" }}>
                             {label}
                         </span>
                         {badge && (
-                            <span className="text-[9px] font-bold uppercase tracking-widest px-2 py-1 rounded-sm"
-                                style={{ background: '#0A0A0A', color: '#26CECE', fontFamily: "'DM Mono',monospace" }}>
+                            <span className="text-[9px] font-extrabold uppercase tracking-widest px-2 py-1 rounded-sm"
+                                style={{ background: '#f8f9fa', color: '#26CECE', fontFamily: "'DM Mono',monospace" }}>
                                 {badge}
                             </span>
                         )}
                     </div>
 
                     {/* Title + desc */}
-                    <h3 className="text-xl font-bold mb-2" style={{ fontFamily: "'Space Grotesk',sans-serif", color: '#0A0A0A' }}>
+                    <h3 className="text-xl font-extrabold mb-2" style={{ fontFamily: "'Space Grotesk',sans-serif", color: '#0A0A0A' }}>
                         {title}
                     </h3>
-                    <p className="text-sm leading-relaxed" style={{ color: '#666' }}>{desc}</p>
+                    <p className="text-sm leading-relaxed" style={{ color: '#000' }}>{desc}</p>
 
                     {/* Animated illustration */}
                     <div className="flex-1 mt-5 rounded-xl flex items-center justify-center relative overflow-hidden"
@@ -185,13 +185,13 @@ const HowItWorksSection = () => (
                 <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 10, letterSpacing: '0.18em', color: T, textTransform: 'uppercase' }}>
                     Our Services
                 </span>
-                <h2 className="mt-4 text-4xl md:text-5xl lg:text-6xl font-extrabold leading-tight"
+                <h2 className="mt-4 text-4xl md:text-5xl lg:text-6xl font-black leading-tight"
                     style={{ fontFamily: "'Space Grotesk',sans-serif", letterSpacing: '-0.03em', color: '#0A0A0A' }}>
                     Three agents,{' '}
                     <span style={{ color: T }}>zero manual work</span>
                 </h2>
                 <div className="mt-6" style={{ width: 48, height: 2, background: T }} />
-                <p className="mt-6 text-base leading-relaxed" style={{ color: '#666' }}>
+                <p className="mt-6 text-base leading-relaxed" style={{ color: '#000' }}>
                     Every enquiry answered. Every lead qualified. Every appointment booked — automatically across WhatsApp, phone, and your website.
                 </p>
             </div>

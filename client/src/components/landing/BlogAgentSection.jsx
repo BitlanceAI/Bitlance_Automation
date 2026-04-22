@@ -48,7 +48,7 @@ const BlogAgentSection = ({ onOpenBooking }) => {
     ];
 
     return (
-        <section className="py-12 relative overflow-hidden bg-[#070707]" style={{ borderTop: '1px solid #1E1E1E' }}>
+        <section className="py-12 relative overflow-hidden bg-transparent" style={{ borderTop: '1px solid #1E1E1E' }}>
             {/* Background glowing effects */}
             <div 
                 className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] rounded-full blur-[140px] pointer-events-none transition-opacity duration-1000 opacity-60"
@@ -80,7 +80,7 @@ const BlogAgentSection = ({ onOpenBooking }) => {
                         whileInView={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.5, delay: 0.1 }}
                         viewport={{ once: true }}
-                        className="text-4xl md:text-5xl lg:text-5xl font-extrabold tracking-tight mb-6 leading-[1.08] text-white"
+                        className="text-4xl md:text-5xl lg:text-5xl font-black tracking-tight mb-6 leading-[1.08] text-black"
                         style={{ fontFamily: "'Space Grotesk', sans-serif", letterSpacing: '-0.03em' }}
                     >
                         Automate Your SEO with the<br />
@@ -93,7 +93,7 @@ const BlogAgentSection = ({ onOpenBooking }) => {
                         whileInView={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.5, delay: 0.2 }}
                         viewport={{ once: true }}
-                        className="text-base md:text-lg text-white/60 mx-auto max-w-xl leading-relaxed"
+                        className="text-base md:text-lg font-medium text-black mx-auto max-w-xl leading-relaxed"
                     >
                         Stop writing manually. Our autonomous agent takes your keywords and turns them into
                         fully-formatted, SEO-optimized blog posts published straight to your website.
@@ -104,7 +104,7 @@ const BlogAgentSection = ({ onOpenBooking }) => {
                 <div className="mt-20 relative max-w-6xl mx-auto pb-12">
 
                     {/* Connecting line (Desktop only) */}
-                    <div className="hidden md:block absolute top-[50px] left-[8%] right-[8%] h-[1px] border-t border-[#1E1E1E] z-0">
+                    <div className="hidden md:block absolute top-[50px] left-[8%] right-[8%] h-[1px] border-t border-gray-200 z-0">
                         <motion.div
                             className="absolute inset-0 h-[1px] w-1/4 -top-[1px]"
                             style={{ background: `linear-gradient(90deg, transparent, ${TEAL}, transparent)` }}
@@ -132,8 +132,8 @@ const BlogAgentSection = ({ onOpenBooking }) => {
                                     viewport={{ once: true, margin: "-50px" }}
                                     className="relative w-20 h-20 md:w-24 md:h-24 mb-6 flex items-center justify-center transition-transform duration-300 group-hover:-translate-y-2"
                                     style={{
-                                        background: '#111',
-                                        border: '1px solid #1E1E1E',
+                                        background: '#ffffff',
+                                        border: '1px solid #e5e7eb',
                                         borderRadius: 2,
                                         boxShadow: `0 8px 30px -10px ${TEAL}15`
                                     }}
@@ -141,10 +141,10 @@ const BlogAgentSection = ({ onOpenBooking }) => {
                                     {step.icon}
 
                                     {/* Step number badge */}
-                                    <div className="absolute -top-3 -right-3 w-7 h-7 flex items-center justify-center text-xs font-bold"
+                                    <div className="absolute -top-3 -right-3 w-7 h-7 flex items-center justify-center text-xs font-extrabold"
                                         style={{
                                             background: TEAL,
-                                            color: '#070707',
+                                            color: '#000',
                                             borderRadius: 2,
                                             fontFamily: "'DM Mono', monospace"
                                         }}>
@@ -159,7 +159,7 @@ const BlogAgentSection = ({ onOpenBooking }) => {
                                     transition={{ duration: 0.5, delay: step.delay + 0.2 }}
                                     viewport={{ once: true }}
                                 >
-                                    <h3 className="text-base font-bold text-white mb-1" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+                                    <h3 className="text-base font-extrabold text-black mb-1" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
                                         {step.title}
                                     </h3>
                                     {/* Source badge (SerpAPI / Perplexity AI / WordPress) */}
@@ -173,7 +173,7 @@ const BlogAgentSection = ({ onOpenBooking }) => {
                                         }}>
                                         {step.badge}
                                     </div>
-                                    <p className="text-xs text-white/50 leading-relaxed px-1" style={{ fontFamily: "'DM Mono', monospace" }}>
+                                    <p className="text-xs text-black/50 leading-relaxed px-1" style={{ fontFamily: "'DM Mono', monospace" }}>
                                         {step.desc}
                                     </p>
                                 </motion.div>
@@ -192,10 +192,10 @@ const BlogAgentSection = ({ onOpenBooking }) => {
                 >
                     <button
                         onClick={() => navigate('/dashboard/agents/seo')}
-                        className="group inline-flex items-center gap-3 font-bold text-base transition-all"
+                        className="group inline-flex items-center gap-3 font-extrabold text-base transition-all"
                         style={{
                             background: TEAL,
-                            color: '#070707',
+                            color: '#000',
                             padding: '16px 32px',
                             borderRadius: 2,
                             border: 'none',
@@ -209,7 +209,7 @@ const BlogAgentSection = ({ onOpenBooking }) => {
 
                     <button
                         onClick={() => navigate('/features/blog-agent')}
-                        className="group inline-flex items-center gap-3 font-bold text-base transition-all"
+                        className="group inline-flex items-center gap-3 font-extrabold text-base transition-all"
                         style={{
                             background: 'transparent',
                             color: TEAL,

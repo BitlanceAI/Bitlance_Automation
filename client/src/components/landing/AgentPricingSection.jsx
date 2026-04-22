@@ -117,27 +117,27 @@ function PlanCard({ plan, idx, yearly }) {
             whileHover={{ y: -5 }}
             className="relative flex flex-col rounded p-6 transition-all duration-300"
             style={{
-                background: plan.popular ? `${T}08` : '#0F0F0F',
+                background: plan.popular ? `${T}08` : '#ffffff',
                 border: `1px solid ${plan.popular ? T : '#1E1E1E'}`,
                 boxShadow: plan.popular ? `0 0 40px 0 ${T}12` : 'none',
             }}
         >
             {plan.popular && (
-                <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-4 py-1 text-[10px] font-bold uppercase tracking-widest rounded-sm whitespace-nowrap"
-                    style={{ background: T, color: '#070707', fontFamily: "'DM Mono',monospace" }}>
+                <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-4 py-1 text-[10px] font-extrabold uppercase tracking-widest rounded-sm whitespace-nowrap"
+                    style={{ background: T, color: '#000', fontFamily: "'DM Mono',monospace" }}>
                     Most Popular
                 </div>
             )}
 
-            <h3 className="text-base font-bold text-white mb-1">{plan.name}</h3>
-            <p className="text-xs text-white/40 mb-5 min-h-[40px]">{plan.desc}</p>
+            <h3 className="text-base font-extrabold text-black mb-1">{plan.name}</h3>
+            <p className="text-xs text-gray-500 mb-5 min-h-[40px]">{plan.desc}</p>
 
             {price ? (
                 <>
                     <div className="flex items-baseline gap-1 mb-1">
-                        <span className="text-lg font-bold text-white/40" style={{ fontFamily: "'DM Mono',monospace" }}>₹</span>
-                        <span className="text-4xl font-extrabold text-white" style={{ fontFamily: "'DM Mono',monospace" }}>{price}</span>
-                        <span className="text-white/40 text-xs">/mo</span>
+                        <span className="text-lg font-extrabold text-gray-500" style={{ fontFamily: "'DM Mono',monospace" }}>₹</span>
+                        <span className="text-4xl font-black text-black" style={{ fontFamily: "'DM Mono',monospace" }}>{price}</span>
+                        <span className="text-gray-500 text-xs">/mo</span>
                     </div>
                     {yearly && (
                         <p className="text-[10px] text-green-400 mb-4" style={{ fontFamily: "'DM Mono',monospace" }}>
@@ -148,7 +148,7 @@ function PlanCard({ plan, idx, yearly }) {
             ) : (
                 <div className="flex items-center gap-2 mb-5">
                     <Phone size={16} style={{ color: T }} />
-                    <span className="text-2xl font-bold text-white" style={{ fontFamily: "'DM Mono',monospace" }}>Custom</span>
+                    <span className="text-2xl font-extrabold text-black" style={{ fontFamily: "'DM Mono',monospace" }}>Custom</span>
                 </div>
             )}
 
@@ -156,25 +156,25 @@ function PlanCard({ plan, idx, yearly }) {
                 {plan.features.map((f, i) => (
                     <li key={i} className="flex items-start gap-2">
                         <Check size={11} className="mt-0.5 flex-shrink-0" style={{ color: T }} />
-                        <span className="text-xs text-white/70">{f}</span>
+                        <span className="text-xs text-black/70">{f}</span>
                     </li>
                 ))}
                 {(plan.missing || []).map((f, i) => (
                     <li key={i} className="flex items-start gap-2 opacity-25">
-                        <X size={11} className="mt-0.5 flex-shrink-0 text-white/40" />
-                        <span className="text-xs text-white/40">{f}</span>
+                        <X size={11} className="mt-0.5 flex-shrink-0 text-gray-500" />
+                        <span className="text-xs text-gray-500">{f}</span>
                     </li>
                 ))}
             </ul>
 
             <Link
                 to={plan.ctaLink}
-                className="w-full py-3 rounded text-[11px] font-bold uppercase tracking-widest flex items-center justify-center gap-2 transition-all duration-200"
+                className="w-full py-3 rounded text-[11px] font-extrabold uppercase tracking-widest flex items-center justify-center gap-2 transition-all duration-200"
                 style={plan.popular
-                    ? { background: T, color: '#070707' }
+                    ? { background: T, color: '#000' }
                     : plan.contactSales
                         ? { background: 'transparent', color: T, border: `1px solid ${T}50` }
-                        : { background: '#1A1A1A', color: '#EFEFEF', border: '1px solid #2A2A2A' }}
+                        : { background: '#f9fafb', color: '#111111', border: '1px solid #2A2A2A' }}
             >
                 {plan.contactSales ? <Phone size={11} /> : <ArrowRight size={11} />}
                 {plan.cta}
@@ -194,15 +194,15 @@ const AgentPricingSection = () => {
         : seoMode === 'product' ? seoProductPlans : seoServicePlans;
 
     return (
-        <section className="py-24 bg-[#070707]" id="pricing">
+        <section className="py-24 bg-transparent" id="pricing">
             <div className="max-w-7xl mx-auto px-6">
 
                 {/* Heading */}
                 <div className="mb-12 max-w-2xl">
-                    <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 10, letterSpacing: '0.18em', color: '#555', textTransform: 'uppercase' }}>
+                    <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 10, letterSpacing: '0.18em', color: '#000', textTransform: 'uppercase' }}>
                         Pricing
                     </span>
-                    <h2 className="mt-4 text-3xl md:text-5xl font-bold text-white leading-tight"
+                    <h2 className="mt-4 text-3xl md:text-5xl font-extrabold text-black leading-tight"
                         style={{ fontFamily: "'Space Grotesk',sans-serif", letterSpacing: '-0.025em' }}>
                         Simple pricing,<br /><span style={{ color: T }}>massive ROI</span>
                     </h2>
@@ -210,29 +210,29 @@ const AgentPricingSection = () => {
                     <div className="mt-5 inline-flex flex-wrap items-center gap-2 px-4 py-2.5 text-xs rounded"
                         style={{ background: `${T}0D`, border: `1px solid ${T}25` }}>
                         <span style={{ color: T, fontFamily: "'DM Mono',monospace" }}>Agencies charge</span>
-                        <span className="line-through" style={{ color: '#555', fontFamily: "'DM Mono',monospace" }}>₹2,50,000–₹6,00,000/mo</span>
+                        <span className="line-through" style={{ color: '#000', fontFamily: "'DM Mono',monospace" }}>₹2,50,000–₹6,00,000/mo</span>
                         <span style={{ color: T, fontFamily: "'DM Mono',monospace" }}>for what you get below.</span>
                     </div>
                 </div>
 
                 {/* Agent Toggle */}
                 <div className="flex flex-wrap items-center gap-4 mb-8">
-                    <div className="flex rounded overflow-hidden border border-[#1E1E1E]">
+                    <div className="flex rounded overflow-hidden border border-gray-200">
                         <button
                             onClick={() => setAgent('seo')}
-                            className="flex items-center gap-2 px-5 py-2.5 text-xs font-bold uppercase tracking-widest transition-all"
+                            className="flex items-center gap-2 px-5 py-2.5 text-xs font-extrabold uppercase tracking-widest transition-all"
                             style={agent === 'seo'
-                                ? { background: T, color: '#070707' }
-                                : { background: '#0F0F0F', color: '#555' }}
+                                ? { background: T, color: '#000' }
+                                : { background: '#ffffff', color: '#000' }}
                         >
                             <Zap size={13} /> SEO AI Agent
                         </button>
                         <button
                             onClick={() => setAgent('voice')}
-                            className="flex items-center gap-2 px-5 py-2.5 text-xs font-bold uppercase tracking-widest transition-all"
+                            className="flex items-center gap-2 px-5 py-2.5 text-xs font-extrabold uppercase tracking-widest transition-all"
                             style={agent === 'voice'
-                                ? { background: T, color: '#070707' }
-                                : { background: '#0F0F0F', color: '#555' }}
+                                ? { background: T, color: '#000' }
+                                : { background: '#ffffff', color: '#000' }}
                         >
                             <Mic size={13} /> Voice Agent
                         </button>
@@ -240,22 +240,22 @@ const AgentPricingSection = () => {
 
                     {/* SEO sub-toggle: Product vs Service */}
                     {agent === 'seo' && (
-                        <div className="flex rounded overflow-hidden border border-[#1E1E1E]">
+                        <div className="flex rounded overflow-hidden border border-gray-200">
                             <button
                                 onClick={() => setSeoMode('product')}
-                                className="flex items-center gap-2 px-4 py-2.5 text-xs font-bold uppercase tracking-widest transition-all"
+                                className="flex items-center gap-2 px-4 py-2.5 text-xs font-extrabold uppercase tracking-widest transition-all"
                                 style={seoMode === 'product'
                                     ? { background: '#1E1E1E', color: '#fff' }
-                                    : { background: '#0F0F0F', color: '#555' }}
+                                    : { background: '#ffffff', color: '#000' }}
                             >
                                 <Package size={12} /> Self-Serve Product
                             </button>
                             <button
                                 onClick={() => setSeoMode('service')}
-                                className="flex items-center gap-2 px-4 py-2.5 text-xs font-bold uppercase tracking-widest transition-all"
+                                className="flex items-center gap-2 px-4 py-2.5 text-xs font-extrabold uppercase tracking-widest transition-all"
                                 style={seoMode === 'service'
                                     ? { background: '#1E1E1E', color: '#fff' }
-                                    : { background: '#0F0F0F', color: '#555' }}
+                                    : { background: '#ffffff', color: '#000' }}
                             >
                                 <Wrench size={12} /> Done For You
                             </button>
@@ -268,7 +268,7 @@ const AgentPricingSection = () => {
                         <button onClick={() => setYearly(v => !v)}
                             className="w-10 h-5 relative rounded-full transition-all flex-shrink-0"
                             style={{ background: T }}>
-                            <div className={`absolute top-0.5 w-4 h-4 rounded-full bg-[#070707] transition-transform duration-300 ${yearly ? 'translate-x-5' : 'translate-x-0.5'}`} />
+                            <div className={`absolute top-0.5 w-4 h-4 rounded-full bg-transparent transition-transform duration-300 ${yearly ? 'translate-x-5' : 'translate-x-0.5'}`} />
                         </button>
                         <span className="text-xs" style={{ color: yearly ? T : '#555' }}>
                             Yearly <span className="text-green-400">(−20%)</span>
@@ -285,7 +285,7 @@ const AgentPricingSection = () => {
                         exit={{ opacity: 0 }}
                         transition={{ duration: 0.2 }}
                         className="text-xs mb-8 font-mono"
-                        style={{ color: '#444' }}
+                        style={{ color: '#000' }}
                     >
                         {agent === 'voice' && '🎙 Voice Agent as a Service — we build, deploy & manage your AI caller'}
                         {agent === 'seo' && seoMode === 'product' && '⚡ Self-serve SaaS — your team runs the platform, we power the AI'}

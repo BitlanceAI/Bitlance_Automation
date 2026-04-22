@@ -38,7 +38,7 @@ const problems = [
 ];
 
 const ProblemSection = () => (
-    <section className="py-12 relative overflow-hidden bg-[#070707]">
+    <section className="py-12 relative overflow-hidden bg-transparent">
         {/* Glass ambient glow */}
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[300px] rounded-full blur-[140px] pointer-events-none"
             style={{ background: `${T}08` }} />
@@ -46,13 +46,13 @@ const ProblemSection = () => (
         <ScrollReveal className="max-w-7xl mx-auto px-6 relative z-10">
             {/* Heading */}
             <div className="mb-16 max-w-2xl">
-                <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 10, letterSpacing: '0.18em', color: '#555', textTransform: 'uppercase' }}>
+                <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 10, letterSpacing: '0.18em', color: '#000', textTransform: 'uppercase' }}>
                     The Problem
                 </span>
                 <motion.h2
                     initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.45 }} viewport={{ once: true }}
-                    className="mt-4 text-3xl md:text-5xl font-black text-white uppercase leading-tight"
+                    className="mt-4 text-3xl md:text-5xl font-black text-black uppercase leading-tight"
                     style={{ fontFamily: "'Space Grotesk',sans-serif", letterSpacing: '-0.03em' }}
                 >
                     From Manual Grind<br /><span style={{ color: T }}>To Autonomous Systems</span>
@@ -61,7 +61,7 @@ const ProblemSection = () => (
                 <motion.p
                     initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.45, delay: 0.15 }} viewport={{ once: true }}
-                    className="mt-6 text-base text-white/40 leading-relaxed"
+                    className="mt-6 text-base text-gray-500 leading-relaxed"
                 >
                     Traditional lead management is broken. We replace your manual bottlenecks with seamless, automated workflows.
                 </motion.p>
@@ -76,8 +76,8 @@ const ProblemSection = () => (
                             <div
                                 className="h-full flex flex-col p-6 rounded-xl group transition-all duration-300"
                                 style={{
-                                    background: 'rgba(17,17,17,0.7)',
-                                    border: '1px solid rgba(255,255,255,0.06)',
+                                    background: '#ffffff',
+                                    border: '1px solid rgba(0,0,0,0.06)',
                                     backdropFilter: 'blur(16px)',
                                     WebkitBackdropFilter: 'blur(16px)',
                                     boxShadow: '0 4px 24px rgba(0,0,0,0.3)',
@@ -87,7 +87,7 @@ const ProblemSection = () => (
                                     e.currentTarget.style.boxShadow = `0 4px 32px rgba(0,0,0,0.4), 0 0 20px ${T}12`;
                                 }}
                                 onMouseLeave={e => {
-                                    e.currentTarget.style.borderColor = 'rgba(255,255,255,0.06)';
+                                    e.currentTarget.style.borderColor = 'rgba(0,0,0,0.06)';
                                     e.currentTarget.style.boxShadow = '0 4px 24px rgba(0,0,0,0.3)';
                                 }}
                             >
@@ -96,18 +96,18 @@ const ProblemSection = () => (
                                     <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, letterSpacing: '0.18em', color: '#3A3A3A', textDecoration: 'line-through', textDecorationColor: '#ef444460', textTransform: 'uppercase' }}>
                                         Before — {p.manualTitle}
                                     </span>
-                                    <p className="mt-2 text-sm text-white/25 line-through leading-relaxed" style={{ textDecorationColor: '#ef444430' }}>
+                                    <p className="mt-2 text-sm text-black/25 line-through leading-relaxed" style={{ textDecorationColor: '#ef444430' }}>
                                         {p.manualDesc}
                                     </p>
                                 </div>
                                 {/* Divider */}
                                 <div className="flex items-center gap-3 my-4 opacity-30">
-                                    <div className="flex-1 h-px" style={{ background: 'rgba(255,255,255,0.08)' }} />
+                                    <div className="flex-1 h-px" style={{ background: 'rgba(0,0,0,0.08)' }} />
                                     <div className="w-6 h-6 rounded flex items-center justify-center"
-                                        style={{ border: '1px solid rgba(255,255,255,0.08)', background: 'rgba(38,206,206,0.05)' }}>
+                                        style={{ border: '1px solid rgba(0,0,0,0.08)', background: 'rgba(38,206,206,0.05)' }}>
                                         <ArrowDown size={11} style={{ color: T }} />
                                     </div>
-                                    <div className="flex-1 h-px" style={{ background: 'rgba(255,255,255,0.08)' }} />
+                                    <div className="flex-1 h-px" style={{ background: 'rgba(0,0,0,0.08)' }} />
                                 </div>
                                 {/* After */}
                                 <div>
@@ -120,7 +120,7 @@ const ProblemSection = () => (
                                             {p.autoTitle}
                                         </span>
                                     </div>
-                                    <p className="text-sm text-white/80 leading-relaxed">{p.autoDesc}</p>
+                                    <p className="text-sm text-black leading-relaxed">{p.autoDesc}</p>
                                 </div>
                             </div>
                         </TiltCard>

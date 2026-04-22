@@ -29,7 +29,7 @@ const WhyBitlanceSection = () => {
     }, [manualPause]);
 
     return (
-        <section className="py-12 relative overflow-hidden bg-[#070707]">
+        <section className="py-12 relative overflow-hidden bg-transparent">
             {/* Ambient glows */}
             <div className="absolute top-1/2 left-0 w-[400px] h-[400px] -translate-y-1/2 rounded-full blur-[120px] pointer-events-none"
                 style={{ background: `${T}07` }} />
@@ -41,11 +41,11 @@ const WhyBitlanceSection = () => {
                 <div
                     className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16 items-center p-4 sm:p-8 lg:p-14 rounded-2xl"
                     style={{
-                        background: 'rgba(13,13,13,0.75)',
+                        background: 'rgba(255,255,255,0.9)',
                         border: '1px solid rgba(38,206,206,0.1)',
                         backdropFilter: 'blur(20px)',
                         WebkitBackdropFilter: 'blur(20px)',
-                        boxShadow: `0 32px 80px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.03) inset`,
+                        boxShadow: `0 32px 80px rgba(0,0,0,0.5), 0 0 0 1px rgba(0,0,0,0.03) inset`,
                     }}
                 >
                     {/* Left: Content */}
@@ -54,12 +54,12 @@ const WhyBitlanceSection = () => {
                             <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 10, letterSpacing: '0.18em', color: T, textTransform: 'uppercase' }}>
                                 Why Bitlance
                             </span>
-                            <h2 className="mt-4 text-3xl sm:text-4xl lg:text-5xl font-black text-white uppercase leading-tight"
+                            <h2 className="mt-4 text-3xl sm:text-4xl lg:text-5xl font-black text-black uppercase leading-tight"
                                 style={{ fontFamily: "'Space Grotesk',sans-serif", letterSpacing: '-0.03em' }}>
                                 Why Bitlance Technology?
                             </h2>
                             <div className="mt-5" style={{ width: 48, height: 2, background: T }} />
-                            <p className="mt-5 text-base text-white/50 leading-relaxed max-w-lg">
+                            <p className="mt-5 text-base text-black/50 leading-relaxed max-w-lg">
                                 We don't just provide tools. We build autonomous systems that handle the heavy lifting of lead engagement and sales follow-up — so you can focus on closing deals.
                             </p>
                         </div>
@@ -81,7 +81,7 @@ const WhyBitlanceSection = () => {
                                     }}
                                 >
                                     <CheckCircle2 size={14} style={{ color: T, flexShrink: 0 }} />
-                                    <span className="text-sm font-medium text-white/80"
+                                    <span className="text-sm font-medium text-black"
                                         style={{ fontFamily: "'Space Grotesk',sans-serif" }}>
                                         {item}
                                     </span>
@@ -98,13 +98,13 @@ const WhyBitlanceSection = () => {
                         {/* Glass frame */}
                         <div className="p-1.5 rounded-2xl"
                             style={{
-                                background: 'rgba(255,255,255,0.03)',
+                                background: 'rgba(0,0,0,0.03)',
                                 border: `1px solid rgba(38,206,206,0.15)`,
                                 backdropFilter: 'blur(8px)',
                                 boxShadow: `0 24px 60px -16px ${T}20`,
                             }}>
                             <div className="aspect-video w-full rounded-xl overflow-hidden relative"
-                                style={{ background: '#111' }}>
+                                style={{ background: '#ffffff' }}>
                                 <video
                                     ref={videoRef}
                                     src="/why_bitlance.mp4"
@@ -132,7 +132,7 @@ const WhyBitlanceSection = () => {
                     >
                         <Link
                             to="/apply"
-                            className="audit-cta inline-flex items-center gap-3 font-bold uppercase tracking-widest text-sm transition-all group"
+                            className="audit-cta inline-flex items-center gap-3 font-extrabold uppercase tracking-widest text-sm transition-all group"
                             style={{
                                 background: 'rgba(38,206,206,0.05)',
                                 border: `1px solid rgba(38,206,206,0.2)`,
@@ -158,7 +158,7 @@ const WhyBitlanceSection = () => {
                             <Sparkles size={18} style={{ color: T }} className="group-hover:rotate-12 transition-transform" />
                             Get Free Audit
                         </Link>
-                        <p className="mt-4 text-white/30 text-xs uppercase tracking-widest"
+                        <p className="mt-4 text-black/30 text-xs uppercase tracking-widest"
                             style={{ fontFamily: "'DM Mono',monospace" }}>
                             Takes less than 2 minutes · No card required
                         </p>

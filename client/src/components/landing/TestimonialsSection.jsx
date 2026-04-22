@@ -36,7 +36,7 @@ const TestimonialsSection = () => (
             <motion.h2
                 initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.45 }} viewport={{ once: true }}
-                className="mt-4 text-3xl md:text-5xl font-bold leading-tight"
+                className="mt-4 text-3xl md:text-5xl font-extrabold leading-tight"
                 style={{ fontFamily: "'Space Grotesk',sans-serif", letterSpacing: '-0.025em', color: '#0A0A0A' }}
             >
                 Trusted by forward-thinking<br />
@@ -77,7 +77,7 @@ const TestimonialsSection = () => (
                         }}
                     >
                         <Quote size={24} style={{ color: `${T}50` }} />
-                        <p className="leading-relaxed text-sm italic flex-grow" style={{ color: '#444' }}>
+                        <p className="leading-relaxed text-sm italic flex-grow" style={{ color: '#000' }}>
                             "{t.description}"
                         </p>
                         <div className="flex items-center gap-3 mt-auto">
@@ -85,7 +85,7 @@ const TestimonialsSection = () => (
                                 className="w-10 h-10 rounded-full object-cover"
                                 style={{ border: `2px solid ${T}40` }} />
                             <div>
-                                <h4 className="font-bold text-sm" style={{ color: '#0A0A0A', fontFamily: "'Space Grotesk',sans-serif" }}>{t.name}</h4>
+                                <h4 className="font-extrabold text-sm" style={{ color: '#0A0A0A', fontFamily: "'Space Grotesk',sans-serif" }}>{t.name}</h4>
                                 <p className="text-xs mt-0.5" style={{ color: T, fontFamily: "'DM Mono',monospace" }}>
                                     {t.designation}
                                 </p>

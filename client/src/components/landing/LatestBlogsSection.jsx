@@ -35,21 +35,21 @@ const LatestBlogsSection = () => {
     }
 
     return (
-        <section className="py-12 bg-[#070707] border-t border-[#1E1E1E] relative z-10" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+        <section className="py-12 bg-transparent border-t border-gray-200 relative z-10" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
             <div className="max-w-7xl mx-auto px-6">
                 <div className="flex flex-col md:flex-row justify-between items-end mb-16 gap-8 text-left">
                     <div className="max-w-xl">
-                        <h2 className="text-4xl md:text-5xl lg:text-5xl font-extrabold text-white tracking-tight mb-4 uppercase">
+                        <h2 className="text-4xl md:text-5xl lg:text-5xl font-black text-black tracking-tight mb-4 uppercase">
                             Latest from our Blog
                         </h2>
-                        <p className="text-lg text-white/60 mb-2 leading-relaxed">
+                        <p className="text-lg font-medium text-black mb-2 leading-relaxed">
                             Discover actionable insights, case studies, and modern strategies to scale your business with AI.
                         </p>
                     </div>
 
                     <Link
                         to="/blogs"
-                        className="hidden md:inline-flex items-center gap-2 font-bold transition-all hover:scale-105 active:scale-95 group"
+                        className="hidden md:inline-flex items-center gap-2 font-extrabold transition-all hover:scale-105 active:scale-95 group"
                         style={{ color: TEAL }}
                     >
                         View all articles
@@ -59,7 +59,7 @@ const LatestBlogsSection = () => {
 
                 {loading ? (
                     <div className="flex justify-center py-20">
-                        <Loader2 className="w-8 h-8 animate-spin text-white/20" />
+                        <Loader2 className="w-8 h-8 animate-spin text-black/20" />
                     </div>
                 ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -74,9 +74,9 @@ const LatestBlogsSection = () => {
                         to="/blogs"
                         className="inline-flex items-center justify-center gap-3 w-full px-6 py-4 transition-all hover:bg-[#1A1A1A] group"
                         style={{
-                            background: '#111111',
+                            background: '#ffffff',
                             color: TEAL,
-                            border: '1px solid #1E1E1E',
+                            border: '1px solid #e5e7eb',
                             borderRadius: 2,
                             fontFamily: "'Space Grotesk', sans-serif",
                             fontWeight: 'bold',

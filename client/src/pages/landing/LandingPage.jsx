@@ -231,7 +231,7 @@ const LandingPage = () => {
 
 
     return (
-        <div className="relative min-h-screen w-full overflow-hidden bg-[#070707] text-white">
+        <div className="relative min-h-screen w-full overflow-hidden bg-white text-black">
             <SEOHead
                 title="AI Voice Bot & WhatsApp Chatbot for Indian Businesses | Bitlance"
                 description="Bitlance deploys AI Voice Agents and WhatsApp Chatbots that respond to leads in 0.4 seconds, qualify enquiries, and book appointments 24/7. Used by real estate, clinics & agencies across India."

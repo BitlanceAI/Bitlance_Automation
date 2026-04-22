@@ -17,7 +17,7 @@ export default function SeoLandingPage() {
   };
 
   return (
-    <div className="min-h-screen bg-dark text-white overflow-x-hidden" style={{ fontFamily: "'Inter', system-ui, sans-serif" }}>
+    <div className="min-h-screen bg-dark text-black overflow-x-hidden" style={{ fontFamily: "'Inter', system-ui, sans-serif" }}>
       <NavBar />
       <HeroSection onWatchDemo={scrollToDemo} />
       <StatsSection />

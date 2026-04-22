@@ -8,7 +8,7 @@ const TEAL = '#26CECE';
 
 const UseCasesSection = () => {
     return (
-        <section className="py-12 relative overflow-hidden bg-[#070707]" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+        <section className="py-12 relative overflow-hidden bg-transparent" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
             <ScrollReveal className="max-w-7xl mx-auto px-6">
                 <div className="text-center mb-16">
                     <motion.h2
@@ -16,7 +16,7 @@ const UseCasesSection = () => {
                         whileInView={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.5 }}
                         viewport={{ once: true }}
-                        className="text-3xl md:text-5xl lg:text-5xl font-extrabold mb-6 text-white tracking-tight"
+                        className="text-3xl md:text-5xl lg:text-5xl font-black mb-6 text-black tracking-tight"
                     >
                         Built for businesses that run on conversations
                     </motion.h2>
@@ -25,7 +25,7 @@ const UseCasesSection = () => {
                         whileInView={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.5, delay: 0.2 }}
                         viewport={{ once: true }}
-                        className="text-lg text-white/60 mb-2"
+                        className="text-lg font-medium text-black mb-2"
                     >
                         Perfect if you get enquiries daily and can’t afford to miss them.
                     </motion.p>
@@ -42,8 +42,8 @@ const UseCasesSection = () => {
                             <div 
                                 className="p-8 h-full transition-all group flex flex-col hover:border-[#26CECE]"
                                 style={{
-                                    background: '#111111',
-                                    border: '1px solid #1E1E1E',
+                                    background: '#ffffff',
+                                    border: '1px solid #e5e7eb',
                                     borderRadius: 2,
                                 }}
                             >
@@ -58,8 +58,8 @@ const UseCasesSection = () => {
                                 >
                                     <card.icon size={24} />
                                 </div>
-                                <h3 className="text-xl font-extrabold mb-3 text-white tracking-tight">{card.title}</h3>
-                                <p className="text-white/60 text-sm leading-relaxed" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+                                <h3 className="text-xl font-black mb-3 text-black tracking-tight">{card.title}</h3>
+                                <p className="font-medium text-black text-sm leading-relaxed" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
                                     {card.desc}
                                 </p>
                             </div>
@@ -78,10 +78,10 @@ const UseCasesSection = () => {
                     >
                         <Link
                             to="/apply"
-                            className="audit-cta group inline-flex items-center gap-3 font-bold text-base transition-all hover:scale-105 active:scale-95"
+                            className="audit-cta group inline-flex items-center gap-3 font-extrabold text-base transition-all hover:scale-105 active:scale-95"
                             style={{
                                 background: TEAL,
-                                color: '#070707',
+                                color: '#000',
                                 padding: '16px 32px',
                                 borderRadius: 2,
                                 border: 'none',
@@ -94,9 +94,9 @@ const UseCasesSection = () => {
                             <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
                         </Link>
 
-                        <div className="mt-6 flex items-center justify-center gap-4 text-white/40" style={{ fontFamily: "'DM Mono', monospace" }}>
+                        <div className="mt-6 flex items-center justify-center gap-4 text-gray-500" style={{ fontFamily: "'DM Mono', monospace" }}>
                             <span className="w-8 h-[1px] bg-current" />
-                            <span className="text-[10px] font-bold uppercase tracking-[0.2em]">Built For High Performance</span>
+                            <span className="text-[10px] font-extrabold uppercase tracking-[0.2em]">Built For High Performance</span>
                             <span className="w-8 h-[1px] bg-current" />
                         </div>
                     </motion.div>

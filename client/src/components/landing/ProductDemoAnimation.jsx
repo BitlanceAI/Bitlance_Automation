@@ -31,19 +31,19 @@ const ProductDemoAnimation = () => {
                         <User size={16} className="text-indigo-400" />
                         <div className="flex-1 space-y-1">
                             <div className="h-1 w-10 bg-indigo-500/20 rounded" />
-                            <p className="text-xs text-white/90 font-mono">John Smith</p>
+                            <p className="text-xs text-black/90 font-mono">John Smith</p>
                         </div>
                     </motion.div>
                     <motion.div 
                         initial={{ opacity: 0, x: -10 }}
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ delay: 0.5 }}
-                        className="flex items-center gap-3 p-3 border border-white/10 rounded-lg"
+                        className="flex items-center gap-3 p-3 border border-gray-200 rounded-lg"
                     >
-                        <Phone size={16} className="text-white/20" />
+                        <Phone size={16} className="text-black/20" />
                         <div className="flex-1 space-y-1">
                             <div className="h-1 w-14 bg-white/5 rounded" />
-                            <p className="text-xs text-white/50 font-mono">+1 (234) XXX-XXXX</p>
+                            <p className="text-xs text-black/50 font-mono">+1 (234) XXX-XXXX</p>
                         </div>
                     </motion.div>
                 </div>
@@ -102,7 +102,7 @@ const ProductDemoAnimation = () => {
         },
         {
             id: 'conv',
-            icon: <MessageSquare className="text-white/80" size={28} />,
+            icon: <MessageSquare className="text-black" size={28} />,
             title: "Live Conversation",
             subtitle: "Phase 03 / Qualify",
             duration: 5000,
@@ -114,7 +114,7 @@ const ProductDemoAnimation = () => {
                         transition={{ delay: 1 }}
                         className="border border-indigo-500/40 p-3 rounded-xl rounded-tl-none bg-indigo-500/5 max-w-[85%]"
                     >
-                        <p className="text-[10px] text-white/90 font-mono leading-tight">
+                        <p className="text-[10px] text-black/90 font-mono leading-tight">
                             <span className="text-indigo-400 mr-1">[BOT]</span>
                             "Confirmed interest. Schedule meeting?"
                         </p>
@@ -123,10 +123,10 @@ const ProductDemoAnimation = () => {
                         initial={{ opacity: 0, y: 5 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 2.5 }}
-                        className="border border-white/10 p-3 rounded-xl rounded-tr-none ml-auto max-w-[85%]"
+                        className="border border-gray-200 p-3 rounded-xl rounded-tr-none ml-auto max-w-[85%]"
                     >
-                        <p className="text-[10px] text-white/50 font-mono leading-tight">
-                            <span className="text-white/20 mr-1">[USER]</span>
+                        <p className="text-[10px] text-black/50 font-mono leading-tight">
+                            <span className="text-black/20 mr-1">[USER]</span>
                             "Yes, Tuesday works."
                         </p>
                     </motion.div>
@@ -159,7 +159,7 @@ const ProductDemoAnimation = () => {
                         </div>
                         <div className="text-center">
                             <p className="text-[10px] text-emerald-400 font-mono uppercase tracking-tighter mb-0.5">Confirmation OK</p>
-                            <p className="text-base text-white font-black">TUE @ 10:00 AM</p>
+                            <p className="text-base text-black font-black">TUE @ 10:00 AM</p>
                         </div>
                     </motion.div>
                     <div className="h-1 border border-white/5 rounded bg-white/5 mx-6" />
@@ -182,7 +182,7 @@ const ProductDemoAnimation = () => {
             <div className="absolute inset-x-0 top-0 bottom-4 overflow-hidden pointer-events-none">
                 {/* Grid Overlay - extremely subtle */}
                 <div className="absolute inset-0 opacity-20" style={{ 
-                    backgroundImage: 'radial-gradient(circle at 1px 1px, rgba(255,255,255,0.05) 1px, transparent 0)',
+                    backgroundImage: 'radial-gradient(circle at 1px 1px, rgba(0, 0, 0, 0.05) 1px, transparent 0)',
                     backgroundSize: '24px 24px'
                 }} />
             </div>
@@ -199,7 +199,7 @@ const ProductDemoAnimation = () => {
                         className="w-full"
                     >
                         {/* Status Bar */}
-                        <div className="flex justify-between items-center mb-6 px-4 font-mono text-[9px] text-white/10 uppercase tracking-widest">
+                        <div className="flex justify-between items-center mb-6 px-4 font-mono text-[9px] text-black/10 uppercase tracking-widest">
                             <div className="flex items-center gap-1.5">
                                 <div className="w-1.5 h-1.5 rounded-full bg-indigo-500/50" />
                                 <span>Core_Sys_v0.2</span>
@@ -213,14 +213,14 @@ const ProductDemoAnimation = () => {
                                 {steps[activeStep].icon}
                             </div>
                             
-                            <h3 className="text-white font-black text-xl uppercase tracking-tighter mb-0.5">
+                            <h3 className="text-black font-black text-xl uppercase tracking-tighter mb-0.5">
                                 {steps[activeStep].title}
                             </h3>
                             <p className="text-[9px] text-indigo-400 uppercase font-mono tracking-[0.2em] mb-6">
                                 {steps[activeStep].subtitle}
                             </p>
 
-                            <div className="w-full min-h-[180px] flex flex-col items-center justify-center p-5 border border-white/10 bg-white/[0.02] backdrop-blur-sm rounded-[1.5rem] relative overflow-hidden">
+                            <div className="w-full min-h-[180px] flex flex-col items-center justify-center p-5 border border-gray-200 bg-white/[0.02] backdrop-blur-sm rounded-[1.5rem] relative overflow-hidden">
                                 {steps[activeStep].content}
 
                                 {/* Integrated Progress Bar */}

@@ -56,7 +56,7 @@ const HeroSection = ({ onOpenBooking }) => {
     const Icon = slide.icon;
 
     return (
-        <header className="relative min-h-screen flex items-center pt-20 pb-8 lg:pt-24 lg:pb-12 overflow-hidden bg-[#070707]">
+        <header className="relative min-h-screen flex items-center pt-20 pb-8 lg:pt-24 lg:pb-12 overflow-hidden bg-white">
             {/* Multi-layer ambient glows */}
             <div className="absolute top-1/2 left-1/4 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[700px] rounded-full blur-[160px] pointer-events-none"
                 style={{ background: `${TEAL}0A` }} />
@@ -70,7 +70,7 @@ const HeroSection = ({ onOpenBooking }) => {
                 style={{ backgroundImage: 'linear-gradient(#26CECE 1px, transparent 1px), linear-gradient(90deg, #26CECE 1px, transparent 1px)', backgroundSize: '60px 60px' }} />
 
             {/* Bottom fade */}
-            <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-[#070707] to-transparent pointer-events-none" />
+            <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-white to-transparent pointer-events-none" />
 
             <div className="max-w-7xl mx-auto px-6 relative z-10 w-full grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
 
@@ -112,6 +112,7 @@ const HeroSection = ({ onOpenBooking }) => {
                                 style={{
                                     fontFamily: "'DM Mono', monospace",
                                     fontSize: 11,
+                                    fontWeight: 'bold',
                                     letterSpacing: '0.14em',
                                     color: TEAL,
                                     textTransform: 'uppercase',
@@ -122,13 +123,13 @@ const HeroSection = ({ onOpenBooking }) => {
                                 <Icon size={14} /> {slide.id.replace('-', ' ')}
                             </div>
 
-                            <h2 className="text-4xl sm:text-5xl lg:text-5xl font-extrabold tracking-tight mb-6 leading-[1.08] text-white"
+                            <h2 className="text-4xl sm:text-5xl lg:text-5xl font-black tracking-tight mb-6 leading-[1.08] text-black"
                                 style={{ fontFamily: "'Space Grotesk', sans-serif", letterSpacing: '-0.03em' }}>
                                 {slide.title1}<br />
                                 <span style={{ color: TEAL }}>{slide.title2}</span>
                             </h2>
 
-                            <p className="text-base md:text-lg text-white/60 mb-8 max-w-xl leading-relaxed">
+                            <p className="text-base md:text-lg font-medium text-black mb-8 max-w-xl leading-relaxed">
                                 {slide.description}
                             </p>
 
@@ -138,13 +139,14 @@ const HeroSection = ({ onOpenBooking }) => {
                                     <span key={f} style={{
                                         fontFamily: "'DM Mono', monospace",
                                         fontSize: 11,
+                                        fontWeight: 'bold',
                                         letterSpacing: '0.1em',
-                                        color: '#888',
-                                        border: '1px solid rgba(255,255,255,0.07)',
+                                        color: '#000',
+                                        border: '1px solid rgba(0,0,0,0.1)',
                                         borderRadius: 4,
                                         padding: '5px 12px',
                                         textTransform: 'uppercase',
-                                        background: 'rgba(255,255,255,0.04)',
+                                        background: 'rgba(0,0,0,0.04)',
                                         backdropFilter: 'blur(6px)',
                                     }}>
                                         {f}
@@ -159,10 +161,10 @@ const HeroSection = ({ onOpenBooking }) => {
                         onClick={onOpenBooking}
                         whileHover={{ backgroundColor: '#35DFDF', scale: 1.02 }}
                         whileTap={{ scale: 0.97 }}
-                        className="audit-cta group inline-flex items-center gap-3 font-bold text-base transition-all"
+                        className="audit-cta group inline-flex items-center gap-3 font-black text-base transition-all"
                         style={{
                             background: TEAL,
-                            color: '#070707',
+                            color: '#000',
                             padding: '16px 32px',
                             borderRadius: 4,
                             border: 'none',
@@ -191,13 +193,13 @@ const HeroSection = ({ onOpenBooking }) => {
                     {/* Glass frame */}
                     <div className="p-1.5 rounded-2xl"
                         style={{
-                            background: 'rgba(255,255,255,0.04)',
+                            background: 'rgba(0,0,0,0.02)',
                             border: '1px solid rgba(38,206,206,0.15)',
                             backdropFilter: 'blur(12px)',
-                            boxShadow: `0 32px 80px -20px ${TEAL}20, 0 0 0 1px rgba(255,255,255,0.04) inset`,
+                            boxShadow: `0 32px 80px -20px ${TEAL}20, 0 0 0 1px rgba(0,0,0,0.05) inset`,
                         }}>
                         <div className="aspect-video w-full rounded-xl overflow-hidden relative"
-                            style={{ background: '#111' }}>
+                            style={{ background: '#ffffff' }}>
                             <video
                                 ref={videoRef}
                                 src="/why_bitlance.mp4"

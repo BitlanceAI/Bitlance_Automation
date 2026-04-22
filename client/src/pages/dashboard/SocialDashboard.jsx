@@ -48,6 +48,7 @@ import PlanWeeklyAIView from '../../components/social/PlanWeeklyAIView';
 import SpecialDaysAIView from '../../components/social/SpecialDaysAIView';
 import TwitterThreadBuilderView from '../../components/social/TwitterThreadBuilderView';
 import UploadCSVView from '../../components/social/UploadCSVView';
+import InboxView from '../../components/social/InboxView';
 
 const XIcon = ({ className }) => (
     <svg viewBox="0 0 24 24" aria-hidden="true" className={className} fill="currentColor">
@@ -390,7 +391,7 @@ const SocialDashboard = () => {
         { icon: Calendar, label: 'Calendar', view: 'calendar', path: '#' },
         { icon: Library, label: 'Libraries', view: null, path: '#' },
         { icon: Users, label: 'Social profiles', view: 'profiles', path: '#' },
-        { icon: Inbox, label: 'Inbox', view: null, path: '#' },
+        { icon: Inbox, label: 'Inbox', view: 'inbox', path: '#' },
         { icon: BarChart2, label: 'Reports', view: null, path: '#' },
         { icon: MessageSquare, label: 'DM automations', view: null, path: '#' },
     ];
@@ -721,6 +722,8 @@ const SocialDashboard = () => {
                         <SpecialDaysAIView />
                     ) : activeView === 'twitter_thread' ? (
                         <TwitterThreadBuilderView />
+                    ) : activeView === 'inbox' ? (
+                        <InboxView />
                     ) : (
                         /* ── SHARE VIEW — dashboard ─────────────────────────── */
                         <div className="flex-1 p-8 bg-[#070707] overflow-y-auto w-full">

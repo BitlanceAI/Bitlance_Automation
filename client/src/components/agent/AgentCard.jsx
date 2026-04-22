@@ -25,8 +25,8 @@ const AgentCard = ({
         p-5 flex flex-col h-full
         border
         ${status === 'Coming Soon' 
-            ? 'bg-[#0a0a0a] border-[#161616] opacity-70 cursor-not-allowed' 
-            : 'bg-[#111111] border-[#1E1E1E] hover:border-[#333] hover:-translate-y-1 hover:shadow-[4px_4px_0_0_#26CECE] cursor-pointer'
+            ? 'bg-gray-100 border-gray-200 opacity-70 cursor-not-allowed' 
+            : 'bg-white border-gray-200 hover:border-gray-300 hover:-translate-y-1 hover:shadow-[4px_4px_0_0_#26CECE] cursor-pointer'
         }
       `}
         >
@@ -38,31 +38,31 @@ const AgentCard = ({
             {/* Icon */}
             <div className="mb-3">
                 <div className={`
-                  w-10 h-10 rounded-[2px] bg-[#070707] border border-[#333]
+                  w-10 h-10 rounded-[2px] bg-white border border-gray-200
                   flex items-center justify-center text-[#26CECE]
                   transition-colors duration-300
-                  ${status !== 'Coming Soon' ? 'group-hover:bg-[#26CECE] group-hover:text-[#070707]' : 'text-gray-500 border-[#222]'}
+                  ${status !== 'Coming Soon' ? 'group-hover:bg-[#26CECE] group-hover:text-black' : 'text-gray-600 border-gray-200'}
                 `}>
                     <Icon className="w-5 h-5" />
                 </div>
             </div>
 
             {/* Title */}
-            <h3 className={`text-[15px] font-bold mb-2 leading-tight font-['Space_Grotesk'] tracking-widest uppercase ${status === 'Coming Soon' ? 'text-gray-400' : 'text-white'}`}>
+            <h3 className={`text-[15px] font-bold mb-2 leading-tight font-['Space_Grotesk'] tracking-widest uppercase ${status === 'Coming Soon' ? 'text-gray-600' : 'text-black'}`}>
                 {title}
             </h3>
 
             {/* Description */}
-            <p className="text-gray-400 text-[11px] font-mono leading-relaxed mb-4 flex-grow tracking-wide">
+            <p className="text-gray-600 text-[11px] font-mono leading-relaxed mb-4 flex-grow tracking-wide">
                 {description}
             </p>
 
             {/* Features List */}
-            <div className={`space-y-2 pt-3 border-t ${status === 'Coming Soon' ? 'border-[#161616]' : 'border-[#1E1E1E]'}`}>
+            <div className={`space-y-2 pt-3 border-t ${status === 'Coming Soon' ? 'border-gray-200' : 'border-gray-200'}`}>
                 {features.map((feature, index) => (
                     <div
                         key={index}
-                        className={`flex items-start gap-2 text-[10px] font-mono tracking-widest uppercase ${status === 'Coming Soon' ? 'text-gray-600' : 'text-gray-500'}`}
+                        className={`flex items-start gap-2 text-[10px] font-mono tracking-widest uppercase ${status === 'Coming Soon' ? 'text-gray-600' : 'text-gray-600'}`}
                     >
                         <CheckCircle2 className={`w-3 h-3 flex-shrink-0 mt-[1px] ${status === 'Coming Soon' ? 'text-gray-600' : 'text-[#26CECE]'}`} />
                         <span className="leading-snug">{feature}</span>

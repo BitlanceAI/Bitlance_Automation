@@ -48,40 +48,40 @@ export const FullScreenSignup = ({
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center overflow-auto p-4 bg-[#070707]" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+        <div className="min-h-screen flex items-center justify-center overflow-auto p-4 bg-white" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
             <div className="w-full relative max-w-5xl overflow-hidden flex flex-col md:flex-row shadow-2xl my-8" style={{ borderRadius: 2, border: '1px solid #1E1E1E' }}>
 
                 {/* Left side — Branding */}
-                <div className="w-full md:w-1/2 relative overflow-hidden bg-[#0a0a0a] flex flex-col justify-end min-h-[400px] border-b md:border-b-0 md:border-r border-[#1E1E1E]">
+                <div className="w-full md:w-1/2 relative overflow-hidden bg-gray-50 flex flex-col justify-end min-h-[400px] border-b md:border-b-0 md:border-r border-gray-200">
                     <div className="absolute inset-0 overflow-hidden pointer-events-none">
                         <ElegantShape delay={0.3} width={600} height={140} rotate={12} gradient="from-[#26CECE]/[0.15]" className="left-[-15%] top-[15%]" />
                         <ElegantShape delay={0.5} width={500} height={120} rotate={-15} gradient="from-[#26CECE]/[0.10]" className="right-[-10%] top-[70%]" />
                         <ElegantShape delay={0.7} width={300} height={80} rotate={-8} gradient="from-indigo-500/[0.15]" className="left-[5%] bottom-[10%]" />
                     </div>
                     <div className="absolute inset-0 opacity-20" style={{ backgroundImage: `radial-gradient(${TEAL} 1px, transparent 1px)`, backgroundSize: '20px 20px' }} />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black via-black/80 to-transparent" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-white via-white/80 to-transparent" />
 
-                    <div className="relative z-10 p-8 md:p-12 text-white pb-16">
+                    <div className="relative z-10 p-8 md:p-12 text-black pb-16">
                         <div style={{ fontFamily: "'DM Mono', monospace", color: TEAL, fontSize: 11, letterSpacing: '0.14em', marginBottom: 16 }}>
                             AGENT DEPLOYMENT
                         </div>
-                        <h1 className="text-3xl md:text-5xl font-extrabold leading-[1.1] tracking-tight text-white mb-6">
+                        <h1 className="text-3xl md:text-5xl font-extrabold leading-[1.1] tracking-tight text-black mb-6">
                             Build AI Agents that Close Deals.
                         </h1>
-                        <p className="text-white/60 text-lg leading-relaxed">
+                        <p className="text-black/60 text-lg leading-relaxed">
                             Bitlance Platform gives you the tools to build, deploy, and scale intelligent automation.
                         </p>
                     </div>
                 </div>
 
                 {/* Right side — Form */}
-                <div className="p-8 md:p-12 md:w-1/2 flex flex-col bg-[#111111] z-20 text-white justify-center">
+                <div className="p-8 md:p-12 md:w-1/2 flex flex-col bg-white z-20 text-black justify-center">
                     <div className="flex flex-col items-start mb-8">
                         <div className="mb-6 flex items-center justify-center w-12 h-12" style={{ background: `${TEAL}15`, border: `1px solid ${TEAL}40`, borderRadius: 2, color: TEAL }}>
                             <BotIcon size={24} />
                         </div>
                         <h2 className="text-3xl font-bold tracking-tight mb-2">Create Account</h2>
-                        <p className="text-[#888]" style={{ fontFamily: "'DM Mono', monospace", fontSize: 13 }}>
+                        <p className="text-gray-600" style={{ fontFamily: "'DM Mono', monospace", fontSize: 13 }}>
                             Takes less than 60 seconds · No credit card required
                         </p>
                     </div>
@@ -104,7 +104,7 @@ export const FullScreenSignup = ({
 
                         {/* Email — first, lowest friction */}
                         <div>
-                            <label htmlFor="email" className="block text-xs uppercase tracking-widest font-bold mb-2 text-[#888]" style={{ fontFamily: "'DM Mono', monospace" }}>
+                            <label htmlFor="email" className="block text-xs uppercase tracking-widest font-bold mb-2 text-gray-600" style={{ fontFamily: "'DM Mono', monospace" }}>
                                 Email Address
                             </label>
                             <div className="relative">
@@ -115,14 +115,14 @@ export const FullScreenSignup = ({
                                     placeholder="hi@bitlance.in"
                                     autoComplete="email"
                                     className="w-full pl-11 py-3 px-3 focus:outline-none transition-all"
-                                    style={{ background: '#070707', border: `1px solid ${fieldBorder('email', emailInvalid)}`, borderRadius: 2, color: '#EFEFEF' }}
+                                    style={{ background: '#ffffff', border: `1px solid ${fieldBorder('email', emailInvalid)}`, borderRadius: 2, color: '#000000' }}
                                     value={formData.email}
                                     onChange={handleChange}
                                     onFocus={(e) => e.target.style.borderColor = emailInvalid ? '#ef4444' : TEAL}
                                     onBlur={(e) => { markTouched('email'); e.target.style.borderColor = fieldBorder('email', emailInvalid); }}
                                     required
                                 />
-                                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-[#555]" size={18} />
+                                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" size={18} />
                             </div>
                             {emailInvalid && (
                                 <p className="mt-1 text-xs text-red-400">Enter a valid email address</p>
@@ -131,7 +131,7 @@ export const FullScreenSignup = ({
 
                         {/* Full Name */}
                         <div>
-                            <label htmlFor="name" className="block text-xs uppercase tracking-widest font-bold mb-2 text-[#888]" style={{ fontFamily: "'DM Mono', monospace" }}>
+                            <label htmlFor="name" className="block text-xs uppercase tracking-widest font-bold mb-2 text-gray-600" style={{ fontFamily: "'DM Mono', monospace" }}>
                                 Full Name
                             </label>
                             <div className="relative">
@@ -142,20 +142,20 @@ export const FullScreenSignup = ({
                                     placeholder="John Doe"
                                     autoComplete="name"
                                     className="w-full pl-11 py-3 px-3 focus:outline-none transition-all"
-                                    style={{ background: '#070707', border: `1px solid ${fieldBorder('name')}`, borderRadius: 2, color: '#EFEFEF' }}
+                                    style={{ background: '#ffffff', border: `1px solid ${fieldBorder('name')}`, borderRadius: 2, color: '#000000' }}
                                     value={formData.name}
                                     onChange={handleChange}
                                     onFocus={(e) => e.target.style.borderColor = TEAL}
                                     onBlur={(e) => { markTouched('name'); e.target.style.borderColor = fieldBorder('name'); }}
                                     required
                                 />
-                                <User className="absolute left-4 top-1/2 -translate-y-1/2 text-[#555]" size={18} />
+                                <User className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" size={18} />
                             </div>
                         </div>
 
                         {/* Phone — with context explaining why it's needed */}
                         <div>
-                            <label htmlFor="phone" className="block text-xs uppercase tracking-widest font-bold mb-2 text-[#888]" style={{ fontFamily: "'DM Mono', monospace" }}>
+                            <label htmlFor="phone" className="block text-xs uppercase tracking-widest font-bold mb-2 text-gray-600" style={{ fontFamily: "'DM Mono', monospace" }}>
                                 Phone Number
                             </label>
                             <div className="relative">
@@ -166,13 +166,13 @@ export const FullScreenSignup = ({
                                     placeholder="+91 98765 43210"
                                     autoComplete="tel"
                                     className="w-full pl-11 py-3 px-3 focus:outline-none transition-all"
-                                    style={{ background: '#070707', border: `1px solid ${fieldBorder('phone')}`, borderRadius: 2, color: '#EFEFEF' }}
+                                    style={{ background: '#ffffff', border: `1px solid ${fieldBorder('phone')}`, borderRadius: 2, color: '#000000' }}
                                     value={formData.phone}
                                     onChange={handleChange}
                                     onFocus={(e) => e.target.style.borderColor = TEAL}
                                     onBlur={(e) => { markTouched('phone'); e.target.style.borderColor = fieldBorder('phone'); }}
                                 />
-                                <Phone className="absolute left-4 top-1/2 -translate-y-1/2 text-[#555]" size={18} />
+                                <Phone className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" size={18} />
                             </div>
                             <p className="mt-1 text-xs" style={{ color: '#555', fontFamily: "'DM Mono', monospace" }}>
                                 {'Optional - Used for onboarding assistance only'}
@@ -182,7 +182,7 @@ export const FullScreenSignup = ({
                         {/* Password — with strength meter and upfront hint */}
                         <div>
                             <div className="flex items-center justify-between mb-2">
-                                <label htmlFor="password" className="block text-xs uppercase tracking-widest font-bold text-[#888]" style={{ fontFamily: "'DM Mono', monospace" }}>
+                                <label htmlFor="password" className="block text-xs uppercase tracking-widest font-bold text-gray-600" style={{ fontFamily: "'DM Mono', monospace" }}>
                                     Password
                                 </label>
                                 <span className="text-xs" style={{ color: '#555', fontFamily: "'DM Mono', monospace" }}>Min. 6 characters</span>
@@ -195,18 +195,18 @@ export const FullScreenSignup = ({
                                     placeholder="••••••••"
                                     autoComplete="new-password"
                                     className="w-full pl-11 pr-11 py-3 px-3 focus:outline-none transition-all"
-                                    style={{ background: '#070707', border: `1px solid ${fieldBorder('password', passwordShort)}`, borderRadius: 2, color: '#EFEFEF' }}
+                                    style={{ background: '#ffffff', border: `1px solid ${fieldBorder('password', passwordShort)}`, borderRadius: 2, color: '#000000' }}
                                     value={formData.password}
                                     onChange={handleChange}
                                     onFocus={(e) => e.target.style.borderColor = passwordShort ? '#ef4444' : TEAL}
                                     onBlur={(e) => { markTouched('password'); e.target.style.borderColor = fieldBorder('password', passwordShort); }}
                                     required
                                 />
-                                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-[#555]" size={18} />
+                                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" size={18} />
                                 <button
                                     type="button"
                                     onClick={() => setShowPassword(!showPassword)}
-                                    className="absolute right-4 top-1/2 -translate-y-1/2 text-[#555] hover:text-[#888]"
+                                    className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-600"
                                     tabIndex={-1}
                                     aria-label={showPassword ? 'Hide password' : 'Show password'}
                                 >
@@ -247,11 +247,11 @@ export const FullScreenSignup = ({
                             {loading ? 'CREATING ACCOUNT...' : 'CREATE ACCOUNT & CLAIM 50 CREDITS'}
                         </button>
 
-                        <div className="text-center text-xs mt-2 text-[#888]" style={{ fontFamily: "'DM Mono', monospace" }}>
+                        <div className="text-center text-xs mt-2 text-gray-600" style={{ fontFamily: "'DM Mono', monospace" }}>
                             🔒 100% FREE · NO CREDIT CARD REQUIRED · YOUR DATA IS SAFE
                         </div>
 
-                        <div className="text-center text-[#888] text-sm mt-4">
+                        <div className="text-center text-gray-600 text-sm mt-4">
                             Already have an account?{" "}
                             <a href="/login" className="font-bold hover:underline" style={{ color: TEAL }}>
                                 Login

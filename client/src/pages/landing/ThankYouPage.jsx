@@ -49,7 +49,7 @@ const ThankYouPage = () => {
     };
 
     return (
-        <div className="min-h-screen bg-neutral-950 flex flex-col items-center justify-center text-white px-4">
+        <div className="min-h-screen bg-neutral-950 flex flex-col items-center justify-center text-black px-4">
             <div className="max-w-md w-full bg-neutral-900 border border-neutral-800 rounded-2xl p-8 text-center shadow-2xl">
 
                 {/* Success Icon */}
@@ -57,7 +57,7 @@ const ThankYouPage = () => {
                     <CheckCircle className="w-8 h-8 text-green-400" />
                 </div>
 
-                <h1 className="text-3xl font-bold mb-3 tracking-tight">You're All Set! 🎉</h1>
+                <h1 className="text-3xl font-extrabold mb-3 tracking-tight">You're All Set! 🎉</h1>
                 <p className="text-neutral-400 mb-8 leading-relaxed">
                     The ultimate automation guide has been sent to your email. Check your inbox (and spam folder) in a few minutes.
                 </p>
@@ -70,7 +70,7 @@ const ThankYouPage = () => {
                     </p>
                     <button
                         onClick={handleBookDemo}
-                        className="w-full flex items-center justify-center space-x-2 bg-blue-600 hover:bg-blue-500 text-white py-3 px-4 rounded-lg font-semibold transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]"
+                        className="w-full flex items-center justify-center space-x-2 bg-blue-600 hover:bg-blue-500 text-black py-3 px-4 rounded-lg font-semibold transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]"
                     >
                         <Calendar className="w-5 h-5" />
                         <span>Book Your Free Demo</span>
@@ -89,7 +89,7 @@ const ThankYouPage = () => {
                     {!paused && (
                         <p className="text-xs text-neutral-700">
                             Redirecting to homepage in{' '}
-                            <span className={`font-bold tabular-nums ${countdown <= 3 ? 'text-amber-500' : 'text-neutral-500'}`}>
+                            <span className={`font-extrabold tabular-nums ${countdown <= 3 ? 'text-amber-500' : 'text-neutral-500'}`}>
                                 {countdown}s
                             </span>
                         </p>

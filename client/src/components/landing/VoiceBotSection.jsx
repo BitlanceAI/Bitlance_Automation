@@ -10,7 +10,7 @@ const TEAL = '#26CECE';
 const VoiceBotSection = ({ onOpenBooking }) => {
     const navigate = useNavigate();
     return (
-        <section className="py-12 relative overflow-hidden bg-[#070707]">
+        <section className="py-12 relative overflow-hidden bg-transparent">
             {/* Background glowing effects */}
             <div 
                 className="absolute top-1/2 left-1/4 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full blur-[140px] pointer-events-none transition-opacity duration-1000"
@@ -38,7 +38,7 @@ const VoiceBotSection = ({ onOpenBooking }) => {
                             whileInView={{ opacity: 1, y: 0 }}
                             transition={{ duration: 0.5 }}
                             viewport={{ once: true }}
-                            className="text-4xl sm:text-5xl lg:text-5xl font-extrabold tracking-tight mb-6 leading-[1.08] text-white"
+                            className="text-4xl sm:text-5xl lg:text-5xl font-black tracking-tight mb-6 leading-[1.08] text-black"
                             style={{ fontFamily: "'Space Grotesk', sans-serif", letterSpacing: '-0.03em' }}
                         >
                             Empower Your Business with<br />
@@ -52,7 +52,7 @@ const VoiceBotSection = ({ onOpenBooking }) => {
                             whileInView={{ opacity: 1, y: 0 }}
                             transition={{ duration: 0.5, delay: 0.1 }}
                             viewport={{ once: true }}
-                            className="text-base md:text-lg text-white/60 mb-8 max-w-xl leading-relaxed"
+                            className="text-base md:text-lg font-medium text-black mb-8 max-w-xl leading-relaxed"
                         >
                             Scale your business with AI agents that handle leads and
                             bookings 24/7 with human-level accuracy.
@@ -66,10 +66,10 @@ const VoiceBotSection = ({ onOpenBooking }) => {
                             onClick={() => navigate('/features/voice-bot')}
                             whileHover={{ backgroundColor: '#35DFDF' }}
                             whileTap={{ scale: 0.97 }}
-                            className="group inline-flex items-center gap-3 font-bold text-base transition-all mb-12"
+                            className="group inline-flex items-center gap-3 font-extrabold text-base transition-all mb-12"
                             style={{
                                 background: TEAL,
-                                color: '#070707',
+                                color: '#000',
                                 padding: '16px 32px',
                                 borderRadius: 2,
                                 border: 'none',
@@ -96,8 +96,8 @@ const VoiceBotSection = ({ onOpenBooking }) => {
                                     transition={{ delay: idx * 0.1 }}
                                     className="p-4 flex items-start gap-4 transition-all group relative overflow-hidden"
                                     style={{
-                                        background: '#111',
-                                        border: '1px solid #1E1E1E',
+                                        background: '#ffffff',
+                                        border: '1px solid #e5e7eb',
                                         borderRadius: 2,
                                     }}
                                 >
@@ -105,8 +105,8 @@ const VoiceBotSection = ({ onOpenBooking }) => {
                                         <feature.icon size={16} style={{ color: TEAL }} />
                                     </div>
                                     <div>
-                                        <h4 className="text-sm font-bold text-white mb-1" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>{feature.title}</h4>
-                                        <p className="text-white/50 text-xs leading-tight" style={{ fontFamily: "'DM Mono', monospace" }}>{feature.desc}</p>
+                                        <h4 className="text-sm font-extrabold text-black mb-1" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>{feature.title}</h4>
+                                        <p className="text-black/50 text-xs leading-tight" style={{ fontFamily: "'DM Mono', monospace" }}>{feature.desc}</p>
                                     </div>
                                 </motion.div>
                             ))}
@@ -127,7 +127,7 @@ const VoiceBotSection = ({ onOpenBooking }) => {
                             className="relative z-10 w-full max-w-2xl"
                         >
                             <div className="aspect-video w-full overflow-hidden border relative shadow-2xl"
-                                style={{ background: '#111', borderColor: '#1E1E1E', borderRadius: 2, boxShadow: `0 32px 80px -20px ${TEAL}18` }}>
+                                style={{ background: '#ffffff', borderColor: '#1E1E1E', borderRadius: 2, boxShadow: `0 32px 80px -20px ${TEAL}18` }}>
                                 {/* Camera dot */}
                                 <div className="absolute top-2 left-1/2 -translate-x-1/2 w-1.5 h-1.5 bg-[#2A2A2A] rounded border border-[#333] z-20 flex items-center justify-center">
                                     <div className="w-0.5 h-0.5 bg-white rounded-full bg-opacity-50" />
@@ -168,12 +168,12 @@ const VoiceBotSection = ({ onOpenBooking }) => {
                                     </div>
                                     <div className="flex gap-8">
                                         <div>
-                                            <p style={{ fontFamily: "'DM Mono', monospace", fontSize: 9, color: '#666', textTransform: 'uppercase', marginBottom: 4 }}>Response Time</p>
-                                            <p className="text-xl font-bold text-white" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>0.4s</p>
+                                            <p style={{ fontFamily: "'DM Mono', monospace", fontSize: 9, color: '#000', textTransform: 'uppercase', marginBottom: 4 }}>Response Time</p>
+                                            <p className="text-xl font-extrabold text-black" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>0.4s</p>
                                         </div>
                                         <div>
-                                            <p style={{ fontFamily: "'DM Mono', monospace", fontSize: 9, color: '#666', textTransform: 'uppercase', marginBottom: 4 }}>Accuracy</p>
-                                            <p className="text-xl font-bold" style={{ color: TEAL, fontFamily: "'Space Grotesk', sans-serif" }}>99.8%</p>
+                                            <p style={{ fontFamily: "'DM Mono', monospace", fontSize: 9, color: '#000', textTransform: 'uppercase', marginBottom: 4 }}>Accuracy</p>
+                                            <p className="text-xl font-extrabold" style={{ color: TEAL, fontFamily: "'Space Grotesk', sans-serif" }}>99.8%</p>
                                         </div>
                                     </div>
                                 </div>
