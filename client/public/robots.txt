@@ -1,38 +1,5 @@
-# Allow all standard crawlers
 User-agent: *
 Allow: /
 
-# OpenAI — ChatGPT Search (citation only, allow)
-User-agent: GPTBot
-Allow: /
-
-User-agent: ChatGPT-User
-Allow: /
-
-# Perplexity AI
-User-agent: PerplexityBot
-Allow: /
-
-# Anthropic — Claude
-User-agent: ClaudeBot
-Allow: /
-
-User-agent: anthropic-ai
-Allow: /
-
-# Google — Gemini & AI Overviews
-User-agent: Google-Extended
-Allow: /
-
-# Microsoft — Copilot (via Bing)
-User-agent: Bingbot
-Allow: /
-
-# Block Common Crawl (bulk training only, not citation)
-User-agent: CCBot
-Disallow: /
-
 Sitemap: https://www.bitlancetechhub.com/sitemap.xml
-
-# Dynamic sitemap (includes all blog articles)
-Sitemap: https://api.bitlancetechhub.com/sitemap.xml
+Sitemap: https://www.bitlancetechhub.com/blog-sitemap.xml
