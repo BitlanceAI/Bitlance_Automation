@@ -192,7 +192,7 @@ const ContactPage = () => {
                         Bitlance<span className="text-[#26cece]">AI</span>
                     </div>
                     <button
-                        onClick={() => { trackDemoClick('contact_nav'); navigate('/apply/real-estate'); }}
+                        onClick={() => { trackDemoClick('contact_nav'); window.open('https://wa.me/917391025059?text=Hi%2C%20I%20would%20like%20to%20book%20a%20demo%20of%20Bitlance%20AI.', '_blank'); }}
                         className="px-6 py-2 bg-[#26cece] text-[#070707] font-bold font-mono tracking-widest uppercase rounded-[2px]
                                    hover:bg-white transition-colors text-[10px]"
                     >
@@ -428,7 +428,7 @@ const ContactPage = () => {
                                         { label: 'LinkedIn', href: 'https://linkedin.com', icon: Globe },
                                         { label: 'Twitter / X', href: 'https://twitter.com', icon: Globe },
                                         { label: 'WhatsApp', href: 'https://wa.me/917391025059', icon: MessageSquare },
-                                        { label: 'Book a Demo', href: '/apply/real-estate', icon: Zap },
+                                        { label: 'Book a Demo', href: 'https://wa.me/917391025059?text=Hi%2C%20I%20would%20like%20to%20book%20a%20demo%20of%20Bitlance%20AI.', icon: Zap },
                                     ].map(({ label, href, icon: Icon }) => (
                                         <a
                                             key={label}
@@ -475,7 +475,7 @@ const ContactPage = () => {
                         Book a free, no-obligation live demo and watch our agents handle real-world scenarios for your industry.
                     </p>
                     <button
-                        onClick={() => { trackDemoClick('contact_cta'); navigate('/apply/real-estate'); }}
+                        onClick={() => { trackDemoClick('contact_cta'); window.open('https://wa.me/917391025059?text=Hi%2C%20I%20would%20like%20to%20book%20a%20demo%20of%20Bitlance%20AI.', '_blank'); }}
                         className="inline-flex items-center gap-2 bg-[#26cece] text-[#070707] px-10 py-5
                                    rounded-[2px] font-bold font-['Space_Grotesk'] tracking-widest uppercase hover:-translate-y-1 hover:shadow-[4px_4px_0_0_#333] hover:bg-white transition-all duration-200"
                     >

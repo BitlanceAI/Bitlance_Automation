@@ -494,7 +494,7 @@ const PublicArticlePage = () => {
                     ) : latestBlogs.length > 0 ? (
                         <div className="flex flex-col gap-8">
                             {latestBlogs.map((blog) => (
-                                <Link to={`/blogs/${blog.id}`} key={blog.id} className="group block focus:outline-none">
+                                <Link to={`/blogs/${blog.slug || blog.id}`} key={blog.id} className="group block focus:outline-none">
                                     <div className="flex flex-col gap-4 p-4 transition-all hover:bg-gray-50 hover:border-[#26CECE]" style={{ border: '1px solid transparent' }}>
                                         <div className="overflow-hidden aspect-[16/9] border border-gray-200 p-1 bg-gray-50">
                                             <img
