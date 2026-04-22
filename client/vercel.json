@@ -2,11 +2,11 @@
     "rewrites": [
         {
             "source": "/sitemap.xml",
-            "destination": "https://automation-dashboard-s3m6.onrender.com/sitemap.xml"
+            "destination": "https://h4zg81qif5p3tupc8yw676ia.187.127.133.164.sslip.io/sitemap.xml"
         },
         {
             "source": "/blog-sitemap.xml",
-            "destination": "https://automation-dashboard-s3m6.onrender.com/blog-sitemap.xml"
+            "destination": "https://h4zg81qif5p3tupc8yw676ia.187.127.133.164.sslip.io/blog-sitemap.xml"
         },
         {
             "source": "/(.*)",
