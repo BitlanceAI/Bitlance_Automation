@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { lazy, Suspense, useEffect } from 'react';
 import { Routes, Route, useNavigate, useLocation, Navigate } from 'react-router-dom';
 import ReactGA from 'react-ga4';
 import { trackAgentOpen } from './lib/analytics';
@@ -6,60 +6,71 @@ import { ThemeProvider } from './context/ThemeContext';
 import Navbar from './components/layout/Navbar';
 import SplashScreen from './components/layout/SplashScreen';
 import Footer from './components/landing/Footer';
-import ShapeHeroDemo from './pages/demos/ShapeHeroDemo';
-import LandingPage from './pages/landing/LandingPage';
-import SeoLandingPage from './pages/landing/SeoLandingPage';
-import QuizLandingPage from './pages/landing/QuizLandingPage';
-import ThankYouPage from './pages/landing/ThankYouPage';
-
-import LoginPage from './pages/auth/LoginPage';
-import SignupPage from './pages/auth/SignupPage';
-
-import AdminDashboard from './pages/admin/AdminDashboard';
-import ClientHistoryPage from './pages/admin/ClientHistoryPage';
-import CampaignManagerPage from './pages/admin/CampaignManagerPage';
-import CampaignWizard from './components/campaigns/CampaignWizard';
-
-import HomePage from './pages/dashboard/HomePage';
-import SalesDashboard from './pages/dashboard/SalesDashboard';
-import SocialDashboard from './pages/dashboard/SocialDashboard';
-import AgentsPage from './pages/dashboard/AgentsPage';
-import BroadcastPage from './pages/dashboard/BroadcastPage';
-import SeoAgentPage from './pages/dashboard/SeoAgentPage';
-import GraphicDesignerPage from './pages/dashboard/GraphicDesignerPage';
-import MetaAdsPage from './pages/dashboard/MetaAdsPage';
-import EmailAutomationPage from './pages/dashboard/EmailAutomationPage';
-
-import BlogPage from './pages/blog/BlogPage';
-import BlogManagerPage from './pages/blog/BlogManagerPage';
-import BlogEditorPage from './pages/blog/BlogEditorPage';
-import BlogAgentFeaturesPage from './pages/blog/BlogAgentFeaturesPage';
-import PublicBlogListPage from './pages/blog/PublicBlogListPage';
-import PublicArticlePage from './pages/blog/PublicArticlePage';
-
-import SettingsPage from './pages/settings/SettingsPage';
-
-import ContactPage from './pages/public/ContactPage';
-import PrivacyPolicy from './pages/public/PrivacyPolicy';
-import TermsPage from './pages/public/TermsPage';
-import TextGeneratorPage from './pages/public/TextGeneratorPage';
-import EmailGeneratorPage from './pages/public/EmailGeneratorPage';
-
-import PushNotificationPage from './pages/push/PushNotificationPage';
-import DeviceTokensPage from './pages/push/DeviceTokensPage';
-
-import ESignPage from './pages/esign/ESignDemoPage';
-import ESignCompletePage from './pages/esign/ESignCompletePage';
-import DigiLockerCompletePage from './pages/esign/DigiLockerCompletePage';
-import PaymentCompletePage from './pages/esign/PaymentCompletePage';
-
-import VoiceBotFeaturesPage from './pages/features/VoiceBotFeaturesPage';
-import TestimonialDemo from './pages/demos/TestimonialDemo';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { WorkspaceProvider } from './context/WorkspaceContext';
 import AuthGuard from './components/auth/AuthGuard';
-import AdminGuard from './components/admin/AdminGuard';
 import { Toaster } from 'react-hot-toast';
+
+// ─── Lazy-loaded pages (route-level code splitting) ───────────────────────────
+// Public / Landing
+const LandingPage         = lazy(() => import('./pages/landing/LandingPage'));
+const SeoLandingPage      = lazy(() => import('./pages/landing/SeoLandingPage'));
+const QuizLandingPage     = lazy(() => import('./pages/landing/QuizLandingPage'));
+const ThankYouPage        = lazy(() => import('./pages/landing/ThankYouPage'));
+
+// Auth
+const LoginPage           = lazy(() => import('./pages/auth/LoginPage'));
+const SignupPage          = lazy(() => import('./pages/auth/SignupPage'));
+
+// Dashboard (heavy: recharts, fullcalendar, spline, retell, etc.)
+const HomePage            = lazy(() => import('./pages/dashboard/HomePage'));
+const SalesDashboard      = lazy(() => import('./pages/dashboard/SalesDashboard'));
+const SocialDashboard     = lazy(() => import('./pages/dashboard/SocialDashboard'));
+const AgentsPage          = lazy(() => import('./pages/dashboard/AgentsPage'));
+const BroadcastPage       = lazy(() => import('./pages/dashboard/BroadcastPage'));
+const SeoAgentPage        = lazy(() => import('./pages/dashboard/SeoAgentPage'));
+const GraphicDesignerPage = lazy(() => import('./pages/dashboard/GraphicDesignerPage'));
+const MetaAdsPage         = lazy(() => import('./pages/dashboard/MetaAdsPage'));
+const EmailAutomationPage = lazy(() => import('./pages/dashboard/EmailAutomationPage'));
+
+// Admin (heavy: jspdf, xlsx)
+const AdminDashboard      = lazy(() => import('./pages/admin/AdminDashboard'));
+const ClientHistoryPage   = lazy(() => import('./pages/admin/ClientHistoryPage'));
+const CampaignManagerPage = lazy(() => import('./pages/admin/CampaignManagerPage'));
+const CampaignWizard      = lazy(() => import('./components/campaigns/CampaignWizard'));
+
+// Blog
+const BlogPage            = lazy(() => import('./pages/blog/BlogPage'));
+const BlogManagerPage     = lazy(() => import('./pages/blog/BlogManagerPage'));
+const BlogEditorPage      = lazy(() => import('./pages/blog/BlogEditorPage'));
+const BlogAgentFeaturesPage = lazy(() => import('./pages/blog/BlogAgentFeaturesPage'));
+const PublicBlogListPage  = lazy(() => import('./pages/blog/PublicBlogListPage'));
+const PublicArticlePage   = lazy(() => import('./pages/blog/PublicArticlePage'));
+
+// Settings
+const SettingsPage        = lazy(() => import('./pages/settings/SettingsPage'));
+
+// Public pages
+const ContactPage         = lazy(() => import('./pages/public/ContactPage'));
+const PrivacyPolicy       = lazy(() => import('./pages/public/PrivacyPolicy'));
+const TermsPage           = lazy(() => import('./pages/public/TermsPage'));
+const TextGeneratorPage   = lazy(() => import('./pages/public/TextGeneratorPage'));
+const EmailGeneratorPage  = lazy(() => import('./pages/public/EmailGeneratorPage'));
+
+// Push notifications
+const PushNotificationPage = lazy(() => import('./pages/push/PushNotificationPage'));
+const DeviceTokensPage    = lazy(() => import('./pages/push/DeviceTokensPage'));
+
+// eSign
+const ESignPage              = lazy(() => import('./pages/esign/ESignDemoPage'));
+const ESignCompletePage      = lazy(() => import('./pages/esign/ESignCompletePage'));
+const DigiLockerCompletePage = lazy(() => import('./pages/esign/DigiLockerCompletePage'));
+const PaymentCompletePage    = lazy(() => import('./pages/esign/PaymentCompletePage'));
+
+// Features & Demos
+const VoiceBotFeaturesPage  = lazy(() => import('./pages/features/VoiceBotFeaturesPage'));
+const TestimonialDemo        = lazy(() => import('./pages/demos/TestimonialDemo'));
+const ShapeHeroDemo          = lazy(() => import('./pages/demos/ShapeHeroDemo'));
 
 
 import './index.css';
@@ -159,6 +170,7 @@ function App() {
           </div> 
           */}
             {!isDashboard && <Navbar />}
+            <Suspense fallback={null}>
             <Routes>
               {/* Public Routes */}
               <Route path="/" element={<RootRedirect />} />
@@ -314,6 +326,7 @@ function App() {
                 </AuthGuard>
               } />
             </Routes>
+            </Suspense>
             {!isDashboard && location.pathname !== '/' && <Footer />}
 
           </div>

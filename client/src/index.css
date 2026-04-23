@@ -156,6 +156,8 @@ body {
 
 .card-hover {
   transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+  /* Promote to compositor layer before hover to prevent layout jank */
+  will-change: transform;
 }
 .card-hover:hover {
   transform: translateY(-4px);
@@ -174,9 +176,27 @@ body {
   width: 60%; height: 100%;
   background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
   animation: shimmer 2.5s ease-in-out infinite;
+  will-change: transform;
 }
 
 @keyframes shimmer {
   0%   { left: -100%; }
   100% { left: 150%; }
+}
+
+/* ── Performance utilities ────────────────────────────────────────────────── */
+/* Apply to framer-motion or CSS-animated elements to force GPU compositing */
+.perf-animated {
+  will-change: transform, opacity;
+}
+
+/* Lazy-render off-screen decorative elements */
+.orb {
+  content-visibility: auto;
+}
+
+/* Prevent layout thrash from width-animating progress bars — use scaleX instead */
+.progress-composited {
+  transform-origin: left;
+  will-change: transform;
 }

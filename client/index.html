@@ -4,9 +4,17 @@
 <head>
   <meta charset="UTF-8" />
   <link rel="icon" type="image/png" href="/favicon.png" />
+  <!-- Preconnect to critical third-party origins -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=DM+Mono:wght@400;500&family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <!-- DNS prefetch for non-critical third-party origins (analytics, ads) -->
+  <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
+  <link rel="dns-prefetch" href="https://connect.facebook.net" />
+  <link rel="dns-prefetch" href="https://cdn.onesignal.com" />
+  <!-- Load only Inter (primary UI font) eagerly; specialty fonts load async -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <!-- Specialty monospace fonts loaded non-blocking -->
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" media="print" onload="this.media='all'" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Bitlance Automation | AI Voice Bots & Business Automation</title>
   <meta name="description"
@@ -116,20 +124,13 @@
 </head>
 
 <body>
-  <!-- Facebook SDK -->
-  <!-- Facebook Login Button -->
+  <!-- Facebook SDK — deferred until after page load to avoid TBT impact -->
   <script>
     function statusChangeCallback(response) {
-      console.log('statusChangeCallback');
-      console.log(response);
       if (response.status === 'connected') {
-        console.log('Welcome!  Fetching your information.... ');
         FB.api('/me', function (response) {
-          console.log('Successful login for: ' + response.name);
-          // document.getElementById('status').innerHTML = 'Thanks for logging in, ' + response.name + '!';
+          // User logged in via FB
         });
-      } else {
-        // document.getElementById('status').innerHTML = 'Please log in to this app.';
       }
     }
 
@@ -146,18 +147,20 @@
         xfbml: true,
         version: 'v20.0'
       });
-
       FB.AppEvents.logPageView();
-
     };
 
-    (function (d, s, id) {
-      var js, fjs = d.getElementsByTagName(s)[0];
-      if (d.getElementById(id)) { return; }
-      js = d.createElement(s); js.id = id;
-      js.src = "https://connect.facebook.net/en_US/sdk.js";
-      fjs.parentNode.insertBefore(js, fjs);
-    }(document, 'script', 'facebook-jssdk'));
+    // Defer FB SDK injection until after page is fully interactive
+    // This removes it from the critical path and eliminates its TBT contribution
+    window.addEventListener('load', function () {
+      (function (d, s, id) {
+        var js, fjs = d.getElementsByTagName(s)[0];
+        if (d.getElementById(id)) { return; }
+        js = d.createElement(s); js.id = id;
+        js.src = 'https://connect.facebook.net/en_US/sdk.js';
+        fjs.parentNode.insertBefore(js, fjs);
+      }(document, 'script', 'facebook-jssdk'));
+    });
   </script>
   <!-- Meta Pixel noscript fallback -->
   <noscript><img height="1" width="1" style="display:none"
@@ -198,6 +201,7 @@
     .ns-ring {
       position:absolute;border-radius:50%;border-style:solid;
       border-color:rgba(38,206,206,.08);pointer-events:none;
+      will-change:transform,opacity;
     }
     .ns-r1{width:480px;height:480px;border-width:1px;animation:ns-ring 4s ease-in-out infinite}
     .ns-r2{width:680px;height:680px;border-width:1px;border-color:rgba(38,206,206,.05);animation:ns-ring 4s ease-in-out infinite .8s}
@@ -205,8 +209,8 @@
     @keyframes ns-ring { 0%,100%{transform:scale(1);opacity:1} 50%{transform:scale(1.03);opacity:.5} }
 
     /* orbs */
-    .ns-orb1{position:absolute;top:-180px;left:-180px;width:500px;height:500px;border-radius:50%;background:radial-gradient(circle,rgba(38,206,206,.12) 0%,transparent 70%);animation:ns-orb 8s ease-in-out infinite}
-    .ns-orb2{position:absolute;bottom:-180px;right:-180px;width:500px;height:500px;border-radius:50%;background:radial-gradient(circle,rgba(38,206,206,.10) 0%,transparent 70%);animation:ns-orb 8s ease-in-out infinite 4s}
+    .ns-orb1{position:absolute;top:-180px;left:-180px;width:500px;height:500px;border-radius:50%;background:radial-gradient(circle,rgba(38,206,206,.12) 0%,transparent 70%);animation:ns-orb 8s ease-in-out infinite;will-change:transform;}
+    .ns-orb2{position:absolute;bottom:-180px;right:-180px;width:500px;height:500px;border-radius:50%;background:radial-gradient(circle,rgba(38,206,206,.10) 0%,transparent 70%);animation:ns-orb 8s ease-in-out infinite 4s;will-change:transform;}
     @keyframes ns-orb { 0%,100%{transform:translate(0,0) scale(1)} 50%{transform:translate(20px,-20px) scale(1.05)} }
 
     /* content */
@@ -221,7 +225,7 @@
     }
     .ns-ornament-b { animation:ns-su .6s ease-out 1.8s both; display:flex;align-items:center;gap:12px; }
     .ns-line { display:block;width:48px;height:1px;background:linear-gradient(90deg,transparent,rgba(38,206,206,.5),transparent); }
-    .ns-diamond { font-size:12px;color:#26CECE;animation:ns-spin 6s linear infinite;display:inline-block; }
+    .ns-diamond { font-size:12px;color:#26CECE;animation:ns-spin 6s linear infinite;display:inline-block;will-change:transform; }
     @keyframes ns-spin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
 
     .ns-welcome {
@@ -243,6 +247,7 @@
     .ns-letter {
       display:inline-block;opacity:0;transform:translateY(30px);
       animation:ns-lr .5s cubic-bezier(.22,1,.36,1) forwards;
+      will-change:transform,opacity;
     }
     @keyframes ns-lr { from{opacity:0;transform:translateY(30px);filter:blur(8px)} to{opacity:1;transform:translateY(0);filter:blur(0)} }
 
@@ -262,12 +267,14 @@
       animation:ns-su .6s ease-out 2.0s both;
     }
     .ns-progress {
-      height:100%;width:0%;
+      height:100%;
+      width:100%;transform-origin:left;
       background:linear-gradient(90deg,transparent,#26CECE,#35DFDF);
       border-radius:99px;box-shadow:0 0 8px rgba(38,206,206,.8);
+      will-change:transform;
       animation:ns-fill 3.5s cubic-bezier(.4,0,.2,1) .4s forwards;
     }
-    @keyframes ns-fill { 0%{width:0%} 60%{width:75%} 85%{width:88%} 100%{width:100%} }
+    @keyframes ns-fill { 0%{transform:scaleX(0)} 60%{transform:scaleX(.75)} 85%{transform:scaleX(.88)} 100%{transform:scaleX(1)} }
     @keyframes ns-sd { from{opacity:0;transform:translateY(-12px)} to{opacity:1;transform:translateY(0)} }
     @keyframes ns-su { from{opacity:0;transform:translateY(12px)}  to{opacity:1;transform:translateY(0)} }
   </style>
