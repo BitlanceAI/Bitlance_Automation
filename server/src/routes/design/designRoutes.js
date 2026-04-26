@@ -10,6 +10,9 @@ router.use(authenticateUser);
 // POST /api/design/generate-flyer
 router.post('/generate-flyer', designController.generateFlyer);
 
+// POST /api/design/generate-from-prompt
+router.post('/generate-from-prompt', designController.generateFromPrompt);
+
 // GET /api/design/jobs
 router.get('/jobs', designController.getJobs);
 

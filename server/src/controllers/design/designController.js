@@ -24,9 +24,9 @@ const ADMIN_ID = '0d396440-7d07-407c-89da-9cb93e353347';
  */
 export const generateFlyer = async (req, res) => {
     try {
-        const {
+        let {
             property_type,
-            bhk = '2 & 3 BHK',
+            bhk,
             location,
             price,
             builder,
@@ -34,17 +34,35 @@ export const generateFlyer = async (req, res) => {
             email,
             address,
             amenities = [],
-            template_id = 'classic' // Default to classic
+            extra_details,
+            niche,
+            image_size,
+            image_quality,
+            template_id = 'random', // Default to random for variety
+            num_variants = 1,
+            theme_color
         } = req.body;
+
+        num_variants = parseInt(num_variants, 10);
+        if (isNaN(num_variants) || num_variants < 1) num_variants = 1;
+        if (num_variants > 4) num_variants = 4; // limit to max 4 to avoid huge costs
+
+        // Apply defaults for fields that might be empty or null
+        bhk = bhk || '2 & 3 BHK';
+        price = price || 'Contact for Price';
+        builder = builder || 'Unknown Builder';
+        phone = phone || 'N/A';
+        email = email || 'N/A';
+        address = address || 'N/A';
 
         const userId = req.user.id; // From Auth Middleware
         const token = req.token;
 
         // Validation
-        if (!property_type || !location || !price || !builder || !phone || !email || !address) {
+        if (!property_type || !location) {
             return res.status(400).json({
                 success: false,
-                error: 'All fields are required'
+                error: 'Property type and location are required'
             });
         }
 
@@ -66,7 +84,7 @@ export const generateFlyer = async (req, res) => {
             const creditCheck = await CreditLedgerService.validateCreditsAvailable(
                 userId,
                 'design',
-                1 // 1 image
+                num_variants // 1 image per variant
             );
 
             if (!creditCheck.hasEnough) {
@@ -95,7 +113,8 @@ export const generateFlyer = async (req, res) => {
                 email,
                 address,
                 status: 'pending',
-                credits_used: COST_PER_FLYER
+                credits_used: COST_PER_FLYER * num_variants,
+                metadata: { image_size, image_quality, niche, template_id, num_variants, theme_color }
             })
             .select()
             .single();
@@ -118,7 +137,7 @@ export const generateFlyer = async (req, res) => {
                     agentType: 'design',
                     referenceId: designJob.id,
                     referenceTable: 'design_jobs',
-                    usageQuantity: 1, // 1 image
+                    usageQuantity: num_variants, // number of variants
                     metadata: {
                         property_type,
                         location,
@@ -161,7 +180,7 @@ export const generateFlyer = async (req, res) => {
                 throw new Error("GRAPHIC_GENERATOR_URL env var not set");
             }
 
-            console.log(`📡 Calling Graphic Service: ${GRAPHIC_API}/api/generate`);
+            console.log(`📡 Calling Graphic Service: ${GRAPHIC_API}/api/generate_from_details`);
 
             // Define input data for External API
             const inputData = {
@@ -169,15 +188,17 @@ export const generateFlyer = async (req, res) => {
                 bhk,
                 location,
                 price,
-                builder,
-                phone,
-                email,
-                address,
                 amenities,
-                template_id
+                extra_details,
+                niche,
+                image_size,
+                image_quality,
+                template_id,
+                num_variants,
+                theme_color
             };
 
-            const response = await axios.post(`${GRAPHIC_API}/api/generate`, inputData);
+            const response = await axios.post(`${GRAPHIC_API}/api/generate_from_details`, inputData);
             generatedResult = response.data;
 
             console.log('✅ Graphic Service response received');
@@ -186,56 +207,65 @@ export const generateFlyer = async (req, res) => {
                 throw new Error(generatedResult.error || 'External service reported failure');
             }
 
-            // 5. Upload Generated Image to Supabase
-            // Service returns base64
-            const base64Data = generatedResult.image_base64;
-            if (!base64Data) {
-                throw new Error('Service did not return image_base64');
+            // 5. Upload Generated Image(s) to Supabase
+            const b64_list = generatedResult.images_base64 || (generatedResult.image_base64 ? [generatedResult.image_base64] : []);
+            if (!b64_list.length) {
+                throw new Error('Service did not return any images');
             }
 
-            const fileContent = Buffer.from(base64Data, 'base64');
-            const fileName = `flyer_${designJob.id}_${Date.now()}.png`;
+            const uploadedUrls = [];
+            for (let i = 0; i < b64_list.length; i++) {
+                const base64Data = b64_list[i];
+                if (!base64Data) continue;
 
-            // Create a public URL for the uploaded file
-            // Note: Ensure 'designs' bucket exists and is public
-            const { data: uploadData, error: uploadError } = await supabaseAdmin
-                .storage
-                .from('designs')
-                .upload(fileName, fileContent, {
-                    contentType: 'image/png',
-                    upsert: false
-                });
+                const fileContent = Buffer.from(base64Data, 'base64');
+                const fileName = `flyer_${designJob.id}_var${i}_${Date.now()}.png`;
 
-            if (uploadError) {
-                // Try creating bucket if it doesn't exist (this usually fails if not admin, but we use supabaseAdmin)
-                console.error('Upload failed, possible bucket issue:', uploadError);
-                throw uploadError;
+                const { data: uploadData, error: uploadError } = await supabaseAdmin
+                    .storage
+                    .from('designs')
+                    .upload(fileName, fileContent, {
+                        contentType: 'image/png',
+                        upsert: false
+                    });
+
+                if (uploadError) {
+                    console.error(`Upload failed for variant ${i}:`, uploadError);
+                    throw uploadError;
+                }
+
+                const { data: publicUrlData } = supabaseAdmin
+                    .storage
+                    .from('designs')
+                    .getPublicUrl(fileName);
+
+                uploadedUrls.push(publicUrlData.publicUrl);
             }
 
-            const { data: publicUrlData } = supabaseAdmin
-                .storage
-                .from('designs')
-                .getPublicUrl(fileName);
+            const flyerUrl = uploadedUrls[0];
 
-            const flyerUrl = publicUrlData.publicUrl;
-
-            // 6. Update Job Status (use admin client to avoid RLS issues)
+            // 6. Update Job Status
             await supabaseAdmin
                 .from('design_jobs')
                 .update({
                     status: 'completed',
-                    flyer_url: flyerUrl
+                    flyer_url: flyerUrl,
+                    metadata: {
+                        ...designJob.metadata,
+                        flyer_urls: uploadedUrls
+                    }
                 })
                 .eq('id', designJob.id);
 
             // Return success with URL
             res.json({
                 success: true,
-                message: 'Flyer generated successfully',
+                message: 'Flyer(s) generated successfully',
                 jobId: designJob.id,
-                creditsUsed: ledgerResult?.credits_deducted || COST_PER_FLYER,
+                creditsUsed: ledgerResult?.credits_deducted || (COST_PER_FLYER * num_variants),
                 newBalance: ledgerResult?.new_balance,
                 flyerUrl: flyerUrl,
+                flyerUrls: uploadedUrls,
                 status: 'completed'
             });
 
@@ -357,6 +387,133 @@ export const getJobById = async (req, res) => {
 };
 
 /**
+ * POST /api/design/generate-from-prompt
+ * Generate a real estate flyer from custom prompt
+ */
+export const generateFromPrompt = async (req, res) => {
+    try {
+        const {
+            prompt,
+            image_size = '1024x1024',
+            image_quality = 'low'
+        } = req.body;
+
+        const userId = req.user.id;
+        const token = req.token;
+
+        if (!prompt) {
+            return res.status(400).json({
+                success: false,
+                error: 'Prompt is required'
+            });
+        }
+
+        const isAdmin = userId === ADMIN_ID;
+
+        if (!isAdmin) {
+            const creditCheck = await CreditLedgerService.validateCreditsAvailable(userId, 'design', 1);
+            if (!creditCheck.hasEnough) {
+                return res.status(402).json({
+                    success: false,
+                    error: 'Insufficient credits',
+                    required: creditCheck.creditsNeeded,
+                    balance: creditCheck.currentBalance,
+                    deficit: creditCheck.deficit
+                });
+            }
+        }
+
+        // Create Design Job Entry
+        const { data: designJob, error: saveError } = await supabaseAdmin
+            .from('design_jobs')
+            .insert({
+                user_id: userId,
+                property_type: 'Custom Design',
+                location: 'Custom Prompt',
+                price: 'N/A',
+                builder: 'N/A',
+                phone: 'N/A',
+                email: 'N/A',
+                address: 'N/A',
+                status: 'pending',
+                credits_used: COST_PER_FLYER,
+                metadata: { prompt, image_size, image_quality }
+            })
+            .select()
+            .single();
+
+        if (saveError) throw saveError;
+
+        let ledgerResult;
+        if (!isAdmin) {
+            try {
+                ledgerResult = await CreditLedgerService.deductCreditsWithLedger({
+                    userId,
+                    agentType: 'design',
+                    referenceId: designJob.id,
+                    referenceTable: 'design_jobs',
+                    usageQuantity: 1,
+                    metadata: { prompt }
+                });
+            } catch (ledgerError) {
+                await supabaseAdmin
+                    .from('design_jobs')
+                    .update({ status: 'failed', error_message: 'Credit deduction failed' })
+                    .eq('id', designJob.id);
+                return res.status(500).json({ success: false, error: 'Failed to process payment' });
+            }
+        }
+
+        const GRAPHIC_API = process.env.GRAPHIC_GENERATOR_URL;
+        if (!GRAPHIC_API) throw new Error("GRAPHIC_GENERATOR_URL env var not set");
+
+        const response = await axios.post(`${GRAPHIC_API}/api/generate_from_prompt`, {
+            prompt,
+            image_size,
+            image_quality
+        });
+
+        const generatedResult = response.data;
+        if (!generatedResult.success) throw new Error(generatedResult.error || 'External service reported failure');
+
+        const base64Data = generatedResult.image_base64;
+        if (!base64Data) throw new Error('Service did not return image_base64');
+
+        const fileContent = Buffer.from(base64Data, 'base64');
+        const fileName = `flyer_${designJob.id}_${Date.now()}.png`;
+
+        const { error: uploadError } = await supabaseAdmin
+            .storage
+            .from('designs')
+            .upload(fileName, fileContent, { contentType: 'image/png', upsert: false });
+
+        if (uploadError) throw uploadError;
+
+        const { data: publicUrlData } = supabaseAdmin.storage.from('designs').getPublicUrl(fileName);
+        const flyerUrl = publicUrlData.publicUrl;
+
+        await supabaseAdmin
+            .from('design_jobs')
+            .update({ status: 'completed', flyer_url: flyerUrl })
+            .eq('id', designJob.id);
+
+        res.json({
+            success: true,
+            message: 'Flyer generated successfully',
+            jobId: designJob.id,
+            creditsUsed: ledgerResult?.credits_deducted || COST_PER_FLYER,
+            newBalance: ledgerResult?.new_balance,
+            flyerUrl: flyerUrl,
+            status: 'completed'
+        });
+
+    } catch (error) {
+        console.error('Design Generation Error:', error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+};
+
+/**
  * Helper to run Python script
  */
 function runPythonGenerator(scriptPath, inputData) {
@@ -411,6 +568,7 @@ function runPythonGenerator(scriptPath, inputData) {
 
 export default {
     generateFlyer,
+    generateFromPrompt,
     getJobs,
     getJobById
 };

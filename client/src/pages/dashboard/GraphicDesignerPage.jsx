@@ -11,10 +11,12 @@ import {
     Building2,
     MapPin,
     IndianRupee,
-    HardHat,
-    Phone,
-    Mail,
-    MapPinned,
+    Bed,
+    ListChecks,
+    Tag,
+    FileText,
+    Maximize,
+    Settings2,
     Download,
     Clock,
     CheckCircle2,
@@ -26,12 +28,15 @@ import {
     Image,
     Zap,
     TrendingUp,
-    ListChecks,
-    Bed
+    Info,
+    Phone,
+    Mail,
+    Navigation,
+    UserCircle
 } from 'lucide-react';
 
 
-// Input field component - defined outside to prevent re-creation on each render
+// Input field component
 const InputField = ({ icon: Icon, label, name, value, onChange, type = 'text', placeholder, required = true, colSpan = false }) => (
     <div className={colSpan ? 'md:col-span-2' : ''}>
         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -39,7 +44,7 @@ const InputField = ({ icon: Icon, label, name, value, onChange, type = 'text', p
         </label>
         <div className="relative group">
             <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                <Icon className="h-5 w-5 text-gray-400 group-focus-within:text-indigo-500 transition-colors" />
+                <Icon className="h-5 w-5 text-gray-400 group-focus-within:text-violet-500 transition-colors" />
             </div>
             <input
                 type={type}
@@ -48,8 +53,37 @@ const InputField = ({ icon: Icon, label, name, value, onChange, type = 'text', p
                 onChange={onChange}
                 placeholder={placeholder}
                 required={required}
-                className="w-full pl-12 pr-4 py-3.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-slate-800/50 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 dark:focus:border-indigo-400 transition-all duration-200 outline-none"
+                className="w-full pl-12 pr-4 py-3.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-slate-800/80 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 dark:focus:border-violet-400 transition-all duration-300 outline-none hover:border-gray-300 dark:hover:border-gray-600 shadow-sm"
             />
+        </div>
+    </div>
+);
+
+// Select field component
+const SelectField = ({ icon: Icon, label, name, value, onChange, options, colSpan = false }) => (
+    <div className={colSpan ? 'md:col-span-2' : ''}>
+        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            {label}
+        </label>
+        <div className="relative group">
+            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                <Icon className="h-5 w-5 text-gray-400 group-focus-within:text-violet-500 transition-colors" />
+            </div>
+            <select
+                name={name}
+                value={value}
+                onChange={onChange}
+                className="w-full pl-12 pr-10 py-3.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-slate-800/80 text-gray-900 dark:text-white focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 dark:focus:border-violet-400 transition-all duration-300 outline-none appearance-none shadow-sm cursor-pointer hover:border-gray-300 dark:hover:border-gray-600"
+            >
+                {options.map(opt => (
+                    <option key={opt.value} value={opt.value}>{opt.label}</option>
+                ))}
+            </select>
+            <div className="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none">
+                <svg className="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+                </svg>
+            </div>
         </div>
     </div>
 );
@@ -62,6 +96,9 @@ const GraphicDesignerPage = () => {
     const [filter, setFilter] = useState('all');
     const [previewJob, setPreviewJob] = useState(null);
     const [refreshing, setRefreshing] = useState(false);
+    const [activeTab, setActiveTab] = useState('create');
+    const [creationMode, setCreationMode] = useState('form');
+    const [promptText, setPromptText] = useState('');
 
     // Helper to force download instead of opening in new tab
     const forceDownload = async (url, filename) => {
@@ -78,31 +115,26 @@ const GraphicDesignerPage = () => {
             window.URL.revokeObjectURL(blobUrl);
         } catch (error) {
             console.error('Download failed:', error);
-            // Fallback to opening in new tab if fetch fails due to CORS
             window.open(url, '_blank');
         }
     };
 
-    // Available templates
-    const TEMPLATES = [
-        { id: 'classic', name: 'Classic Elegant', description: 'Timeless design with gradient overlay', color: 'from-rose-500 to-red-600', icon: '🏛️' },
-        { id: 'modern', name: 'Modern Bold', description: 'Contemporary layout with bold typography', color: 'from-blue-500 to-indigo-600', icon: '🏢' },
-        { id: 'minimal', name: 'Minimal Clean', description: 'Clean minimalist design', color: 'from-emerald-500 to-teal-600', icon: '✨' },
-        { id: 'luxury', name: 'Premium Luxury', description: 'High-end luxury aesthetic', color: 'from-amber-500 to-orange-600', icon: '👑' },
-        { id: 'random', name: 'Surprise Me!', description: 'Random template selection', color: 'from-violet-500 to-purple-600', icon: '🎲' }
-    ];
-
     const [formData, setFormData] = useState({
         property_type: '',
-        bhk: '',
         location: '',
+        bhk: '',
         price: '',
         builder: '',
         phone: '',
         email: '',
         address: '',
         amenities: '',
-        template_id: 'random'
+        extra_details: '',
+        niche: '',
+        image_size: '1024x1024',
+        image_quality: 'low',
+        num_variants: 1,
+        theme_color: ''
     });
 
     const COST_PER_FLYER = 5;
@@ -110,8 +142,6 @@ const GraphicDesignerPage = () => {
     // Fetch jobs on mount
     useEffect(() => {
         fetchJobs();
-
-        // Auto-refresh jobs every 30 seconds
         const interval = setInterval(fetchJobs, 30000);
         return () => clearInterval(interval);
     }, []);
@@ -167,15 +197,41 @@ const GraphicDesignerPage = () => {
                 return;
             }
 
-            // Convert amenities string to array
-            const submitData = {
-                ...formData,
-                amenities: formData.amenities
-                    ? formData.amenities.split(',').map(a => a.trim()).filter(a => a)
-                    : []
-            };
+            // Clean up payload
+            let submitData;
+            let endpoint;
+            
+            if (creationMode === 'form') {
+                submitData = {
+                    property_type: formData.property_type,
+                    location: formData.location,
+                    price: formData.price || null,
+                    bhk: formData.bhk || null,
+                    builder: formData.builder || null,
+                    phone: formData.phone || null,
+                    email: formData.email || null,
+                    address: formData.address || null,
+                    extra_details: formData.extra_details || null,
+                    niche: formData.niche || null,
+                    image_size: formData.image_size,
+                    image_quality: formData.image_quality,
+                    num_variants: parseInt(formData.num_variants, 10),
+                    theme_color: formData.theme_color,
+                    amenities: formData.amenities
+                        ? formData.amenities.split(',').map(a => a.trim()).filter(a => a)
+                        : []
+                };
+                endpoint = '/api/design/generate-flyer';
+            } else {
+                submitData = {
+                    prompt: promptText,
+                    image_size: formData.image_size,
+                    image_quality: formData.image_quality
+                };
+                endpoint = '/api/design/generate-from-prompt';
+            }
 
-            const response = await fetch(`${API_BASE_URL}/api/design/generate-flyer`, {
+            const response = await fetch(`${API_BASE_URL}${endpoint}`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -187,19 +243,29 @@ const GraphicDesignerPage = () => {
             const data = await response.json();
 
             if (response.ok) {
-                toast.success('Flyer generation started! Check the jobs below.');
-                setFormData({
-                    property_type: '',
-                    bhk: '',
-                    location: '',
-                    price: '',
-                    builder: '',
-                    phone: '',
-                    email: '',
-                    address: '',
-                    amenities: '',
-                    template_id: 'random'
-                });
+                toast.success('Flyer generation started! Check the history tab.');
+                if (creationMode === 'form') {
+                    setFormData({
+                        property_type: '',
+                        location: '',
+                        bhk: '',
+                        price: '',
+                        builder: '',
+                        phone: '',
+                        email: '',
+                        address: '',
+                        amenities: '',
+                        extra_details: '',
+                        niche: '',
+                        image_size: '1024x1024',
+                        image_quality: 'low',
+                        num_variants: 1,
+                        theme_color: ''
+                    });
+                } else {
+                    setPromptText('');
+                }
+                setActiveTab('history');
                 refreshCredits();
                 fetchJobs();
             } else {
@@ -251,9 +317,9 @@ const GraphicDesignerPage = () => {
             },
             failed: {
                 icon: XCircle,
-                color: 'text-red-500',
-                bg: 'bg-red-500/10',
-                border: 'border-red-500/20',
+                color: 'text-rose-500',
+                bg: 'bg-rose-500/10',
+                border: 'border-rose-500/20',
                 label: 'Failed'
             }
         };
@@ -261,30 +327,30 @@ const GraphicDesignerPage = () => {
     };
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-indigo-50/30 dark:from-slate-950 dark:via-slate-900 dark:to-indigo-950/20">
+        <div className="min-h-screen bg-[#FAFAFA] dark:bg-[#0B0F19]">
 
-            {/* Header */}
-            <header className="sticky top-0 z-50 backdrop-blur-xl bg-white/80 dark:bg-slate-900/80 border-b border-gray-200/50 dark:border-slate-700/50">
+            {/* Premium Header */}
+            <header className="sticky top-0 z-50 backdrop-blur-2xl bg-white/70 dark:bg-[#0B0F19]/70 border-b border-gray-200/50 dark:border-gray-800/50">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="flex items-center justify-between h-16">
-                        <div className="flex items-center gap-4">
+                    <div className="flex items-center justify-between h-20">
+                        <div className="flex items-center gap-5">
                             <button
                                 onClick={() => navigate('/agents')}
-                                className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-800 text-gray-600 dark:text-gray-300 transition-colors"
+                                className="p-2.5 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-300 transition-colors"
                                 title="Back to Agents"
                             >
-                                <ArrowLeft size={20} />
+                                <ArrowLeft size={22} />
                             </button>
-                            <div className="flex items-center gap-3">
-                                <div className="p-2 rounded-xl bg-gradient-to-br from-violet-500 to-purple-600 shadow-lg shadow-purple-500/25">
-                                    <Palette className="h-5 w-5 text-white" />
+                            <div className="flex items-center gap-3.5">
+                                <div className="p-2.5 rounded-2xl bg-gradient-to-tr from-violet-600 to-fuchsia-600 shadow-lg shadow-violet-500/30">
+                                    <Palette className="h-6 w-6 text-white" />
                                 </div>
                                 <div>
-                                    <h1 className="text-lg font-bold text-gray-900 dark:text-white">
-                                        Graphic Designer AI
+                                    <h1 className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-300">
+                                        Graphic AI Studio
                                     </h1>
-                                    <p className="text-xs text-gray-500 dark:text-gray-400">
-                                        AI-powered flyer generation
+                                    <p className="text-sm text-gray-500 dark:text-gray-400 font-medium">
+                                        Hyper-realistic visual generation
                                     </p>
                                 </div>
                             </div>
@@ -292,403 +358,486 @@ const GraphicDesignerPage = () => {
 
                         <div className="flex items-center gap-4">
                             {/* Credits Display */}
-                            <div className="hidden sm:flex items-center gap-3 px-4 py-2 rounded-xl bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-900/20 dark:to-purple-900/20 border border-indigo-100 dark:border-indigo-800/30">
-                                <div className="p-1.5 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-500">
+                            <div className="hidden sm:flex items-center gap-3 px-5 py-2.5 rounded-2xl bg-white dark:bg-gray-800/50 border border-gray-200/50 dark:border-gray-700/50 shadow-sm">
+                                <div className="p-1.5 rounded-xl bg-gradient-to-br from-amber-400 to-orange-500">
                                     <Zap className="h-4 w-4 text-white" />
                                 </div>
                                 <div>
-                                    <p className="text-xs text-gray-500 dark:text-gray-400">Credits</p>
-                                    <p className="text-lg font-bold text-indigo-600 dark:text-indigo-400 leading-none">
-                                        {credits.toLocaleString()}
+                                    <p className="text-[11px] font-semibold tracking-wider uppercase text-gray-500 dark:text-gray-400">Balance</p>
+                                    <p className="text-base font-bold text-gray-900 dark:text-white leading-none mt-0.5">
+                                        {credits.toLocaleString()} <span className="text-sm font-normal text-gray-500">cr</span>
                                     </p>
                                 </div>
                             </div>
-
-
                         </div>
                     </div>
                 </div>
             </header>
 
-            <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
 
-                {/* Hero Section */}
-                <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-violet-600 via-purple-600 to-indigo-700 p-8 mb-8">
-                    <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4xIj48cGF0aCBkPSJNMzYgMzRjMC0yIDItNCAyLTRzLTItMi0yLTQgMi00IDItNGMwLTItMi00LTItNHMyLTIgMi00LTItNC0yLTRjMC0yIDItNCAyLTRzLTItMi0yLTQgMi00IDItNGMwLTIgNCAyIDQgMnM0IDAgNC0yIDQgMiA0IDItMiA0LTIgNCAyIDQgMiA0cy0yIDItMiA0IDIgNCAyIDRjMCAyLTIgNC0yIDRzMiAyIDIgNC0yIDQtMiA0YzAgMi0yIDQtMiA0czIgMiAyIDQtMiA0LTIgNGMwIDItNCAyLTQgMnMtNCAwLTQgMi00LTItNC0yIDItNC0yLTQtMi00LTItNGMwLTIgMi00IDItNHMtMi0yLTItNHoiLz48L2c+PC9nPjwvc3ZnPg==')] opacity-30" />
-
-                    <div className="relative z-10 flex flex-col md:flex-row md:items-center md:justify-between gap-6">
-                        <div>
-                            <div className="flex items-center gap-2 mb-3">
-                                <span className="px-3 py-1 rounded-full bg-white/20 text-white text-xs font-medium backdrop-blur-sm">
-                                    <Sparkles className="inline h-3 w-3 mr-1" />
-                                    AI Powered
-                                </span>
-                            </div>
-                            <h2 className="text-3xl md:text-4xl font-bold text-white mb-3">
-                                Create Stunning Real Estate Flyers
-                            </h2>
-                            <p className="text-purple-100 text-lg max-w-xl">
-                                Generate professional marketing materials in seconds with our AI-powered design engine.
-                            </p>
-                        </div>
-
-                        <div className="flex flex-wrap gap-4">
-                            <div className="px-6 py-4 rounded-2xl bg-white/10 backdrop-blur-sm border border-white/20">
-                                <p className="text-purple-200 text-sm">Cost per flyer</p>
-                                <p className="text-3xl font-bold text-white">{COST_PER_FLYER}</p>
-                                <p className="text-purple-200 text-xs">credits</p>
-                            </div>
-                        </div>
-                    </div>
+                {/* Navigation Tabs */}
+                <div className="flex items-center gap-2 mb-8 border-b border-gray-200 dark:border-gray-800">
+                    <button
+                        onClick={() => setActiveTab('create')}
+                        className={`px-6 py-4 font-semibold text-sm tracking-wide transition-all border-b-2 ${activeTab === 'create'
+                            ? 'border-violet-500 text-violet-600 dark:text-violet-400'
+                            : 'border-transparent text-gray-500 hover:text-gray-900 dark:hover:text-gray-300'
+                            }`}
+                    >
+                        Create Design
+                    </button>
+                    <button
+                        onClick={() => setActiveTab('history')}
+                        className={`px-6 py-4 font-semibold text-sm tracking-wide transition-all border-b-2 flex items-center gap-2 ${activeTab === 'history'
+                            ? 'border-violet-500 text-violet-600 dark:text-violet-400'
+                            : 'border-transparent text-gray-500 hover:text-gray-900 dark:hover:text-gray-300'
+                            }`}
+                    >
+                        Gallery History
+                        <span className="bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 py-0.5 px-2 rounded-full text-xs">
+                            {jobs.length}
+                        </span>
+                    </button>
                 </div>
 
-                {/* Stats Cards */}
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-                    {[
-                        { label: 'Total Designs', value: stats.total, icon: Image, color: 'from-blue-500 to-cyan-500' },
-                        { label: 'Completed', value: stats.completed, icon: CheckCircle2, color: 'from-emerald-500 to-teal-500' },
-                        { label: 'In Progress', value: stats.pending, icon: Clock, color: 'from-amber-500 to-orange-500' },
-                        { label: 'Success Rate', value: stats.total > 0 ? Math.round((stats.completed / stats.total) * 100) + '%' : '-', icon: TrendingUp, color: 'from-violet-500 to-purple-500' }
-                    ].map((stat) => (
-                        <div key={stat.label} className="group relative overflow-hidden rounded-2xl bg-white dark:bg-slate-800/50 border border-gray-200/50 dark:border-slate-700/50 p-5 transition-all duration-300 hover:shadow-lg hover:shadow-gray-200/50 dark:hover:shadow-slate-900/50 hover:-translate-y-0.5">
-                            <div className={`absolute top-0 right-0 w-20 h-20 bg-gradient-to-br ${stat.color} opacity-10 rounded-full -translate-y-1/2 translate-x-1/2 group-hover:scale-150 transition-transform duration-500`} />
-                            <div className={`inline-flex p-2 rounded-xl bg-gradient-to-br ${stat.color} mb-3`}>
-                                <stat.icon className="h-5 w-5 text-white" />
+                {activeTab === 'create' ? (
+                    <div className="max-w-3xl mx-auto">
+                        <div className="bg-white dark:bg-[#111827] rounded-[2rem] border border-gray-200/60 dark:border-gray-800 shadow-xl overflow-hidden">
+                            <div className="p-8 border-b border-gray-100 dark:border-gray-800 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                                <div className="flex items-center gap-4">
+                                    <div className="p-3 rounded-2xl bg-violet-100 dark:bg-violet-900/30 text-violet-600 dark:text-violet-400">
+                                        <Image className="h-6 w-6" />
+                                    </div>
+                                    <div>
+                                        <h2 className="text-xl font-bold text-gray-900 dark:text-white">Design Parameters</h2>
+                                        <p className="text-sm text-gray-500 mt-1">Configure your AI generation</p>
+                                    </div>
+                                </div>
+                                
+                                {/* Creation Mode Toggle */}
+                                <div className="flex bg-gray-100 dark:bg-gray-800 p-1 rounded-xl shrink-0">
+                                    <button
+                                        type="button"
+                                        onClick={() => setCreationMode('form')}
+                                        className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all ${creationMode === 'form' ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'}`}
+                                    >
+                                        Details Form
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => setCreationMode('prompt')}
+                                        className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all ${creationMode === 'prompt' ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'}`}
+                                    >
+                                        Custom Prompt
+                                    </button>
+                                </div>
                             </div>
-                            <p className="text-2xl font-bold text-gray-900 dark:text-white">{stat.value}</p>
-                            <p className="text-sm text-gray-500 dark:text-gray-400">{stat.label}</p>
-                        </div>
-                    ))}
-                </div>
 
-                <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
+                            <form onSubmit={handleSubmit} className="p-8 space-y-6">
+                                {creationMode === 'form' ? (
+                                    <>
+                                        <div className="space-y-6">
+                                            <h3 className="text-sm font-bold tracking-wider text-gray-400 uppercase">Core Details</h3>
+                                            <InputField
+                                                icon={Building2}
+                                                label="Business / Property Type"
+                                                name="property_type"
+                                                value={formData.property_type}
+                                                onChange={handleInputChange}
+                                                placeholder="e.g., Luxury Villa, Tech Startup, Cafe"
+                                            />
+                                            
+                                            <div className="grid grid-cols-2 gap-4">
+                                                <InputField
+                                                    icon={MapPin}
+                                                    label="Location"
+                                                    name="location"
+                                                    value={formData.location}
+                                                    onChange={handleInputChange}
+                                                    placeholder="e.g., Dubai"
+                                                />
+                                                <InputField
+                                                    icon={Bed}
+                                                    label="Specifics (BHK, Size, etc.)"
+                                                    name="bhk"
+                                                    value={formData.bhk}
+                                                    onChange={handleInputChange}
+                                                    placeholder="3 BHK, 50 Seats, etc."
+                                                    required={false}
+                                                />
+                                            </div>
 
-                    {/* Form Section */}
-                    <div className="lg:col-span-2">
-                        <div className="sticky top-24">
-                            <div className="bg-white dark:bg-slate-800/50 rounded-3xl border border-gray-200/50 dark:border-slate-700/50 shadow-xl shadow-gray-200/20 dark:shadow-slate-900/30 overflow-hidden">
-                                <div className="p-6 border-b border-gray-200/50 dark:border-slate-700/50">
-                                    <h2 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-3">
-                                        <div className="p-2 rounded-xl bg-gradient-to-br from-violet-500 to-purple-500">
-                                            <Sparkles className="h-5 w-5 text-white" />
+                                            <InputField
+                                                icon={IndianRupee}
+                                                label="Price / Starting Cost"
+                                                name="price"
+                                                value={formData.price}
+                                                onChange={handleInputChange}
+                                                placeholder="e.g., ₹2.5 Cr Onwards, ₹500/meal"
+                                                required={false}
+                                            />
                                         </div>
-                                        Create New Flyer
-                                    </h2>
-                                    <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Fill in the property details below</p>
+
+                                        <div className="h-px bg-gray-100 dark:bg-gray-800" />
+
+                                        <div className="space-y-6">
+                                            <h3 className="text-sm font-bold tracking-wider text-gray-400 uppercase">Contact & Business Details</h3>
+                                            <div className="grid grid-cols-2 gap-4">
+                                                <InputField
+                                                    icon={UserCircle}
+                                                    label="Business / Builder Name"
+                                                    name="builder"
+                                                    value={formData.builder}
+                                                    onChange={handleInputChange}
+                                                    placeholder="e.g., Emaar Properties"
+                                                    required={false}
+                                                />
+                                                <InputField
+                                                    icon={Phone}
+                                                    label="Phone Number"
+                                                    name="phone"
+                                                    value={formData.phone}
+                                                    onChange={handleInputChange}
+                                                    placeholder="+971 50..."
+                                                    required={false}
+                                                />
+                                            </div>
+                                            <div className="grid grid-cols-2 gap-4">
+                                                <InputField
+                                                    icon={Mail}
+                                                    label="Email Address"
+                                                    name="email"
+                                                    value={formData.email}
+                                                    onChange={handleInputChange}
+                                                    placeholder="contact@business.com"
+                                                    required={false}
+                                                />
+                                                <InputField
+                                                    icon={Navigation}
+                                                    label="Full Address / Website"
+                                                    name="address"
+                                                    value={formData.address}
+                                                    onChange={handleInputChange}
+                                                    placeholder="Downtown Dubai / www.business.com"
+                                                    required={false}
+                                                />
+                                            </div>
+                                        </div>
+
+                                        <div className="h-px bg-gray-100 dark:bg-gray-800" />
+
+                                        <div className="space-y-6">
+                                            <h3 className="text-sm font-bold tracking-wider text-gray-400 uppercase">Context & Details</h3>
+                                            <InputField
+                                                icon={ListChecks}
+                                                label="Features / Amenities"
+                                                name="amenities"
+                                                value={formData.amenities}
+                                                onChange={handleInputChange}
+                                                placeholder="Pool, WiFi, 24/7 Support..."
+                                                required={false}
+                                            />
+
+                                            <InputField
+                                                icon={FileText}
+                                                label="Extra Details"
+                                                name="extra_details"
+                                                value={formData.extra_details}
+                                                onChange={handleInputChange}
+                                                placeholder="Sea facing, modern architecture"
+                                                required={false}
+                                            />
+                                            
+                                            <InputField
+                                                icon={Tag}
+                                                label="Design Niche (For Trend AI)"
+                                                name="niche"
+                                                value={formData.niche}
+                                                onChange={handleInputChange}
+                                                placeholder="luxury real estate, cyber cafe"
+                                                required={false}
+                                            />
+                                            
+                                            <div className="grid grid-cols-2 gap-4">
+                                                <SelectField
+                                                    icon={Image}
+                                                    label="Number of Variants (Optional)"
+                                                    name="num_variants"
+                                                    value={formData.num_variants}
+                                                    onChange={handleInputChange}
+                                                    options={[
+                                                        { value: 1, label: '1 Variant' },
+                                                        { value: 2, label: '2 Variants' },
+                                                        { value: 3, label: '3 Variants' },
+                                                        { value: 4, label: '4 Variants' }
+                                                    ]}
+                                                />
+                                                <InputField
+                                                    icon={Palette}
+                                                    label="Theme Color (Optional)"
+                                                    name="theme_color"
+                                                    value={formData.theme_color}
+                                                    onChange={handleInputChange}
+                                                    placeholder="e.g., Midnight Blue, Gold"
+                                                    required={false}
+                                                />
+                                            </div>
+                                        </div>
+                                    </>
+                                ) : (
+                                    <div className="space-y-6">
+                                        <h3 className="text-sm font-bold tracking-wider text-gray-400 uppercase">Custom Design Prompt</h3>
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                                Describe your concept <span className="text-rose-500">*</span>
+                                            </label>
+                                            <textarea
+                                                value={promptText}
+                                                onChange={(e) => setPromptText(e.target.value)}
+                                                placeholder="e.g. A hyper-realistic 8k render of a modern beachfront villa or a vibrant tech startup office with neon lighting..."
+                                                required
+                                                rows={8}
+                                                className="w-full p-4 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-slate-800/80 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 dark:focus:border-violet-400 transition-all duration-300 outline-none hover:border-gray-300 dark:hover:border-gray-600 shadow-sm resize-none"
+                                            />
+                                        </div>
+                                    </div>
+                                )}
+
+                                <div className="h-px bg-gray-100 dark:bg-gray-800" />
+
+                                <div className="space-y-6">
+                                    <h3 className="text-sm font-bold tracking-wider text-gray-400 uppercase">Output Settings</h3>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <SelectField
+                                            icon={Maximize}
+                                            label="Dimensions"
+                                            name="image_size"
+                                            value={formData.image_size}
+                                            onChange={handleInputChange}
+                                            options={[
+                                                { value: '512x512', label: '512 x 512' },
+                                                { value: '1024x1024', label: '1024 x 1024' },
+                                                { value: '1536x1024', label: '1536 x 1024' },
+                                                { value: '1024x1536', label: '1024 x 1536' }
+                                            ]}
+                                        />
+                                        <SelectField
+                                            icon={Settings2}
+                                            label="Quality"
+                                            name="image_quality"
+                                            value={formData.image_quality}
+                                            onChange={handleInputChange}
+                                            options={[
+                                                { value: 'low', label: 'Low (Fast)' },
+                                                { value: 'medium', label: 'Medium' },
+                                                { value: 'high', label: 'High (Detailed)' },
+                                                { value: 'auto', label: 'Auto' }
+                                            ]}
+                                        />
+                                    </div>
                                 </div>
 
-                                <form onSubmit={handleSubmit} className="p-6 space-y-5">
-                                    <InputField
-                                        icon={Building2}
-                                        label="Property Type"
-                                        name="property_type"
-                                        value={formData.property_type}
-                                        onChange={handleInputChange}
-                                        placeholder="e.g., Luxury Apartment"
-                                    />
-
-                                    <InputField
-                                        icon={Bed}
-                                        label="BHK Configuration"
-                                        name="bhk"
-                                        value={formData.bhk}
-                                        onChange={handleInputChange}
-                                        placeholder="e.g., 2 & 3 BHK"
-                                    />
-
-                                    <InputField
-                                        icon={MapPin}
-                                        label="Location"
-                                        name="location"
-                                        value={formData.location}
-                                        onChange={handleInputChange}
-                                        placeholder="e.g., Hinjewadi, Pune"
-                                    />
-
-                                    <InputField
-                                        icon={IndianRupee}
-                                        label="Price"
-                                        name="price"
-                                        value={formData.price}
-                                        onChange={handleInputChange}
-                                        placeholder="e.g., ₹1.35 Cr onwards"
-                                    />
-
-                                    <InputField
-                                        icon={HardHat}
-                                        label="Builder"
-                                        name="builder"
-                                        value={formData.builder}
-                                        onChange={handleInputChange}
-                                        placeholder="e.g., Skyline Developers"
-                                    />
-
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                                        <InputField
-                                            icon={Phone}
-                                            label="Phone"
-                                            name="phone"
-                                            value={formData.phone}
-                                            onChange={handleInputChange}
-                                            type="tel"
-                                            placeholder="+91 98765 43210"
-                                        />
-                                        <InputField
-                                            icon={Mail}
-                                            label="Email"
-                                            name="email"
-                                            value={formData.email}
-                                            onChange={handleInputChange}
-                                            type="email"
-                                            placeholder="sales@example.com"
-                                        />
-                                    </div>
-
-                                    <InputField
-                                        icon={MapPinned}
-                                        label="Address"
-                                        name="address"
-                                        value={formData.address}
-                                        onChange={handleInputChange}
-                                        placeholder="e.g., Phase 2, Hinjewadi, Pune"
-                                        colSpan
-                                    />
-
-                                    <InputField
-                                        icon={ListChecks}
-                                        label="Amenities"
-                                        name="amenities"
-                                        value={formData.amenities}
-                                        onChange={handleInputChange}
-                                        placeholder="e.g., Swimming Pool, Gym, Clubhouse, Parking"
-                                        required={false}
-                                        colSpan
-                                    />
-
-                                    {/* Random template auto-selected */}
-                                    <div className="p-4 rounded-xl bg-gradient-to-r from-violet-50 to-purple-50 dark:from-violet-900/20 dark:to-purple-900/20 border border-violet-200/50 dark:border-violet-700/30">
-                                        <div className="flex items-center gap-3">
-                                            <div className="p-2 rounded-lg bg-gradient-to-br from-violet-500 to-purple-600 shadow-md">
-                                                <Sparkles className="h-4 w-4 text-white" />
-                                            </div>
-                                            <div>
-                                                <p className="text-sm font-semibold text-gray-900 dark:text-white">🎲 Random Template</p>
-                                                <p className="text-xs text-gray-500 dark:text-gray-400">A unique design style will be picked automatically</p>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    {/* Credits Warning */}
-                                    {!isAdmin && credits < COST_PER_FLYER && (
-                                        <div className="p-4 rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800/50">
-                                            <p className="text-sm text-red-600 dark:text-red-400 flex items-center gap-2">
-                                                <XCircle className="h-4 w-4" />
-                                                Insufficient credits. You need {COST_PER_FLYER} credits.
-                                            </p>
-                                        </div>
-                                    )}
-
-                                    {/* Submit Button */}
+                                {/* Submit Button */}
+                                <div className="pt-4">
                                     <button
                                         type="submit"
                                         disabled={loading || (!isAdmin && credits < COST_PER_FLYER)}
-                                        className="w-full relative group overflow-hidden rounded-xl bg-gradient-to-r from-violet-600 via-purple-600 to-indigo-600 text-white py-4 px-6 font-semibold text-lg transition-all duration-300 hover:shadow-xl hover:shadow-purple-500/25 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:shadow-none"
+                                        className="w-full relative group overflow-hidden rounded-2xl bg-gray-900 dark:bg-white text-white dark:text-gray-900 py-4 px-6 font-bold text-lg transition-all duration-300 hover:shadow-xl hover:-translate-y-1 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:shadow-none disabled:hover:translate-y-0"
                                     >
-                                        <div className="absolute inset-0 bg-gradient-to-r from-violet-500 via-purple-500 to-indigo-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                                        <div className="absolute inset-0 bg-gradient-to-r from-violet-600 to-fuchsia-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                                         <span className="relative flex items-center justify-center gap-2">
                                             {loading ? (
                                                 <>
                                                     <Loader2 className="h-5 w-5 animate-spin" />
-                                                    Generating...
+                                                    Processing via AI...
                                                 </>
                                             ) : (
                                                 <>
                                                     <Sparkles className="h-5 w-5" />
-                                                    Generate Flyer ({COST_PER_FLYER} Credits)
+                                                    Generate Concept
                                                 </>
                                             )}
                                         </span>
                                     </button>
-                                </form>
-                            </div>
+                                </div>
+                            </form>
                         </div>
                     </div>
-
-                    {/* Jobs History Section */}
-                    <div className="lg:col-span-3">
-                        <div className="bg-white dark:bg-slate-800/50 rounded-3xl border border-gray-200/50 dark:border-slate-700/50 shadow-xl shadow-gray-200/20 dark:shadow-slate-900/30 overflow-hidden">
-
-                            {/* Header */}
-                            <div className="p-6 border-b border-gray-200/50 dark:border-slate-700/50">
-                                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                                    <div>
-                                        <h2 className="text-xl font-bold text-gray-900 dark:text-white">Design History</h2>
-                                        <p className="text-sm text-gray-500 dark:text-gray-400">Your generated flyers</p>
+                ) : (
+                    <div className="max-w-5xl mx-auto">
+                        {/* Gallery Section */}
+                        <div className="flex flex-col gap-8">
+                            
+                            {/* Stats */}
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                {[
+                                    { label: 'Generations', value: stats.total, color: 'text-violet-600 dark:text-violet-400' },
+                                    { label: 'Completed', value: stats.completed, color: 'text-emerald-600 dark:text-emerald-400' },
+                                    { label: 'In Progress', value: stats.pending, color: 'text-amber-600 dark:text-amber-400' },
+                                    { label: 'Failed', value: stats.failed, color: 'text-rose-600 dark:text-rose-400' }
+                                ].map((stat) => (
+                                    <div key={stat.label} className="bg-white dark:bg-[#111827] rounded-2xl p-6 border border-gray-200/60 dark:border-gray-800 shadow-sm">
+                                        <p className={`text-3xl font-black mb-1 ${stat.color}`}>{stat.value}</p>
+                                        <p className="text-sm font-medium text-gray-500 dark:text-gray-400">{stat.label}</p>
                                     </div>
-
-                                    <button
-                                        onClick={handleRefresh}
-                                        className="flex items-center gap-2 px-4 py-2 rounded-xl bg-gray-100 dark:bg-slate-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-slate-600 transition-colors text-sm font-medium"
-                                    >
-                                        <RefreshCw className={`h-4 w-4 ${refreshing ? 'animate-spin' : ''}`} />
-                                        Refresh
-                                    </button>
-                                </div>
-
-                                {/* Filter Pills */}
-                                <div className="flex flex-wrap gap-2 mt-4">
-                                    {['all', 'completed', 'processing', 'pending', 'failed'].map(status => (
-                                        <button
-                                            key={status}
-                                            onClick={() => setFilter(status)}
-                                            className={`px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200 ${filter === status
-                                                ? 'bg-gradient-to-r from-violet-600 to-purple-600 text-white shadow-lg shadow-purple-500/25'
-                                                : 'bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-slate-600'
-                                                }`}
-                                        >
-                                            {status.charAt(0).toUpperCase() + status.slice(1)}
-                                            {status !== 'all' && (
-                                                <span className="ml-2 text-xs opacity-75">
-                                                    ({status === 'processing' || status === 'pending'
-                                                        ? stats.pending
-                                                        : status === 'completed'
-                                                            ? stats.completed
-                                                            : stats.failed})
-                                                </span>
-                                            )}
-                                        </button>
-                                    ))}
-                                </div>
+                                ))}
                             </div>
 
-                            {/* Jobs Grid */}
-                            <div className="p-6">
-                                {filteredJobs.length === 0 ? (
-                                    <div className="text-center py-16">
-                                        <div className="w-20 h-20 mx-auto mb-6 rounded-3xl bg-gradient-to-br from-gray-100 to-gray-200 dark:from-slate-700 dark:to-slate-800 flex items-center justify-center">
-                                            <Image className="h-10 w-10 text-gray-400 dark:text-gray-500" />
-                                        </div>
-                                        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-                                            No designs yet
-                                        </h3>
-                                        <p className="text-gray-500 dark:text-gray-400 max-w-sm mx-auto">
-                                            Create your first stunning real estate flyer using the form on the left.
-                                        </p>
+                            {/* Gallery Header */}
+                            <div className="flex items-center justify-between">
+                                <div>
+                                    <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Studio Gallery</h2>
+                                    <p className="text-gray-500 dark:text-gray-400 mt-1">Review your recent AI generations</p>
+                                </div>
+                                <button
+                                    onClick={handleRefresh}
+                                    className="p-3 rounded-full bg-white dark:bg-[#111827] border border-gray-200 dark:border-gray-800 shadow-sm hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-300 transition-colors group"
+                                    title="Refresh Gallery"
+                                >
+                                    <RefreshCw className={`h-5 w-5 group-hover:text-violet-500 transition-colors ${refreshing ? 'animate-spin text-violet-500' : ''}`} />
+                                </button>
+                            </div>
+
+                            {/* Filters */}
+                            <div className="flex flex-wrap gap-2">
+                                {['all', 'completed', 'processing', 'pending', 'failed'].map(status => (
+                                    <button
+                                        key={status}
+                                        onClick={() => setFilter(status)}
+                                        className={`px-5 py-2.5 rounded-full text-sm font-semibold transition-all duration-300 ${filter === status
+                                            ? 'bg-gray-900 dark:bg-white text-white dark:text-gray-900 shadow-md'
+                                            : 'bg-white dark:bg-[#111827] border border-gray-200 dark:border-gray-800 text-gray-600 dark:text-gray-400 hover:border-gray-300 dark:hover:border-gray-700 hover:text-gray-900 dark:hover:text-white'
+                                            }`}
+                                    >
+                                        {status.charAt(0).toUpperCase() + status.slice(1)}
+                                    </button>
+                                ))}
+                            </div>
+
+                            {/* Gallery Grid */}
+                            {filteredJobs.length === 0 ? (
+                                <div className="flex flex-col items-center justify-center p-16 bg-white/50 dark:bg-[#111827]/50 rounded-[2rem] border border-dashed border-gray-300 dark:border-gray-800">
+                                    <div className="w-24 h-24 mb-6 rounded-full bg-violet-100 dark:bg-violet-900/20 flex items-center justify-center">
+                                        <Image className="h-10 w-10 text-violet-500" />
                                     </div>
-                                ) : (
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                        {filteredJobs.map(job => {
-                                            const statusConfig = getStatusConfig(job.status);
-                                            const StatusIcon = statusConfig.icon;
+                                    <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
+                                        Your Gallery is Empty
+                                    </h3>
+                                    <p className="text-gray-500 dark:text-gray-400 text-center max-w-md">
+                                        Configure parameters on the left and hit "Generate Concept" to start creating stunning architectural visuals.
+                                    </p>
+                                </div>
+                            ) : (
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                    {filteredJobs.map(job => {
+                                        const statusConfig = getStatusConfig(job.status);
+                                        const StatusIcon = statusConfig.icon;
 
-                                            return (
-                                                <div
-                                                    key={job.id}
-                                                    className="group relative overflow-hidden rounded-2xl border border-gray-200/50 dark:border-slate-700/50 bg-gray-50/50 dark:bg-slate-900/30 p-5 transition-all duration-300 hover:shadow-lg hover:border-purple-200 dark:hover:border-purple-800/50"
-                                                >
-                                                    {/* Status Badge */}
-                                                    <div className={`absolute top-4 right-4 flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium ${statusConfig.bg} ${statusConfig.color} ${statusConfig.border} border`}>
-                                                        <StatusIcon className={`h-3.5 w-3.5 ${statusConfig.animate ? 'animate-spin' : ''}`} />
-                                                        {statusConfig.label}
-                                                    </div>
-
-                                                    {/* Content */}
-                                                    <div className="pr-28">
-                                                        <h3 className="font-semibold text-gray-900 dark:text-white truncate">
-                                                            {job.property_type || 'Property'}
-                                                        </h3>
-                                                        <p className="text-sm text-gray-500 dark:text-gray-400 flex items-center gap-1 mt-1">
-                                                            <MapPin className="h-3.5 w-3.5" />
-                                                            {job.location || 'Location not specified'}
-                                                        </p>
-                                                    </div>
-
-                                                    <div className="flex items-center gap-4 mt-4 pt-4 border-t border-gray-200/50 dark:border-slate-700/50">
-                                                        <div>
-                                                            <p className="text-xs text-gray-400 dark:text-gray-500">Price</p>
-                                                            <p className="text-sm font-medium text-gray-900 dark:text-white">
-                                                                {job.price || '-'}
-                                                            </p>
-                                                        </div>
-                                                        <div>
-                                                            <p className="text-xs text-gray-400 dark:text-gray-500">Builder</p>
-                                                            <p className="text-sm font-medium text-gray-900 dark:text-white truncate max-w-[120px]">
-                                                                {job.builder || '-'}
-                                                            </p>
-                                                        </div>
-                                                        <div className="ml-auto">
-                                                            <p className="text-xs text-gray-400 dark:text-gray-500">Created</p>
-                                                            <p className="text-sm text-gray-600 dark:text-gray-300">
-                                                                {new Date(job.created_at).toLocaleDateString()}
-                                                            </p>
-                                                        </div>
-                                                    </div>
-
-                                                    {/* Actions */}
-                                                    {job.status === 'completed' && job.flyer_url && (
-                                                        <div className="flex items-center gap-2 mt-4">
-                                                            <button
-                                                                onClick={() => setPreviewJob(job)}
-                                                                className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-gray-100 dark:bg-slate-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-slate-600 transition-colors text-sm font-medium"
-                                                            >
-                                                                <Eye className="h-4 w-4" />
-                                                                Preview
-                                                            </button>
-                                                            <button
-                                                                onClick={() => forceDownload(job.flyer_url, `flyer_${job.property_type.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.png`)}
-                                                                className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-violet-600 to-purple-600 text-white hover:from-violet-500 hover:to-purple-500 transition-colors text-sm font-medium shadow-lg shadow-purple-500/20"
-                                                            >
-                                                                <Download className="h-4 w-4" />
-                                                                Download
-                                                            </button>
+                                        return (
+                                            <div
+                                                key={job.id}
+                                                className="group flex flex-col bg-white dark:bg-[#111827] rounded-[1.5rem] border border-gray-200/60 dark:border-gray-800 shadow-sm hover:shadow-xl hover:border-violet-300 dark:hover:border-violet-800/50 transition-all duration-300 overflow-hidden"
+                                            >
+                                                {/* Image Area */}
+                                                <div className="relative aspect-[4/3] bg-gray-100 dark:bg-gray-900 overflow-hidden">
+                                                    {job.status === 'completed' && job.flyer_url ? (
+                                                        <>
+                                                            <img src={job.flyer_url} alt={job.property_type || 'Generated concept'} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
+                                                            <div className="absolute inset-0 bg-gradient-to-t from-gray-900/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                                                            
+                                                            {/* Overlay Actions */}
+                                                            <div className="absolute bottom-4 left-4 right-4 flex items-center gap-2 translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300">
+                                                                <button
+                                                                    onClick={() => setPreviewJob(job)}
+                                                                    className="flex-1 bg-white/20 hover:bg-white/30 backdrop-blur-md text-white py-2.5 rounded-xl text-sm font-semibold transition-colors"
+                                                                >
+                                                                    Preview
+                                                                </button>
+                                                                <button
+                                                                    onClick={() => forceDownload(job.flyer_url, `concept_${job.property_type?.replace(/[^a-z0-9]/gi, '_').toLowerCase() || 'design'}.png`)}
+                                                                    className="flex-1 bg-violet-600 hover:bg-violet-500 text-white py-2.5 rounded-xl text-sm font-semibold shadow-lg transition-colors flex items-center justify-center gap-2"
+                                                                >
+                                                                    <Download className="w-4 h-4" /> Save
+                                                                </button>
+                                                            </div>
+                                                        </>
+                                                    ) : (
+                                                        <div className="absolute inset-0 flex flex-col items-center justify-center p-6 text-center">
+                                                            <StatusIcon className={`h-10 w-10 mb-4 ${statusConfig.color} ${statusConfig.animate ? 'animate-spin' : ''}`} />
+                                                            <p className={`font-semibold ${statusConfig.color}`}>{statusConfig.label}</p>
                                                         </div>
                                                     )}
+                                                    
+                                                    {/* Status Badge */}
+                                                    <div className={`absolute top-4 right-4 flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-bold uppercase tracking-wider ${statusConfig.bg} ${statusConfig.color} backdrop-blur-md`}>
+                                                        {statusConfig.label}
+                                                    </div>
                                                 </div>
-                                            );
-                                        })}
-                                    </div>
-                                )}
-                            </div>
+
+                                                {/* Meta Info */}
+                                                <div className="p-5">
+                                                    <h3 className="font-bold text-lg text-gray-900 dark:text-white mb-1 line-clamp-1">
+                                                        {job.property_type || 'Custom Design'}
+                                                    </h3>
+                                                    <p className="text-sm text-gray-500 dark:text-gray-400 flex items-center gap-1.5 line-clamp-1">
+                                                        <MapPin className="h-4 w-4 shrink-0" />
+                                                        <span className="truncate">{job.location || 'Custom Prompt'}</span>
+                                                    </p>
+                                                    
+                                                    <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-800 flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
+                                                        <span>{new Date(job.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}</span>
+                                                        <span className="px-2 py-1 bg-gray-100 dark:bg-gray-800 rounded-md font-medium">
+                                                            {job.price || 'N/A'}
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            )}
                         </div>
                     </div>
-                </div>
+                )}
             </main>
 
             {/* Preview Modal */}
             {previewJob && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-                    <div className="relative max-w-4xl w-full max-h-[90vh] bg-white dark:bg-slate-900 rounded-3xl shadow-2xl overflow-hidden">
+                <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+                    <div className="relative max-w-5xl w-full bg-[#111827] rounded-[2rem] shadow-2xl overflow-hidden border border-gray-800">
 
-                        {/* Modal Header */}
-                        <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-slate-700">
+                        <div className="flex items-center justify-between p-6 border-b border-gray-800">
                             <div>
-                                <h3 className="text-xl font-bold text-gray-900 dark:text-white">Flyer Preview</h3>
-                                <p className="text-sm text-gray-500 dark:text-gray-400">{previewJob.property_type}</p>
+                                <h3 className="text-xl font-bold text-white">High-Res Concept</h3>
+                                <p className="text-sm text-gray-400">{previewJob.property_type}</p>
                             </div>
                             <div className="flex items-center gap-3">
                                 <button
-                                    onClick={() => forceDownload(previewJob.flyer_url, `flyer_${previewJob.property_type.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.png`)}
-                                    className="flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-violet-600 to-purple-600 text-white text-sm font-medium hover:from-violet-500 hover:to-purple-500 transition-colors"
-                                >
-                                    <Download className="h-4 w-4" />
-                                    Download
-                                </button>
-                                <button
                                     onClick={() => setPreviewJob(null)}
-                                    className="p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-slate-800 text-gray-500 dark:text-gray-400 transition-colors"
+                                    className="p-2.5 rounded-xl bg-gray-800 hover:bg-gray-700 text-gray-400 hover:text-white transition-colors"
                                 >
                                     <X className="h-5 w-5" />
                                 </button>
                             </div>
                         </div>
 
-                        {/* Preview Content */}
-                        <div className="p-6 overflow-auto max-h-[calc(90vh-120px)] flex items-center justify-center bg-gray-100 dark:bg-slate-800/50">
-                            <img
-                                src={previewJob.flyer_url}
-                                alt={`Flyer for ${previewJob.property_type}`}
-                                className="max-w-full max-h-[calc(90vh-180px)] object-contain rounded-2xl shadow-lg"
-                            />
+                        <div className="p-8 overflow-auto max-h-[85vh] flex flex-wrap items-center justify-center gap-8 bg-black/50">
+                            {(previewJob.metadata?.flyer_urls || [previewJob.flyer_url]).map((url, index) => (
+                                <div key={index} className="flex flex-col items-center gap-4">
+                                    <img
+                                        src={url}
+                                        alt={`Concept ${index + 1} for ${previewJob.property_type}`}
+                                        className="max-w-full max-h-[60vh] object-contain rounded-xl shadow-2xl ring-1 ring-white/10"
+                                    />
+                                    <button
+                                        onClick={() => forceDownload(url, `concept_${previewJob.property_type.replace(/[^a-z0-9]/gi, '_').toLowerCase()}_var${index+1}.png`)}
+                                        className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-violet-600 text-white font-medium hover:bg-violet-500 transition-colors shadow-lg"
+                                    >
+                                        <Download className="h-5 w-5" /> Download Variant {index + 1}
+                                    </button>
+                                </div>
+                            ))}
                         </div>
                     </div>
                 </div>

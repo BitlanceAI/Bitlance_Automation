@@ -1383,6 +1383,256 @@ async function handleCallAnalyzed(call) {
 // Meta Ads API routes
 app.use('/api/meta', metaRoutes);
 
+// ========== GRAPHIC DESIGN AGENT ROUTES ==========
+
+const GRAPHIC_AGENT_URL = process.env.GRAPHIC_AGENT_URL || 'http://localhost:8000';
+const COST_PER_DESIGN = 5;
+
+// Auth helper for design routes
+async function verifyDesignAuth(req, res) {
+    const authHeader = req.headers.authorization;
+    if (!authHeader?.startsWith('Bearer ')) {
+        res.status(401).json({ error: 'Unauthorized' });
+        return null;
+    }
+    const token = authHeader.replace('Bearer ', '').trim();
+    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+    if (authError || !user) {
+        res.status(401).json({ error: 'Invalid token' });
+        return null;
+    }
+    return user;
+}
+
+// Helper: upload base64 image to Supabase storage and return public URL
+async function uploadDesignImage(base64String, jobId) {
+    try {
+        const imageBuffer = Buffer.from(base64String, 'base64');
+        const filename = `design_${jobId}.png`;
+        const { error: uploadError } = await supabase.storage
+            .from('designs')
+            .upload(filename, imageBuffer, { contentType: 'image/png', upsert: true });
+
+        if (uploadError) {
+            console.error('Supabase storage upload error:', uploadError.message);
+            return null;
+        }
+
+        const { data: urlData } = supabase.storage.from('designs').getPublicUrl(filename);
+        return urlData?.publicUrl || null;
+    } catch (err) {
+        console.error('Image upload failed:', err.message);
+        return null;
+    }
+}
+
+// Helper: deduct credits directly from user_credits table
+async function deductDesignCredits(userId) {
+    try {
+        const { data: currentData } = await supabase
+            .from('user_credits')
+            .select('balance')
+            .eq('user_id', userId)
+            .single();
+
+        const currentBalance = currentData?.balance || 0;
+        if (currentBalance < COST_PER_DESIGN) return false;
+
+        await supabase
+            .from('user_credits')
+            .update({ balance: currentBalance - COST_PER_DESIGN, updated_at: new Date().toISOString() })
+            .eq('user_id', userId);
+
+        console.log(`💰 Deducted ${COST_PER_DESIGN} credits from user ${userId}. New balance: ${currentBalance - COST_PER_DESIGN}`);
+        return true;
+    } catch (err) {
+        console.error('Credit deduction failed:', err.message);
+        return false;
+    }
+}
+
+// GET /api/design/jobs - Fetch user's design jobs
+app.get('/api/design/jobs', async (req, res) => {
+    try {
+        const user = await verifyDesignAuth(req, res);
+        if (!user) return;
+
+        const { data, error } = await supabase
+            .from('design_jobs')
+            .select('*')
+            .eq('user_id', user.id)
+            .order('created_at', { ascending: false })
+            .limit(50);
+
+        if (error) throw error;
+
+        res.json({ success: true, jobs: data || [] });
+    } catch (error) {
+        console.error('Error fetching design jobs:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// POST /api/design/generate-flyer - Generate image from property details form
+app.post('/api/design/generate-flyer', async (req, res) => {
+    try {
+        const user = await verifyDesignAuth(req, res);
+        if (!user) return;
+
+        const { property_type, location, price, bhk, amenities, extra_details, niche, image_size, image_quality } = req.body;
+
+        if (!property_type || !location) {
+            return res.status(400).json({ error: 'property_type and location are required' });
+        }
+
+        // Check credits
+        const { data: creditData } = await supabase
+            .from('user_credits')
+            .select('balance')
+            .eq('user_id', user.id)
+            .single();
+
+        const isAdmin = user.email === process.env.ADMIN_EMAIL;
+        if (!isAdmin && (creditData?.balance || 0) < COST_PER_DESIGN) {
+            return res.status(400).json({ error: `Insufficient credits. You need ${COST_PER_DESIGN} credits.` });
+        }
+
+        // Create pending job record
+        const { data: job, error: jobError } = await supabase
+            .from('design_jobs')
+            .insert([{
+                user_id: user.id,
+                property_type,
+                location,
+                price: price || null,
+                bhk: bhk || null,
+                status: 'processing'
+            }])
+            .select()
+            .single();
+
+        if (jobError) throw jobError;
+
+        // Respond immediately so UI can switch to History tab
+        res.json({ success: true, job_id: job.id, status: 'processing' });
+
+        // Async background: call Python agent → upload image → update job
+        (async () => {
+            try {
+                console.log(`[Design] Starting generation for job ${job.id}...`);
+                const pyResponse = await axios.post(`${GRAPHIC_AGENT_URL}/api/generate_from_details`, {
+                    property_type, location,
+                    price: price || null,
+                    bhk: bhk || null,
+                    amenities: amenities || [],
+                    extra_details: extra_details || null,
+                    niche: niche || null,
+                    image_size: image_size || '1024x1024',
+                    image_quality: image_quality || 'low'
+                }, { timeout: 180000 });
+
+                const { image_base64, trending_keywords } = pyResponse.data;
+                const flyerUrl = await uploadDesignImage(image_base64, job.id);
+
+                await supabase.from('design_jobs').update({
+                    status: 'completed',
+                    flyer_url: flyerUrl,
+                    trending_keywords: trending_keywords || []
+                }).eq('id', job.id);
+
+                if (!isAdmin) await deductDesignCredits(user.id);
+                console.log(`[Design] Job ${job.id} completed. URL: ${flyerUrl}`);
+            } catch (err) {
+                console.error(`[Design] Job ${job.id} failed:`, err.message);
+                await supabase.from('design_jobs').update({
+                    status: 'failed',
+                    error_message: err.message.substring(0, 500)
+                }).eq('id', job.id);
+            }
+        })();
+
+    } catch (error) {
+        console.error('Error in generate-flyer:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// POST /api/design/generate-from-prompt - Generate image from custom prompt
+app.post('/api/design/generate-from-prompt', async (req, res) => {
+    try {
+        const user = await verifyDesignAuth(req, res);
+        if (!user) return;
+
+        const { prompt, image_size, image_quality } = req.body;
+
+        if (!prompt?.trim()) {
+            return res.status(400).json({ error: 'prompt is required' });
+        }
+
+        // Check credits
+        const { data: creditData } = await supabase
+            .from('user_credits')
+            .select('balance')
+            .eq('user_id', user.id)
+            .single();
+
+        const isAdmin = user.email === process.env.ADMIN_EMAIL;
+        if (!isAdmin && (creditData?.balance || 0) < COST_PER_DESIGN) {
+            return res.status(400).json({ error: `Insufficient credits. You need ${COST_PER_DESIGN} credits.` });
+        }
+
+        // Create pending job record
+        const { data: job, error: jobError } = await supabase
+            .from('design_jobs')
+            .insert([{
+                user_id: user.id,
+                property_type: 'Custom Prompt',
+                location: null,
+                status: 'processing'
+            }])
+            .select()
+            .single();
+
+        if (jobError) throw jobError;
+
+        // Respond immediately
+        res.json({ success: true, job_id: job.id, status: 'processing' });
+
+        // Async background: call Python agent → upload image → update job
+        (async () => {
+            try {
+                console.log(`[Design] Starting prompt generation for job ${job.id}...`);
+                const pyResponse = await axios.post(`${GRAPHIC_AGENT_URL}/api/generate_from_prompt`, {
+                    prompt,
+                    image_size: image_size || '1024x1024',
+                    image_quality: image_quality || 'low'
+                }, { timeout: 180000 });
+
+                const { image_base64 } = pyResponse.data;
+                const flyerUrl = await uploadDesignImage(image_base64, job.id);
+
+                await supabase.from('design_jobs').update({
+                    status: 'completed',
+                    flyer_url: flyerUrl
+                }).eq('id', job.id);
+
+                if (!isAdmin) await deductDesignCredits(user.id);
+                console.log(`[Design] Job ${job.id} completed. URL: ${flyerUrl}`);
+            } catch (err) {
+                console.error(`[Design] Job ${job.id} failed:`, err.message);
+                await supabase.from('design_jobs').update({
+                    status: 'failed',
+                    error_message: err.message.substring(0, 500)
+                }).eq('id', job.id);
+            }
+        })();
+
+    } catch (error) {
+        console.error('Error in generate-from-prompt:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
 // Serve static files from the React app
 app.use(express.static(path.join(__dirname, '../client/dist')));
 
