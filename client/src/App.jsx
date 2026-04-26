@@ -4,7 +4,6 @@ import ReactGA from 'react-ga4';
 import { trackAgentOpen } from './lib/analytics';
 import { ThemeProvider } from './context/ThemeContext';
 import Navbar from './components/layout/Navbar';
-import SplashScreen from './components/layout/SplashScreen';
 import Footer from './components/landing/Footer';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { WorkspaceProvider } from './context/WorkspaceContext';
@@ -160,9 +159,6 @@ function App() {
         <WorkspaceProvider>
           <Toaster position="top-right" reverseOrder={false} />
           <div className={isDashboard ? 'bg-gray-50 dark:bg-slate-900 min-h-screen transition-colors duration-300' : 'bg-gray-50 dark:bg-slate-900 min-h-screen transition-colors duration-300 pb-20 md:pb-0'}>
-            {/* First-visit splash screen — hidden on dashboard/admin routes */}
-            <SplashScreen />
-
 
             {/* Temporary Debug Banner
           <div className="fixed top-0 left-0 bg-red-500 text-white z-[100] text-xs p-1">
