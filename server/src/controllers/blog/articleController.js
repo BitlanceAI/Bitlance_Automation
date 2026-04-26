@@ -221,19 +221,17 @@ export const generateAndSaveArticleInternal = async ({
 
     // ── 5. Deduct credits ─────────────────────────────────────────────────────
     let ledgerResult = {};
-    if (userId !== ADMIN_ID) {
-        try {
-            ledgerResult = await CreditLedgerService.deductCreditsWithLedger({
-                userId,
-                agentType: 'blog',
-                referenceId: savedArticle.id,
-                referenceTable: 'articles', // Force to 'articles' to satisfy DB constraint
-                usageQuantity: 1,
-                metadata: { topic: finalTopic, language, style, model: 'sonar-pro', category, actual_word_count: wordCount, actual_table: tableName },
-            });
-        } catch (e) {
-            console.error('⚠️ Credit deduction failed (article saved):', e);
-        }
+    try {
+        ledgerResult = await CreditLedgerService.deductCreditsWithLedger({
+            userId,
+            agentType: 'blog',
+            referenceId: savedArticle.id,
+            referenceTable: 'articles', // Force to 'articles' to satisfy DB constraint
+            usageQuantity: 1,
+            metadata: { topic: finalTopic, language, style, model: 'sonar-pro', category, actual_word_count: wordCount, actual_table: tableName },
+        });
+    } catch (e) {
+        console.error('⚠️ Credit deduction failed (article saved):', e);
     }
 
     // ── 6. Push notification — only for admin-published articles ─────────────
@@ -277,20 +275,18 @@ export const generateArticle = async (req, res) => {
     const token = req.token;
 
     // ── 1. Credit pre-flight ──────────────────────────────────────────────────
-    if (userId !== ADMIN_ID) {
-        try {
-            const check = await CreditLedgerService.validateCredits(userId, 'blog', 1);
-            if (!check.hasEnough) {
-                return res.status(402).json({
-                    success: false,
-                    error: 'Insufficient credits',
-                    required: check.creditsNeeded,
-                    balance: check.currentBalance,
-                });
-            }
-        } catch (e) {
-            console.error('Credit check failed:', e);
+    try {
+        const check = await CreditLedgerService.validateCredits(userId, 'blog', 1);
+        if (!check.hasEnough) {
+            return res.status(402).json({
+                success: false,
+                error: 'Insufficient credits',
+                required: check.creditsNeeded,
+                balance: check.currentBalance,
+            });
         }
+    } catch (e) {
+        console.error('Credit check failed:', e);
     }
 
     // ── 2. Pre-build interlinks for admin from published articles ─────────────
@@ -360,17 +356,15 @@ export const bulkGenerateArticles = async (req, res) => {
             return res.status(400).json({ success: false, error: "Excel file is empty or missing 'Title / Topic' column. Download the template for the correct format." });
         }
 
-        // Credit check for bulk if not admin
-        if (userId !== ADMIN_ID) {
-            const check = await CreditLedgerService.validateCredits(userId, 'blog', rows.length);
-            if (!check.hasEnough) {
-                return res.status(402).json({
-                    success: false,
-                    error: 'Insufficient credits for bulk generation',
-                    required: check.creditsNeeded,
-                    balance: check.currentBalance,
-                });
-            }
+        // Credit check for bulk
+        const check = await CreditLedgerService.validateCredits(userId, 'blog', rows.length);
+        if (!check.hasEnough) {
+            return res.status(402).json({
+                success: false,
+                error: 'Insufficient credits for bulk generation',
+                required: check.creditsNeeded,
+                balance: check.currentBalance,
+            });
         }
 
         // Respond immediately to prevent timeout
