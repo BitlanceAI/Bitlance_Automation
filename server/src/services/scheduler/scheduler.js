@@ -236,7 +236,7 @@ const checkAndPublishAutoBlogs = async () => {
         // We will make it simple: We just call the Python API directly here.
         // Let's export generateAndSaveArticleInternal from articleController.js and use it!
         // Let's add that export there and call it now.
-        const { generateAndSaveArticleInternal } = await import('../controllers/articleController.js');
+        const { generateAndSaveArticleInternal } = await import('../../controllers/blog/articleController.js');
 
         // ADMIN_ID is hardcoded in article controller, we pass it here "pseudo token" not really needed by internal logic except to pass to Python if Python checks it.
         // Python auth check might fail if token is fake, so maybe generate an admin token?

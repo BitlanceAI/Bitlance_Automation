@@ -181,7 +181,7 @@ const GraphicDesignerPage = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        if (!isAdmin && credits < COST_PER_FLYER) {
+        if (credits < COST_PER_FLYER) {
             toast.error(`Insufficient credits. You need ${COST_PER_FLYER} credits to generate a flyer.`);
             return;
         }

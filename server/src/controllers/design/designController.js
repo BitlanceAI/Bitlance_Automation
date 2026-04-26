@@ -75,30 +75,26 @@ export const generateFlyer = async (req, res) => {
             }
         });
 
-        // 1. Pre-flight Credit Check (Admin bypasses)
+        // 1. Pre-flight Credit Check
         const isAdmin = userId === ADMIN_ID;
 
-        if (isAdmin) {
-            console.log('👑 Admin access: Bypassing credit check');
-        } else {
-            const creditCheck = await CreditLedgerService.validateCreditsAvailable(
-                userId,
-                'design',
-                num_variants // 1 image per variant
-            );
+        const creditCheck = await CreditLedgerService.validateCreditsAvailable(
+            userId,
+            'design',
+            num_variants // 1 image per variant
+        );
 
-            if (!creditCheck.hasEnough) {
-                return res.status(402).json({
-                    success: false,
-                    error: 'Insufficient credits',
-                    required: creditCheck.creditsNeeded,
-                    balance: creditCheck.currentBalance,
-                    deficit: creditCheck.deficit
-                });
-            }
-
-            console.log(`✅ Credit pre-check passed: ${creditCheck.creditsNeeded} credits available`);
+        if (!creditCheck.hasEnough) {
+            return res.status(402).json({
+                success: false,
+                error: 'Insufficient credits',
+                required: creditCheck.creditsNeeded,
+                balance: creditCheck.currentBalance,
+                deficit: creditCheck.deficit
+            });
         }
+
+        console.log(`✅ Credit pre-check passed: ${creditCheck.creditsNeeded} credits available`);
 
         // 2. Create Design Job Entry (PENDING status)
         const { data: designJob, error: saveError } = await supabaseAdmin
@@ -126,46 +122,42 @@ export const generateFlyer = async (req, res) => {
 
         console.log(`✅ Design job created: ${designJob.id}`);
 
-        // 3. Deduct Credits via Ledger (Admin bypasses)
+        // 3. Deduct Credits via Ledger
         let ledgerResult;
-        if (isAdmin) {
-            console.log('👑 Admin access: Skipping credit deduction');
-        } else {
-            try {
-                ledgerResult = await CreditLedgerService.deductCreditsWithLedger({
-                    userId,
-                    agentType: 'design',
-                    referenceId: designJob.id,
-                    referenceTable: 'design_jobs',
-                    usageQuantity: num_variants, // number of variants
-                    metadata: {
-                        property_type,
-                        location,
-                        price,
-                        builder
-                    }
-                });
+        try {
+            ledgerResult = await CreditLedgerService.deductCreditsWithLedger({
+                userId,
+                agentType: 'design',
+                referenceId: designJob.id,
+                referenceTable: 'design_jobs',
+                usageQuantity: num_variants, // number of variants
+                metadata: {
+                    property_type,
+                    location,
+                    price,
+                    builder
+                }
+            });
 
-                console.log(`💰 Ledger entry created: ${ledgerResult.ledger_id}`);
-                console.log(`📊 Credits deducted: ${ledgerResult.credits_deducted} (Balance: ${ledgerResult.new_balance})`);
+            console.log(`💰 Ledger entry created: ${ledgerResult.ledger_id}`);
+            console.log(`📊 Credits deducted: ${ledgerResult.credits_deducted} (Balance: ${ledgerResult.new_balance})`);
 
-            } catch (ledgerError) {
-                console.error('⚠️ CRITICAL: Design job saved but credits not deducted!', ledgerError);
+        } catch (ledgerError) {
+            console.error('⚠️ CRITICAL: Design job saved but credits not deducted!', ledgerError);
 
-                // Mark job as failed due to credit deduction failure
-                await supabaseAdmin
-                    .from('design_jobs')
-                    .update({
-                        status: 'failed',
-                        error_message: 'Credit deduction failed'
-                    })
-                    .eq('id', designJob.id);
+            // Mark job as failed due to credit deduction failure
+            await supabaseAdmin
+                .from('design_jobs')
+                .update({
+                    status: 'failed',
+                    error_message: 'Credit deduction failed'
+                })
+                .eq('id', designJob.id);
 
-                return res.status(500).json({
-                    success: false,
-                    error: 'Failed to process payment'
-                });
-            }
+            return res.status(500).json({
+                success: false,
+                error: 'Failed to process payment'
+            });
         }
 
 
@@ -412,19 +404,15 @@ export const generateFromPrompt = async (req, res) => {
             });
         }
 
-        const isAdmin = userId === ADMIN_ID;
-
-        if (!isAdmin) {
-            const creditCheck = await CreditLedgerService.validateCreditsAvailable(userId, 'design', 1);
-            if (!creditCheck.hasEnough) {
-                return res.status(402).json({
-                    success: false,
-                    error: 'Insufficient credits',
-                    required: creditCheck.creditsNeeded,
-                    balance: creditCheck.currentBalance,
-                    deficit: creditCheck.deficit
-                });
-            }
+        const creditCheck = await CreditLedgerService.validateCreditsAvailable(userId, 'design', 1);
+        if (!creditCheck.hasEnough) {
+            return res.status(402).json({
+                success: false,
+                error: 'Insufficient credits',
+                required: creditCheck.creditsNeeded,
+                balance: creditCheck.currentBalance,
+                deficit: creditCheck.deficit
+            });
         }
 
         // Create Design Job Entry
@@ -449,23 +437,21 @@ export const generateFromPrompt = async (req, res) => {
         if (saveError) throw saveError;
 
         let ledgerResult;
-        if (!isAdmin) {
-            try {
-                ledgerResult = await CreditLedgerService.deductCreditsWithLedger({
-                    userId,
-                    agentType: 'design',
-                    referenceId: designJob.id,
-                    referenceTable: 'design_jobs',
-                    usageQuantity: 1,
-                    metadata: { prompt }
-                });
-            } catch (ledgerError) {
-                await supabaseAdmin
-                    .from('design_jobs')
-                    .update({ status: 'failed', error_message: 'Credit deduction failed' })
-                    .eq('id', designJob.id);
-                return res.status(500).json({ success: false, error: 'Failed to process payment' });
-            }
+        try {
+            ledgerResult = await CreditLedgerService.deductCreditsWithLedger({
+                userId,
+                agentType: 'design',
+                referenceId: designJob.id,
+                referenceTable: 'design_jobs',
+                usageQuantity: 1,
+                metadata: { prompt }
+            });
+        } catch (ledgerError) {
+            await supabaseAdmin
+                .from('design_jobs')
+                .update({ status: 'failed', error_message: 'Credit deduction failed' })
+                .eq('id', designJob.id);
+            return res.status(500).json({ success: false, error: 'Failed to process payment' });
         }
 
         const GRAPHIC_API = process.env.GRAPHIC_GENERATOR_URL;

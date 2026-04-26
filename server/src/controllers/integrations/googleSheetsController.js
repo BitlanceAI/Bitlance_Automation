@@ -341,7 +341,7 @@ export const runBlog = async (req, res) => {
 
         // For blog generation, we import the helper from articleController
         // Since it's a dynamic backend requirement, let's process sequentially to avoid timeout/rate limits
-        const { generateAndSaveArticleInternal } = await import('./articleController.js');
+        const { generateAndSaveArticleInternal } = await import('../blog/articleController.js');
 
         for (let i = 0; i < titles.length; i++) {
             const title = titles[i];
