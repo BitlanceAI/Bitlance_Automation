@@ -34,7 +34,7 @@ const AITemplatesView = () => {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
                     {templates.map((tpl, i) => (
-                        <div key={i} className="bg-[#111111] border border-[#1E1E1E] hover:border-[#26cece] rounded-[2px] p-6 hover:-translate-y-1 hover:shadow-[4px_4px_0_0_#26cece] transition-all cursor-pointer group flex flex-col">
+                        <div key={i} className="bg-[#111111] border border-[#1E1E1E] hover:border-[#26cece] rounded-[2px] p-6 hover:-translate-y-1 hover:shadow-[0_2px_16px_0_rgba(0,0,0,0.4)] transition-all cursor-pointer group flex flex-col">
                             <div className="flex items-center justify-between mb-4">
                                 <div className="w-10 h-10 bg-[#26cece]/10 rounded-[2px] flex items-center justify-center border border-[#1E1E1E] group-hover:border-[#26cece]/30">
                                     <tpl.icon className="w-5 h-5 text-[#26cece]" />

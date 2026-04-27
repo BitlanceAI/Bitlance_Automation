@@ -94,7 +94,7 @@ const UseCasesSection = () => {
                             <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
                         </Link>
 
-                        <div className="mt-6 flex items-center justify-center gap-4 text-gray-500" style={{ fontFamily: "'DM Mono', monospace" }}>
+                        <div className="mt-6 flex items-center justify-center gap-4 text-gray-700" style={{ fontFamily: "'DM Mono', monospace" }}>
                             <span className="w-8 h-[1px] bg-current" />
                             <span className="text-[10px] font-extrabold uppercase tracking-[0.2em]">Built For High Performance</span>
                             <span className="w-8 h-[1px] bg-current" />

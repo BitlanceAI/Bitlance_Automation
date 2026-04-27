@@ -19,7 +19,7 @@ const SpecialDaysAIView = () => {
                     <p className="text-sm font-mono text-gray-500 mt-1 uppercase tracking-widest">Never miss a trending holiday or awareness day</p>
                 </div>
 
-                <div className="bg-[#26cece]/10 border border-[#26cece] rounded-[2px] p-6 flex items-start gap-4 shadow-[4px_4px_0_0_#26cece]">
+                <div className="bg-[#26cece]/10 border border-[#26cece] rounded-[2px] p-6 flex items-start gap-4 shadow-[0_2px_16px_0_rgba(0,0,0,0.4)]">
                     <div className="w-12 h-12 bg-[#26cece]/20 rounded-[2px] flex items-center justify-center shrink-0 border border-[#26cece]/50">
                         <Star className="w-6 h-6 text-[#26cece]" />
                     </div>

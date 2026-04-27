@@ -14,13 +14,15 @@ const Footer = () => {
                     {/* Brand — col-span-2 on md */}
                     <div className="col-span-2 md:col-span-2 flex flex-col items-start pr-0 md:pr-8">
                         <div className="flex items-center gap-2 mb-3">
-                            <img src={Logo} alt="Bitlance.ai" className="h-6 w-auto" />
+                            <img src={Logo} alt="Bitlance.ai" width="100" height="24" className="h-6 w-auto" />
                         </div>
-                        <p className="leading-relaxed text-xs mb-3">
+                        <p className="leading-relaxed text-xs mb-3 text-gray-700">
                             Empowering businesses with intelligent automation. 24/7 engagement, instant qualification, and seamless scheduling.
                         </p>
                         <div className="flex gap-3">
-                            <a href="https://www.linkedin.com/company/bitlance-tech-hub-pvt-ltd/" target="_blank" rel="noopener noreferrer"
+                            <a href="https://www.linkedin.com/company/bitlance-tech-hub-pvt-ltd/" 
+                               target="_blank" rel="noopener noreferrer"
+                               aria-label="Visit our LinkedIn page"
                                className="w-8 h-8 flex items-center justify-center transition-all group hover:border-[#26CECE]"
                                style={{ background: '#ffffff', border: '1px solid #e5e7eb', borderRadius: 2 }}
                             >
@@ -47,7 +49,7 @@ const Footer = () => {
                                  style={{ background: '#ffffff', border: '1px solid #e5e7eb', borderRadius: 2 }}>
                                 <MapPin size={13} style={{ color: TEAL }} />
                             </div>
-                            <p className="text-xs leading-relaxed text-black/50">
+                            <p className="text-xs leading-relaxed text-gray-700">
                                 Blue Ridge Town Pune, Phase 1,<br />
                                 Hinjawadi Rajiv Gandhi Infotech Park,<br />
                                 Hinjawadi, Pune,<br />
@@ -63,18 +65,18 @@ const Footer = () => {
                             <li className="flex items-center gap-2 group">
                                 <div className="w-6 h-6 flex items-center justify-center shrink-0 transition-all group-hover:border-[#26CECE]"
                                      style={{ background: '#ffffff', border: '1px solid #e5e7eb', borderRadius: 2 }}>
-                                    <Mail size={13} className="text-gray-500 group-hover:text-[#26CECE] transition-colors" />
+                                    <Mail size={13} className="text-gray-600 group-hover:text-[#26CECE] transition-colors" />
                                 </div>
-                                <a href="mailto:ceo@bitlancetechhub.com" className="group-hover:text-black transition-colors break-all">
+                                <a href="mailto:ceo@bitlancetechhub.com" className="text-gray-700 group-hover:text-black transition-colors break-all">
                                     ceo@bitlancetechhub.com
                                 </a>
                             </li>
                             <li className="flex items-center gap-2 group">
                                 <div className="w-6 h-6 flex items-center justify-center shrink-0 transition-all group-hover:border-[#26CECE]"
                                      style={{ background: '#ffffff', border: '1px solid #e5e7eb', borderRadius: 2 }}>
-                                    <Phone size={13} className="text-gray-500 group-hover:text-[#26CECE] transition-colors" />
+                                    <Phone size={13} className="text-gray-600 group-hover:text-[#26CECE] transition-colors" />
                                 </div>
-                                <a href="tel:+917391025059" className="group-hover:text-black transition-colors">
+                                <a href="tel:+917391025059" className="text-gray-700 group-hover:text-black transition-colors">
                                     +91 7391025059
                                 </a>
                             </li>
@@ -84,7 +86,7 @@ const Footer = () => {
                 </div>
 
                 {/* Bottom bar */}
-                <div className="border-t border-gray-200 pt-4 flex flex-col md:flex-row items-center justify-between text-xs text-gray-500" style={{ fontFamily: "'DM Mono', monospace" }}>
+                <div className="border-t border-gray-200 pt-4 flex flex-col md:flex-row items-center justify-between text-xs text-gray-600" style={{ fontFamily: "'DM Mono', monospace" }}>
                     <p>&copy; {new Date().getFullYear()} Bitlance. All rights reserved.</p>
                     <div className="flex gap-6 mt-3 md:mt-0">
                         <a href="https://www.bitlancetechhub.com/privacy-policy" className="hover:text-black transition-colors">Privacy Policy</a>

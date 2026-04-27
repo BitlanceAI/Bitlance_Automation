@@ -272,13 +272,13 @@ const BlogManagerPage = () => {
     };
 
     return (
-        <div className="min-h-screen bg-gray-50 dark:bg-slate-900 pb-12">
+        <div className="min-h-screen bg-slate-50 pb-12">
             <Navbar />
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
                     <div>
-                        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Blog Posts</h1>
-                        <p className="mt-2 text-gray-600 dark:text-gray-400">Manage and schedule your content</p>
+                        <h1 className="text-3xl font-bold text-slate-900">Blog Posts</h1>
+                        <p className="mt-2 text-slate-500">Manage and schedule your content</p>
                     </div>
                     <Link
                         to="/blog/new"
@@ -314,18 +314,18 @@ const BlogManagerPage = () => {
                     </div>
                 )}
 
-                <div className="bg-white dark:bg-slate-800 rounded-xl border border-gray-100 dark:border-slate-700 shadow-sm overflow-hidden">
+                <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
                     <div className="overflow-x-auto">
                         <table className="w-full text-left">
-                            <thead className="bg-gray-50 dark:bg-slate-900/50">
+                            <thead className="bg-slate-50">
                                 <tr>
-                                    <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase">Title & Slug</th>
-                                    <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase">Status</th>
-                                    <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase">Date</th>
-                                    <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase text-right">Actions</th>
+                                    <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase">Title & Slug</th>
+                                    <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase">Status</th>
+                                    <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase">Date</th>
+                                    <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase text-right">Actions</th>
                                 </tr>
                             </thead>
-                            <tbody className="divide-y divide-gray-100 dark:divide-slate-700">
+                            <tbody className="divide-y divide-slate-100">
                                 {posts.length === 0 && !loading ? (
                                     <tr>
                                         <td colSpan="4" className="px-6 py-10 text-center text-gray-500">
@@ -334,23 +334,23 @@ const BlogManagerPage = () => {
                                     </tr>
                                 ) : (
                                     posts.map((post) => (
-                                        <tr key={post.id} className="hover:bg-gray-50 dark:hover:bg-slate-700/50 transition-colors">
+                                        <tr key={post.id} className="hover:bg-slate-50/50 transition-colors">
                                             <td className="px-6 py-4">
                                                 <div className="flex flex-col">
-                                                    <span className="font-semibold text-gray-900 dark:text-white line-clamp-1">{post.topic || post.seo_title}</span>
-                                                    <span className="text-xs text-gray-500 dark:text-gray-400 font-mono">/{post.slug}</span>
+                                                    <span className="font-semibold text-slate-900 line-clamp-1">{post.topic || post.seo_title}</span>
+                                                    <span className="text-xs text-slate-500 font-mono">/{post.slug}</span>
                                                 </div>
                                             </td>
                                             <td className="px-6 py-4">
                                                 <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${post.is_published
-                                                    ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300'
-                                                    : 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300'
+                                                    ? 'bg-green-100 text-green-800'
+                                                    : 'bg-amber-100 text-amber-800'
                                                     }`}>
                                                     {post.is_published ? 'Published' : 'Draft/Scheduled'}
                                                 </span>
                                             </td>
                                             <td className="px-6 py-4">
-                                                <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300">
+                                                <div className="flex items-center gap-2 text-sm text-slate-600">
                                                     <Calendar className="w-4 h-4" />
                                                     {new Date(post.publish_date || post.created_at).toLocaleDateString()}
                                                 </div>
@@ -360,34 +360,34 @@ const BlogManagerPage = () => {
                                                     <Link
                                                         to={`/blogs/${post.id}`}
                                                         target="_blank"
-                                                        className="p-2 text-gray-400 hover:text-indigo-600 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors"
+                                                        className="p-2 text-slate-400 hover:text-indigo-600 rounded-lg hover:bg-slate-100 transition-colors"
                                                     >
                                                         <Eye className="w-4 h-4" />
                                                     </Link>
                                                     <Link
                                                         to={`/blog/edit/${post.id}?type=${isAdmin && activeTab === 'client' ? 'client' : 'company'}`}
-                                                        className="p-2 text-gray-400 hover:text-indigo-600 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors"
+                                                        className="p-2 text-slate-400 hover:text-indigo-600 rounded-lg hover:bg-slate-100 transition-colors"
                                                     >
                                                         <Edit3 className="w-4 h-4" />
                                                     </Link>
                                                     <button
                                                         onClick={() => openNotifModal(post)}
                                                         disabled={sendingNotifId === post.id}
-                                                        className="p-2 text-gray-400 hover:text-amber-600 rounded-lg hover:bg-amber-50 dark:hover:bg-amber-900/20 transition-colors disabled:opacity-50"
+                                                        className="p-2 text-slate-400 hover:text-amber-600 rounded-lg hover:bg-amber-50 transition-colors disabled:opacity-50"
                                                         title="Send Push Notification"
                                                     >
                                                         <Bell className={`w-4 h-4 ${sendingNotifId === post.id ? 'animate-pulse' : ''}`} />
                                                     </button>
                                                     <button
                                                         onClick={() => openWpModal(post)}
-                                                        className="p-2 text-gray-400 hover:text-blue-600 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors"
+                                                        className="p-2 text-slate-400 hover:text-blue-600 rounded-lg hover:bg-blue-50 transition-colors"
                                                         title="Upload to WordPress"
                                                     >
                                                         <Upload className="w-4 h-4" />
                                                     </button>
                                                     <button
                                                         onClick={() => handleDelete(post.id)}
-                                                        className="p-2 text-gray-400 hover:text-red-600 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                                                        className="p-2 text-slate-400 hover:text-red-600 rounded-lg hover:bg-red-50 transition-colors"
                                                     >
                                                         <Trash2 className="w-4 h-4" />
                                                     </button>
@@ -404,14 +404,14 @@ const BlogManagerPage = () => {
                 {/* Push Notification Modal */}
                 {notifModal && (
                     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-                        <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl p-6 w-full max-w-md mx-4 border border-gray-200 dark:border-slate-700">
+                        <div className="bg-white rounded-2xl shadow-2xl p-6 w-full max-w-md mx-4 border border-slate-200">
                             <div className="flex items-center justify-between mb-5">
-                                <h3 className="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                                <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
                                     <Bell className="w-5 h-5 text-amber-500" />
                                     Send Push Notification
                                 </h3>
-                                <button onClick={() => setNotifModal(null)} className="p-1 hover:bg-gray-100 dark:hover:bg-slate-700 rounded-lg">
-                                    <X className="w-5 h-5 text-gray-400" />
+                                <button onClick={() => setNotifModal(null)} className="p-1 hover:bg-slate-100 rounded-lg">
+                                    <X className="w-5 h-5 text-slate-400" />
                                 </button>
                             </div>
                             <div className="space-y-4">
@@ -458,14 +458,14 @@ const BlogManagerPage = () => {
             {/* WordPress Upload Modal */}
             {wpModal && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-                    <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl p-6 w-full max-w-md mx-4 border border-gray-200 dark:border-slate-700 max-h-[90vh] overflow-y-auto">
+                    <div className="bg-white rounded-2xl shadow-2xl p-6 w-full max-w-md mx-4 border border-slate-200 max-h-[90vh] overflow-y-auto">
                         <div className="flex items-center justify-between mb-5">
-                            <h3 className="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                            <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
                                 <Upload className="w-5 h-5 text-blue-500" />
                                 {wpResult ? (wpResult.success ? 'Upload Complete' : 'Upload Failed') : wpModalView === 'add' ? 'Connect WordPress' : 'Upload to WordPress'}
                             </h3>
-                            <button onClick={closeWpModal} className="p-1 hover:bg-gray-100 dark:hover:bg-slate-700 rounded-lg">
-                                <X className="w-5 h-5 text-gray-400" />
+                            <button onClick={closeWpModal} className="p-1 hover:bg-slate-100 rounded-lg">
+                                <X className="w-5 h-5 text-slate-400" />
                             </button>
                         </div>
 
@@ -479,47 +479,47 @@ const BlogManagerPage = () => {
                         {/* Add new profile form */}
                         {!wpResult && !wpProfilesLoading && wpModalView === 'add' && (
                             <div className="space-y-3">
-                                <p className="text-xs text-gray-500 dark:text-gray-400">
+                                <p className="text-xs text-slate-500">
                                     Enter your WordPress site details. The app password is stored encrypted.
                                 </p>
                                 <div>
-                                    <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Profile Name</label>
+                                    <label className="block text-xs font-medium text-slate-700 mb-1">Profile Name</label>
                                     <input
                                         type="text"
                                         placeholder="e.g. My Blog"
                                         value={wpNewProfile.name}
                                         onChange={e => setWpNewProfile(p => ({ ...p, name: e.target.value }))}
-                                        className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-white text-sm"
+                                        className="w-full px-3 py-2 rounded-lg border border-slate-200 bg-white text-slate-900 text-sm"
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">WordPress URL</label>
+                                    <label className="block text-xs font-medium text-slate-700 mb-1">WordPress URL</label>
                                     <input
                                         type="url"
                                         placeholder="https://yoursite.com"
                                         value={wpNewProfile.url}
                                         onChange={e => setWpNewProfile(p => ({ ...p, url: e.target.value }))}
-                                        className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-white text-sm"
+                                        className="w-full px-3 py-2 rounded-lg border border-slate-200 bg-white text-slate-900 text-sm"
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Username</label>
+                                    <label className="block text-xs font-medium text-slate-700 mb-1">Username</label>
                                     <input
                                         type="text"
                                         placeholder="WordPress username"
                                         value={wpNewProfile.username}
                                         onChange={e => setWpNewProfile(p => ({ ...p, username: e.target.value }))}
-                                        className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-white text-sm"
+                                        className="w-full px-3 py-2 rounded-lg border border-slate-200 bg-white text-slate-900 text-sm"
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">App Password</label>
+                                    <label className="block text-xs font-medium text-slate-700 mb-1">App Password</label>
                                     <input
                                         type="password"
                                         placeholder="xxxx xxxx xxxx xxxx"
                                         value={wpNewProfile.password}
                                         onChange={e => setWpNewProfile(p => ({ ...p, password: e.target.value }))}
-                                        className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-white text-sm"
+                                        className="w-full px-3 py-2 rounded-lg border border-slate-200 bg-white text-slate-900 text-sm"
                                     />
                                     <p className="text-xs text-gray-400 mt-1">Generate in WP Admin → Users → Profile → Application Passwords</p>
                                 </div>
@@ -527,14 +527,14 @@ const BlogManagerPage = () => {
                                     {wpProfiles.length > 0 && (
                                         <button
                                             onClick={() => setWpModalView('select')}
-                                            className="flex-1 px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 text-gray-700 dark:text-gray-300 text-sm font-medium hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors"
+                                            className="flex-1 px-4 py-2 rounded-lg border border-slate-200 text-slate-700 text-sm font-medium hover:bg-slate-50 transition-colors"
                                         >
                                             Back
                                         </button>
                                     )}
                                     <button
                                         onClick={() => closeWpModal()}
-                                        className="px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 text-gray-700 dark:text-gray-300 text-sm font-medium hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors"
+                                        className="px-4 py-2 rounded-lg border border-slate-200 text-slate-700 text-sm font-medium hover:bg-slate-50 transition-colors"
                                     >
                                         Cancel
                                     </button>
@@ -621,8 +621,8 @@ const BlogManagerPage = () => {
                         {/* Select profile view */}
                         {!wpResult && !wpProfilesLoading && wpModalView === 'select' && wpProfiles.length === 0 && (
                             <div className="text-center py-6 space-y-3">
-                                <Globe className="w-10 h-10 text-gray-300 dark:text-gray-600 mx-auto" />
-                                <p className="text-sm text-gray-500 dark:text-gray-400">No WordPress sites connected yet.</p>
+                                <Globe className="w-10 h-10 text-slate-300 mx-auto" />
+                                <p className="text-sm text-slate-500">No WordPress sites connected yet.</p>
                                 <button
                                     onClick={() => setWpModalView('add')}
                                     className="px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold transition-colors"
@@ -636,21 +636,21 @@ const BlogManagerPage = () => {
                         {!wpResult && !wpProfilesLoading && wpModalView === 'select' && wpProfiles.length > 0 && (
                             <div className="space-y-4">
                                 {/* Post title */}
-                                <p className="text-sm font-semibold text-gray-800 dark:text-gray-200 bg-gray-50 dark:bg-slate-900/50 px-3 py-2 rounded-lg border border-gray-200 dark:border-slate-600 line-clamp-2">
+                                <p className="text-sm font-semibold text-slate-800 bg-slate-50 px-3 py-2 rounded-lg border border-slate-200 line-clamp-2">
                                     {wpModal.post.seo_title || wpModal.post.topic || 'Untitled'}
                                 </p>
 
                                 {/* Profile list */}
                                 <div className="space-y-2">
-                                    <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">Select Site</p>
+                                    <p className="text-xs font-medium text-slate-500 uppercase tracking-wide">Select Site</p>
                                     {wpProfiles.map(profile => (
                                         <div
                                             key={profile.id}
                                             onClick={() => setWpSelectedProfileId(profile.id)}
                                             className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg border text-left transition-colors group cursor-pointer ${
                                                 wpSelectedProfileId === profile.id
-                                                    ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
-                                                    : 'border-gray-200 dark:border-slate-600 hover:border-blue-300 dark:hover:border-blue-700'
+                                                    ? 'border-blue-500 bg-blue-50'
+                                                    : 'border-slate-200 hover:border-blue-300'
                                             }`}
                                         >
                                             <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
@@ -659,8 +659,8 @@ const BlogManagerPage = () => {
                                                 <Globe className={`w-4 h-4 ${wpSelectedProfileId === profile.id ? 'text-blue-600 dark:text-blue-400' : 'text-gray-400'}`} />
                                             </div>
                                             <div className="flex-1 min-w-0">
-                                                <p className="text-sm font-semibold text-gray-900 dark:text-white">{profile.name}</p>
-                                                <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{profile.wp_url}</p>
+                                                <p className="text-sm font-semibold text-slate-900">{profile.name}</p>
+                                                <p className="text-xs text-slate-500 truncate">{profile.wp_url}</p>
                                             </div>
                                             {wpSelectedProfileId === profile.id && (
                                                 <CheckCircle className="w-4 h-4 text-blue-600 dark:text-blue-400 flex-shrink-0" />
@@ -693,7 +693,7 @@ const BlogManagerPage = () => {
                                 <div className="flex gap-3 pt-1">
                                     <button
                                         onClick={closeWpModal}
-                                        className="flex-1 px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 text-gray-700 dark:text-gray-300 text-sm font-medium hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors"
+                                        className="flex-1 px-4 py-2 rounded-lg border border-slate-200 text-slate-700 text-sm font-medium hover:bg-slate-50 transition-colors"
                                     >
                                         Cancel
                                     </button>
@@ -733,7 +733,7 @@ const BlogManagerPage = () => {
                                     </a>
                                     <button
                                         onClick={closeWpModal}
-                                        className="flex-1 px-4 py-2 rounded-lg border border-gray-300 dark:border-slate-600 text-gray-700 dark:text-gray-300 text-sm font-medium hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors"
+                                        className="flex-1 px-4 py-2 rounded-lg border border-slate-200 text-slate-700 text-sm font-medium hover:bg-slate-50 transition-colors"
                                     >
                                         Close
                                     </button>

@@ -204,7 +204,7 @@ const HeroSection = ({ onOpenBooking }) => {
                                 ref={videoRef}
                                 src="/why_bitlance.mp4"
                                 className="w-full h-full object-cover"
-                                controls loop playsInline
+                                controls loop playsInline preload="metadata"
                                 onPlay={() => setManualPause(false)}
                                 onPause={() => {
                                     if (videoRef.current) {

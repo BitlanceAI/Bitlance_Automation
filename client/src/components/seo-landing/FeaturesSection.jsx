@@ -68,10 +68,10 @@ function FeatureCard({ icon, title, desc, bullets, accent, index, inView }) {
         {icon}
       </div>
       <h3 className="text-white font-bold text-lg mb-3">{title}</h3>
-      <p className="text-white/50 text-sm leading-relaxed mb-5">{desc}</p>
+      <p className="text-[#A0A0A0] text-sm leading-relaxed mb-5">{desc}</p>
       <ul className="space-y-2">
         {bullets.map((b, i) => (
-          <li key={i} className="flex items-center gap-2 text-sm text-white/60">
+          <li key={i} className="flex items-center gap-2 text-sm text-[#C0C0C0]">
             <div className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: accent }} />
             {b}
           </li>
@@ -108,7 +108,7 @@ export default function FeaturesSection() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ delay: 0.2 }}
-          className="mt-4 text-white/50 text-base sm:text-lg max-w-2xl mx-auto"
+          className="mt-4 text-[#A0A0A0] text-base sm:text-lg max-w-2xl mx-auto"
         >
           Everything a growing business needs to dominate organic search — no SEO agency required.
         </motion.p>

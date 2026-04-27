@@ -22,7 +22,7 @@ const CalendarView = () => {
         <div className="flex-1 p-8 bg-[#070707] overflow-y-auto w-full">
             <div className="max-w-6xl mx-auto space-y-8">
                 {/* Header */}
-                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-[#111111] p-5 border border-[#1E1E1E] rounded-[2px] shadow-[4px_4px_0_0_#26cece]">
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-[#111111] p-5 border border-[#1E1E1E] rounded-[2px] shadow-[0_2px_16px_0_rgba(0,0,0,0.4)]">
                     <div>
                         <h2 className="text-xl font-bold font-['Space_Grotesk'] text-white uppercase tracking-tight flex items-center gap-2">
                             <CalendarIcon className="w-5 h-5 text-[#26cece]" /> Content Calendar

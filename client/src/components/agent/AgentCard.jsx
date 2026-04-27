@@ -26,7 +26,7 @@ const AgentCard = ({
         border
         ${status === 'Coming Soon' 
             ? 'bg-gray-100 border-gray-200 opacity-70 cursor-not-allowed' 
-            : 'bg-white border-gray-200 hover:border-gray-300 hover:-translate-y-1 hover:shadow-[4px_4px_0_0_#26CECE] cursor-pointer'
+            : 'bg-white border-gray-200 hover:border-gray-300 hover:-translate-y-1 hover:shadow-[0_2px_16px_0_rgba(0,0,0,0.4)] cursor-pointer'
         }
       `}
         >

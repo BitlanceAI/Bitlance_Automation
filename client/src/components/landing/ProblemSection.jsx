@@ -61,7 +61,7 @@ const ProblemSection = () => (
                 <motion.p
                     initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.45, delay: 0.15 }} viewport={{ once: true }}
-                    className="mt-6 text-base text-gray-500 leading-relaxed"
+                    className="mt-6 text-base text-gray-700 leading-relaxed"
                 >
                     Traditional lead management is broken. We replace your manual bottlenecks with seamless, automated workflows.
                 </motion.p>
@@ -96,7 +96,7 @@ const ProblemSection = () => (
                                     <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 9, letterSpacing: '0.18em', color: '#3A3A3A', textDecoration: 'line-through', textDecorationColor: '#ef444460', textTransform: 'uppercase' }}>
                                         Before — {p.manualTitle}
                                     </span>
-                                    <p className="mt-2 text-sm text-black/25 line-through leading-relaxed" style={{ textDecorationColor: '#ef444430' }}>
+                                    <p className="mt-2 text-sm text-black/50 line-through leading-relaxed" style={{ textDecorationColor: '#ef444430' }}>
                                         {p.manualDesc}
                                     </p>
                                 </div>

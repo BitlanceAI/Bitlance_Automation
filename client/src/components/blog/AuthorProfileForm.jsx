@@ -84,7 +84,7 @@ const AuthorProfileForm = ({ formData, setFormData, showSaveOption = true, saveA
                             value={formData.name}
                             onChange={handleChange}
                             placeholder="e.g. John Doe"
-                            className="w-full pl-10 px-4 py-2.5 rounded-[2px] bg-[#070707] border border-[#333] focus:ring-0 focus:border-[#26cece] outline-none transition-all text-white font-mono text-[14px] placeholder-gray-600"
+                            className="w-full pl-10 px-4 py-2.5 rounded-[2px] bg-slate-50 border border-slate-200 focus:ring-0 focus:border-[#26cece] outline-none transition-all text-slate-900 font-mono text-[14px] placeholder-slate-400"
                         />
                     </div>
                 </div>
@@ -101,7 +101,7 @@ const AuthorProfileForm = ({ formData, setFormData, showSaveOption = true, saveA
                             value={formData.role}
                             onChange={handleChange}
                             placeholder="e.g. Senior Editor"
-                            className="w-full pl-10 px-4 py-2.5 rounded-[2px] bg-[#070707] border border-[#333] focus:ring-0 focus:border-[#26cece] outline-none transition-all text-white font-mono text-[14px] placeholder-gray-600"
+                            className="w-full pl-10 px-4 py-2.5 rounded-[2px] bg-slate-50 border border-slate-200 focus:ring-0 focus:border-[#26cece] outline-none transition-all text-slate-900 font-mono text-[14px] placeholder-slate-400"
                         />
                     </div>
                 </div>
@@ -119,7 +119,7 @@ const AuthorProfileForm = ({ formData, setFormData, showSaveOption = true, saveA
                         onChange={handleChange}
                         placeholder="Short biography..."
                         rows="3"
-                        className="w-full pl-10 px-4 py-3 rounded-[2px] bg-[#070707] border border-[#333] focus:ring-0 focus:border-[#26cece] outline-none transition-all text-white font-mono text-[14px] placeholder-gray-600 custom-scrollbar"
+                        className="w-full pl-10 px-4 py-3 rounded-[2px] bg-slate-50 border border-slate-200 focus:ring-0 focus:border-[#26cece] outline-none transition-all text-slate-900 font-mono text-[14px] placeholder-slate-400 custom-scrollbar"
                     />
                 </div>
             </div>
@@ -130,14 +130,14 @@ const AuthorProfileForm = ({ formData, setFormData, showSaveOption = true, saveA
                 </label>
 
                 {formData.profile_image ? (
-                    <div className="flex items-center gap-4 p-3 bg-[#111111] rounded-[2px] border border-[#333]">
+                    <div className="flex items-center gap-4 p-3 bg-slate-50 rounded-[2px] border border-slate-200">
                         <img
                             src={formData.profile_image}
                             alt="Profile"
                             className="w-16 h-16 rounded-[2px] object-cover shadow-sm"
                         />
                         <div className="flex-1 overflow-hidden">
-                            <p className="text-[12px] font-mono tracking-widest uppercase text-white truncate">Image Uploaded</p>
+                            <p className="text-[12px] font-mono tracking-widest uppercase text-slate-900 truncate">Image Uploaded</p>
                             <button
                                 type="button"
                                 onClick={removeImage}
@@ -160,8 +160,8 @@ const AuthorProfileForm = ({ formData, setFormData, showSaveOption = true, saveA
                         <label
                             htmlFor="profile-image-upload"
                             className={`flex flex-col items-center justify-center gap-2 w-full p-4 rounded-[2px] border-2 border-dashed cursor-pointer transition-colors ${uploading
-                                    ? 'bg-[#111111] border-[#333] cursor-not-allowed'
-                                    : 'bg-[#070707] border-[#333] hover:border-[#26cece] hover:bg-[#111111]'
+                                    ? 'bg-slate-50 border-slate-200 cursor-not-allowed'
+                                    : 'bg-white border-slate-200 hover:border-[#26cece] hover:bg-slate-50'
                                 }`}
                         >
                             {uploading ? (
@@ -197,7 +197,7 @@ const AuthorProfileForm = ({ formData, setFormData, showSaveOption = true, saveA
                             value={formData.social_links?.facebook || ''}
                             onChange={handleSocialChange}
                             placeholder="Facebook URL"
-                            className="w-full pl-9 px-3 py-2.5 rounded-[2px] bg-[#070707] border border-[#333] focus:ring-0 focus:border-[#26cece] outline-none transition-all text-white font-mono text-[14px] placeholder-gray-600"
+                            className="w-full pl-9 px-3 py-2.5 rounded-[2px] bg-slate-50 border border-slate-200 focus:ring-0 focus:border-[#26cece] outline-none transition-all text-slate-900 font-mono text-[14px] placeholder-slate-400"
                         />
                     </div>
                     <div className="relative">
@@ -208,7 +208,7 @@ const AuthorProfileForm = ({ formData, setFormData, showSaveOption = true, saveA
                             value={formData.social_links?.twitter || ''}
                             onChange={handleSocialChange}
                             placeholder="Twitter/X URL"
-                            className="w-full pl-9 px-3 py-2.5 rounded-[2px] bg-[#070707] border border-[#333] focus:ring-0 focus:border-[#26cece] outline-none transition-all text-white font-mono text-[14px] placeholder-gray-600"
+                            className="w-full pl-9 px-3 py-2.5 rounded-[2px] bg-slate-50 border border-slate-200 focus:ring-0 focus:border-[#26cece] outline-none transition-all text-slate-900 font-mono text-[14px] placeholder-slate-400"
                         />
                     </div>
                     <div className="relative">
@@ -219,7 +219,7 @@ const AuthorProfileForm = ({ formData, setFormData, showSaveOption = true, saveA
                             value={formData.social_links?.linkedin || ''}
                             onChange={handleSocialChange}
                             placeholder="LinkedIn URL"
-                            className="w-full pl-9 px-3 py-2.5 rounded-[2px] bg-[#070707] border border-[#333] focus:ring-0 focus:border-[#26cece] outline-none transition-all text-white font-mono text-[14px] placeholder-gray-600"
+                            className="w-full pl-9 px-3 py-2.5 rounded-[2px] bg-slate-50 border border-slate-200 focus:ring-0 focus:border-[#26cece] outline-none transition-all text-slate-900 font-mono text-[14px] placeholder-slate-400"
                         />
                     </div>
                     <div className="relative">
@@ -230,7 +230,7 @@ const AuthorProfileForm = ({ formData, setFormData, showSaveOption = true, saveA
                             value={formData.social_links?.website || ''}
                             onChange={handleSocialChange}
                             placeholder="Website URL"
-                            className="w-full pl-9 px-3 py-2.5 rounded-[2px] bg-[#070707] border border-[#333] focus:ring-0 focus:border-[#26cece] outline-none transition-all text-white font-mono text-[14px] placeholder-gray-600"
+                            className="w-full pl-9 px-3 py-2.5 rounded-[2px] bg-slate-50 border border-slate-200 focus:ring-0 focus:border-[#26cece] outline-none transition-all text-slate-900 font-mono text-[14px] placeholder-slate-400"
                         />
                     </div>
                     <div className="relative">
@@ -241,7 +241,7 @@ const AuthorProfileForm = ({ formData, setFormData, showSaveOption = true, saveA
                             value={formData.social_links?.email || ''}
                             onChange={handleSocialChange}
                             placeholder="Email Address"
-                            className="w-full pl-9 px-3 py-2.5 rounded-[2px] bg-[#070707] border border-[#333] focus:ring-0 focus:border-[#26cece] outline-none transition-all text-white font-mono text-[14px] placeholder-gray-600"
+                            className="w-full pl-9 px-3 py-2.5 rounded-[2px] bg-slate-50 border border-slate-200 focus:ring-0 focus:border-[#26cece] outline-none transition-all text-slate-900 font-mono text-[14px] placeholder-slate-400"
                         />
                     </div>
                     <div className="relative">
@@ -252,20 +252,20 @@ const AuthorProfileForm = ({ formData, setFormData, showSaveOption = true, saveA
                             value={formData.social_links?.phone || ''}
                             onChange={handleSocialChange}
                             placeholder="Phone Number"
-                            className="w-full pl-9 px-3 py-2.5 rounded-[2px] bg-[#070707] border border-[#333] focus:ring-0 focus:border-[#26cece] outline-none transition-all text-white font-mono text-[14px] placeholder-gray-600"
+                            className="w-full pl-9 px-3 py-2.5 rounded-[2px] bg-slate-50 border border-slate-200 focus:ring-0 focus:border-[#26cece] outline-none transition-all text-slate-900 font-mono text-[14px] placeholder-slate-400"
                         />
                     </div>
                 </div>
             </div>
 
             {showSaveOption && (
-                <div className="flex items-center gap-3 pt-4 border-t border-[#333] mt-2">
+                <div className="flex items-center gap-3 pt-4 border-t border-slate-200 mt-2">
                     <input
                         type="checkbox"
                         id="saveAsProfile"
                         checked={saveAsProfile}
                         onChange={(e) => setSaveAsProfile(e.target.checked)}
-                        className="w-4 h-4 bg-[#070707] border-[#333] text-[#26cece] focus:ring-0 rounded-[2px]"
+                        className="w-4 h-4 bg-slate-50 border-slate-200 text-[#26cece] focus:ring-0 rounded-[2px]"
                     />
                     <label htmlFor="saveAsProfile" className="text-[12px] font-mono tracking-widest uppercase text-gray-400 cursor-pointer">
                         Save this as a new Author Profile for future use

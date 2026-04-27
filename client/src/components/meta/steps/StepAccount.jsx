@@ -22,7 +22,7 @@ const StepAccount = ({ pages, selectedPageId, onSelect }) => {
                             key={page.id}
                             onClick={() => onSelect(page.id)}
                             className={`p-5 border cursor-pointer transition-all flex flex-col gap-2 rounded-none group ${selectedPageId === page.id
-                                    ? 'border-[#26cece] bg-[#26cece]/10 shadow-[4px_4px_0_0_#26cece] -translate-y-1'
+                                    ? 'border-[#26cece] bg-[#26cece]/10 shadow-[0_2px_16px_0_rgba(0,0,0,0.4)] -translate-y-1'
                                     : 'border-[#333] bg-[#111111] hover:border-[#26cece] hover:bg-[#070707]'
                                 }`}
                         >

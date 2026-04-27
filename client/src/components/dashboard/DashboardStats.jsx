@@ -7,23 +7,23 @@ const StatCard = ({ title, value, icon: Icon, color, subtext }) => {
     const iconColor = color.split(' ').find(c => c.startsWith('text-')) || 'text-[#26CECE]';
     
     return (
-        <div className="bg-[#111111] rounded-[2px] p-6 border border-[#1E1E1E] transition-all hover:border-[#333] hover:bg-[#151515] relative group overflow-hidden">
+        <div className="bg-slate-50 rounded-[2px] p-6 border border-slate-200 transition-all hover:border-slate-300 hover:bg-slate-100 relative group overflow-hidden">
             {/* Left Accent Bar on Hover */}
             <div className="absolute top-0 left-0 w-1 h-full bg-[#26CECE] opacity-0 group-hover:opacity-100 transition-opacity"></div>
             
             <div className="flex items-center justify-between mb-5">
-                <div className={`text-white p-2 border border-[#222] bg-[#070707] rounded-[2px]`}>
+                <div className={`text-slate-900 p-2 border border-slate-200 bg-white rounded-[2px]`}>
                     <Icon size={20} className={iconColor} />
                 </div>
                 {subtext && (
-                    <span className="text-[10px] font-mono tracking-widest uppercase text-gray-500 bg-[#1A1A1A] px-2 py-1 rounded-[2px] border border-[#222]">
+                    <span className="text-[10px] font-mono tracking-widest uppercase text-slate-500 bg-white px-2 py-1 rounded-[2px] border border-slate-200">
                         {subtext}
                     </span>
                 )}
             </div>
             <div>
-                <h3 className="text-[13px] font-sans font-medium text-gray-400 mb-2 font-['Space_Grotesk'] tracking-tight">{title}</h3>
-                <div className="text-[32px] font-mono font-medium text-white tracking-tight leading-none">{value}</div>
+                <h3 className="text-[13px] font-sans font-medium text-slate-500 mb-2 font-['Space_Grotesk'] tracking-tight">{title}</h3>
+                <div className="text-[32px] font-mono font-medium text-slate-900 tracking-tight leading-none">{value}</div>
             </div>
         </div>
     );

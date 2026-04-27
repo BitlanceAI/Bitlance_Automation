@@ -39,12 +39,12 @@ import {
 // Input field component
 const InputField = ({ icon: Icon, label, name, value, onChange, type = 'text', placeholder, required = true, colSpan = false }) => (
     <div className={colSpan ? 'md:col-span-2' : ''}>
-        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+        <label className="block text-sm font-medium text-slate-700 mb-2">
             {label} {required && <span className="text-rose-500">*</span>}
         </label>
         <div className="relative group">
             <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                <Icon className="h-5 w-5 text-gray-400 group-focus-within:text-violet-500 transition-colors" />
+                <Icon className="h-5 w-5 text-slate-400 group-focus-within:text-[#26cece] transition-colors" />
             </div>
             <input
                 type={type}
@@ -53,7 +53,7 @@ const InputField = ({ icon: Icon, label, name, value, onChange, type = 'text', p
                 onChange={onChange}
                 placeholder={placeholder}
                 required={required}
-                className="w-full pl-12 pr-4 py-3.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-slate-800/80 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 dark:focus:border-violet-400 transition-all duration-300 outline-none hover:border-gray-300 dark:hover:border-gray-600 shadow-sm"
+                className="w-full pl-12 pr-4 py-3.5 rounded-[2px] border border-slate-200 bg-white text-slate-900 placeholder-slate-400 focus:ring-2 focus:ring-[#26cece]/20 focus:border-[#26cece] transition-all duration-300 outline-none hover:border-slate-300 shadow-sm font-sans"
             />
         </div>
     </div>
@@ -62,25 +62,25 @@ const InputField = ({ icon: Icon, label, name, value, onChange, type = 'text', p
 // Select field component
 const SelectField = ({ icon: Icon, label, name, value, onChange, options, colSpan = false }) => (
     <div className={colSpan ? 'md:col-span-2' : ''}>
-        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+        <label className="block text-sm font-medium text-slate-700 mb-2">
             {label}
         </label>
         <div className="relative group">
             <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                <Icon className="h-5 w-5 text-gray-400 group-focus-within:text-violet-500 transition-colors" />
+                <Icon className="h-5 w-5 text-slate-400 group-focus-within:text-[#26cece] transition-colors" />
             </div>
             <select
                 name={name}
                 value={value}
                 onChange={onChange}
-                className="w-full pl-12 pr-10 py-3.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-slate-800/80 text-gray-900 dark:text-white focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 dark:focus:border-violet-400 transition-all duration-300 outline-none appearance-none shadow-sm cursor-pointer hover:border-gray-300 dark:hover:border-gray-600"
+                className="w-full pl-12 pr-10 py-3.5 rounded-[2px] border border-slate-200 bg-white text-slate-900 focus:ring-2 focus:ring-[#26cece]/20 focus:border-[#26cece] transition-all duration-300 outline-none appearance-none shadow-sm cursor-pointer hover:border-slate-300 font-sans"
             >
                 {options.map(opt => (
                     <option key={opt.value} value={opt.value}>{opt.label}</option>
                 ))}
             </select>
             <div className="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none">
-                <svg className="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg className="h-5 w-5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
                 </svg>
             </div>
@@ -327,30 +327,30 @@ const GraphicDesignerPage = () => {
     };
 
     return (
-        <div className="min-h-screen bg-[#FAFAFA] dark:bg-[#0B0F19]">
+        <div className="min-h-screen bg-white transition-colors duration-300 pt-24 font-['Space_Grotesk']">
 
             {/* Premium Header */}
-            <header className="sticky top-0 z-50 backdrop-blur-2xl bg-white/70 dark:bg-[#0B0F19]/70 border-b border-gray-200/50 dark:border-gray-800/50">
+            <header className="sticky top-0 z-50 bg-white border-b border-slate-200">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex items-center justify-between h-20">
                         <div className="flex items-center gap-5">
                             <button
                                 onClick={() => navigate('/agents')}
-                                className="p-2.5 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-300 transition-colors"
+                                className="p-2.5 rounded-[2px] hover:bg-slate-50 text-slate-400 transition-colors border border-transparent hover:border-slate-200"
                                 title="Back to Agents"
                             >
                                 <ArrowLeft size={22} />
                             </button>
                             <div className="flex items-center gap-3.5">
-                                <div className="p-2.5 rounded-2xl bg-gradient-to-tr from-violet-600 to-fuchsia-600 shadow-lg shadow-violet-500/30">
+                                <div className="p-2.5 rounded-[2px] bg-[#26cece] shadow-lg shadow-[#26cece]/20">
                                     <Palette className="h-6 w-6 text-white" />
                                 </div>
                                 <div>
-                                    <h1 className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-300">
+                                    <h1 className="text-xl font-bold text-[#26cece] uppercase tracking-tight">
                                         Graphic AI Studio
                                     </h1>
-                                    <p className="text-sm text-gray-500 dark:text-gray-400 font-medium">
-                                        Hyper-realistic visual generation
+                                    <p className="text-[10px] text-slate-500 font-mono uppercase tracking-widest">
+                                        Visual Generation
                                     </p>
                                 </div>
                             </div>
@@ -358,14 +358,14 @@ const GraphicDesignerPage = () => {
 
                         <div className="flex items-center gap-4">
                             {/* Credits Display */}
-                            <div className="hidden sm:flex items-center gap-3 px-5 py-2.5 rounded-2xl bg-white dark:bg-gray-800/50 border border-gray-200/50 dark:border-gray-700/50 shadow-sm">
-                                <div className="p-1.5 rounded-xl bg-gradient-to-br from-amber-400 to-orange-500">
+                            <div className="hidden sm:flex items-center gap-3 px-5 py-2.5 rounded-[2px] bg-slate-50 border border-slate-200 shadow-sm">
+                                <div className="p-1.5 rounded-[2px] bg-[#26cece]">
                                     <Zap className="h-4 w-4 text-white" />
                                 </div>
                                 <div>
-                                    <p className="text-[11px] font-semibold tracking-wider uppercase text-gray-500 dark:text-gray-400">Balance</p>
-                                    <p className="text-base font-bold text-gray-900 dark:text-white leading-none mt-0.5">
-                                        {credits.toLocaleString()} <span className="text-sm font-normal text-gray-500">cr</span>
+                                    <p className="text-[10px] font-bold font-mono tracking-widest uppercase text-slate-500">Balance</p>
+                                    <p className="text-base font-bold text-slate-900 leading-none mt-0.5">
+                                        {credits.toLocaleString()} <span className="text-xs font-normal text-[#26cece]">CR</span>
                                     </p>
                                 </div>
                             </div>
@@ -377,25 +377,25 @@ const GraphicDesignerPage = () => {
             <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
 
                 {/* Navigation Tabs */}
-                <div className="flex items-center gap-2 mb-8 border-b border-gray-200 dark:border-gray-800">
+                <div className="flex items-center gap-2 mb-8 border-b border-slate-200">
                     <button
                         onClick={() => setActiveTab('create')}
-                        className={`px-6 py-4 font-semibold text-sm tracking-wide transition-all border-b-2 ${activeTab === 'create'
-                            ? 'border-violet-500 text-violet-600 dark:text-violet-400'
-                            : 'border-transparent text-gray-500 hover:text-gray-900 dark:hover:text-gray-300'
+                        className={`px-6 py-4 text-[12px] font-mono tracking-widest uppercase font-bold transition-all border-b-2 ${activeTab === 'create'
+                            ? 'border-[#26cece] text-[#26cece]'
+                            : 'border-transparent text-slate-500 hover:text-slate-900'
                             }`}
                     >
                         Create Design
                     </button>
                     <button
                         onClick={() => setActiveTab('history')}
-                        className={`px-6 py-4 font-semibold text-sm tracking-wide transition-all border-b-2 flex items-center gap-2 ${activeTab === 'history'
-                            ? 'border-violet-500 text-violet-600 dark:text-violet-400'
-                            : 'border-transparent text-gray-500 hover:text-gray-900 dark:hover:text-gray-300'
+                        className={`px-6 py-4 text-[12px] font-mono tracking-widest uppercase font-bold transition-all border-b-2 flex items-center gap-2 ${activeTab === 'history'
+                            ? 'border-[#26cece] text-[#26cece]'
+                            : 'border-transparent text-slate-500 hover:text-slate-900'
                             }`}
                     >
                         Gallery History
-                        <span className="bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 py-0.5 px-2 rounded-full text-xs">
+                        <span className="bg-slate-100 text-slate-600 py-0.5 px-2 rounded-[2px] text-[10px]">
                             {jobs.length}
                         </span>
                     </button>
@@ -403,31 +403,31 @@ const GraphicDesignerPage = () => {
 
                 {activeTab === 'create' ? (
                     <div className="max-w-3xl mx-auto">
-                        <div className="bg-white dark:bg-[#111827] rounded-[2rem] border border-gray-200/60 dark:border-gray-800 shadow-xl overflow-hidden">
-                            <div className="p-8 border-b border-gray-100 dark:border-gray-800 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                        <div className="bg-slate-50 rounded-[2px] border border-slate-200 shadow-sm overflow-hidden">
+                            <div className="p-8 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                                 <div className="flex items-center gap-4">
-                                    <div className="p-3 rounded-2xl bg-violet-100 dark:bg-violet-900/30 text-violet-600 dark:text-violet-400">
+                                    <div className="p-3 rounded-[2px] bg-white border border-slate-200 text-[#26cece]">
                                         <Image className="h-6 w-6" />
                                     </div>
                                     <div>
-                                        <h2 className="text-xl font-bold text-gray-900 dark:text-white">Design Parameters</h2>
-                                        <p className="text-sm text-gray-500 mt-1">Configure your AI generation</p>
+                                        <h2 className="text-xl font-bold text-slate-900 uppercase tracking-tight">Design Parameters</h2>
+                                        <p className="text-xs text-slate-500 font-sans tracking-tight">Configure your AI generation</p>
                                     </div>
                                 </div>
                                 
                                 {/* Creation Mode Toggle */}
-                                <div className="flex bg-gray-100 dark:bg-gray-800 p-1 rounded-xl shrink-0">
+                                <div className="flex bg-white border border-slate-200 p-1 rounded-[2px] shrink-0">
                                     <button
                                         type="button"
                                         onClick={() => setCreationMode('form')}
-                                        className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all ${creationMode === 'form' ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'}`}
+                                        className={`px-4 py-2 rounded-[2px] text-[10px] font-mono tracking-widest uppercase font-bold transition-all ${creationMode === 'form' ? 'bg-[#26cece] text-white shadow-sm' : 'text-slate-500 hover:text-slate-900'}`}
                                     >
                                         Details Form
                                     </button>
                                     <button
                                         type="button"
                                         onClick={() => setCreationMode('prompt')}
-                                        className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all ${creationMode === 'prompt' ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'}`}
+                                        className={`px-4 py-2 rounded-[2px] text-[10px] font-mono tracking-widest uppercase font-bold transition-all ${creationMode === 'prompt' ? 'bg-[#26cece] text-white shadow-sm' : 'text-slate-500 hover:text-slate-900'}`}
                                     >
                                         Custom Prompt
                                     </button>
@@ -438,7 +438,7 @@ const GraphicDesignerPage = () => {
                                 {creationMode === 'form' ? (
                                     <>
                                         <div className="space-y-6">
-                                            <h3 className="text-sm font-bold tracking-wider text-gray-400 uppercase">Core Details</h3>
+                                            <h3 className="text-[10px] font-bold tracking-widest text-slate-400 uppercase font-mono">Core Details</h3>
                                             <InputField
                                                 icon={Building2}
                                                 label="Business / Property Type"
@@ -479,10 +479,10 @@ const GraphicDesignerPage = () => {
                                             />
                                         </div>
 
-                                        <div className="h-px bg-gray-100 dark:bg-gray-800" />
+                                        <div className="h-px bg-slate-200" />
 
                                         <div className="space-y-6">
-                                            <h3 className="text-sm font-bold tracking-wider text-gray-400 uppercase">Contact & Business Details</h3>
+                                            <h3 className="text-[10px] font-bold tracking-widest text-slate-400 uppercase font-mono">Contact & Business Details</h3>
                                             <div className="grid grid-cols-2 gap-4">
                                                 <InputField
                                                     icon={UserCircle}
@@ -525,10 +525,10 @@ const GraphicDesignerPage = () => {
                                             </div>
                                         </div>
 
-                                        <div className="h-px bg-gray-100 dark:bg-gray-800" />
+                                        <div className="h-px bg-slate-200" />
 
                                         <div className="space-y-6">
-                                            <h3 className="text-sm font-bold tracking-wider text-gray-400 uppercase">Context & Details</h3>
+                                            <h3 className="text-[10px] font-bold tracking-widest text-slate-400 uppercase font-mono">Context & Details</h3>
                                             <InputField
                                                 icon={ListChecks}
                                                 label="Features / Amenities"
@@ -587,9 +587,9 @@ const GraphicDesignerPage = () => {
                                     </>
                                 ) : (
                                     <div className="space-y-6">
-                                        <h3 className="text-sm font-bold tracking-wider text-gray-400 uppercase">Custom Design Prompt</h3>
+                                        <h3 className="text-[10px] font-bold tracking-widest text-slate-400 uppercase font-mono">Custom Design Prompt</h3>
                                         <div>
-                                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                            <label className="block text-sm font-medium text-slate-700 mb-2">
                                                 Describe your concept <span className="text-rose-500">*</span>
                                             </label>
                                             <textarea
@@ -598,16 +598,16 @@ const GraphicDesignerPage = () => {
                                                 placeholder="e.g. A hyper-realistic 8k render of a modern beachfront villa or a vibrant tech startup office with neon lighting..."
                                                 required
                                                 rows={8}
-                                                className="w-full p-4 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-slate-800/80 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 dark:focus:border-violet-400 transition-all duration-300 outline-none hover:border-gray-300 dark:hover:border-gray-600 shadow-sm resize-none"
+                                                className="w-full p-4 rounded-[2px] border border-slate-200 bg-white text-slate-900 placeholder-slate-400 focus:ring-2 focus:ring-[#26cece]/20 focus:border-[#26cece] transition-all duration-300 outline-none hover:border-slate-300 shadow-sm resize-none font-sans"
                                             />
                                         </div>
                                     </div>
                                 )}
 
-                                <div className="h-px bg-gray-100 dark:bg-gray-800" />
+                                <div className="h-px bg-slate-200" />
 
                                 <div className="space-y-6">
-                                    <h3 className="text-sm font-bold tracking-wider text-gray-400 uppercase">Output Settings</h3>
+                                    <h3 className="text-[10px] font-bold tracking-widest text-slate-400 uppercase font-mono">Output Settings</h3>
                                     <div className="grid grid-cols-2 gap-4">
                                         <SelectField
                                             icon={Maximize}
@@ -643,9 +643,9 @@ const GraphicDesignerPage = () => {
                                     <button
                                         type="submit"
                                         disabled={loading || (!isAdmin && credits < COST_PER_FLYER)}
-                                        className="w-full relative group overflow-hidden rounded-2xl bg-gray-900 dark:bg-white text-white dark:text-gray-900 py-4 px-6 font-bold text-lg transition-all duration-300 hover:shadow-xl hover:-translate-y-1 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:shadow-none disabled:hover:translate-y-0"
+                                        className="w-full relative group overflow-hidden rounded-[2px] bg-slate-900 text-white py-4 px-6 font-bold text-[14px] uppercase tracking-widest transition-all duration-300 hover:shadow-xl hover:-translate-y-1 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:shadow-none disabled:hover:translate-y-0"
                                     >
-                                        <div className="absolute inset-0 bg-gradient-to-r from-violet-600 to-fuchsia-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                                        <div className="absolute inset-0 bg-[#26cece] opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                                         <span className="relative flex items-center justify-center gap-2">
                                             {loading ? (
                                                 <>
@@ -672,14 +672,14 @@ const GraphicDesignerPage = () => {
                             {/* Stats */}
                             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                                 {[
-                                    { label: 'Generations', value: stats.total, color: 'text-violet-600 dark:text-violet-400' },
-                                    { label: 'Completed', value: stats.completed, color: 'text-emerald-600 dark:text-emerald-400' },
-                                    { label: 'In Progress', value: stats.pending, color: 'text-amber-600 dark:text-amber-400' },
-                                    { label: 'Failed', value: stats.failed, color: 'text-rose-600 dark:text-rose-400' }
+                                    { label: 'Generations', value: stats.total, color: 'text-[#26cece]' },
+                                    { label: 'Completed', value: stats.completed, color: 'text-emerald-500' },
+                                    { label: 'In Progress', value: stats.pending, color: 'text-amber-500' },
+                                    { label: 'Failed', value: stats.failed, color: 'text-rose-500' }
                                 ].map((stat) => (
-                                    <div key={stat.label} className="bg-white dark:bg-[#111827] rounded-2xl p-6 border border-gray-200/60 dark:border-gray-800 shadow-sm">
+                                    <div key={stat.label} className="bg-slate-50 rounded-[2px] p-6 border border-slate-200 shadow-sm">
                                         <p className={`text-3xl font-black mb-1 ${stat.color}`}>{stat.value}</p>
-                                        <p className="text-sm font-medium text-gray-500 dark:text-gray-400">{stat.label}</p>
+                                        <p className="text-[10px] font-bold font-mono tracking-widest uppercase text-slate-500">{stat.label}</p>
                                     </div>
                                 ))}
                             </div>
@@ -687,15 +687,15 @@ const GraphicDesignerPage = () => {
                             {/* Gallery Header */}
                             <div className="flex items-center justify-between">
                                 <div>
-                                    <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Studio Gallery</h2>
-                                    <p className="text-gray-500 dark:text-gray-400 mt-1">Review your recent AI generations</p>
+                                    <h2 className="text-2xl font-bold text-slate-900 uppercase tracking-tight">Studio Gallery</h2>
+                                    <p className="text-xs text-slate-500 font-sans tracking-tight">Review your recent AI generations</p>
                                 </div>
                                 <button
                                     onClick={handleRefresh}
-                                    className="p-3 rounded-full bg-white dark:bg-[#111827] border border-gray-200 dark:border-gray-800 shadow-sm hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-300 transition-colors group"
+                                    className="p-3 rounded-[2px] bg-white border border-slate-200 shadow-sm hover:bg-slate-50 text-slate-400 transition-colors group"
                                     title="Refresh Gallery"
                                 >
-                                    <RefreshCw className={`h-5 w-5 group-hover:text-violet-500 transition-colors ${refreshing ? 'animate-spin text-violet-500' : ''}`} />
+                                    <RefreshCw className={`h-5 w-5 group-hover:text-[#26cece] transition-colors ${refreshing ? 'animate-spin text-[#26cece]' : ''}`} />
                                 </button>
                             </div>
 
@@ -705,9 +705,9 @@ const GraphicDesignerPage = () => {
                                     <button
                                         key={status}
                                         onClick={() => setFilter(status)}
-                                        className={`px-5 py-2.5 rounded-full text-sm font-semibold transition-all duration-300 ${filter === status
-                                            ? 'bg-gray-900 dark:bg-white text-white dark:text-gray-900 shadow-md'
-                                            : 'bg-white dark:bg-[#111827] border border-gray-200 dark:border-gray-800 text-gray-600 dark:text-gray-400 hover:border-gray-300 dark:hover:border-gray-700 hover:text-gray-900 dark:hover:text-white'
+                                        className={`px-5 py-2.5 rounded-[2px] text-[10px] font-mono tracking-widest uppercase font-bold transition-all duration-300 ${filter === status
+                                            ? 'bg-slate-900 text-white shadow-md'
+                                            : 'bg-white border border-slate-200 text-slate-500 hover:border-slate-300 hover:text-slate-900'
                                             }`}
                                     >
                                         {status.charAt(0).toUpperCase() + status.slice(1)}
@@ -717,14 +717,14 @@ const GraphicDesignerPage = () => {
 
                             {/* Gallery Grid */}
                             {filteredJobs.length === 0 ? (
-                                <div className="flex flex-col items-center justify-center p-16 bg-white/50 dark:bg-[#111827]/50 rounded-[2rem] border border-dashed border-gray-300 dark:border-gray-800">
-                                    <div className="w-24 h-24 mb-6 rounded-full bg-violet-100 dark:bg-violet-900/20 flex items-center justify-center">
-                                        <Image className="h-10 w-10 text-violet-500" />
+                                <div className="flex flex-col items-center justify-center p-16 bg-slate-50 rounded-[2px] border border-dashed border-slate-300">
+                                    <div className="w-24 h-24 mb-6 rounded-[2px] bg-white border border-slate-200 flex items-center justify-center">
+                                        <Image className="h-10 w-10 text-[#26cece]" />
                                     </div>
-                                    <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
+                                    <h3 className="text-xl font-bold text-slate-900 mb-2 uppercase tracking-tight">
                                         Your Gallery is Empty
                                     </h3>
-                                    <p className="text-gray-500 dark:text-gray-400 text-center max-w-md">
+                                    <p className="text-slate-500 text-center max-w-md font-sans tracking-tight">
                                         Configure parameters on the left and hit "Generate Concept" to start creating stunning architectural visuals.
                                     </p>
                                 </div>
@@ -739,28 +739,28 @@ const GraphicDesignerPage = () => {
                                             return [(
                                                 <div
                                                     key={job.id}
-                                                    className="group flex flex-col bg-white dark:bg-[#111827] rounded-[1.5rem] border border-gray-200/60 dark:border-gray-800 shadow-sm hover:shadow-xl hover:border-violet-300 dark:hover:border-violet-800/50 transition-all duration-300 overflow-hidden"
+                                                    className="group flex flex-col bg-white rounded-[2px] border border-slate-200 shadow-sm hover:shadow-xl hover:border-[#26cece] transition-all duration-300 overflow-hidden"
                                                 >
-                                                    <div className="relative aspect-[4/3] bg-gray-100 dark:bg-gray-900 overflow-hidden">
+                                                    <div className="relative aspect-[4/3] bg-slate-50 overflow-hidden">
                                                         <div className="absolute inset-0 flex flex-col items-center justify-center p-6 text-center">
                                                             <StatusIcon className={`h-10 w-10 mb-4 ${statusConfig.color} ${statusConfig.animate ? 'animate-spin' : ''}`} />
-                                                            <p className={`font-semibold ${statusConfig.color}`}>{statusConfig.label}</p>
+                                                            <p className={`text-[10px] font-bold font-mono tracking-widest uppercase ${statusConfig.color}`}>{statusConfig.label}</p>
                                                         </div>
-                                                        <div className={`absolute top-4 right-4 flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-bold uppercase tracking-wider ${statusConfig.bg} ${statusConfig.color} backdrop-blur-md`}>
+                                                        <div className={`absolute top-4 right-4 flex items-center gap-1.5 px-3 py-1.5 rounded-[2px] text-[8px] font-bold uppercase tracking-widest ${statusConfig.bg} ${statusConfig.color} border ${statusConfig.border}`}>
                                                             {statusConfig.label}
                                                         </div>
                                                     </div>
                                                     <div className="p-5">
-                                                        <h3 className="font-bold text-lg text-gray-900 dark:text-white mb-1 line-clamp-1">
+                                                        <h3 className="font-bold text-lg text-slate-900 mb-1 line-clamp-1 uppercase tracking-tight">
                                                             {job.property_type || 'Custom Design'}
                                                         </h3>
-                                                        <p className="text-sm text-gray-500 dark:text-gray-400 flex items-center gap-1.5 line-clamp-1">
-                                                            <MapPin className="h-4 w-4 shrink-0" />
+                                                        <p className="text-xs text-slate-500 flex items-center gap-1.5 line-clamp-1 font-sans">
+                                                            <MapPin className="h-4 w-4 shrink-0 text-[#26cece]" />
                                                             <span className="truncate">{job.location || 'Custom Prompt'}</span>
                                                         </p>
-                                                        <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-800 flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
-                                                            <span>{new Date(job.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}</span>
-                                                            <span className="px-2 py-1 bg-gray-100 dark:bg-gray-800 rounded-md font-medium">
+                                                        <div className="mt-4 pt-4 border-t border-slate-100 flex items-center justify-between text-[10px] font-mono font-bold text-slate-400 uppercase tracking-widest">
+                                                            <span>{new Date(job.created_at).toLocaleDateString()}</span>
+                                                            <span className="px-2 py-1 bg-slate-50 border border-slate-200 rounded-[2px] text-[#26cece]">
                                                                 {job.price || 'N/A'}
                                                             </span>
                                                         </div>

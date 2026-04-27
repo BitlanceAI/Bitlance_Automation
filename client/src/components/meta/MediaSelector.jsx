@@ -197,7 +197,7 @@ const MediaSelector = ({
                                     key={job.id}
                                     onClick={() => selectGraphicFromLibrary(job)}
                                     className={`relative group cursor-pointer border transition-all ${mediaUrls.includes(job.flyer_url)
-                                            ? 'border-[#26cece] shadow-[4px_4px_0_0_#26cece] -translate-y-1'
+                                            ? 'border-[#26cece] shadow-[0_2px_16px_0_rgba(0,0,0,0.4)] -translate-y-1'
                                             : 'border-[#333] hover:border-[#26cece]'
                                         }`}
                                 >

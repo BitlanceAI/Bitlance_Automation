@@ -60,7 +60,7 @@ const BroadcastHistory = () => {
     }
 
     return (
-        <div className="bg-white dark:bg-[#111111] border border-gray-200 dark:border-[#333] shadow-[4px_4px_0_0_#26cece] overflow-hidden">
+        <div className="bg-white dark:bg-[#111111] border border-gray-200 dark:border-[#333] shadow-[0_2px_16px_0_rgba(0,0,0,0.4)] overflow-hidden">
             <div className="overflow-x-auto">
                 <table className="min-w-full divide-y divide-gray-200 dark:divide-[#333]">
                     <thead className="bg-gray-50 dark:bg-[#070707] border-b border-gray-200 dark:border-[#333]">

@@ -12,7 +12,7 @@ const UploadCSVView = () => {
                     <p className="text-sm font-mono text-gray-500 mt-1 uppercase tracking-widest">Bulk schedule multiple posts at once</p>
                 </div>
                 
-                <div className="bg-[#111111] border-2 border-[#1E1E1E] rounded-[2px] p-12 text-center border-dashed hover:border-[#26cece] transition-colors cursor-pointer group shadow-[4px_4px_0_0_#26cece]">
+                <div className="bg-[#111111] border-2 border-[#1E1E1E] rounded-[2px] p-12 text-center border-dashed hover:border-[#26cece] transition-colors cursor-pointer group shadow-[0_2px_16px_0_rgba(0,0,0,0.4)]">
                     <div className="w-16 h-16 bg-[#26cece]/10 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
                         <UploadCloud className="w-8 h-8 text-[#26cece]" />
                     </div>

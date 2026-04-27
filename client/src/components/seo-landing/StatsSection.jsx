@@ -38,7 +38,7 @@ function StatCard({ value, suffix, label, desc, index, inView }) {
         {count}{suffix}
       </div>
       <div className="text-white font-semibold text-lg mb-1">{label}</div>
-      <div className="text-white/40 text-sm">{desc}</div>
+      <div className="text-[#A0A0A0] text-sm">{desc}</div>
     </motion.div>
   );
 }

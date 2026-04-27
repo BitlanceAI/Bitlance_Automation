@@ -68,7 +68,7 @@ const PaymentCompletePage = lazy(() => import('./pages/esign/PaymentCompletePage
 
 // Features & Demos
 const VoiceBotFeaturesPage = lazy(() => import('./pages/features/VoiceBotFeaturesPage'));
-const TestimonialDemo = lazy(() => import('./pages/demos/TestimonialDemo'));
+
 const ShapeHeroDemo = lazy(() => import('./pages/demos/ShapeHeroDemo'));
 
 
@@ -158,7 +158,7 @@ function App() {
       <AuthProvider>
         <WorkspaceProvider>
           <Toaster position="top-right" reverseOrder={false} />
-          <div className={isDashboard ? 'bg-gray-50 dark:bg-slate-900 min-h-screen transition-colors duration-300' : 'bg-gray-50 dark:bg-slate-900 min-h-screen transition-colors duration-300 pb-20 md:pb-0'}>
+          <div className={isDashboard ? 'bg-gray-50 min-h-screen transition-colors duration-300' : 'bg-gray-50 min-h-screen transition-colors duration-300 pb-20 md:pb-0'}>
 
             {/* Temporary Debug Banner
           <div className="fixed top-0 left-0 bg-red-500 text-white z-[100] text-xs p-1">
@@ -287,7 +287,7 @@ function App() {
                 <Route path="/apply" element={<QuizLandingPage />} />
                 <Route path="/thank-you" element={<ThankYouPage />} />
 
-                <Route path="/testimonial-demo" element={<TestimonialDemo />} />
+                {/* <Route path="/testimonial-demo" element={<TestimonialDemo />} /> */}
                 <Route path="/shape-demo" element={<ShapeHeroDemo />} />
                 <Route path="/features/voice-bot" element={<VoiceBotFeaturesPage />} />
                 <Route path="/features/blog-agent" element={<BlogAgentFeaturesPage />} />

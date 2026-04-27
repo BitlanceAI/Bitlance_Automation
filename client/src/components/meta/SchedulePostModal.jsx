@@ -31,7 +31,7 @@ const SchedulePostModal = ({
 
     return (
         <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4 font-mono">
-            <div className="bg-[#070707] border border-[#333] shadow-[8px_8px_0_0_#26cece] w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
+            <div className="bg-[#070707] border border-[#333] shadow-[0_4px_24px_0_rgba(0,0,0,0.5)] w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
                 {/* Header with Progress */}
                 <div className="p-6 border-b border-[#333] bg-[#111111]">
                     <div className="flex items-center justify-between mb-8">

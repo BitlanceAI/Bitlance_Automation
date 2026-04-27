@@ -211,6 +211,7 @@ export default function HeroSection() {
               controls
               loop
               playsInline
+              preload="metadata"
               muted={muted}
               onPlay={() => setManualPause(false)}
               onPause={() => {
@@ -288,6 +289,8 @@ export default function HeroSection() {
                 key={i}
                 src={src}
                 alt="User"
+                width="48"
+                height="48"
                 className="w-10 h-10 sm:w-12 sm:h-12 rounded-full border-2 border-black object-cover relative z-10 hover:z-20 transition-transform hover:scale-110"
               />
             ))}

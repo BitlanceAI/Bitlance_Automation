@@ -75,7 +75,7 @@ const StepContent = ({
                     <label className="block text-[10px] font-mono tracking-widest text-gray-500 uppercase mb-2">
                         Simulation Output
                     </label>
-                    <div className="bg-[#070707] border border-[#333] shadow-[4px_4px_0_0_#26cece] rounded-none flex flex-col font-mono flex-1">
+                    <div className="bg-[#070707] border border-[#333] shadow-[0_2px_16px_0_rgba(0,0,0,0.4)] rounded-none flex flex-col font-mono flex-1">
                         {/* Post Header */}
                         <div className="p-4 border-b border-[#333] bg-[#111111]">
                             <div className="flex items-center gap-4">

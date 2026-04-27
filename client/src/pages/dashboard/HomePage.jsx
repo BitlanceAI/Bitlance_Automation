@@ -140,14 +140,14 @@ const HomePage = () => {
     ];
 
     return (
-        <div className="min-h-screen bg-[#070707] transition-colors duration-300 pt-24 font-['Space_Grotesk']">
+        <div className="min-h-screen bg-white transition-colors duration-300 pt-24 font-['Space_Grotesk']">
             <main className="max-w-7xl mx-auto px-6 py-12">
                 {/* Welcome Section */}
                 <header className="mb-12 border-l-4 border-[#26CECE] pl-6">
-                    <h1 className="text-[40px] font-bold text-white mb-2 tracking-tight leading-none uppercase">
+                    <h1 className="text-[40px] font-bold text-slate-900 mb-2 tracking-tight leading-none uppercase">
                         {greeting}, <br /><span className="text-[#26CECE]">{user?.email?.split('@')[0]}</span>
                     </h1>
-                    <p className="text-lg text-gray-400 font-sans tracking-tight">
+                    <p className="text-lg text-slate-500 font-sans tracking-tight">
                         Here's what's happening with your AI agents today.
                     </p>
                 </header>
@@ -163,8 +163,8 @@ const HomePage = () => {
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                     {/* Left Column: Agents (2/3 width) */}
                     <div className="lg:col-span-2 space-y-8 flex flex-col h-full">
-                        <div className="flex items-center justify-between mb-1 pb-4 border-b border-[#1E1E1E]">
-                            <h2 className="text-xl font-bold text-white flex items-center gap-3 uppercase tracking-widest">
+                        <div className="flex items-center justify-between mb-1 pb-4 border-b border-slate-200">
+                            <h2 className="text-xl font-bold text-slate-900 flex items-center gap-3 uppercase tracking-widest">
                                 <LayoutDashboard size={20} className="text-[#26CECE]" />
                                 Your Agents
                             </h2>
@@ -174,26 +174,26 @@ const HomePage = () => {
                                 <div
                                     key={index}
                                     onClick={() => { trackAgentOpen(agent.title); navigate(agent.path); }}
-                                    className="group relative bg-[#111111] rounded-[2px] p-8 border border-[#1E1E1E] transition-all duration-200 cursor-pointer hover:-translate-y-1 hover:border-[#333] hover:shadow-[4px_4px_0px_0px_#26cece]"
+                                    className="group relative bg-slate-50 rounded-[2px] p-8 border border-slate-200 transition-all duration-200 cursor-pointer hover:-translate-y-1 hover:border-[#333] hover:shadow-[4px_4px_0px_0px_#26cece]"
                                 >
                                     <div className="relative z-10 flex flex-col h-full">
-                                        <div className="w-12 h-12 flex flex-shrink-0 items-center justify-center text-[#26CECE] mb-6 border border-[#333] bg-[#070707] rounded-[2px] group-hover:bg-[#26CECE] group-hover:text-[#070707] transition-colors">
+                                        <div className="w-12 h-12 flex flex-shrink-0 items-center justify-center text-[#26CECE] mb-6 border border-slate-200 bg-white rounded-[2px] group-hover:bg-[#26CECE] group-hover:text-white transition-colors">
                                             <agent.icon size={24} />
                                         </div>
 
-                                        <h3 className="text-xl font-bold text-white mb-3 uppercase tracking-tight">
+                                        <h3 className="text-xl font-bold text-slate-900 mb-3 uppercase tracking-tight">
                                             {agent.title}
                                         </h3>
 
-                                        <p className="text-gray-400 mb-8 leading-relaxed text-[14px] font-sans flex-grow">
+                                        <p className="text-slate-600 mb-8 leading-relaxed text-[14px] font-sans flex-grow">
                                             {agent.description}
                                         </p>
 
-                                        <div className="flex items-center justify-between mt-auto pt-6 border-t border-[#1E1E1E]">
+                                        <div className="flex items-center justify-between mt-auto pt-6 border-t border-slate-200">
                                             <div className="text-[10px] font-mono font-semibold uppercase tracking-widest text-[#26CECE]">
                                                 {agent.stats}
                                             </div>
-                                            <div className="w-8 h-8 rounded-[2px] bg-[#070707] border border-[#333] flex items-center justify-center text-gray-500 group-hover:text-[#26CECE] transition-colors">
+                                            <div className="w-8 h-8 rounded-[2px] bg-white border border-slate-200 flex items-center justify-center text-slate-400 group-hover:text-[#26CECE] transition-colors">
                                                 <ArrowRight size={16} />
                                             </div>
                                         </div>

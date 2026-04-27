@@ -106,7 +106,7 @@ const VoiceBotSection = ({ onOpenBooking }) => {
                                     </div>
                                     <div>
                                         <h4 className="text-sm font-extrabold text-black mb-1" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>{feature.title}</h4>
-                                        <p className="text-black/50 text-xs leading-tight" style={{ fontFamily: "'DM Mono', monospace" }}>{feature.desc}</p>
+                                        <p className="text-gray-700 text-xs leading-tight" style={{ fontFamily: "'DM Mono', monospace" }}>{feature.desc}</p>
                                     </div>
                                 </motion.div>
                             ))}
@@ -168,11 +168,11 @@ const VoiceBotSection = ({ onOpenBooking }) => {
                                     </div>
                                     <div className="flex gap-8">
                                         <div>
-                                            <p style={{ fontFamily: "'DM Mono', monospace", fontSize: 9, color: '#000', textTransform: 'uppercase', marginBottom: 4 }}>Response Time</p>
-                                            <p className="text-xl font-extrabold text-black" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>0.4s</p>
+                                            <p style={{ fontFamily: "'DM Mono', monospace", fontSize: 9, color: '#A0A0A0', textTransform: 'uppercase', marginBottom: 4 }}>Response Time</p>
+                                            <p className="text-xl font-extrabold text-white" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>0.4s</p>
                                         </div>
                                         <div>
-                                            <p style={{ fontFamily: "'DM Mono', monospace", fontSize: 9, color: '#000', textTransform: 'uppercase', marginBottom: 4 }}>Accuracy</p>
+                                            <p style={{ fontFamily: "'DM Mono', monospace", fontSize: 9, color: '#A0A0A0', textTransform: 'uppercase', marginBottom: 4 }}>Accuracy</p>
                                             <p className="text-xl font-extrabold" style={{ color: TEAL, fontFamily: "'Space Grotesk', sans-serif" }}>99.8%</p>
                                         </div>
                                     </div>

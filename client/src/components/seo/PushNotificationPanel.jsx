@@ -105,7 +105,7 @@ const PushNotificationPanel = () => {
                     <Smartphone className="w-5 h-5 text-[#26cece]" />
                     Live Preview
                 </h2>
-                <div className="relative border-[#111] bg-[#070707] border-[14px] rounded-[30px] h-[600px] w-[300px] shadow-[4px_4px_0_0_#26cece]">
+                <div className="relative border-[#111] bg-[#070707] border-[14px] rounded-[30px] h-[600px] w-[300px] shadow-[0_2px_16px_0_rgba(0,0,0,0.4)]">
                     <div className="w-[120px] h-[24px] bg-[#111] top-0 left-1/2 -translate-x-1/2 absolute rounded-b-[1rem] z-10"></div>
                     <div className="h-[32px] w-[3px] bg-[#111] absolute -start-[17px] top-[72px]"></div>
                     <div className="h-[46px] w-[3px] bg-[#111] absolute -start-[17px] top-[124px]"></div>

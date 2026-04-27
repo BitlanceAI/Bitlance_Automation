@@ -86,11 +86,13 @@ function TestimonialCard({ t, index, inView }) {
         <img
           src={t.avatar}
           alt={t.name}
+          width="40"
+          height="40"
           className="w-10 h-10 rounded-full border border-white/10 object-cover flex-shrink-0"
         />
         <div>
           <div className="text-white font-semibold text-sm">{t.name}</div>
-          <div className="text-white/40 text-xs">{t.role}</div>
+          <div className="text-[#A0A0A0] text-xs">{t.role}</div>
         </div>
       </div>
     </motion.div>
@@ -117,7 +119,7 @@ export default function TestimonialsSection() {
           <h2 className="text-3xl sm:text-5xl font-black text-white leading-tight">
             Loved by <span className="gradient-text">200+ Businesses</span>
           </h2>
-          <p className="mt-4 text-white/50 text-base sm:text-lg max-w-xl mx-auto">
+          <p className="mt-4 text-[#A0A0A0] text-base sm:text-lg max-w-xl mx-auto">
             Real results from real customers who let our SEO AI Agent do the heavy lifting.
           </p>
         </motion.div>

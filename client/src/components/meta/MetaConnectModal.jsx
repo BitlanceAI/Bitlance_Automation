@@ -70,7 +70,7 @@ const MetaConnectModal = ({ isOpen, onClose, onSuccess, userToken }) => {
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 font-mono">
-            <div className="bg-[#070707] border border-[#333] shadow-[8px_8px_0_0_#26cece] w-full max-w-md overflow-hidden flex flex-col">
+            <div className="bg-[#070707] border border-[#333] shadow-[0_4px_24px_0_rgba(0,0,0,0.5)] w-full max-w-md overflow-hidden flex flex-col">
 
                 {/* Header */}
                 <div className="flex items-center justify-between p-5 md:p-6 border-b border-[#333] bg-[#111111]">

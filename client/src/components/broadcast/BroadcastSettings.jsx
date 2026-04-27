@@ -97,7 +97,7 @@ const BroadcastSettings = () => {
     return (
         <div className="max-w-2xl mx-auto space-y-8">
             {/* Config Form */}
-            <div className="bg-white dark:bg-[#111111] border border-gray-200 dark:border-[#333] shadow-[4px_4px_0_0_#26cece] p-8">
+            <div className="bg-white dark:bg-[#111111] border border-gray-200 dark:border-[#333] shadow-[0_2px_16px_0_rgba(0,0,0,0.4)] p-8">
                 <div className="flex items-center gap-4 mb-8 border-b border-gray-200 dark:border-[#333] pb-6">
                     <div className="p-3 bg-gray-100 dark:bg-[#070707] border border-[#26cece]">
                         <Save className="w-6 h-6 text-[#26cece]" />
@@ -167,7 +167,7 @@ const BroadcastSettings = () => {
             </div>
 
             {/* Test Send */}
-            <div className="bg-white dark:bg-[#111111] border border-gray-200 dark:border-[#333] shadow-[4px_4px_0_0_#26cece] p-8">
+            <div className="bg-white dark:bg-[#111111] border border-gray-200 dark:border-[#333] shadow-[0_2px_16px_0_rgba(0,0,0,0.4)] p-8">
                 <div className="flex items-center gap-4 mb-8 border-b border-gray-200 dark:border-[#333] pb-6">
                     <div className="p-3 bg-gray-100 dark:bg-[#070707] border border-[#26cece]">
                         <Send className="w-6 h-6 text-[#26cece]" />
@@ -222,7 +222,7 @@ const BroadcastSettings = () => {
                 {testResult && (
                     <div className={`mt-6 p-5 border text-[10px] font-mono uppercase tracking-widest whitespace-pre-wrap break-all ${
                         testResult.success
-                            ? 'bg-[#26cece]/10 border-[#26cece] shadow-[4px_4px_0_0_#26cece] text-[#26cece]'
+                            ? 'bg-[#26cece]/10 border-[#26cece] shadow-[0_2px_16px_0_rgba(0,0,0,0.4)] text-[#26cece]'
                             : 'bg-red-500/10 border-red-500 shadow-[4px_4px_0_0_#ef4444] text-red-500 dark:text-red-400'
                     }`}>
                         <div className="flex items-center gap-3 mb-4 text-sm font-bold">

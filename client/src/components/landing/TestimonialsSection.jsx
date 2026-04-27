@@ -82,11 +82,12 @@ const TestimonialsSection = () => (
                         </p>
                         <div className="flex items-center gap-3 mt-auto">
                             <img src={t.profileImage} alt={t.name}
+                                width="40" height="40"
                                 className="w-10 h-10 rounded-full object-cover"
                                 style={{ border: `2px solid ${T}40` }} />
                             <div>
                                 <h4 className="font-extrabold text-sm" style={{ color: '#0A0A0A', fontFamily: "'Space Grotesk',sans-serif" }}>{t.name}</h4>
-                                <p className="text-xs mt-0.5" style={{ color: T, fontFamily: "'DM Mono',monospace" }}>
+                                <p className="text-xs mt-0.5" style={{ color: '#1B8E8E', fontFamily: "'DM Mono',monospace" }}>
                                     {t.designation}
                                 </p>
                             </div>

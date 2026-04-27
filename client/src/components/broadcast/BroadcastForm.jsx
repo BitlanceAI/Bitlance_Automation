@@ -194,7 +194,7 @@ const BroadcastForm = () => {
     };
 
     const statusStyles = {
-        success: 'bg-[#26cece]/10 text-[#26cece] border-[#26cece] shadow-[4px_4px_0_0_#26cece]',
+        success: 'bg-[#26cece]/10 text-[#26cece] border-[#26cece] shadow-[0_2px_16px_0_rgba(0,0,0,0.4)]',
         error: 'bg-red-500/10 text-red-500 border-red-500 shadow-[4px_4px_0_0_#ef4444]',
         warning: 'bg-yellow-500/10 text-yellow-500 border-yellow-500 shadow-[4px_4px_0_0_#eab308]',
         info: 'bg-blue-500/10 text-blue-500 border-blue-500 shadow-[4px_4px_0_0_#3b82f6]'
@@ -293,7 +293,7 @@ const BroadcastForm = () => {
                                 </span>
                             </label>
                         ) : (
-                            <div className="flex items-center justify-between px-4 py-4 bg-[#26cece]/10 border border-[#26cece] shadow-[4px_4px_0_0_#26cece] rounded-none">
+                            <div className="flex items-center justify-between px-4 py-4 bg-[#26cece]/10 border border-[#26cece] shadow-[0_2px_16px_0_rgba(0,0,0,0.4)] rounded-none">
                                 <div className="flex items-center gap-4">
                                     <div className="p-3 bg-gray-100 dark:bg-[#070707] border border-[#26cece]">
                                         <FileSpreadsheet className="w-5 h-5 text-[#26cece]" />
@@ -368,7 +368,7 @@ const BroadcastForm = () => {
                             </button>
                         )}
                         {showPreview && selectedTemplate && (
-                            <div className="p-5 bg-gray-50 dark:bg-[#070707] border border-gray-200 dark:border-[#333] shadow-[4px_4px_0_0_#26cece] mt-4">
+                            <div className="p-5 bg-gray-50 dark:bg-[#070707] border border-gray-200 dark:border-[#333] shadow-[0_2px_16px_0_rgba(0,0,0,0.4)] mt-4">
                                 <p className="text-[10px] font-bold tracking-widest text-[#26cece] uppercase mb-4 border-b border-gray-200 dark:border-[#333] pb-2">Simulation Output</p>
                                 {selectedTemplate.header_text && (
                                     <p className="font-bold font-['Space_Grotesk'] tracking-widest uppercase text-gray-900 dark:text-white mb-2">{selectedTemplate.header_text}</p>

@@ -30,7 +30,7 @@ const BroadcastPage = () => {
             <div className="max-w-5xl mx-auto space-y-8">
                 {/* Header */}
                 <div className="flex flex-col items-center justify-center text-center space-y-6 mb-12">
-                    <div className="inline-flex items-center gap-2 px-4 py-2 bg-[#26cece]/10 border border-[#26cece] text-[#26cece] text-[10px] font-bold tracking-widest uppercase shadow-[4px_4px_0_0_#26cece]">
+                    <div className="inline-flex items-center gap-2 px-4 py-2 bg-[#26cece]/10 border border-[#26cece] text-[#26cece] text-[10px] font-bold tracking-widest uppercase shadow-[0_2px_16px_0_rgba(0,0,0,0.4)]">
                         <Radio className="w-4 h-4 animate-pulse" />
                         WhatsApp Business API
                     </div>
@@ -50,7 +50,7 @@ const BroadcastPage = () => {
                 {/* Stats */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
                     {stats.map((stat) => (
-                        <div key={stat.label} className="bg-white dark:bg-[#111111] border border-gray-200 dark:border-[#333] p-6 hover:border-[#26cece] hover:shadow-[4px_4px_0_0_#26cece] transition-all group flex items-center gap-5">
+                        <div key={stat.label} className="bg-white dark:bg-[#111111] border border-gray-200 dark:border-[#333] p-6 hover:border-[#26cece] hover:shadow-[0_2px_16px_0_rgba(0,0,0,0.4)] transition-all group flex items-center gap-5">
                             <div className="p-4 bg-gray-100 dark:bg-[#070707] border border-gray-200 dark:border-[#333] group-hover:bg-[#26cece] group-hover:border-[#26cece] transition-colors">
                                 <stat.icon className="w-6 h-6 text-[#26cece] group-hover:text-[#070707]" />
                             </div>
@@ -80,7 +80,7 @@ const BroadcastPage = () => {
                 </div>
 
                 {/* Tab Content */}
-                <div className="bg-gray-100 dark:bg-[#070707] border border-gray-200 dark:border-[#333] shadow-[8px_8px_0_0_#26cece] p-6 md:p-8">
+                <div className="bg-gray-100 dark:bg-[#070707] border border-gray-200 dark:border-[#333] shadow-[0_4px_24px_0_rgba(0,0,0,0.5)] p-6 md:p-8">
                     {activeTab === 'broadcast' && <BroadcastForm />}
                     {activeTab === 'templates' && <TemplateManager />}
                     {activeTab === 'history' && <BroadcastHistory />}

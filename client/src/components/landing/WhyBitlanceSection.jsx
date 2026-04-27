@@ -59,7 +59,7 @@ const WhyBitlanceSection = () => {
                                 Why Bitlance Technology?
                             </h2>
                             <div className="mt-5" style={{ width: 48, height: 2, background: T }} />
-                            <p className="mt-5 text-base text-black/50 leading-relaxed max-w-lg">
+                            <p className="mt-5 text-base text-gray-700 leading-relaxed max-w-lg">
                                 We don't just provide tools. We build autonomous systems that handle the heavy lifting of lead engagement and sales follow-up — so you can focus on closing deals.
                             </p>
                         </div>
@@ -80,7 +80,7 @@ const WhyBitlanceSection = () => {
                                         backdropFilter: 'blur(8px)',
                                     }}
                                 >
-                                    <CheckCircle2 size={14} style={{ color: T, flexShrink: 0 }} />
+                                    <CheckCircle2 size={14} style={{ color: '#0F5252', flexShrink: 0 }} />
                                     <span className="text-sm font-medium text-black"
                                         style={{ fontFamily: "'Space Grotesk',sans-serif" }}>
                                         {item}
@@ -134,9 +134,9 @@ const WhyBitlanceSection = () => {
                             to="/apply"
                             className="audit-cta inline-flex items-center gap-3 font-extrabold uppercase tracking-widest text-sm transition-all group"
                             style={{
-                                background: 'rgba(38,206,206,0.05)',
-                                border: `1px solid rgba(38,206,206,0.2)`,
-                                color: '#EFEFEF',
+                                background: 'rgba(38,206,206,0.1)',
+                                border: `1px solid rgba(38,206,206,0.4)`,
+                                color: '#070707',
                                 padding: '18px 40px',
                                 borderRadius: 8,
                                 fontFamily: "'Space Grotesk',sans-serif",
@@ -144,21 +144,21 @@ const WhyBitlanceSection = () => {
                             }}
                             onMouseEnter={e => {
                                 e.currentTarget.style.borderColor = T;
-                                e.currentTarget.style.color = T;
-                                e.currentTarget.style.background = `rgba(38,206,206,0.1)`;
-                                e.currentTarget.style.boxShadow = `0 0 24px ${T}20`;
+                                e.currentTarget.style.color = '#000';
+                                e.currentTarget.style.background = T;
+                                e.currentTarget.style.boxShadow = `0 0 24px ${T}40`;
                             }}
                             onMouseLeave={e => {
-                                e.currentTarget.style.borderColor = 'rgba(38,206,206,0.2)';
-                                e.currentTarget.style.color = '#EFEFEF';
-                                e.currentTarget.style.background = 'rgba(38,206,206,0.05)';
+                                e.currentTarget.style.borderColor = 'rgba(38,206,206,0.4)';
+                                e.currentTarget.style.color = '#070707';
+                                e.currentTarget.style.background = 'rgba(38,206,206,0.1)';
                                 e.currentTarget.style.boxShadow = 'none';
                             }}
                         >
-                            <Sparkles size={18} style={{ color: T }} className="group-hover:rotate-12 transition-transform" />
+                            <Sparkles size={18} style={{ color: '#0F5252' }} className="group-hover:rotate-12 transition-transform" />
                             Get Free Audit
                         </Link>
-                        <p className="mt-4 text-black/30 text-xs uppercase tracking-widest"
+                        <p className="mt-4 text-gray-600 text-xs uppercase tracking-widest"
                             style={{ fontFamily: "'DM Mono',monospace" }}>
                             Takes less than 2 minutes · No card required
                         </p>

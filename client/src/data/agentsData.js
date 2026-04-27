@@ -23,6 +23,19 @@ export const agents = [
     ],
     status: "Available"
   },
+
+  {
+    icon: Palette,
+    title: "Graphic Designer AI",
+    description: "AI-powered real estate flyer generation with professional templates.",
+    features: [
+      "Flyer generation",
+      "Template customization",
+      "AI copywriting",
+      "Multi-format export"
+    ],
+    status: "Available"
+  },
   {
     icon: Mic,
     title: "AI Voice Agent",
@@ -76,18 +89,6 @@ export const agents = [
   },
 
 
-  {
-    icon: Palette,
-    title: "Graphic Designer AI",
-    description: "AI-powered real estate flyer generation with professional templates.",
-    features: [
-      "Flyer generation",
-      "Template customization",
-      "AI copywriting",
-      "Multi-format export"
-    ],
-    status: "Coming Soon"
-  },
   {
     icon: MessageCircle,
     title: "Handle Social Media Account",

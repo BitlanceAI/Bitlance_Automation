@@ -1,23 +1,24 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, lazy, Suspense } from 'react';
 import { Navigate, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import HeroSection from '../../components/landing/HeroSection';
 import ProblemSection from '../../components/landing/ProblemSection';
-import VoiceBotSection from '../../components/landing/VoiceBotSection';
-import UseCasesSection from '../../components/landing/UseCasesSection';
-import HowItWorksSection from '../../components/landing/HowItWorksSection';
-import SocialProofSection from '../../components/landing/SocialProofSection';
-import TestimonialsSection from '../../components/landing/TestimonialsSection';
-import FinalCtaSection from '../../components/landing/FinalCtaSection';
-import BlogAgentSection from '../../components/landing/BlogAgentSection';
-import WhyBitlanceSection from '../../components/landing/WhyBitlanceSection';
-import AgentPricingSection from '../../components/landing/AgentPricingSection';
-import Footer from '../../components/landing/Footer';
-import ScrollToTopButton from '../../components/ui/ScrollToTopButton';
+
+const VoiceBotSection = lazy(() => import('../../components/landing/VoiceBotSection'));
+const UseCasesSection = lazy(() => import('../../components/landing/UseCasesSection'));
+const HowItWorksSection = lazy(() => import('../../components/landing/HowItWorksSection'));
+const SocialProofSection = lazy(() => import('../../components/landing/SocialProofSection'));
+const TestimonialsSection = lazy(() => import('../../components/landing/TestimonialsSection'));
+const FinalCtaSection = lazy(() => import('../../components/landing/FinalCtaSection'));
+const BlogAgentSection = lazy(() => import('../../components/landing/BlogAgentSection'));
+const WhyBitlanceSection = lazy(() => import('../../components/landing/WhyBitlanceSection'));
+const AgentPricingSection = lazy(() => import('../../components/landing/AgentPricingSection'));
+const Footer = lazy(() => import('../../components/landing/Footer'));
+const ScrollToTopButton = lazy(() => import('../../components/ui/ScrollToTopButton'));
+const LoginReminderPopup = lazy(() => import('../../components/ui/LoginReminderPopup'));
 
 import { ElegantShape } from '../../components/ui/shape-landing-hero';
 import SEOHead from '../../components/layout/SEOHead';
-import LoginReminderPopup from '../../components/ui/LoginReminderPopup';
 // import BitlanceChatbot from '../../components/ui/BitlanceChatbot';
 
 const WA_NUMBER = "917030951331";
@@ -180,6 +181,7 @@ const WhatsAppButton = () => {
 };
 
 const LandingPage = () => {
+    const [useStateVal, setuseState] = useState(0); // Dummy state to keep useState import if needed, but actually I'll use real state
     const { user, loading } = useAuth();
     const navigate = useNavigate();
     const location = useLocation();
@@ -362,25 +364,27 @@ const LandingPage = () => {
             </div>
 
             {/* Content Wrapper */}
-            <div className="relative z-10">
+            <main className="relative z-10">
                 <HeroSection onOpenBooking={handleOpenBooking} />
-
                 <ProblemSection />
-                <WhyBitlanceSection />
-                <TestimonialsSection />
                 
-                <BlogAgentSection onOpenBooking={handleOpenBooking} />
-                <VoiceBotSection onOpenBooking={handleOpenBooking} />
-                <UseCasesSection />
-                <HowItWorksSection />
-                <SocialProofSection />
-                {/* <AgentPricingSection /> */}
-                <FinalCtaSection onOpenBooking={handleOpenBooking} />
-                <Footer />
-            </div>
+                <Suspense fallback={<div className="h-40" />}>
+                    <WhyBitlanceSection />
+                    <TestimonialsSection />
+                    <BlogAgentSection onOpenBooking={handleOpenBooking} />
+                    <VoiceBotSection onOpenBooking={handleOpenBooking} />
+                    <UseCasesSection />
+                    <HowItWorksSection />
+                    <SocialProofSection />
+                    <FinalCtaSection onOpenBooking={handleOpenBooking} />
+                    <Footer />
+                </Suspense>
+            </main>
 
-            <ScrollToTopButton />
-            <LoginReminderPopup chatbotOpen={false} />
+            <Suspense fallback={null}>
+                <ScrollToTopButton />
+                <LoginReminderPopup chatbotOpen={false} />
+            </Suspense>
             <WhatsAppButton />
             
 

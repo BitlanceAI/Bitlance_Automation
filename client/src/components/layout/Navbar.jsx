@@ -47,10 +47,12 @@ const Navbar = () => {
                 <div className="mx-auto px-6 flex justify-between items-center w-full max-w-7xl">
 
                     {/* Logo */}
-                    <Link to="/" className="flex items-center gap-2 group">
+                    <Link to="/" className="flex items-center gap-2 group" aria-label="Bitlance Home">
                         <img
                             src={Logo}
                             alt="Bitlance"
+                            width="120"
+                            height="40"
                             className="h-10 w-auto object-contain transition-transform duration-300 group-hover:scale-105"
                             onError={(e) => {
                                 e.target.style.display = 'none';
@@ -68,7 +70,7 @@ const Navbar = () => {
                                 className={`flex items-center gap-2 text-sm font-medium transition-all duration-200 group ${
                                     isActive(path)
                                         ? 'text-[#26CECE] dark:text-[#26CECE]'
-                                        : 'text-gray-600 dark:text-gray-400 hover:text-[#26CECE] dark:hover:text-[#26CECE]'
+                                        : 'text-gray-700 dark:text-gray-300 hover:text-[#26CECE] dark:hover:text-[#26CECE]'
                                 }`}
                             >
                                 <Icon className={`w-4 h-4 transition-transform duration-200 group-hover:scale-110 ${isActive(path) ? 'scale-110' : ''}`} />
@@ -81,7 +83,7 @@ const Navbar = () => {
                                 className={`flex items-center gap-2 text-sm font-medium transition-all duration-200 group ${
                                     location.pathname.startsWith('/admin')
                                         ? 'text-[#26CECE]'
-                                        : 'text-gray-600 dark:text-gray-400 hover:text-[#26CECE]'
+                                        : 'text-gray-700 dark:text-gray-300 hover:text-[#26CECE]'
                                 }`}
                             >
                                 <LayoutDashboard className="w-4 h-4 transition-transform duration-200 group-hover:scale-110" />
@@ -110,13 +112,14 @@ const Navbar = () => {
                                 >
                                     {user.email?.charAt(0).toUpperCase()}
                                 </div>
-                                <span className="text-sm text-gray-700 dark:text-gray-300 hidden lg:block">
+                                <span className="text-sm text-gray-800 dark:text-gray-200 hidden lg:block">
                                     {user.email?.split('@')[0]}
                                 </span>
                                 <button
                                     onClick={signOut}
-                                    className="flex items-center gap-2 text-sm text-gray-500 hover:text-red-500 dark:text-gray-400 dark:hover:text-red-400 font-medium transition-colors group"
+                                    className="flex items-center gap-2 text-sm text-gray-600 hover:text-red-500 dark:text-gray-400 dark:hover:text-red-400 font-medium transition-colors group"
                                     title="Logout"
+                                    aria-label="Logout"
                                 >
                                     <LogOut className="w-4 h-4 transition-transform group-hover:-translate-x-0.5" />
                                     <span className="hidden lg:inline">Logout</span>
@@ -168,34 +171,35 @@ const Navbar = () => {
                             const active = isActive(path);
                             return (
                                 <Link
-                                    key={name}
-                                    to={path}
-                                    className="flex flex-col items-center justify-center gap-1 flex-1 min-w-0 group"
-                                >
-                                    {/* Icon container */}
-                                    <div className={`flex items-center justify-center w-12 h-8 rounded-2xl transition-all duration-300 ${
-                                        active
-                                            ? 'bg-[#26CECE]/15 scale-105'
-                                            : 'group-hover:bg-gray-100 dark:group-hover:bg-[#1A1A1A]'
-                                    }`}>
-                                        <Icon
-                                            className={`w-[22px] h-[22px] transition-all duration-300 ${
-                                                active
-                                                    ? 'text-[#26CECE]'
-                                                    : 'text-gray-400 dark:text-gray-500 group-hover:text-[#26CECE]'
-                                            }`}
-                                            strokeWidth={active ? 2.2 : 1.8}
-                                        />
-                                    </div>
-                                    {/* Label */}
-                                    <span className={`text-[10px] font-semibold tracking-wide leading-none transition-all duration-300 ${
-                                        active
-                                            ? 'text-[#26CECE]'
-                                            : 'text-gray-400 dark:text-gray-500 group-hover:text-[#26CECE]'
-                                    }`}>
-                                        {name}
-                                    </span>
-                                </Link>
+                                     key={name}
+                                     to={path}
+                                     className="flex flex-col items-center justify-center gap-1 flex-1 min-w-0 group"
+                                     aria-label={name}
+                                 >
+                                     {/* Icon container */}
+                                     <div className={`flex items-center justify-center w-12 h-8 rounded-2xl transition-all duration-300 ${
+                                         active
+                                             ? 'bg-[#26CECE]/15 scale-105'
+                                             : 'group-hover:bg-gray-100 dark:group-hover:bg-[#1A1A1A]'
+                                     }`}>
+                                         <Icon
+                                             className={`w-[22px] h-[22px] transition-all duration-300 ${
+                                                 active
+                                                     ? 'text-[#26CECE]'
+                                                     : 'text-gray-400 dark:text-gray-500 group-hover:text-[#26CECE]'
+                                             }`}
+                                             strokeWidth={active ? 2.2 : 1.8}
+                                         />
+                                     </div>
+                                     {/* Label */}
+                                     <span className={`text-[10px] font-semibold tracking-wide leading-none transition-all duration-300 ${
+                                         active
+                                             ? 'text-[#26CECE]'
+                                             : 'text-gray-400 dark:text-gray-500 group-hover:text-[#26CECE]'
+                                     }`}>
+                                         {name}
+                                     </span>
+                                 </Link>
                             );
                         })}
 
@@ -204,6 +208,7 @@ const Navbar = () => {
                             <Link
                                 to="/admin"
                                 className="flex flex-col items-center justify-center gap-1 flex-1 min-w-0 group"
+                                aria-label="Admin Dashboard"
                             >
                                 <div className={`flex items-center justify-center w-12 h-8 rounded-2xl transition-all duration-300 ${
                                     location.pathname.startsWith('/admin')
@@ -234,6 +239,7 @@ const Navbar = () => {
                             <button
                                 onClick={signOut}
                                 className="flex flex-col items-center justify-center gap-1 flex-1 min-w-0 group"
+                                aria-label="Logout"
                             >
                                 <div className="flex items-center justify-center w-12 h-8 rounded-2xl transition-all duration-300 group-hover:bg-red-50 dark:group-hover:bg-red-900/10">
                                     <LogOut

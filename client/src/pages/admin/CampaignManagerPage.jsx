@@ -297,7 +297,7 @@ const CampaignManagerPage = ({ embedded = false }) => {
             {/* Graphic Selection Modal */}
             {showGraphicModal && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
-                    <div className="bg-[#070707] border border-[#333] shadow-[8px_8px_0_0_#26cece] w-full max-w-3xl max-h-[80vh] overflow-hidden flex flex-col">
+                    <div className="bg-[#070707] border border-[#333] shadow-[0_4px_24px_0_rgba(0,0,0,0.5)] w-full max-w-3xl max-h-[80vh] overflow-hidden flex flex-col">
                         <div className="flex items-center justify-between p-5 md:p-6 border-b border-[#333] bg-[#111111]">
                             <h3 className="text-xl md:text-2xl font-extrabold font-['Space_Grotesk'] text-white uppercase tracking-tight border-l-4 border-[#26cece] pl-3">Select Graphic Asset</h3>
                             <button
@@ -383,7 +383,7 @@ const CampaignManagerPage = ({ embedded = false }) => {
 
             {/* Content */}
             {activeTab === 'list' ? (
-                <div className="bg-[#070707] border border-[#333] shadow-[8px_8px_0_0_#26cece] overflow-hidden">
+                <div className="bg-[#070707] border border-[#333] shadow-[0_4px_24px_0_rgba(0,0,0,0.5)] overflow-hidden">
                     {loading ? (
                         <div className="p-8 text-center text-[10px] uppercase tracking-widest font-mono text-gray-500 border-b border-[#333]">Syncing structural data...</div>
                     ) : campaigns.length === 0 ? (
@@ -454,7 +454,7 @@ const CampaignManagerPage = ({ embedded = false }) => {
                     )}
                 </div>
             ) : (
-                <div className="bg-[#070707] border border-[#333] shadow-[8px_8px_0_0_#26cece] p-6 lg:p-10 max-w-5xl mx-auto">
+                <div className="bg-[#070707] border border-[#333] shadow-[0_4px_24px_0_rgba(0,0,0,0.5)] p-6 lg:p-10 max-w-5xl mx-auto">
                     {!selectedType ? (
                         <>
                             <h2 className="text-2xl md:text-3xl font-extrabold font-['Space_Grotesk'] mb-8 text-white uppercase tracking-tight border-l-4 border-[#26cece] pl-4">Assign Protocol Objective</h2>
@@ -466,7 +466,7 @@ const CampaignManagerPage = ({ embedded = false }) => {
                                             setSelectedType(type.id);
                                             setFormData(prev => ({ ...prev, type: type.id }));
                                         }}
-                                        className="flex flex-col items-center p-6 border border-[#333] hover:border-[#26cece] hover:shadow-[4px_4px_0_0_#26cece] hover:-translate-y-1 transition-all group bg-[#111111]"
+                                        className="flex flex-col items-center p-6 border border-[#333] hover:border-[#26cece] hover:shadow-[0_2px_16px_0_rgba(0,0,0,0.4)] hover:-translate-y-1 transition-all group bg-[#111111]"
                                     >
                                         <div className="p-4 border border-[#333] bg-[#070707] mb-6 group-hover:border-[#26cece] transition-colors">
                                             <type.icon size={32} className="text-[#26cece]" />
@@ -557,7 +557,7 @@ const CampaignManagerPage = ({ embedded = false }) => {
             {/* Analytics Modal */}
             {showStatsModal && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 font-mono">
-                    <div className="bg-[#070707] border border-[#333] shadow-[8px_8px_0_0_#26cece] w-full max-w-lg overflow-hidden flex flex-col">
+                    <div className="bg-[#070707] border border-[#333] shadow-[0_4px_24px_0_rgba(0,0,0,0.5)] w-full max-w-lg overflow-hidden flex flex-col">
                         <div className="flex items-center justify-between p-5 md:p-6 border-b border-[#333] bg-[#111111]">
                             <h3 className="text-xl md:text-2xl font-extrabold font-['Space_Grotesk'] text-white uppercase tracking-tight border-l-4 border-[#26cece] pl-3">Telemetry Readings</h3>
                             <button
@@ -599,7 +599,7 @@ const CampaignManagerPage = ({ embedded = false }) => {
             {/* View Campaign Details Modal */}
             {showViewModal && selectedCampaign && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 font-mono">
-                    <div className="bg-[#070707] border border-[#333] shadow-[8px_8px_0_0_#26cece] w-full max-w-3xl max-h-[90vh] overflow-hidden flex flex-col">
+                    <div className="bg-[#070707] border border-[#333] shadow-[0_4px_24px_0_rgba(0,0,0,0.5)] w-full max-w-3xl max-h-[90vh] overflow-hidden flex flex-col">
                         <div className="flex items-center justify-between p-5 md:p-6 border-b border-[#333] bg-[#111111]">
                             <div className="pl-3 border-l-4 border-[#26cece]">
                                 <h3 className="text-xl md:text-2xl font-extrabold font-['Space_Grotesk'] text-white uppercase tracking-tight">{selectedCampaign.name}</h3>

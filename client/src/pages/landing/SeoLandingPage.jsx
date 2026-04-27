@@ -1,13 +1,14 @@
-import { useRef } from 'react';
+import { useRef, lazy, Suspense } from 'react';
 import NavBar from '../../components/seo-landing/NavBar';
 import HeroSection from '../../components/seo-landing/HeroSection';
-import StatsSection from '../../components/seo-landing/StatsSection';
-import FeaturesSection from '../../components/seo-landing/FeaturesSection';
-import VideoSection from '../../components/seo-landing/VideoSection';
-import HowItWorksSection from '../../components/seo-landing/HowItWorksSection';
-import TestimonialsSection from '../../components/seo-landing/TestimonialsSection';
-import CtaSection from '../../components/seo-landing/CtaSection';
-import Footer from '../../components/seo-landing/Footer';
+
+const StatsSection = lazy(() => import('../../components/seo-landing/StatsSection'));
+const FeaturesSection = lazy(() => import('../../components/seo-landing/FeaturesSection'));
+const VideoSection = lazy(() => import('../../components/seo-landing/VideoSection'));
+const HowItWorksSection = lazy(() => import('../../components/seo-landing/HowItWorksSection'));
+const TestimonialsSection = lazy(() => import('../../components/seo-landing/TestimonialsSection'));
+const CtaSection = lazy(() => import('../../components/seo-landing/CtaSection'));
+const Footer = lazy(() => import('../../components/seo-landing/Footer'));
 
 export default function SeoLandingPage() {
   const demoRef = useRef(null);
@@ -20,13 +21,16 @@ export default function SeoLandingPage() {
     <div className="min-h-screen bg-dark text-black overflow-x-hidden" style={{ fontFamily: "'Inter', system-ui, sans-serif" }}>
       <NavBar />
       <HeroSection onWatchDemo={scrollToDemo} />
-      <StatsSection />
-      <FeaturesSection />
-      <VideoSection videoRef={demoRef} />
-      <HowItWorksSection />
-      <TestimonialsSection />
-      <CtaSection />
-      <Footer />
+      
+      <Suspense fallback={<div className="h-40" />}>
+        <StatsSection />
+        <FeaturesSection />
+        <VideoSection videoRef={demoRef} />
+        <HowItWorksSection />
+        <TestimonialsSection />
+        <CtaSection />
+        <Footer />
+      </Suspense>
 
       {/* WhatsApp floating button */}
       <a

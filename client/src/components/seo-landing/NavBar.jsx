@@ -33,7 +33,7 @@ export default function NavBar() {
     >
       <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
         {/* Logo */}
-        <a href={BRAND_URL} className="flex items-center gap-3 group">
+        <a href={BRAND_URL} className="flex items-center gap-3 group" aria-label="Bitlance SEO Home">
           <div className="w-8 h-8 rounded-lg bg-brand/20 border border-brand/40 flex items-center justify-center group-hover:bg-brand/30 transition-all">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
               <path d="M12 2L20 7V17L12 22L4 17V7L12 2Z" stroke="#26CECE" strokeWidth="2" strokeLinejoin="round" />
@@ -80,6 +80,7 @@ export default function NavBar() {
         <button
           className="md:hidden p-2 text-white/60 hover:text-white"
           onClick={() => setOpen(o => !o)}
+          aria-label={open ? "Close Menu" : "Open Menu"}
         >
           {open ? <X size={20} /> : <Menu size={20} />}
         </button>

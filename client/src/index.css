@@ -8,24 +8,8 @@
    only when the user explicitly switches.
    ──────────────────────────────────────────────────────────────────────────── */
 
-/* Dark — default */
-:root,
-:root.dark {
-  --bg:           #070707;
-  --surface:      #111111;
-  --surface-2:    #1A1A1A;
-  --border:       #1E1E1E;
-  --accent:       #26CECE;   /* Bitlance logo teal */
-  --accent-hover: #35DFDF;
-  --accent-muted: #26CECE1A;
-  --text:         #F0F0F0;
-  --muted:        #555555;
-  --muted-2:      #333333;
-  color-scheme: dark;
-}
-
-/* Light */
-:root:not(.dark) {
+/* Light — default */
+:root {
   --bg:           #FFFFFF;
   --surface:      #F5F5F5;
   --surface-2:    #EBEBEB;
@@ -37,6 +21,21 @@
   --muted:        #777777;
   --muted-2:      #CCCCCC;
   color-scheme: light;
+}
+
+/* Dark — optional */
+.dark {
+  --bg:           #070707;
+  --surface:      #111111;
+  --surface-2:    #1A1A1A;
+  --border:       #1E1E1E;
+  --accent:       #26CECE;   /* Bitlance logo teal */
+  --accent-hover: #35DFDF;
+  --accent-muted: #26CECE1A;
+  --text:         #F0F0F0;
+  --muted:        #555555;
+  --muted-2:      #333333;
+  color-scheme: dark;
 }
 
 /* ── Base reset ───────────────────────────────────────────────────────────── */

@@ -74,7 +74,7 @@ const ProfileSelection = ({ onProfileSelect }) => {
     };
 
     return (
-        <div className="bg-[#111111] rounded-[2px] p-5 border border-[#333]">
+        <div className="bg-white rounded-[2px] p-5 border border-slate-200">
             <h3 className="text-xl font-bold mb-4 font-['Space_Grotesk'] tracking-tight text-[#26cece] flex items-center gap-2">
                 <User size={20} className="text-[#26cece]" />
                 Author Details
@@ -90,9 +90,9 @@ const ProfileSelection = ({ onProfileSelect }) => {
                         checked={mode === 'existing'}
                         onChange={() => setMode('existing')}
                         disabled={profiles.length === 0}
-                        className="w-4 h-4 bg-[#070707] border-[#333] text-[#26cece] focus:ring-0 checked:bg-[#26cece] disabled:opacity-50 appearance-none rounded-full checked:border-4 checked:border-[#070707] ring-1 ring-[#333] checked:ring-[#26cece] transition-all"
+                        className="w-4 h-4 bg-slate-50 border-slate-200 text-[#26cece] focus:ring-0 checked:bg-[#26cece] disabled:opacity-50 appearance-none rounded-full checked:border-4 checked:border-white ring-1 ring-slate-200 checked:ring-[#26cece] transition-all"
                     />
-                    <span className={`text-[12px] font-mono tracking-widest uppercase transition-colors ${profiles.length === 0 ? 'text-gray-600' : 'text-gray-400 group-hover:text-white'}`}>
+                    <span className={`text-[12px] font-mono tracking-widest uppercase transition-colors ${profiles.length === 0 ? 'text-gray-400' : 'text-gray-500 group-hover:text-slate-900'}`}>
                         Use Saved Profile
                     </span>
                 </label>
@@ -103,9 +103,9 @@ const ProfileSelection = ({ onProfileSelect }) => {
                         value="manual"
                         checked={mode === 'manual'}
                         onChange={() => setMode('manual')}
-                        className="w-4 h-4 bg-[#070707] border-[#333] text-[#26cece] focus:ring-0 checked:bg-[#26cece] disabled:opacity-50 appearance-none rounded-full checked:border-4 checked:border-[#070707] ring-1 ring-[#333] checked:ring-[#26cece] transition-all"
+                        className="w-4 h-4 bg-slate-50 border-slate-200 text-[#26cece] focus:ring-0 checked:bg-[#26cece] disabled:opacity-50 appearance-none rounded-full checked:border-4 checked:border-white ring-1 ring-slate-200 checked:ring-[#26cece] transition-all"
                     />
-                    <span className="text-[12px] font-mono tracking-widest uppercase text-gray-400 group-hover:text-white transition-colors">
+                    <span className="text-[12px] font-mono tracking-widest uppercase text-gray-500 group-hover:text-slate-900 transition-colors">
                         Manual Entry / New Profile
                     </span>
                 </label>
@@ -114,12 +114,12 @@ const ProfileSelection = ({ onProfileSelect }) => {
             {mode === 'existing' ? (
                 <div>
                     {loadingProfiles ? (
-                        <div className="text-[12px] font-mono tracking-widest uppercase text-gray-500">Loading profiles...</div>
+                        <div className="text-[12px] font-mono tracking-widest uppercase text-gray-400">Loading profiles...</div>
                     ) : (
                         <select
                             value={selectedProfileId}
                             onChange={(e) => setSelectedProfileId(e.target.value)}
-                            className="w-full px-4 py-3 rounded-[2px] bg-[#070707] border border-[#333] outline-none focus:ring-0 focus:border-[#26cece] text-white font-mono text-[14px] transition-all"
+                            className="w-full px-4 py-3 rounded-[2px] bg-slate-50 border border-slate-200 outline-none focus:ring-0 focus:border-[#26cece] text-slate-900 font-mono text-[14px] transition-all"
                         >
                             {profiles.map(profile => (
                                 <option key={profile.id} value={profile.id}>

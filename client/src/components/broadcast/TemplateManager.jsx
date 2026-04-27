@@ -169,7 +169,7 @@ const TemplateManager = () => {
             {/* Create Template Modal */}
             {showCreateModal && (
                 <div className="bg-gray-900/80 dark:bg-black/80 fixed inset-0 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
-                    <div className="bg-white dark:bg-[#070707] border border-gray-200 dark:border-[#333] max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-[4px_4px_0_0_#26cece] animate-fade-in-up">
+                    <div className="bg-white dark:bg-[#070707] border border-gray-200 dark:border-[#333] max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-[0_2px_16px_0_rgba(0,0,0,0.4)] animate-fade-in-up">
                         <div className="p-6 border-b border-gray-200 dark:border-[#333] flex justify-between items-center bg-gray-50 dark:bg-[#111111]">
                             <h2 className="text-xl font-bold font-['Space_Grotesk'] text-[#26cece] uppercase tracking-widest">Construct New Template</h2>
                             <button onClick={() => setShowCreateModal(false)} className="text-gray-500 hover:text-red-500 border border-transparent hover:border-red-500 hover:bg-red-500/10 p-1 transition-colors">

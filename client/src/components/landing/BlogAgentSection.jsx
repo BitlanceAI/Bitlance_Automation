@@ -173,7 +173,7 @@ const BlogAgentSection = ({ onOpenBooking }) => {
                                         }}>
                                         {step.badge}
                                     </div>
-                                    <p className="text-xs text-black/50 leading-relaxed px-1" style={{ fontFamily: "'DM Mono', monospace" }}>
+                                    <p className="text-xs text-gray-700 leading-relaxed px-1" style={{ fontFamily: "'DM Mono', monospace" }}>
                                         {step.desc}
                                     </p>
                                 </motion.div>

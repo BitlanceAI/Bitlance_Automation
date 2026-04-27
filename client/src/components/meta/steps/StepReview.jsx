@@ -98,7 +98,7 @@ const StepReview = ({ formData, pages }) => {
                 </div>
 
                 {/* Post Preview Card */}
-                <div className="bg-[#070707] border border-[#333] shadow-[4px_4px_0_0_#26cece] rounded-none flex flex-col font-mono drop-shadow-lg max-h-[500px] overflow-auto custom-scrollbar">
+                <div className="bg-[#070707] border border-[#333] shadow-[0_2px_16px_0_rgba(0,0,0,0.4)] rounded-none flex flex-col font-mono drop-shadow-lg max-h-[500px] overflow-auto custom-scrollbar">
                     {/* Header */}
                     <div className="p-4 border-b border-[#333] bg-[#111111] sticky top-0 z-10">
                         <div className="flex items-center gap-4">
@@ -146,7 +146,7 @@ const StepReview = ({ formData, pages }) => {
             </div>
 
             {/* Confirmation Notice */}
-            <div className="p-6 bg-[#26cece]/10 border border-[#26cece] flex items-start gap-4 font-mono shadow-[4px_4px_0_0_#26cece]">
+            <div className="p-6 bg-[#26cece]/10 border border-[#26cece] flex items-start gap-4 font-mono shadow-[0_2px_16px_0_rgba(0,0,0,0.4)]">
                 <CheckCircle2 className="h-6 w-6 text-[#26cece] shrink-0 mt-0.5 animate-pulse" />
                 <div>
                     <p className="text-[#26cece] uppercase font-bold tracking-widest text-[12px] md:text-sm mb-1">

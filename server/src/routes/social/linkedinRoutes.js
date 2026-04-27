@@ -336,7 +336,9 @@ Rules:
 - Add 3-5 relevant hashtags at the end
 - No generic filler phrases like "In today's world" or "I'm excited to share"
 - Sound like a real person, not a corporate bot
-- Tone: ${toneGuide}`;
+- Tone: ${toneGuide}
+- Formatting: LinkedIn supports a subset of markdown. Use *asterisks* around words for bold emphasis (e.g. *key point*). Use bullet points with the • character for lists. You MAY use emojis sparingly for visual structure.
+- IMPORTANT: Output the post text exactly as it should appear — do NOT strip asterisks. Asterisks around words will render as bold on LinkedIn and must be preserved in the output.`;
 
         const userMessage = existingText
             ? `Rewrite and improve this LinkedIn post. Keep the core message but make it more engaging:\n\n${existingText}`
@@ -361,6 +363,84 @@ Rules:
         res.status(500).json({ error: error.message });
     }
 });
+
+/**
+ * Find trending keywords/topics using SerpAPI and AI
+ * POST /api/linkedin/trending-keywords
+ * Body: { niche?, location? }
+ */
+router.post('/trending-keywords', async (req, res) => {
+    try {
+        const { niche = 'technology', location = 'United States' } = req.body;
+        const serpApiKey = process.env.SERPAPI_API_KEY;
+
+        if (!serpApiKey) {
+            return res.status(500).json({ error: 'SerpAPI key not configured' });
+        }
+
+        // 1. Fetch trending data from SerpAPI (Google Trends)
+        // We'll use the 'google_trends_trending_searches' engine or similar
+        // For a more specific niche, we might use 'google_search' with 'trending [niche]'
+        let trendingData = [];
+        try {
+            const serpResponse = await axios.get('https://serpapi.com/search.json', {
+                params: {
+                    engine: 'google_trends_trending_searches',
+                    geo: 'US', // default to US for trends
+                    api_key: serpApiKey
+                }
+            });
+
+            // Extract trending searches from the response
+            // The structure varies, but usually it's in trending_searches
+            const trends = serpResponse.data.trending_searches || [];
+            trendingData = trends.map(t => t.query).slice(0, 15);
+        } catch (serpError) {
+            console.error('SerpAPI error:', serpError.message);
+            // Fallback: If trends fail, try a search for 'trending topics in [niche]'
+            const searchResponse = await axios.get('https://serpapi.com/search.json', {
+                params: {
+                    q: `trending topics in ${niche}`,
+                    location: location,
+                    api_key: serpApiKey
+                }
+            });
+            const results = searchResponse.data.organic_results || [];
+            trendingData = results.map(r => r.title).slice(0, 10);
+        }
+
+        // 2. Use AI to process these into LinkedIn post ideas
+        const systemPrompt = `You are a social media strategist.
+Given a list of trending topics or search queries, identify the top 5 most relevant and engaging topics for a LinkedIn professional audience interested in ${niche}.
+For each topic, provide:
+1. A catchy Keyword/Topic Name
+2. A brief "Angle" or "Hook" for a post
+3. 2-3 targeted hashtags
+
+Format the output as a JSON array of objects: [{ "keyword": "...", "hook": "...", "hashtags": ["...", "..."] }]`;
+
+        const userMessage = `Trending data: ${trendingData.join(', ')}`;
+
+        const completion = await openai.chat.completions.create({
+            model: 'gpt-4o-mini',
+            messages: [
+                { role: 'system', content: systemPrompt },
+                { role: 'user', content: userMessage },
+            ],
+            response_format: { type: 'json_object' },
+            temperature: 0.7,
+        });
+
+        const aiResult = JSON.parse(completion.choices[0]?.message?.content || '{}');
+        const topics = aiResult.topics || aiResult.suggestions || aiResult.results || Object.values(aiResult)[0] || [];
+
+        res.json({ success: true, topics });
+    } catch (error) {
+        console.error('Trending keywords error:', error.message);
+        res.status(500).json({ error: error.message });
+    }
+});
+
 
 /**
  * Upload media (image / video / PDF) to LinkedIn, returns assetUrn

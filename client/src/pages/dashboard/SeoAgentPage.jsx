@@ -58,7 +58,7 @@ const SeoAgentPage = () => {
         { id: 'blogs', label: 'Blog Manager', icon: FileText },
         { id: 'queue', label: 'Auto Queue', icon: Clock },
         { id: 'ranks', label: 'Rank Tracker', icon: TrendingUp },
-        { id: 'push', label: 'Send Push', icon: Bell },
+
     ];
 
     // Mode State — removed (now always auto-research mode)
@@ -619,17 +619,17 @@ const SeoAgentPage = () => {
     };
 
     return (
-        <div className="min-h-screen bg-[#070707] text-white font-sans transition-colors duration-300">
+        <div className="min-h-screen bg-white text-slate-900 font-sans transition-colors duration-300">
             <SEOHead canonicalUrl="https://www.bitlancetechhub.com/dashboard/agents/seo" noIndex={true} />
             {showTour && <SeoAgentTour onClose={() => setShowTour(false)} />}
 
             {/* Header / Navbar */}
-            <header className="bg-[#111111] border-b border-[#1E1E1E] sticky top-0 z-10 transition-colors duration-300">
+            <header className="bg-white border-b border-slate-200 sticky top-0 z-10 transition-colors duration-300">
                 <div className="px-6 h-16 flex items-center justify-between">
                     <div className="flex items-center gap-4">
                         <button
                             onClick={() => navigate('/agents')}
-                            className="p-2 rounded-[2px] hover:bg-[#1A1A1A] text-gray-400 transition-colors border border-transparent hover:border-[#333]"
+                            className="p-2 rounded-[2px] hover:bg-slate-50 text-slate-400 transition-colors border border-transparent hover:border-slate-200"
                             title="Back to Agents"
                         >
                             <ArrowLeft size={20} />
@@ -648,29 +648,29 @@ const SeoAgentPage = () => {
                             <div className="text-2xl font-bold font-mono text-[#26cece]">
                                 {credits.toLocaleString()}
                             </div>
-                            <div className="text-[10px] uppercase font-mono tracking-widest text-gray-500">
+                            <div className="text-[10px] uppercase font-mono tracking-widest text-slate-500">
                                 Available Credits
                             </div>
                             {agentStats && (
-                                <div className="absolute top-full mt-2 right-0 bg-[#111111] border border-[#1E1E1E] rounded-[2px] p-4 shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 w-56 z-20">
+                                <div className="absolute top-full mt-2 right-0 bg-white border border-slate-200 rounded-[2px] p-4 shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 w-56 z-20">
                                     <div className="text-xs space-y-2 font-mono">
                                         <div className="font-bold text-[#26cece] mb-3 uppercase tracking-widest text-[10px]">SEO Agent Stats</div>
-                                        <div className="flex justify-between items-center bg-[#070707] p-2 rounded-[2px] border border-[#333]">
-                                            <span className="text-gray-500 uppercase text-[10px]">Total Used:</span>
+                                        <div className="flex justify-between items-center bg-slate-50 p-2 rounded-[2px] border border-slate-200">
+                                            <span className="text-slate-500 uppercase text-[10px]">Total Used:</span>
                                             <span className="text-[#26cece] font-bold">{agentStats.totalCreditsUsed.toLocaleString()}</span>
                                         </div>
-                                        <div className="flex justify-between items-center bg-[#070707] p-2 rounded-[2px] border border-[#333]">
-                                            <span className="text-gray-500 uppercase text-[10px]">Articles:</span>
+                                        <div className="flex justify-between items-center bg-slate-50 p-2 rounded-[2px] border border-slate-200">
+                                            <span className="text-slate-500 uppercase text-[10px]">Articles:</span>
                                             <span className="text-[#26cece] font-bold">{agentStats.totalUsageCount}</span>
                                         </div>
-                                        <div className="text-gray-500 uppercase tracking-widest text-[10px] pt-2 mt-2 border-t border-[#333] text-center">
+                                        <div className="text-slate-500 uppercase tracking-widest text-[10px] pt-2 mt-2 border-t border-slate-200 text-center">
                                             Cost: 10 credits/article
                                         </div>
                                     </div>
                                 </div>
                             )}
                         </div>
-                        <div className="h-6 w-px bg-[#1E1E1E] hidden md:block"></div>
+                        <div className="h-6 w-px bg-slate-200 hidden md:block"></div>
                         <button
                             onClick={() => { setActiveTab('generate'); setShowTour(true); }}
                             className="hidden md:flex items-center gap-2 px-4 py-2 font-mono text-[11px] tracking-widest uppercase font-bold transition-all hover:-translate-y-0.5"
@@ -696,7 +696,7 @@ const SeoAgentPage = () => {
                                 onClick={() => setActiveTab(tab.id)}
                                 className={`flex items-center gap-2 px-4 py-3 text-[12px] font-mono tracking-widest uppercase whitespace-nowrap border-b-2 transition-all duration-200 ${activeTab === tab.id
                                     ? 'border-[#26cece] text-[#26cece]'
-                                    : 'border-transparent text-gray-500 hover:text-white hover:border-[#333]'
+                                    : 'border-transparent text-slate-500 hover:text-slate-900 hover:border-slate-300'
                                     }`}
                             >
                                 <TabIcon className="w-4 h-4" />
@@ -746,29 +746,29 @@ const SeoAgentPage = () => {
 
                         {/* Left Column: Generator Form */}
                         <div className="lg:col-span-2 space-y-6">
-                            <div className="bg-[#111111] rounded-[2px] border border-[#1E1E1E] p-6 md:p-8">
-                                <h2 className="text-2xl font-bold mb-6 text-white flex items-center gap-3 font-['Space_Grotesk'] tracking-tight">
+                            <div className="bg-slate-50 rounded-[2px] border border-slate-200 p-6 md:p-8">
+                                <h2 className="text-2xl font-bold mb-6 text-slate-900 flex items-center gap-3 font-['Space_Grotesk'] tracking-tight">
                                     <Bot className="text-[#26cece]" size={24} />
                                     AI SEO Article Generator
                                 </h2>
-                                <div className="mb-6 flex items-start gap-3 p-4 bg-[#070707] rounded-[2px] border border-[#333]">
+                                <div className="mb-6 flex items-start gap-3 p-4 bg-white rounded-[2px] border border-slate-200">
                                     <Bot className="w-5 h-5 mt-0.5 text-[#26cece] shrink-0" />
-                                    <p className="text-[13px] text-gray-400 leading-relaxed font-sans">
-                                        Just enter a title — our AI automatically researches the best <strong>industry positioning</strong>, <strong>SEO keywords</strong>, and <strong className="text-white">content strategy</strong> using AI SEO best practices (E-E-A-T, authority signals, structured content for AI citation).
+                                    <p className="text-[13px] text-slate-500 leading-relaxed font-sans">
+                                        Just enter a title — our AI automatically researches the best <strong>industry positioning</strong>, <strong>SEO keywords</strong>, and <strong className="text-slate-900">content strategy</strong> using AI SEO best practices (E-E-A-T, authority signals, structured content for AI citation).
                                     </p>
                                 </div>
 
                                 <div className="space-y-6">
                                     {/* Source Type Selector */}
                                     <div data-tour="source-type">
-                                        <label className="block text-[10px] font-mono tracking-widest uppercase text-gray-500 mb-3">Source Type *</label>
+                                        <label className="block text-[10px] font-mono tracking-widest uppercase text-slate-500 mb-3">Source Type *</label>
                                         <div className="grid grid-cols-3 gap-3">
                                             <button
                                                 type="button"
                                                 onClick={() => setSourceType('manual')}
                                                 className={`px-3 py-3 rounded-[2px] border font-bold font-mono tracking-widest uppercase text-[10px] transition-all ${sourceType === 'manual'
-                                                    ? 'border-[#26cece] bg-[#070707] text-[#26cece] shadow-[2px_2px_0_0_#26cece]'
-                                                    : 'border-[#333] hover:border-[#555] text-gray-500 hover:text-white'
+                                                    ? 'border-[#26cece] bg-white text-[#26cece] shadow-[2px_2px_0_0_#26cece]'
+                                                    : 'border-slate-200 hover:border-slate-300 text-slate-500 hover:text-slate-900'
                                                     }`}
                                             >
                                                 📝 Manual
@@ -777,8 +777,8 @@ const SeoAgentPage = () => {
                                                 type="button"
                                                 onClick={() => setSourceType('wordpress')}
                                                 className={`px-3 py-3 rounded-[2px] border font-bold font-mono tracking-widest uppercase text-[10px] transition-all ${sourceType === 'wordpress'
-                                                    ? 'border-[#26cece] bg-[#070707] text-[#26cece] shadow-[2px_2px_0_0_#26cece]'
-                                                    : 'border-[#333] hover:border-[#555] text-gray-500 hover:text-white'
+                                                    ? 'border-[#26cece] bg-white text-[#26cece] shadow-[2px_2px_0_0_#26cece]'
+                                                    : 'border-slate-200 hover:border-slate-300 text-slate-500 hover:text-slate-900'
                                                     }`}
                                             >
                                                 🌐 WordPress
@@ -786,11 +786,11 @@ const SeoAgentPage = () => {
                                             <button
                                                 type="button"
                                                 disabled
-                                                className="px-3 py-3 rounded-[2px] border border-[#333] font-bold font-mono tracking-widest uppercase text-[10px] flex items-center justify-center gap-1.5 relative text-gray-600 cursor-not-allowed opacity-60"
+                                                className="px-3 py-3 rounded-[2px] border border-slate-200 font-bold font-mono tracking-widest uppercase text-[10px] flex items-center justify-center gap-1.5 relative text-slate-300 cursor-not-allowed opacity-60"
                                             >
                                                 <Sheet size={13} />
                                                 Sheets
-                                                <span className="absolute -top-2 -right-2 bg-yellow-500 text-[#070707] text-[7px] font-black font-mono uppercase tracking-wider px-1.5 py-0.5 rounded-sm leading-none">
+                                                <span className="absolute -top-2 -right-2 bg-yellow-500 text-white text-[7px] font-black font-mono uppercase tracking-wider px-1.5 py-0.5 rounded-sm leading-none">
                                                     Soon
                                                 </span>
                                             </button>
@@ -804,7 +804,7 @@ const SeoAgentPage = () => {
 
                                     {/* ── Google Sheets Panel ──────────────────────────────── */}
                                     {sourceType === 'sheets' && (
-                                        <div className="space-y-5 p-5 bg-[#070707] rounded-[2px] border border-[#26cece]/30">
+                                        <div className="space-y-5 p-5 bg-white rounded-[2px] border border-[#26cece]/30">
                                             {/* Header */}
                                             <div className="flex items-center justify-between">
                                                 <div className="flex items-center gap-2">
@@ -822,21 +822,21 @@ const SeoAgentPage = () => {
                                                     <button
                                                         type="button"
                                                         onClick={handleConnectGoogle}
-                                                        className="flex items-center gap-1.5 text-[10px] font-mono tracking-widest uppercase text-[#070707] bg-[#26cece] px-3 py-1.5 rounded-[2px] hover:bg-white transition-colors font-bold"
+                                                        className="flex items-center gap-1.5 text-[10px] font-mono tracking-widest uppercase text-white bg-[#26cece] px-3 py-1.5 rounded-[2px] hover:bg-[#20afaf] transition-colors font-bold"
                                                     >
                                                         <Link2 size={11} /> Connect Google
                                                     </button>
                                                 )}
                                             </div>
 
-                                            <p className="text-[11px] text-gray-500 font-mono leading-relaxed">
-                                                Reads titles from column <strong className="text-white">{sheetInputCol || 'A'}</strong>, runs AI SEO on each, and writes results to column <strong className="text-white">{sheetOutputCol || 'B'}</strong>.
+                                            <p className="text-[11px] text-slate-500 font-mono leading-relaxed">
+                                                Reads titles from column <strong className="text-slate-900">{sheetInputCol || 'A'}</strong>, runs AI SEO on each, and writes results to column <strong className="text-slate-900">{sheetOutputCol || 'B'}</strong>.
                                                 Empty rows are automatically skipped.
                                             </p>
 
                                             {/* Spreadsheet ID */}
                                             <div className="space-y-2">
-                                                <label className="block text-[10px] font-mono tracking-widest uppercase text-gray-500">
+                                                <label className="block text-[10px] font-mono tracking-widest uppercase text-slate-500">
                                                     Spreadsheet ID <span className="text-[#26cece]">*</span>
                                                 </label>
                                                 <input
@@ -844,17 +844,17 @@ const SeoAgentPage = () => {
                                                     value={sheetId}
                                                     onChange={e => setSheetId(e.target.value)}
                                                     placeholder="e.g. 1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgVE2upms"
-                                                    className="w-full px-4 py-3 rounded-[2px] bg-[#111111] border border-[#333] focus:border-[#26cece] outline-none transition-all text-white font-mono text-[13px] placeholder-gray-600"
+                                                    className="w-full px-4 py-3 rounded-[2px] bg-white border border-slate-200 focus:border-[#26cece] outline-none transition-all text-slate-900 font-mono text-[13px] placeholder-slate-400"
                                                 />
-                                                <p className="text-[10px] text-gray-600 font-mono">
-                                                    Find it in your sheet URL: docs.google.com/spreadsheets/d/<strong className="text-gray-400">SPREADSHEET_ID</strong>/edit
+                                                <p className="text-[10px] text-slate-400 font-mono">
+                                                    Find it in your sheet URL: docs.google.com/spreadsheets/d/<strong className="text-slate-500">SPREADSHEET_ID</strong>/edit
                                                 </p>
                                             </div>
 
                                             {/* Column Mapping */}
                                             <div className="grid grid-cols-2 gap-4">
                                                 <div className="space-y-2">
-                                                    <label className="block text-[10px] font-mono tracking-widest uppercase text-gray-500">
+                                                    <label className="block text-[10px] font-mono tracking-widest uppercase text-slate-500">
                                                         Input Column (Titles)
                                                     </label>
                                                     <input
@@ -863,11 +863,11 @@ const SeoAgentPage = () => {
                                                         value={sheetInputCol}
                                                         onChange={e => setSheetInputCol(e.target.value.toUpperCase())}
                                                         placeholder="A"
-                                                        className="w-full px-4 py-3 rounded-[2px] bg-[#111111] border border-[#333] focus:border-[#26cece] outline-none transition-all text-white font-mono text-[14px] placeholder-gray-600 text-center uppercase"
+                                                        className="w-full px-4 py-3 rounded-[2px] bg-white border border-slate-200 focus:border-[#26cece] outline-none transition-all text-slate-900 font-mono text-[14px] placeholder-slate-400 text-center uppercase"
                                                     />
                                                 </div>
                                                 <div className="space-y-2">
-                                                    <label className="block text-[10px] font-mono tracking-widest uppercase text-gray-500">
+                                                    <label className="block text-[10px] font-mono tracking-widest uppercase text-slate-500">
                                                         Output Column (SEO Result)
                                                     </label>
                                                     <input
@@ -876,14 +876,14 @@ const SeoAgentPage = () => {
                                                         value={sheetOutputCol}
                                                         onChange={e => setSheetOutputCol(e.target.value.toUpperCase())}
                                                         placeholder="B"
-                                                        className="w-full px-4 py-3 rounded-[2px] bg-[#111111] border border-[#333] focus:border-[#26cece] outline-none transition-all text-white font-mono text-[14px] placeholder-gray-600 text-center uppercase"
+                                                        className="w-full px-4 py-3 rounded-[2px] bg-white border border-slate-200 focus:border-[#26cece] outline-none transition-all text-slate-900 font-mono text-[14px] placeholder-slate-400 text-center uppercase"
                                                     />
                                                 </div>
                                             </div>
 
                                             {/* Pipeline Mode Selector */}
                                             <div className="space-y-2">
-                                                <label className="block text-[10px] font-mono tracking-widest uppercase text-gray-500">
+                                                <label className="block text-[10px] font-mono tracking-widest uppercase text-slate-500">
                                                     Pipeline Mode
                                                 </label>
                                                 <div className="grid grid-cols-2 gap-3">
@@ -891,27 +891,27 @@ const SeoAgentPage = () => {
                                                         type="button"
                                                         onClick={() => setSheetPipelineMode('seo')}
                                                         className={`flex flex-col items-start gap-1 px-4 py-3 rounded-[2px] border font-mono transition-all ${sheetPipelineMode === 'seo'
-                                                            ? 'border-[#26cece] bg-[#070707] text-[#26cece] shadow-[2px_2px_0_0_#26cece]'
-                                                            : 'border-[#333] hover:border-[#555] text-gray-500 hover:text-white'
+                                                            ? 'border-[#26cece] bg-white text-[#26cece] shadow-[2px_2px_0_0_#26cece]'
+                                                            : 'border-slate-200 hover:border-slate-300 text-slate-500 hover:text-slate-900'
                                                             }`}
                                                     >
                                                         <span className="text-[11px] font-bold tracking-widest uppercase flex items-center gap-1.5">
                                                             <Zap size={11} /> SEO Titles
                                                         </span>
-                                                        <span className="text-[10px] text-gray-500 font-normal">~1–3s per row</span>
+                                                        <span className="text-[10px] text-slate-500 font-normal">~1–3s per row</span>
                                                     </button>
                                                     <button
                                                         type="button"
                                                         onClick={() => setSheetPipelineMode('blog')}
                                                         className={`flex flex-col items-start gap-1 px-4 py-3 rounded-[2px] border font-mono transition-all ${sheetPipelineMode === 'blog'
-                                                            ? 'border-[#26cece] bg-[#070707] text-[#26cece] shadow-[2px_2px_0_0_#26cece]'
-                                                            : 'border-[#333] hover:border-[#555] text-gray-500 hover:text-white'
+                                                            ? 'border-[#26cece] bg-white text-[#26cece] shadow-[2px_2px_0_0_#26cece]'
+                                                            : 'border-slate-200 hover:border-slate-300 text-slate-500 hover:text-slate-900'
                                                             }`}
                                                     >
                                                         <span className="text-[11px] font-bold tracking-widest uppercase flex items-center gap-1.5">
                                                             <Bot size={11} /> Auto Blog
                                                         </span>
-                                                        <span className="text-[10px] text-gray-500 font-normal">~30–90s per row</span>
+                                                        <span className="text-[10px] text-slate-500 font-normal">~30–90s per row</span>
                                                     </button>
                                                 </div>
                                                 {sheetPipelineMode === 'blog' && (
@@ -935,10 +935,10 @@ const SeoAgentPage = () => {
                                                 onClick={sheetPipelineMode === 'blog' ? handleRunBlogSheet : handleRunSEOSheet}
                                                 disabled={isRunningSheet || !sheetId.trim()}
                                                 className={`w-full flex items-center justify-center gap-2 py-3 rounded-[2px] font-bold font-mono tracking-widest uppercase text-[12px] transition-all ${isRunningSheet || !sheetId.trim()
-                                                    ? 'bg-[#333] text-gray-600 cursor-not-allowed'
+                                                    ? 'bg-slate-100 text-slate-400 cursor-not-allowed'
                                                     : sheetPipelineMode === 'blog'
-                                                        ? 'bg-violet-600 text-white hover:bg-violet-500 hover:-translate-y-0.5 hover:shadow-[4px_4px_0_0_#333]'
-                                                        : 'bg-[#26cece] text-[#070707] hover:bg-white hover:-translate-y-0.5 hover:shadow-[4px_4px_0_0_#333]'
+                                                        ? 'bg-violet-600 text-white hover:bg-violet-500 hover:-translate-y-0.5 hover:shadow-[4px_4px_0_0_#f1f5f9]'
+                                                        : 'bg-[#26cece] text-white hover:bg-[#20afaf] hover:-translate-y-0.5 hover:shadow-[4px_4px_0_0_#f1f5f9]'
                                                     }`}
                                             >
                                                 {isRunningSheet ? (
@@ -966,17 +966,17 @@ const SeoAgentPage = () => {
                                                     </div>
                                                     <div className="max-h-52 overflow-y-auto space-y-2 custom-scrollbar">
                                                         {sheetResults.results.map((r, i) => (
-                                                            <div key={i} className="p-3 rounded-[2px] border border-[#333] bg-[#111111] text-[11px] font-mono">
+                                                            <div key={i} className="p-3 rounded-[2px] border border-slate-200 bg-white text-[11px] font-mono">
                                                                 <div className="flex items-center justify-between gap-2 mb-1">
-                                                                    <span className="text-gray-500 truncate">IN: {r.input}</span>
+                                                                    <span className="text-slate-400 truncate">IN: {r.input}</span>
                                                                     {r.timeTakenSec && (
-                                                                        <span className="shrink-0 flex items-center gap-1 text-[10px] font-mono text-amber-400 bg-amber-950/30 border border-amber-800/40 px-1.5 py-0.5 rounded-[2px]">
+                                                                        <span className="shrink-0 flex items-center gap-1 text-[10px] font-mono text-amber-600 bg-amber-50 border border-amber-200 px-1.5 py-0.5 rounded-[2px]">
                                                                             <Clock size={9} />
                                                                             {r.timeTakenSec}s
                                                                         </span>
                                                                     )}
                                                                 </div>
-                                                                <div className="text-[#26cece] truncate">OUT: {r.output}</div>
+                                                                <div className="text-[#26cece] truncate font-bold">OUT: {r.output}</div>
                                                             </div>
                                                         ))}
                                                     </div>
@@ -987,7 +987,7 @@ const SeoAgentPage = () => {
 
                                     {/* Interlinking Section (Available for all modes) */}
                                     <div className="space-y-3 mt-4">
-                                        <label className="block text-[10px] font-mono tracking-widest uppercase text-gray-500">
+                                        <label className="block text-[10px] font-mono tracking-widest uppercase text-slate-500">
                                             Website URL for Interlinking (Optional)
                                         </label>
                                         <input
@@ -995,16 +995,16 @@ const SeoAgentPage = () => {
                                             value={interlinkUrl}
                                             onChange={(e) => setInterlinkUrl(e.target.value)}
                                             placeholder="https://yourwebsite.com (Auto-fetches posts)"
-                                            className="w-full px-4 py-3 rounded-[2px] bg-[#070707] border border-[#333] focus:ring-0 focus:border-[#26cece] outline-none transition-all text-white font-mono text-[14px] placeholder-gray-600"
+                                            className="w-full px-4 py-3 rounded-[2px] bg-white border border-slate-200 focus:ring-0 focus:border-[#26cece] outline-none transition-all text-slate-900 font-mono text-[14px] placeholder-slate-400"
                                         />
-                                        <p className="text-[10px] text-gray-500 font-mono mt-1">
+                                        <p className="text-[10px] text-slate-400 font-mono mt-1">
                                             Providing this URL allows the AI to read your recent posts and intelligently link to them in the article.
                                         </p>
                                     </div>
 
                                     {/* Article Title — only required input */}
                                     <div className="space-y-3" data-tour="article-title">
-                                        <label className="text-[10px] font-mono tracking-widest uppercase text-gray-500">
+                                        <label className="text-[10px] font-mono tracking-widest uppercase text-slate-500">
                                             Article Title <span className="text-[#26cece]">*</span>
                                         </label>
                                         <div className="relative">
@@ -1012,11 +1012,11 @@ const SeoAgentPage = () => {
                                                 value={topic}
                                                 onChange={(e) => setTopic(e.target.value)}
                                                 placeholder="e.g. How AI is Transforming Real Estate Lead Generation in 2025"
-                                                className="w-full h-32 px-4 py-4 rounded-[2px] bg-[#070707] border border-[#333] focus:ring-0 focus:border-[#26cece] outline-none transition-all resize-none text-white font-mono text-[14px] placeholder-gray-600"
+                                                className="w-full h-32 px-4 py-4 rounded-[2px] bg-white border border-slate-200 focus:ring-0 focus:border-[#26cece] outline-none transition-all resize-none text-slate-900 font-mono text-[14px] placeholder-slate-400"
                                             />
-                                            <Edit3 className="absolute bottom-4 right-4 text-[#333]" size={16} />
+                                            <Edit3 className="absolute bottom-4 right-4 text-slate-200" size={16} />
                                         </div>
-                                        <p className="text-[10px] text-gray-500 font-mono">
+                                        <p className="text-[10px] text-slate-400 font-mono">
                                             AI will automatically determine the best industry, keywords, and content angle for this title.
                                         </p>
                                     </div>
@@ -1024,80 +1024,80 @@ const SeoAgentPage = () => {
                                     {/* Dropdowns Grid */}
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6" data-tour="article-options">
                                         <div className="space-y-3">
-                                            <label className="text-[10px] font-mono tracking-widest uppercase text-gray-500">Language</label>
+                                            <label className="text-[10px] font-mono tracking-widest uppercase text-slate-500">Language</label>
                                             <div className="relative">
                                                 <select
                                                     value={language}
                                                     onChange={(e) => setLanguage(e.target.value)}
-                                                    className="w-full px-4 py-3 rounded-[2px] bg-[#070707] border border-[#333] focus:ring-0 focus:border-[#26cece] outline-none transition-all appearance-none text-white font-mono text-[14px]"
+                                                    className="w-full px-4 py-3 rounded-[2px] bg-white border border-slate-200 focus:ring-0 focus:border-[#26cece] outline-none transition-all appearance-none text-slate-900 font-mono text-[14px]"
                                                 >
                                                     <option>English</option>
                                                     <option>Hindi</option>
                                                 </select>
-                                                <Globe className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none" size={16} />
+                                                <Globe className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" size={16} />
                                             </div>
                                         </div>
 
                                         <div className="space-y-3">
-                                            <label className="text-[10px] font-mono tracking-widest uppercase text-gray-500">Writing Style</label>
+                                            <label className="text-[10px] font-mono tracking-widest uppercase text-slate-500">Writing Style</label>
                                             <div className="relative">
                                                 <select
                                                     value={writingStyle}
                                                     onChange={(e) => setWritingStyle(e.target.value)}
-                                                    className="w-full px-4 py-3 rounded-[2px] bg-[#070707] border border-[#333] focus:ring-0 focus:border-[#26cece] outline-none transition-all appearance-none text-white font-mono text-[14px]"
+                                                    className="w-full px-4 py-3 rounded-[2px] bg-white border border-slate-200 focus:ring-0 focus:border-[#26cece] outline-none transition-all appearance-none text-slate-900 font-mono text-[14px]"
                                                 >
                                                     <option>Professional</option>
                                                     <option>Casual</option>
                                                     <option>Technical</option>
                                                     <option>Storytelling</option>
                                                 </select>
-                                                <PenTool className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none" size={16} />
+                                                <PenTool className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" size={16} />
                                             </div>
                                         </div>
 
                                         <div className="space-y-3">
-                                            <label className="text-[10px] font-mono tracking-widest uppercase text-gray-500">Article Length</label>
+                                            <label className="text-[10px] font-mono tracking-widest uppercase text-slate-500">Article Length</label>
                                             <div className="relative">
                                                 <select
                                                     value={articleLength}
                                                     onChange={(e) => setArticleLength(e.target.value)}
-                                                    className="w-full px-4 py-3 rounded-[2px] bg-[#070707] border border-[#333] focus:ring-0 focus:border-[#26cece] outline-none transition-all appearance-none text-white font-mono text-[14px]"
+                                                    className="w-full px-4 py-3 rounded-[2px] bg-white border border-slate-200 focus:ring-0 focus:border-[#26cece] outline-none transition-all appearance-none text-slate-900 font-mono text-[14px]"
                                                 >
                                                     <option>Short (300-500 words)</option>
                                                     <option>Medium (500-1000 words)</option>
                                                     <option>Long (1000-2000 words)</option>
                                                 </select>
-                                                <FileText className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none" size={16} />
+                                                <FileText className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" size={16} />
                                             </div>
                                         </div>
 
                                         <div className="space-y-3">
-                                            <label className="text-[10px] font-mono tracking-widest uppercase text-gray-500">Target Audience</label>
+                                            <label className="text-[10px] font-mono tracking-widest uppercase text-slate-500">Target Audience</label>
                                             <div className="relative">
                                                 <select
                                                     value={targetAudience}
                                                     onChange={(e) => setTargetAudience(e.target.value)}
-                                                    className="w-full px-4 py-3 rounded-[2px] bg-[#070707] border border-[#333] focus:ring-0 focus:border-[#26cece] outline-none transition-all appearance-none text-white font-mono text-[14px]"
+                                                    className="w-full px-4 py-3 rounded-[2px] bg-white border border-slate-200 focus:ring-0 focus:border-[#26cece] outline-none transition-all appearance-none text-slate-900 font-mono text-[14px]"
                                                 >
                                                     <option>General Public</option>
                                                     <option>Beginners</option>
                                                     <option>Experts</option>
                                                     <option>Decision Makers</option>
                                                 </select>
-                                                <Users className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none" size={16} />
+                                                <Users className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" size={16} />
                                             </div>
                                         </div>
 
                                         {/* Image Settings */}
                                         <div className="space-y-3 md:col-span-2">
-                                            <label className="block text-[10px] font-mono tracking-widest uppercase text-gray-500">Featured Image Source</label>
+                                            <label className="block text-[10px] font-mono tracking-widest uppercase text-slate-500">Featured Image Source</label>
                                             <div className="grid grid-cols-3 gap-4">
                                                 <button
                                                     type="button"
                                                     onClick={() => setImageOption('auto')}
                                                     className={`px-3 py-3 rounded-[2px] border font-bold font-mono tracking-widest uppercase text-[10px] transition-all ${imageOption === 'auto'
-                                                        ? 'border-[#26cece] bg-[#070707] text-[#26cece] shadow-[2px_2px_0_0_#26cece]'
-                                                        : 'border-[#333] hover:border-[#555] text-gray-500 hover:text-white'
+                                                        ? 'border-[#26cece] bg-white text-[#26cece] shadow-[2px_2px_0_0_#26cece]'
+                                                        : 'border-slate-200 hover:border-slate-300 text-slate-500 hover:text-slate-900'
                                                         }`}
                                                 >
                                                     ✨ AI Auto
@@ -1106,8 +1106,8 @@ const SeoAgentPage = () => {
                                                     type="button"
                                                     onClick={() => setImageOption('custom')}
                                                     className={`px-3 py-3 rounded-[2px] border font-bold font-mono tracking-widest uppercase text-[10px] transition-all ${imageOption === 'custom'
-                                                        ? 'border-[#26cece] bg-[#070707] text-[#26cece] shadow-[2px_2px_0_0_#26cece]'
-                                                        : 'border-[#333] hover:border-[#555] text-gray-500 hover:text-white'
+                                                        ? 'border-[#26cece] bg-white text-[#26cece] shadow-[2px_2px_0_0_#26cece]'
+                                                        : 'border-slate-200 hover:border-slate-300 text-slate-500 hover:text-slate-900'
                                                         }`}
                                                 >
                                                     🔗 Custom URL
@@ -1116,8 +1116,8 @@ const SeoAgentPage = () => {
                                                     type="button"
                                                     onClick={() => setImageOption('none')}
                                                     className={`px-3 py-3 rounded-[2px] border font-bold font-mono tracking-widest uppercase text-[10px] transition-all ${imageOption === 'none'
-                                                        ? 'border-[#26cece] bg-[#070707] text-[#26cece] shadow-[2px_2px_0_0_#26cece]'
-                                                        : 'border-[#333] hover:border-[#555] text-gray-500 hover:text-white'
+                                                        ? 'border-[#26cece] bg-white text-[#26cece] shadow-[2px_2px_0_0_#26cece]'
+                                                        : 'border-slate-200 hover:border-slate-300 text-slate-500 hover:text-slate-900'
                                                         }`}
                                                 >
                                                     🚫 None
@@ -1130,7 +1130,7 @@ const SeoAgentPage = () => {
                                                         value={customImageUrl}
                                                         onChange={(e) => setCustomImageUrl(e.target.value)}
                                                         placeholder="https://example.com/image.jpg"
-                                                        className="w-full px-4 py-3 rounded-[2px] bg-[#070707] border border-[#333] focus:ring-0 focus:border-[#26cece] outline-none transition-all text-white font-mono text-[14px] placeholder-gray-600"
+                                                        className="w-full px-4 py-3 rounded-[2px] bg-white border border-slate-200 focus:ring-0 focus:border-[#26cece] outline-none transition-all text-slate-900 font-mono text-[14px] placeholder-slate-400"
                                                     />
                                                 </div>
                                             )}
@@ -1142,41 +1142,41 @@ const SeoAgentPage = () => {
                                         </div>
 
                                         <div className="space-y-3">
-                                            <label className="block text-[10px] font-mono tracking-widest uppercase text-gray-500">Category</label>
+                                            <label className="block text-[10px] font-mono tracking-widest uppercase text-slate-500">Category</label>
                                             <input
                                                 type="text"
                                                 value={category}
                                                 onChange={(e) => setCategory(e.target.value)}
                                                 placeholder="e.g. Technology"
-                                                className="w-full px-4 py-3 rounded-[2px] bg-[#070707] border border-[#333] focus:ring-0 focus:border-[#26cece] outline-none transition-all text-white font-mono text-[14px] placeholder-gray-600"
+                                                className="w-full px-4 py-3 rounded-[2px] bg-white border border-slate-200 focus:ring-0 focus:border-[#26cece] outline-none transition-all text-slate-900 font-mono text-[14px] placeholder-slate-400"
                                             />
                                         </div>
 
                                         <div className="space-y-3 md:col-span-2">
-                                            <label className="block text-[10px] font-mono tracking-widest uppercase text-gray-500">Tags (Comma Separated)</label>
+                                            <label className="block text-[10px] font-mono tracking-widest uppercase text-slate-500">Tags (Comma Separated)</label>
                                             <input
                                                 type="text"
                                                 value={tags}
                                                 onChange={(e) => setTags(e.target.value)}
                                                 placeholder="e.g. AI, Tech, Future"
-                                                className="w-full px-4 py-3 rounded-[2px] bg-[#070707] border border-[#333] focus:ring-0 focus:border-[#26cece] outline-none transition-all text-white font-mono text-[14px] placeholder-gray-600"
+                                                className="w-full px-4 py-3 rounded-[2px] bg-white border border-slate-200 focus:ring-0 focus:border-[#26cece] outline-none transition-all text-slate-900 font-mono text-[14px] placeholder-slate-400"
                                             />
                                         </div>
 
                                         {user?.id === ADMIN_ID && sourceType !== 'wordpress' && (
-                                            <div className="md:col-span-2 flex items-start gap-4 p-5 bg-[#111111] rounded-[2px] border border-[#333]">
+                                            <div className="md:col-span-2 flex items-start gap-4 p-5 bg-white rounded-[2px] border border-slate-200">
                                                 <input
                                                     type="checkbox"
                                                     id="isCompanyBlog"
                                                     checked={isCompanyBlog}
                                                     onChange={(e) => setIsCompanyBlog(e.target.checked)}
-                                                    className="mt-0.5 h-4 w-4 bg-[#070707] border-[#333] text-[#26cece] focus:ring-0 rounded-[2px]"
+                                                    className="mt-0.5 h-4 w-4 bg-white border-slate-300 text-[#26cece] focus:ring-0 rounded-[2px]"
                                                 />
                                                 <div>
                                                     <label htmlFor="isCompanyBlog" className="block text-[12px] font-mono tracking-widest uppercase text-[#26cece] font-bold cursor-pointer select-none">
                                                         Generate as Company Blog Post (Public)
                                                     </label>
-                                                    <p className="text-[10px] font-mono text-gray-500 mt-2">
+                                                    <p className="text-[10px] font-mono text-slate-400 mt-2">
                                                         If checked, this article will be published to the main company blog. Uncheck to save as a personal client article.
                                                     </p>
                                                 </div>
@@ -1185,14 +1185,14 @@ const SeoAgentPage = () => {
                                     </div>
 
                                     {/* Credit cost row */}
-                                    <div className="flex items-center justify-between px-3 py-2 rounded-[2px] bg-[#0d0d0d] border border-[#1a1a1a] mb-3">
-                                        <div className="flex items-center gap-2 text-[11px] font-mono text-gray-500 uppercase tracking-widest">
+                                    <div className="flex items-center justify-between px-3 py-2 rounded-[2px] bg-slate-100 border border-slate-200 mb-3">
+                                        <div className="flex items-center gap-2 text-[11px] font-mono text-slate-500 uppercase tracking-widest">
                                             <Zap size={11} className="text-[#26cece]" />
                                             Generation cost
                                         </div>
                                         <div className="flex items-center gap-2">
                                             <span className="text-[#26cece] font-bold font-mono text-sm">10 credits</span>
-                                            <span className="text-gray-600 font-mono text-[10px]">/ article</span>
+                                            <span className="text-slate-400 font-mono text-[10px]">/ article</span>
                                         </div>
                                     </div>
 
@@ -1200,18 +1200,18 @@ const SeoAgentPage = () => {
                                         data-tour="generate-btn"
                                         onClick={handleGenerate}
                                         disabled={isGenerating}
-                                        className={`w-full bg-[#26cece] text-[#070707] font-bold py-4 rounded-[2px] transition-all font-['Space_Grotesk'] tracking-widest uppercase hover:bg-white hover:-translate-y-1 hover:shadow-[4px_4px_0_0_#333] text-[16px] flex items-center justify-center gap-3 ${isGenerating ? 'opacity-50 cursor-not-allowed hover:-translate-y-0 hover:shadow-none hover:bg-[#26cece]' : ''}`}
+                                        className={`w-full bg-[#26cece] text-white font-bold py-4 rounded-[2px] transition-all font-['Space_Grotesk'] tracking-widest uppercase hover:bg-[#20afaf] hover:-translate-y-1 hover:shadow-[4px_4px_0_0_#f1f5f9] text-[16px] flex items-center justify-center gap-3 ${isGenerating ? 'opacity-50 cursor-not-allowed hover:-translate-y-0 hover:shadow-none hover:bg-[#26cece]' : ''}`}
                                     >
                                         {isGenerating ? (
                                             <>
-                                                <div className="w-6 h-6 border-2 border-[#070707]/30 border-t-[#070707] rounded-full animate-spin"></div>
+                                                <div className="w-6 h-6 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
                                                 Generating (Takes 1-3 mins)...
                                             </>
                                         ) : (
                                             <>
                                                 <Zap fill="currentColor" size={24} />
                                                 Generate SEO Content
-                                                <span className="text-[12px] font-mono ml-2 opacity-70 border-l border-[#070707]/30 pl-2">
+                                                <span className="text-[12px] font-mono ml-2 opacity-70 border-l border-white/30 pl-2">
                                                     Cost 10 credits
                                                 </span>
                                             </>
@@ -1222,16 +1222,16 @@ const SeoAgentPage = () => {
 
                             {/* Generated Article Display */}
                             {currentArticle && (
-                                <div data-tour="article-output" className="bg-[#070707] rounded-[2px] border border-[#333] p-6 md:p-8 transition-colors duration-300">
+                                <div data-tour="article-output" className="bg-white rounded-[2px] border border-slate-200 p-6 md:p-8 transition-colors duration-300">
                                     <h2 className="text-xl font-bold mb-4 text-[#26cece] font-['Space_Grotesk'] tracking-tight flex items-center gap-3">
                                         <CheckCircle size={28} />
                                         Article Generated Successfully
                                     </h2>
 
                                     {currentSeoTitle && (
-                                        <div className="mb-6 p-5 bg-[#111111] border border-[#333] rounded-[2px]">
-                                            <strong className="text-gray-500 uppercase tracking-widest text-[10px] block mb-1 font-mono">SEO Optimized Title (H1)</strong>
-                                            <p className="text-white font-mono text-[14px]">{currentSeoTitle}</p>
+                                        <div className="mb-6 p-5 bg-slate-50 border border-slate-200 rounded-[2px]">
+                                            <strong className="text-slate-500 uppercase tracking-widest text-[10px] block mb-1 font-mono">SEO Optimized Title (H1)</strong>
+                                            <p className="text-slate-900 font-mono text-[14px]">{currentSeoTitle}</p>
                                         </div>
                                     )}
 
@@ -1239,13 +1239,13 @@ const SeoAgentPage = () => {
                                         <img
                                             src={currentImageUrl}
                                             alt="Blog featured image"
-                                            className="mb-6 w-full rounded-[2px] border border-[#333]"
+                                            className="mb-6 w-full rounded-[2px] border border-slate-200"
                                             onError={(e) => e.target.style.display = 'none'}
                                         />
                                     )}
 
                                     <div
-                                        className="bg-[#111111] rounded-[2px] border border-[#1E1E1E] p-6 md:p-8 prose prose-invert font-mono max-w-none prose-headings:font-['Space_Grotesk'] prose-a:text-[#26cece] prose-headings:text-white prose-p:text-gray-300 prose-li:text-gray-300 mb-6"
+                                        className="bg-slate-50 rounded-[2px] border border-slate-200 p-6 md:p-8 prose prose-slate font-mono max-w-none prose-headings:font-['Space_Grotesk'] prose-a:text-[#26cece] prose-headings:text-slate-900 prose-p:text-slate-600 prose-li:text-slate-600 mb-6"
                                         dangerouslySetInnerHTML={{ __html: currentArticle }}
                                     />
 
@@ -1253,11 +1253,11 @@ const SeoAgentPage = () => {
                                         data-tour="wp-upload"
                                         onClick={handleUploadToWordPress}
                                         disabled={isUploading || !selectedWpProfile}
-                                        className="w-full bg-[#26cece] text-[#070707] font-bold font-['Space_Grotesk'] tracking-widest uppercase px-6 py-4 rounded-[2px] hover:bg-white hover:-translate-y-1 hover:shadow-[4px_4px_0_0_#333] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:hover:bg-[#26cece] disabled:hover:shadow-none transition-all flex items-center justify-center gap-2"
+                                        className="w-full bg-[#26cece] text-white font-bold font-['Space_Grotesk'] tracking-widest uppercase px-6 py-4 rounded-[2px] hover:bg-[#20afaf] hover:-translate-y-1 hover:shadow-[4px_4px_0_0_#f1f5f9] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:hover:bg-[#26cece] disabled:hover:shadow-none transition-all flex items-center justify-center gap-2"
                                     >
                                         {isUploading ? (
                                             <>
-                                                <div className="w-5 h-5 border-2 border-[#070707]/30 border-t-[#070707] rounded-full animate-spin"></div>
+                                                <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
                                                 Uploading...
                                             </>
                                         ) : (
@@ -1270,15 +1270,15 @@ const SeoAgentPage = () => {
 
                         {/* Right Column: History */}
                         <div className="lg:col-span-1">
-                            <div className="bg-[#111111] rounded-[2px] border border-[#1E1E1E] overflow-hidden sticky top-24 transition-colors duration-300">
-                                <div className="p-4 bg-[#070707] border-b border-[#1E1E1E] flex justify-between items-center">
-                                    <h3 className="font-bold text-white font-['Space_Grotesk'] tracking-widest uppercase text-[14px] flex items-center gap-2">
+                            <div className="bg-white rounded-[2px] border border-slate-200 overflow-hidden sticky top-24 transition-colors duration-300">
+                                <div className="p-4 bg-slate-50 border-b border-slate-200 flex justify-between items-center">
+                                    <h3 className="font-bold text-slate-900 font-['Space_Grotesk'] tracking-widest uppercase text-[14px] flex items-center gap-2">
                                         <Clock size={16} />
                                         Article History
                                     </h3>
                                     <button
                                         onClick={loadArticles}
-                                        className="text-[10px] font-mono tracking-widest uppercase text-gray-500 hover:text-white transition-colors"
+                                        className="text-[10px] font-mono tracking-widest uppercase text-slate-400 hover:text-slate-900 transition-colors"
                                         title="Refresh articles"
                                     >
                                         <ChevronRight size={20} />
@@ -1291,7 +1291,7 @@ const SeoAgentPage = () => {
                                             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#26cece]"></div>
                                         </div>
                                     ) : articles.length === 0 ? (
-                                        <div className="text-center py-8 text-gray-500 font-mono text-[12px]">
+                                        <div className="text-center py-8 text-slate-400 font-mono text-[12px]">
                                             <FileText className="w-8 h-8 mx-auto mb-2 opacity-50" />
                                             <p>No articles yet</p>
                                             <p className="text-[10px] uppercase tracking-widest mt-2">Generate your first article!</p>
@@ -1301,23 +1301,23 @@ const SeoAgentPage = () => {
                                             {articles.slice(0, 10).map((article) => (
                                                 <div
                                                     key={article.id}
-                                                    className="p-3 rounded-[2px] border border-[#333] hover:border-[#26cece] bg-[#070707] transition-all cursor-pointer group"
+                                                    className="p-3 rounded-[2px] border border-slate-200 hover:border-[#26cece] bg-slate-50 transition-all cursor-pointer group"
                                                     onClick={() => {
                                                         setCurrentArticle(article.content);
                                                         setCurrentSeoTitle(article.seoTitle);
                                                         setCurrentImageUrl(article.imageUrl);
                                                     }}
                                                 >
-                                                    <h4 className="font-bold text-white font-['Space_Grotesk'] mb-2 group-hover:text-[#26cece] line-clamp-2 leading-snug transition-colors">
+                                                    <h4 className="font-bold text-slate-900 font-['Space_Grotesk'] mb-2 group-hover:text-[#26cece] line-clamp-2 leading-snug transition-colors">
                                                         {article.seoTitle || article.topic}
                                                     </h4>
                                                     <div className="flex items-center justify-between mt-2">
-                                                        <span className="text-[10px] font-mono tracking-widest uppercase text-gray-500">
+                                                        <span className="text-[10px] font-mono tracking-widest uppercase text-slate-400">
                                                             {new Date(article.createdAt).toLocaleDateString()}
                                                         </span>
                                                         <div className="flex gap-2">
                                                             {(article.category || article.tags) && (
-                                                                <span className="text-[10px] font-mono tracking-widest text-[#26cece] bg-[#111111] border border-[#333] px-2 py-1 rounded-[2px] flex items-center">
+                                                                <span className="text-[10px] font-mono tracking-widest text-[#26cece] bg-white border border-slate-200 px-2 py-1 rounded-[2px] flex items-center">
                                                                     View
                                                                 </span>
                                                             )}

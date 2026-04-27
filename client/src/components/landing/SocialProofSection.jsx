@@ -89,7 +89,7 @@ const StatCard = ({ delay, value, symbol, text, type, direction='up', start=0, c
             </p>
             {contrast && (
                 <p style={{ transform:'translateZ(12px)', fontFamily:"'DM Mono',monospace", fontSize:10, letterSpacing:'0.08em' }}
-                    className="relative z-10 text-black/50 text-center mt-1 max-w-[180px]">
+                    className="relative z-10 text-black/70 text-center mt-1 max-w-[180px]">
                     {contrast}
                 </p>
             )}
@@ -106,7 +106,7 @@ const SocialProofSection = () => (
         <ScrollReveal className="max-w-7xl mx-auto px-6 relative z-10">
             {/* Heading */}
             <div className="mb-20 max-w-2xl">
-                <span style={{ fontFamily:"'DM Mono',monospace", fontSize:10, letterSpacing:'0.18em', color:'#555', textTransform:'uppercase' }}>
+                <span style={{ fontFamily:"'DM Mono',monospace", fontSize:10, letterSpacing:'0.18em', color:'#333', textTransform:'uppercase' }}>
                     Results
                 </span>
                 <motion.h2
@@ -128,7 +128,7 @@ const SocialProofSection = () => (
             </div>
 
             {/* Trust label */}
-            <div className="text-center mb-10" style={{ fontFamily:"'DM Mono',monospace", fontSize:10, letterSpacing:'0.2em', color:'#333', textTransform:'uppercase' }}>
+            <div className="text-center mb-10" style={{ fontFamily:"'DM Mono',monospace", fontSize:10, letterSpacing:'0.2em', color:'#000', textTransform:'uppercase' }}>
                 Trusted by teams in real estate · healthcare · education · local services
             </div>
 
@@ -155,7 +155,7 @@ const SocialProofSection = () => (
                                 { icon:Award,      name:'TopTier' },
                                 { icon:TrendingUp, name:'GrowthX' },
                             ].map(({ icon:Icon, name }) => (
-                                <div key={name} className="flex items-center gap-2 opacity-50 hover:opacity-100 transition-opacity"
+                                <div key={name} className="flex items-center gap-2 opacity-75 hover:opacity-100 transition-opacity"
                                     style={{ fontFamily:"'Space Grotesk',sans-serif", fontWeight:700, fontSize:18, color:'#000000' }}>
                                     <Icon size={20} style={{ color:T }} />
                                     {name}

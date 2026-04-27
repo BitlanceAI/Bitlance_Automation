@@ -60,7 +60,7 @@ export default function HowItWorksSection() {
           <h2 className="text-3xl sm:text-5xl font-black text-white leading-tight">
             From Keyword to <span className="gradient-text">Live Article</span>
           </h2>
-          <p className="mt-4 text-white/50 text-base sm:text-lg max-w-xl mx-auto">
+          <p className="mt-4 text-[#A0A0A0] text-base sm:text-lg max-w-xl mx-auto">
             Five automated steps. Zero manual work. Consistent results every time.
           </p>
         </motion.div>
@@ -97,8 +97,8 @@ export default function HowItWorksSection() {
                     <span className="text-brand text-xs font-mono font-bold">{step.number}</span>
                     <h3 className="text-white font-bold text-lg">{step.title}</h3>
                   </div>
-                  <p className="text-white/60 text-sm leading-relaxed mb-3">{step.desc}</p>
-                  <div className="flex items-start gap-2 text-xs text-white/35">
+                  <p className="text-[#C0C0C0] text-sm leading-relaxed mb-3">{step.desc}</p>
+                  <div className="flex items-start gap-2 text-xs text-[#808080]">
                     <span className="text-brand mt-0.5">→</span>
                     <span>{step.detail}</span>
                   </div>

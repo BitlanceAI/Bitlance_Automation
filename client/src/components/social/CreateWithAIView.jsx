@@ -17,7 +17,7 @@ const CreateWithAIView = () => {
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div className="md:col-span-2 space-y-6">
-                        <div className="bg-[#111111] border border-[#1E1E1E] rounded-[2px] p-6 shadow-[4px_4px_0_0_#26cece]">
+                        <div className="bg-[#111111] border border-[#1E1E1E] rounded-[2px] p-6 shadow-[0_2px_16px_0_rgba(0,0,0,0.4)]">
                             <h3 className="text-[15px] font-bold text-white font-['Space_Grotesk'] uppercase tracking-tight mb-4 flex items-center gap-2">
                                 <MessageSquare className="w-4 h-4 text-[#26cece]" /> What's on your mind?
                             </h3>
