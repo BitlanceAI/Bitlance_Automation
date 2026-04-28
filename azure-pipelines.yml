@@ -3,20 +3,18 @@ trigger:
 
 variables:
   imageName: 'automation-client'
-  acrLoginServer: 'bitlancecontainer.azurecr.io'
   tag: '$(Build.BuildId)'
 
 pool:
-  vmImage: 'ubuntu-latest'
+  vmImage: ubuntu-latest
 
 steps:
 
-# Build + Push Docker image to ACR
 - task: Docker@2
   displayName: Build and Push to ACR
   inputs:
     command: buildAndPush
-    containerRegistry: 'Bitlance'   # your service connection
+    containerRegistry: 'bitlance-acr-connection'
     repository: '$(imageName)'
     dockerfile: '$(Build.SourcesDirectory)/client/Dockerfile'
     tags: |
