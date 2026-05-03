@@ -165,7 +165,7 @@ const GraphicsAIView = () => {
     const filtered = jobs.filter(j => filter === 'all' || j.status === filter);
 
     return (
-        <div className="flex-1 flex flex-col bg-white overflow-hidden">
+        <div className="flex-1 flex flex-col bg-white overflow-hidden" style={{ color: 'black' }}>
             {/* Header */}
             <div className="shrink-0 px-8 pt-8 pb-4 border-b border-slate-200 flex items-center gap-4">
                 <div className="p-2.5 rounded-xl bg-[#26cece]/10 border border-[#26cece]/30">
@@ -392,6 +392,11 @@ const SocialDashboard = () => {
     const [graphicsJobs, setGraphicsJobs] = useState([]);
     const [graphicsLoading, setGraphicsLoading] = useState(false);
 
+    // Graphics Generate
+    const [isGraphicsGenerateOpen, setIsGraphicsGenerateOpen] = useState(false);
+    const [graphicsPrompt, setGraphicsPrompt] = useState('');
+    const [isGraphicsGenerating, setIsGraphicsGenerating] = useState(false);
+
     // Trending Keywords
     const [isTrendingModalOpen, setIsTrendingModalOpen] = useState(false);
     const [trendingTopics, setTrendingTopics] = useState([]);
@@ -413,11 +418,12 @@ const SocialDashboard = () => {
 
         const fetchConnections = async () => {
             try {
-                const [liRes, twRes] = await Promise.all([
+                const [liRes, twRes, metaRes] = await Promise.all([
                     fetch(`${API_BASE_URL}/api/linkedin/connection`, { headers: authHeaders }),
                     fetch(`${API_BASE_URL}/api/twitter/connection`, { headers: authHeaders }),
+                    fetch(`${API_BASE_URL}/api/meta/connection`, { headers: authHeaders }),
                 ]);
-                const [liData, twData] = await Promise.all([liRes.json(), twRes.json()]);
+                const [liData, twData, metaData] = await Promise.all([liRes.json(), twRes.json(), metaRes.json()]);
 
                 const profiles = [];
 
@@ -439,6 +445,17 @@ const SocialDashboard = () => {
                         twitterUserId: p.twitterUserId,
                         name: p.name,
                         type: '@' + p.username,
+                        followers: 'Connected',
+                        avatar: p.profilePicture,
+                    })));
+                }
+
+                if (metaData.connected && metaData.profiles?.length > 0) {
+                    profiles.push(...metaData.profiles.map(p => ({
+                        platform: p.platform, // 'facebook' or 'instagram'
+                        profileId: p.profileId,
+                        name: p.name,
+                        type: p.type,
                         followers: 'Connected',
                         avatar: p.profilePicture,
                     })));
@@ -525,6 +542,30 @@ const SocialDashboard = () => {
                     alert('Error connecting Twitter/X account');
                     fetchConnections();
                 }
+            } else if (code && state && state.startsWith('meta_auth')) {
+                window.history.replaceState({}, document.title, window.location.pathname);
+                setIsLoadingProfiles(true);
+
+                try {
+                    const currentUrl = window.location.origin + window.location.pathname;
+                    const response = await fetch(`${API_BASE_URL}/api/meta/connect`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', ...authHeaders },
+                        body: JSON.stringify({ code, redirect_uri: currentUrl })
+                    });
+                    const data = await response.json();
+                    if (data.success) {
+                        await fetchConnections();
+                        setIsAddProfileModalOpen(false);
+                    } else {
+                        alert(`Meta Connection Failed: ${data.error}`);
+                        fetchConnections();
+                    }
+                } catch (error) {
+                    console.error('Error connecting meta:', error);
+                    alert('Error connecting Meta accounts');
+                    fetchConnections();
+                }
             } else {
                 fetchConnections();
             }
@@ -603,7 +644,8 @@ const SocialDashboard = () => {
             });
             const data = await res.json();
             if (!data.success) throw new Error(data.error || 'AI write failed');
-            setPostText(data.text);
+            const cleanedText = data.text ? data.text.replace(/\*/g, '') : '';
+            setPostText(cleanedText);
             setIsAiWriteOpen(false);
             setAiPrompt('');
         } catch (err) {
@@ -638,8 +680,10 @@ const SocialDashboard = () => {
         if (!postText.trim()) return;
         const liTargets = postTargets.filter(p => p.platform === 'linkedin');
         const twTargets = postTargets.filter(p => p.platform === 'twitter');
+        const fbTargets = postTargets.filter(p => p.platform === 'facebook');
+        const igTargets = postTargets.filter(p => p.platform === 'instagram');
 
-        if (liTargets.length === 0 && twTargets.length === 0) {
+        if (liTargets.length === 0 && twTargets.length === 0 && fbTargets.length === 0 && igTargets.length === 0) {
             setPostStatus({ type: 'error', message: 'No profile selected.' });
             return;
         }
@@ -648,6 +692,23 @@ const SocialDashboard = () => {
         setPostStatus(null);
 
         try {
+            let globalMediaUrl = null;
+            if (mediaAttachment && (fbTargets.length > 0 || igTargets.length > 0)) {
+                const formData = new FormData();
+                formData.append('file', mediaAttachment.file);
+                const uploadRes = await fetch(`${API_BASE_URL}/api/campaigns/upload`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${authToken}`, ...workspaceHeaders },
+                    body: formData,
+                }).then(r => r.json());
+                
+                if (uploadRes.success) {
+                    globalMediaUrl = uploadRes.url;
+                } else {
+                    throw new Error(uploadRes.error || 'Failed to upload media for Meta posts.');
+                }
+            }
+
             const results = await Promise.all([
                 // LinkedIn posts (with optional media upload)
                 ...liTargets.map(async (profile) => {
@@ -683,6 +744,22 @@ const SocialDashboard = () => {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${authToken}`, ...workspaceHeaders },
                         body: JSON.stringify({ twitterUserId: profile.twitterUserId, text: postText }),
+                    }).then(r => r.json())
+                ),
+                // Facebook posts
+                ...fbTargets.map(profile =>
+                    fetch(`${API_BASE_URL}/api/meta/post`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${authToken}`, ...workspaceHeaders },
+                        body: JSON.stringify({ accountId: profile.profileId, platform: 'facebook', text: postText, mediaUrl: globalMediaUrl }),
+                    }).then(r => r.json())
+                ),
+                // Instagram posts
+                ...igTargets.map(profile =>
+                    fetch(`${API_BASE_URL}/api/meta/post`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${authToken}`, ...workspaceHeaders },
+                        body: JSON.stringify({ accountId: profile.profileId, platform: 'instagram', text: postText, mediaUrl: globalMediaUrl }),
                     }).then(r => r.json())
                 ),
             ]);
@@ -854,7 +931,7 @@ const SocialDashboard = () => {
     );
 
     return (
-        <div className="flex flex-col h-screen font-sans overflow-hidden bg-white">
+        <div className="flex flex-col h-screen font-sans overflow-hidden bg-white" style={{ color: 'black' }}>
             <div className="flex flex-1 overflow-hidden">
 
                 {/* ── Sidebar ─────────────────────────────────────────────── */}
@@ -908,10 +985,10 @@ const SocialDashboard = () => {
                                     }}
                                     className={`flex items-center w-full px-3 py-2.5 rounded-[2px] font-mono text-[12px] uppercase tracking-wider transition-colors ${item.view && activeView === item.view
                                         ? 'bg-[#26cece]/10 text-[#26cece] border-l-2 border-[#26cece]'
-                                        : 'text-gray-400 hover:bg-[#1E1E1E] hover:text-slate-900 border-l-2 border-transparent'
+                                        : 'text-slate-600 hover:bg-[#e8f8f8] hover:text-[#26cece] border-l-2 border-transparent'
                                         }`}
                                 >
-                                    <item.icon className={`w-[18px] h-[18px] flex-shrink-0 ${isSidebarCollapsed ? 'mx-auto' : 'mr-3'} ${item.view && activeView === item.view ? 'text-[#26cece]' : 'text-gray-500'}`} />
+                                    <item.icon className={`w-[18px] h-[18px] flex-shrink-0 ${isSidebarCollapsed ? 'mx-auto' : 'mr-3'} ${item.view && activeView === item.view ? 'text-[#26cece]' : 'text-slate-500'}`} />
                                     {!isSidebarCollapsed && <span>{item.label}</span>}
                                 </button>
 
@@ -927,10 +1004,10 @@ const SocialDashboard = () => {
                                                     <button 
                                                         key={idx} 
                                                         onClick={() => { setActiveView(shareItem.id); setIsShareMenuOpen(false); }}
-                                                        className={`flex items-center w-full px-4 py-2.5 hover:bg-[#1E1E1E] text-left transition-colors group ${activeView === shareItem.id ? 'bg-[#1E1E1E]' : ''}`}
+                                                        className={`flex items-center w-full px-4 py-2.5 hover:bg-[#e8f8f8] text-left transition-colors group ${activeView === shareItem.id ? 'bg-[#e8f8f8]' : ''}`}
                                                     >
-                                                        <shareItem.icon className={`w-[18px] h-[18px] mr-3 transition-colors ${activeView === shareItem.id ? 'text-[#26cece]' : 'text-gray-500 group-hover:text-[#26cece]'}`} />
-                                                        <span className={`text-[13px] font-mono transition-colors ${activeView === shareItem.id ? 'text-slate-900' : 'text-gray-400 group-hover:text-slate-900'}`}>{shareItem.label}</span>
+                                                        <shareItem.icon className={`w-[18px] h-[18px] mr-3 transition-colors ${activeView === shareItem.id ? 'text-[#26cece]' : 'text-slate-600 group-hover:text-[#26cece]'}`} />
+                                                        <span className={`text-[13px] font-mono transition-colors ${activeView === shareItem.id ? 'text-[#26cece]' : 'text-slate-600 group-hover:text-[#26cece]'}`}>{shareItem.label}</span>
                                                     </button>
                                                 )
                                             )}
@@ -953,10 +1030,10 @@ const SocialDashboard = () => {
                                                             setActiveView(libItem.id); 
                                                             setIsLibraryMenuOpen(false); 
                                                         }}
-                                                        className={`flex items-center w-full px-4 py-2.5 hover:bg-[#1E1E1E] text-left transition-colors group ${activeView === libItem.id ? 'bg-[#1E1E1E]' : ''}`}
+                                                        className={`flex items-center w-full px-4 py-2.5 hover:bg-[#e8f8f8] text-left transition-colors group ${activeView === libItem.id ? 'bg-[#e8f8f8]' : ''}`}
                                                     >
-                                                        <libItem.icon className={`w-[18px] h-[18px] mr-3 transition-colors ${activeView === libItem.id ? 'text-[#26cece]' : 'text-gray-500 group-hover:text-[#26cece]'}`} />
-                                                        <span className={`text-[13px] font-mono transition-colors ${activeView === libItem.id ? 'text-slate-900' : 'text-gray-400 group-hover:text-slate-900'}`}>{libItem.label}</span>
+                                                        <libItem.icon className={`w-[18px] h-[18px] mr-3 transition-colors ${activeView === libItem.id ? 'text-[#26cece]' : 'text-slate-600 group-hover:text-[#26cece]'}`} />
+                                                        <span className={`text-[13px] font-mono transition-colors ${activeView === libItem.id ? 'text-[#26cece]' : 'text-slate-600 group-hover:text-[#26cece]'}`}>{libItem.label}</span>
                                                     </button>
                                                 )
                                             )}
@@ -969,8 +1046,8 @@ const SocialDashboard = () => {
                         <div className="my-2 border-t border-slate-200 w-8 mx-auto" />
 
                         {bottomItems.map((item, index) => (
-                            <button key={index} className="flex items-center w-full px-3 py-2.5 rounded-[2px] text-[12px] font-mono uppercase tracking-wider text-gray-400 hover:bg-[#1E1E1E] hover:text-slate-900 transition-colors">
-                                <item.icon className={`w-[18px] h-[18px] flex-shrink-0 ${isSidebarCollapsed ? 'mx-auto' : 'mr-3'} text-gray-500`} />
+                            <button key={index} className="flex items-center w-full px-3 py-2.5 rounded-[2px] text-[12px] font-mono uppercase tracking-wider text-slate-600 hover:bg-[#e8f8f8] hover:text-[#26cece] transition-colors">
+                                <item.icon className={`w-[18px] h-[18px] flex-shrink-0 ${isSidebarCollapsed ? 'mx-auto' : 'mr-3'} text-slate-500`} />
                                 {!isSidebarCollapsed && <span>{item.label}</span>}
                             </button>
                         ))}
@@ -978,14 +1055,14 @@ const SocialDashboard = () => {
 
                     {/* User profile */}
                     <div className="p-3 border-t border-slate-200">
-                        <button className="flex items-center w-full p-2.5 rounded-[2px] hover:bg-[#1E1E1E] transition-colors">
-                            <div className="w-8 h-8 rounded-full bg-white border border-slate-200 flex items-center justify-center text-gray-400 flex-shrink-0">
+                        <button className="flex items-center w-full p-2.5 rounded-[2px] hover:bg-[#e8f8f8] transition-colors">
+                            <div className="w-8 h-8 rounded-full bg-white border border-slate-200 flex items-center justify-center text-slate-500 flex-shrink-0">
                                 <Users className="w-4 h-4" />
                             </div>
                             {!isSidebarCollapsed && (
                                 <>
-                                    <span className="ml-3 text-[13px] font-mono text-gray-300 truncate">{userName}</span>
-                                    <MoreVertical className="w-4 h-4 ml-auto text-gray-500" />
+                                    <span className="ml-3 text-[13px] font-mono text-slate-600 truncate">{userName}</span>
+                                    <MoreVertical className="w-4 h-4 ml-auto text-slate-500" />
                                 </>
                             )}
                         </button>
@@ -994,7 +1071,7 @@ const SocialDashboard = () => {
                     {/* Collapse toggle */}
                     <button
                         onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
-                        className="absolute right-0 top-16 translate-x-1/2 z-10 bg-slate-50 border border-slate-200 rounded-full p-0.5 text-[#26cece] hover:text-slate-900 shadow-[2px_2px_0_0_#26cece] transition-transform hover:scale-110"
+                        className="absolute right-0 top-16 translate-x-1/2 z-10 bg-slate-50 border border-slate-200 rounded-full p-0.5 text-[#26cece] hover:text-[#1fb8b8] shadow-[2px_2px_0_0_#26cece] transition-transform hover:scale-110"
                     >
                         <ChevronLeft className={`w-[14px] h-[14px] transition-transform ${isSidebarCollapsed ? 'rotate-180' : ''}`} />
                     </button>
@@ -1019,7 +1096,7 @@ const SocialDashboard = () => {
                                     </div>
                                     <button
                                         onClick={() => setIsAddProfileModalOpen(true)}
-                                        className="bg-[#26cece] text-[#070707] border border-transparent px-5 py-2.5 rounded-[2px] font-bold font-['Space_Grotesk'] uppercase tracking-widest hover:bg-white hover:-translate-y-1 hover:shadow-[4px_4px_0_0_#333] transition-all duration-200 flex items-center"
+                                        className="bg-[#26cece] text-[#070707] border border-transparent px-5 py-2.5 rounded-[2px] font-bold font-['Space_Grotesk'] uppercase tracking-widest hover:bg-[#1fb8b8] hover:-translate-y-1 transition-all duration-200 flex items-center"
                                     >
                                         <Plus className="w-4 h-4 mr-2" /> Add Profile
                                     </button>
@@ -1034,7 +1111,7 @@ const SocialDashboard = () => {
                                         <p className="text-sm font-sans text-gray-400 mb-6 text-center max-w-sm">Connect your LinkedIn or Facebook account to start managing your social media.</p>
                                         <button
                                             onClick={() => setIsAddProfileModalOpen(true)}
-                                            className="bg-[#26cece] text-[#070707] px-5 py-2.5 rounded-[2px] font-bold font-['Space_Grotesk'] uppercase tracking-widest hover:bg-white hover:-translate-y-1 hover:shadow-[4px_4px_0_0_#333] transition-all duration-200 flex items-center"
+                                            className="bg-[#26cece] text-[#070707] px-5 py-2.5 rounded-[2px] font-bold font-['Space_Grotesk'] uppercase tracking-widest hover:bg-[#1fb8b8] hover:-translate-y-1 transition-all duration-200 flex items-center"
                                         >
                                             <Plus className="w-4 h-4 mr-2" /> Connect a profile
                                         </button>
@@ -1061,7 +1138,7 @@ const SocialDashboard = () => {
                             </p>
                             <button
                                 onClick={() => setIsAddProfileModalOpen(true)}
-                                className="bg-[#26cece] text-[#070707] px-6 py-3 rounded-[2px] font-bold font-['Space_Grotesk'] uppercase tracking-widest hover:bg-white hover:-translate-y-1 hover:shadow-[4px_4px_0_0_#333] transition-all duration-200 flex items-center"
+                                className="bg-[#26cece] text-[#070707] px-6 py-3 rounded-[2px] font-bold font-['Space_Grotesk'] uppercase tracking-widest hover:bg-[#1fb8b8] hover:-translate-y-1 transition-all duration-200 flex items-center"
                             >
                                 <Plus className="w-[20px] h-[20px] mr-2" />
                                 Add social profiles
@@ -1097,7 +1174,7 @@ const SocialDashboard = () => {
                                         <h2 className="text-xl font-bold font-['Space_Grotesk'] text-slate-900 uppercase tracking-tight">Connected Profiles</h2>
                                         <button
                                             onClick={() => setIsAddProfileModalOpen(true)}
-                                            className="text-[12px] text-[#26cece] hover:text-slate-900 font-mono uppercase tracking-widest bg-[#26cece]/10 hover:bg-slate-50 border border-transparent hover:border-slate-200 px-3.5 py-2 rounded-[2px] transition-colors flex items-center gap-1.5"
+                                            className="text-[12px] text-[#26cece] hover:text-[#1fb8b8] font-mono uppercase tracking-widest bg-[#26cece]/10 hover:bg-[#26cece]/20 border border-transparent hover:border-[#26cece]/30 px-3.5 py-2 rounded-[2px] transition-colors flex items-center gap-1.5"
                                         >
                                             <Plus className="w-[14px] h-[14px]" /> Add another
                                         </button>
@@ -1213,7 +1290,76 @@ const SocialDashboard = () => {
                                                         className="px-4 py-1.5 bg-[#26cece] hover:bg-white disabled:opacity-50 disabled:cursor-not-allowed text-[#070707] font-bold font-['Space_Grotesk'] uppercase tracking-widest text-[12px] rounded-[2px] flex items-center gap-1.5 transition-colors cursor-pointer"
                                                     >
                                                         {isAiLoading ? (
-                                                            <><span className="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin" /> Generating...</>
+                                                            <><span className="w-3 h-3 border-2 border-[#070707]/30 border-t-[#070707] rounded-full animate-spin" /> Generating...</>
+                                                        ) : (
+                                                            <><Sparkles className="w-3.5 h-3.5" /> Generate</>
+                                                        )}
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        {/* Graphics Generate panel */}
+                                        {isGraphicsGenerateOpen && (
+                                            <div className="mt-3 p-3 bg-[#26cece]/5 border border-[#26cece]/20 rounded-[2px] space-y-3">
+                                                <div className="flex items-center gap-2 text-[#26cece] font-mono uppercase tracking-widest text-[11px]">
+                                                    <Palette className="w-3.5 h-3.5" />
+                                                    Generate Image with AI
+                                                </div>
+
+                                                <textarea
+                                                    value={graphicsPrompt}
+                                                    onChange={e => setGraphicsPrompt(e.target.value)}
+                                                    placeholder="Describe the image you want to generate (e.g. A futuristic city skyline at sunset)..."
+                                                    className="w-full bg-white border border-slate-200 text-slate-900 rounded-[2px] p-2.5 text-[13px] font-sans resize-none focus:outline-none focus:border-[#26cece] min-h-[72px] placeholder:text-gray-600"
+                                                />
+
+                                                <div className="flex gap-2 justify-end mt-2">
+                                                    <button
+                                                        onClick={() => { setIsGraphicsGenerateOpen(false); setGraphicsPrompt(''); }}
+                                                        className="px-3 py-1.5 text-gray-500 hover:text-slate-900 rounded-[2px] font-mono text-[11px] uppercase tracking-widest hover:bg-[#333] transition-colors cursor-pointer"
+                                                    >
+                                                        Cancel
+                                                    </button>
+                                                    <button
+                                                        onClick={async () => {
+                                                            if (!graphicsPrompt.trim()) return;
+                                                            setIsGraphicsGenerating(true);
+                                                            try {
+                                                                const res = await fetch(`${API_BASE_URL}/api/design/generate-from-prompt`, {
+                                                                    method: 'POST',
+                                                                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${authToken}` },
+                                                                    body: JSON.stringify({ prompt: graphicsPrompt, image_size: '1024x1024', image_quality: 'low' })
+                                                                });
+                                                                const data = await res.json();
+                                                                if (!res.ok) throw new Error(data.error || 'Failed to generate image');
+                                                                
+                                                                setIsGraphicsGenerateOpen(false);
+                                                                setGraphicsPrompt('');
+                                                                
+                                                                // Open the picker
+                                                                setIsGraphicsPickerOpen(true);
+                                                                setGraphicsLoading(true);
+                                                                try {
+                                                                    const resJobs = await fetch(`${API_BASE_URL}/api/design/jobs`, {
+                                                                        headers: { 'Authorization': `Bearer ${authToken}` }
+                                                                    });
+                                                                    const dataJobs = await resJobs.json();
+                                                                    setGraphicsJobs(dataJobs.jobs || []);
+                                                                } catch { /* non-critical */ } finally {
+                                                                    setGraphicsLoading(false);
+                                                                }
+                                                            } catch (err) {
+                                                                alert(err.message);
+                                                            } finally {
+                                                                setIsGraphicsGenerating(false);
+                                                            }
+                                                        }}
+                                                        disabled={isGraphicsGenerating || !graphicsPrompt.trim()}
+                                                        className="px-4 py-1.5 bg-[#26cece] hover:bg-white disabled:opacity-50 disabled:cursor-not-allowed text-[#070707] font-bold font-['Space_Grotesk'] uppercase tracking-widest text-[12px] rounded-[2px] flex items-center gap-1.5 transition-colors cursor-pointer"
+                                                    >
+                                                        {isGraphicsGenerating ? (
+                                                            <><span className="w-3 h-3 border-2 border-[#070707]/30 border-t-[#070707] rounded-full animate-spin" /> Generating...</>
                                                         ) : (
                                                             <><Sparkles className="w-3.5 h-3.5" /> Generate</>
                                                         )}
@@ -1233,10 +1379,17 @@ const SocialDashboard = () => {
                                         <div className="flex justify-between items-center mt-3 pt-3 border-t border-slate-200">
                                             <div className="flex gap-1 items-center">
                                                 <button
-                                                    onClick={() => { setIsAiWriteOpen(v => !v); setAiError(null); }}
+                                                    onClick={() => { setIsAiWriteOpen(v => !v); setIsGraphicsGenerateOpen(false); setAiError(null); }}
                                                     className={`p-2 rounded-[2px] transition-colors cursor-pointer flex items-center gap-1.5 text-[11px] font-mono uppercase tracking-widest border border-transparent ${isAiWriteOpen ? 'bg-[#26cece]/10 text-[#26cece] border-[#26cece]' : 'text-gray-400 hover:text-slate-900 hover:border-slate-200 hover:bg-slate-50'}`}
                                                 >
                                                     <Sparkles className="w-4 h-4" /> AI Write
+                                                </button>
+                                                
+                                                <button
+                                                    onClick={() => { setIsGraphicsGenerateOpen(v => !v); setIsAiWriteOpen(false); }}
+                                                    className={`p-2 rounded-[2px] transition-colors cursor-pointer flex items-center gap-1.5 text-[11px] font-mono uppercase tracking-widest border border-transparent ${isGraphicsGenerateOpen ? 'bg-[#26cece]/10 text-[#26cece] border-[#26cece]' : 'text-gray-400 hover:text-slate-900 hover:border-slate-200 hover:bg-slate-50'}`}
+                                                >
+                                                    <Palette className="w-4 h-4" /> <span className="hidden sm:inline">Generate Image</span>
                                                 </button>
                                                 
                                                 <button
@@ -1272,8 +1425,7 @@ const SocialDashboard = () => {
                                                                 headers: { 'Authorization': `Bearer ${authToken}` }
                                                             });
                                                             const data = await res.json();
-                                                            const completed = (data.jobs || []).filter(j => j.status === 'completed' && (j.flyer_url || j.metadata?.flyer_urls));
-                                                            setGraphicsJobs(completed);
+                                                            setGraphicsJobs(data.jobs || []);
                                                         } catch { /* non-critical */ } finally {
                                                             setGraphicsLoading(false);
                                                         }
@@ -1326,6 +1478,7 @@ const SocialDashboard = () => {
                                                     {profile.platform === 'linkedin' && <Linkedin className="w-3 h-3" />}
                                                     {profile.platform === 'twitter' && <XIcon className="w-3 h-3" />}
                                                     {profile.platform === 'facebook' && <Facebook className="w-3 h-3" />}
+                                                    {profile.platform === 'instagram' && <Instagram className="w-3 h-3" />}
                                                     <span className="truncate max-w-[100px]">{profile.name}</span>
                                                     {selected && <Check className="w-3 h-3 shrink-0" />}
                                                 </button>
@@ -1499,16 +1652,22 @@ const SocialDashboard = () => {
                         <div className="p-5 space-y-3">
                             {/* Facebook */}
                             <button
-                                onClick={() => {
-                                    if (!connectedProfiles.find(p => p.platform === 'facebook')) {
-                                        setConnectedProfiles([...connectedProfiles, {
-                                            platform: 'facebook',
-                                            name: userName + ' Page',
-                                            type: 'Facebook Page',
-                                            followers: '1.2K'
-                                        }]);
+                                onClick={async () => {
+                                    try {
+                                        const currentUrl = window.location.origin + window.location.pathname;
+                                        const response = await fetch(`${API_BASE_URL}/api/meta/oauth/url?redirect_uri=${encodeURIComponent(currentUrl)}`, {
+                                            headers: { 'Authorization': `Bearer ${authToken}` }
+                                        });
+                                        const data = await response.json();
+                                        if (data.success && data.url) {
+                                            window.location.href = data.url;
+                                        } else {
+                                            alert(data.error || 'Failed to get Meta auth URL');
+                                        }
+                                    } catch (err) {
+                                        console.error('Meta connect init error:', err);
+                                        alert('Failed to initiate Meta connection');
                                     }
-                                    setIsAddProfileModalOpen(false);
                                 }}
                                 className="w-full flex items-center gap-4 p-4 rounded-[2px] border border-slate-200 bg-white hover:border-slate-200 hover:-translate-y-1 hover:shadow-[4px_4px_0_0_#333] transition-all group cursor-pointer text-left"
                             >
@@ -1518,6 +1677,37 @@ const SocialDashboard = () => {
                                 <div className="flex-1">
                                     <div className="text-[13px] font-mono tracking-widest text-slate-900 uppercase group-hover:text-[#26cece]">Facebook</div>
                                     <div className="text-[10px] font-mono tracking-widest text-gray-500 uppercase mt-1">Connect page or group</div>
+                                </div>
+                                <Plus className="w-5 h-5 text-gray-500 group-hover:text-slate-900" />
+                            </button>
+
+                            {/* Instagram */}
+                            <button
+                                onClick={async () => {
+                                    try {
+                                        const currentUrl = window.location.origin + window.location.pathname;
+                                        const response = await fetch(`${API_BASE_URL}/api/meta/oauth/url?redirect_uri=${encodeURIComponent(currentUrl)}`, {
+                                            headers: { 'Authorization': `Bearer ${authToken}` }
+                                        });
+                                        const data = await response.json();
+                                        if (data.success && data.url) {
+                                            window.location.href = data.url;
+                                        } else {
+                                            alert(data.error || 'Failed to get Meta auth URL');
+                                        }
+                                    } catch (err) {
+                                        console.error('Meta connect init error:', err);
+                                        alert('Failed to initiate Meta connection');
+                                    }
+                                }}
+                                className="w-full flex items-center gap-4 p-4 rounded-[2px] border border-slate-200 bg-white hover:border-slate-200 hover:-translate-y-1 hover:shadow-[4px_4px_0_0_#333] transition-all group cursor-pointer text-left"
+                            >
+                                <div className="w-10 h-10 rounded-[2px] border border-slate-200 bg-[#26cece]/10 flex items-center justify-center text-[#26cece] shrink-0">
+                                    <Instagram className="w-5 h-5 fill-current" />
+                                </div>
+                                <div className="flex-1">
+                                    <div className="text-[13px] font-mono tracking-widest text-slate-900 uppercase group-hover:text-[#26cece]">Instagram</div>
+                                    <div className="text-[10px] font-mono tracking-widest text-gray-500 uppercase mt-1">Connect Instagram Business</div>
                                 </div>
                                 <Plus className="w-5 h-5 text-gray-500 group-hover:text-slate-900" />
                             </button>
@@ -1590,8 +1780,9 @@ const SocialDashboard = () => {
             {isPreviewOpen && (() => {
                 const platformMeta = {
                     linkedin: { label: 'LinkedIn', color: '#0A66C2', bg: 'bg-[#0A66C2]', ring: 'ring-[#0A66C2]/40', icon: <Linkedin className="w-4 h-4 fill-current" /> },
-                    facebook: { label: 'Facebook', color: '#1877F2', bg: 'bg-[#1877F2]', ring: 'ring-[#1877F2]/40', icon: <Facebook className="w-4 h-4 fill-current" /> },
-                    twitter: { label: 'X (Twitter)', color: '#000000', bg: 'bg-black', ring: 'ring-black/40', icon: <XIcon className="w-4 h-4" /> },
+                    facebook: { label: 'Facebook', color: '#1877F2', bg: 'bg-[#1877F2]', ring: 'ring-[#1877F2]/40', icon: <Facebook className="w-4 h-4 fill-current text-white" /> },
+                    instagram: { label: 'Instagram', color: '#E1306C', bg: 'bg-[#E1306C]', ring: 'ring-[#E1306C]/40', icon: <Instagram className="w-4 h-4 text-white" /> },
+                    twitter: { label: 'X (Twitter)', color: '#000000', bg: 'bg-black', ring: 'ring-black/40', icon: <XIcon className="w-4 h-4 text-white" /> },
                 };
 
                 const toggleTarget = togglePostTarget;
@@ -2061,9 +2252,29 @@ const SocialDashboard = () => {
                                     <p className="text-[10px] font-mono text-gray-500 uppercase tracking-widest mt-0.5">Select a generated image to attach to your post</p>
                                 </div>
                             </div>
-                            <button onClick={() => setIsGraphicsPickerOpen(false)} className="p-2 text-gray-400 hover:text-slate-900 border border-transparent hover:border-slate-200 rounded-[2px] transition-colors">
-                                <X className="w-5 h-5" />
-                            </button>
+                            <div className="flex items-center gap-2">
+                                <button 
+                                    onClick={async () => {
+                                        setGraphicsLoading(true);
+                                        try {
+                                            const res = await fetch(`${API_BASE_URL}/api/design/jobs`, {
+                                                headers: { 'Authorization': `Bearer ${authToken}` }
+                                            });
+                                            const data = await res.json();
+                                            setGraphicsJobs(data.jobs || []);
+                                        } catch { /* non-critical */ } finally {
+                                            setGraphicsLoading(false);
+                                        }
+                                    }}
+                                    className="p-2 text-gray-400 hover:text-[#26cece] border border-transparent hover:border-slate-200 rounded-[2px] transition-colors"
+                                    title="Refresh images"
+                                >
+                                    <RefreshCw className="w-4 h-4" />
+                                </button>
+                                <button onClick={() => setIsGraphicsPickerOpen(false)} className="p-2 text-gray-400 hover:text-slate-900 border border-transparent hover:border-slate-200 rounded-[2px] transition-colors">
+                                    <X className="w-5 h-5" />
+                                </button>
+                            </div>
                         </div>
 
                         {/* Body */}
@@ -2082,6 +2293,14 @@ const SocialDashboard = () => {
                             ) : (
                                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                                     {graphicsJobs.flatMap(job => {
+                                        if (job.status !== 'completed' || (!job.flyer_url && !job.metadata?.flyer_urls)) {
+                                            return [(
+                                                <div key={job.id} className="group relative aspect-square overflow-hidden rounded-[2px] border border-slate-200 bg-slate-100 flex flex-col items-center justify-center">
+                                                    <Loader2 className="w-6 h-6 text-[#26cece] animate-spin mb-2" />
+                                                    <span className="font-mono text-[10px] uppercase tracking-widest text-[#26cece] text-center px-2">{job.status}</span>
+                                                </div>
+                                            )];
+                                        }
                                         const urls = job.metadata?.flyer_urls || [job.flyer_url];
                                         return urls.map((url, idx) => (
                                             <button
