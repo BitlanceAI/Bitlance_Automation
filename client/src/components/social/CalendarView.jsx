@@ -19,33 +19,33 @@ const CalendarView = () => {
     const getMonthName = (date) => date.toLocaleString('default', { month: 'long', year: 'numeric' });
 
     return (
-        <div className="flex-1 p-8 bg-[#070707] overflow-y-auto w-full">
+        <div className="flex-1 p-8 bg-[#f5f5f5] overflow-y-auto w-full">
             <div className="max-w-6xl mx-auto space-y-8">
                 {/* Header */}
-                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-[#111111] p-5 border border-[#1E1E1E] rounded-[2px] shadow-[0_2px_16px_0_rgba(0,0,0,0.4)]">
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white p-5 border border-[#e0e0e0] rounded-[2px] shadow-[0_2px_16px_0_rgba(0,0,0,0.07)]">
                     <div>
-                        <h2 className="text-xl font-bold font-['Space_Grotesk'] text-white uppercase tracking-tight flex items-center gap-2">
+                        <h2 className="text-xl font-bold font-['Space_Grotesk'] text-gray-900 uppercase tracking-tight flex items-center gap-2">
                             <CalendarIcon className="w-5 h-5 text-[#26cece]" /> Content Calendar
                         </h2>
-                        <p className="text-[11px] font-mono text-gray-500 mt-1 uppercase tracking-widest">Schedule and manage your posts</p>
+                        <p className="text-[11px] font-mono text-gray-400 mt-1 uppercase tracking-widest">Schedule and manage your posts</p>
                     </div>
                     <div className="flex items-center gap-4 w-full md:w-auto">
-                        <div className="flex items-center gap-2 bg-[#070707] border border-[#333] rounded-[2px] p-1 flex-1 md:flex-none justify-between">
-                            <button className="p-1 hover:bg-[#1E1E1E] hover:text-white text-gray-500 rounded-[2px] transition-colors"><ChevronLeft className="w-4 h-4" /></button>
-                            <span className="text-[13px] font-mono uppercase tracking-widest text-white px-2 cursor-pointer select-none">{getMonthName(currentDate)}</span>
-                            <button className="p-1 hover:bg-[#1E1E1E] hover:text-white text-gray-500 rounded-[2px] transition-colors"><ChevronRight className="w-4 h-4" /></button>
+                        <div className="flex items-center gap-2 bg-[#f5f5f5] border border-[#d0d0d0] rounded-[2px] p-1 flex-1 md:flex-none justify-between">
+                            <button className="p-1 hover:bg-[#e8e8e8] hover:text-[#26cece] text-gray-400 rounded-[2px] transition-colors"><ChevronLeft className="w-4 h-4" /></button>
+                            <span className="text-[13px] font-mono uppercase tracking-widest text-gray-800 px-2 cursor-pointer select-none">{getMonthName(currentDate)}</span>
+                            <button className="p-1 hover:bg-[#e8e8e8] hover:text-[#26cece] text-gray-400 rounded-[2px] transition-colors"><ChevronRight className="w-4 h-4" /></button>
                         </div>
-                        <button className="bg-[#26cece] text-[#070707] px-5 py-2.5 rounded-[2px] font-bold font-['Space_Grotesk'] uppercase tracking-widest hover:bg-white hover:-translate-y-1 transition-all flex items-center gap-2 text-[12px] shrink-0">
+                        <button className="bg-[#26cece] text-white px-5 py-2.5 rounded-[2px] font-bold font-['Space_Grotesk'] uppercase tracking-widest hover:bg-[#1fb8b8] hover:-translate-y-1 transition-all flex items-center gap-2 text-[12px] shrink-0">
                             <Plus className="w-4 h-4" /> New Post
                         </button>
                     </div>
                 </div>
 
                 {/* Calendar Grid */}
-                <div className="bg-[#111111] border border-[#1E1E1E] rounded-[2px] overflow-hidden">
-                    <div className="grid grid-cols-7 border-b border-[#1E1E1E] bg-[#070707]">
+                <div className="bg-white border border-[#e0e0e0] rounded-[2px] overflow-hidden">
+                    <div className="grid grid-cols-7 border-b border-[#e0e0e0] bg-[#f9f9f9]">
                         {daysOfWeek.map(day => (
-                            <div key={day} className="px-2 py-3 text-[11px] font-mono text-gray-400 uppercase tracking-widest text-center border-r border-[#1E1E1E] last:border-r-0">
+                            <div key={day} className="px-2 py-3 text-[11px] font-mono text-gray-400 uppercase tracking-widest text-center border-r border-[#e0e0e0] last:border-r-0">
                                 {day}
                             </div>
                         ))}
@@ -56,13 +56,13 @@ const CalendarView = () => {
                             const isToday = day === 15; // mock logic
 
                             return (
-                                <div key={idx} className={`group min-h-[120px] p-2 border-r border-b border-[#1E1E1E] last:border-r-0 transition-colors ${!isCurrentMonth ? 'bg-[#0a0a0a] opacity-40' : 'hover:bg-[#151515]'} ${isToday ? 'bg-[#26cece]/5 border-[#26cece]/30' : ''}`}>
+                                <div key={idx} className={`group min-h-[120px] p-2 border-r border-b border-[#e0e0e0] last:border-r-0 transition-colors ${!isCurrentMonth ? 'bg-[#fafafa] opacity-40' : 'hover:bg-[#f0fdfd]'} ${isToday ? 'bg-[#26cece]/5 border-[#26cece]/30' : ''}`}>
                                     <div className="flex justify-between items-start mb-2">
-                                        <span className={`text-[12px] font-mono ${isToday ? 'bg-[#26cece] text-[#070707] px-1.5 py-0.5 rounded-[2px] font-bold' : isCurrentMonth ? 'text-gray-300' : 'text-gray-600'}`}>
+                                        <span className={`text-[12px] font-mono ${isToday ? 'bg-[#26cece] text-white px-1.5 py-0.5 rounded-[2px] font-bold' : isCurrentMonth ? 'text-gray-700' : 'text-gray-400'}`}>
                                             {day > 0 ? (day > 31 ? day - 31 : day) : 31 + day}
                                         </span>
                                         {isCurrentMonth && (
-                                            <button className="opacity-0 group-hover:opacity-100 text-gray-500 hover:text-[#26cece] transition-opacity cursor-pointer">
+                                            <button className="opacity-0 group-hover:opacity-100 text-gray-400 hover:text-[#26cece] transition-opacity cursor-pointer">
                                                 <Plus className="w-3 h-3" />
                                             </button>
                                         )}

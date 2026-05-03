@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { supabase } from '../../lib/supabase';
 import {
     Search, Send, MoreVertical, Smile, Paperclip,
     Facebook, Instagram, Linkedin, AtSign, RefreshCw,
@@ -15,65 +16,10 @@ const PLATFORM_META = {
     facebook:  { icon: Facebook,  color: '#1877F2', label: 'Facebook' },
     instagram: { icon: Instagram, color: '#E1306C', label: 'Instagram' },
     linkedin:  { icon: Linkedin,  color: '#0A66C2', label: 'LinkedIn' },
-    twitter:   { icon: XIcon,     color: '#FFFFFF', label: 'X' },
+    twitter:   { icon: XIcon,     color: '#111111', label: 'X' },
 };
 
-const MOCK_CONVERSATIONS = [
-    {
-        id: 1, platform: 'instagram', name: 'Priya Sharma', handle: '@priya.sharma',
-        avatar: 'PS', avatarBg: '#E1306C',
-        lastMessage: 'Hey! I saw your post about automation tools — is this available for small businesses?',
-        time: '2m ago', unread: 3, status: 'open',
-        messages: [
-            { id: 1, from: 'them', text: 'Hi there! Love your content 🙌', time: '10:14 AM' },
-            { id: 2, from: 'them', text: 'Hey! I saw your post about automation tools — is this available for small businesses?', time: '10:15 AM' },
-            { id: 3, from: 'me', text: 'Hi Priya! Absolutely, we work with businesses of all sizes. Happy to walk you through it.', time: '10:18 AM' },
-            { id: 4, from: 'them', text: 'That sounds great! What\'s the pricing like?', time: '10:20 AM' },
-        ],
-    },
-    {
-        id: 2, platform: 'facebook', name: 'Rahul Mehta', handle: 'Rahul Mehta',
-        avatar: 'RM', avatarBg: '#1877F2',
-        lastMessage: 'Can you send me the demo link?',
-        time: '15m ago', unread: 1, status: 'open',
-        messages: [
-            { id: 1, from: 'them', text: 'Saw your ad on Facebook, looks interesting!', time: '9:50 AM' },
-            { id: 2, from: 'me', text: 'Thanks! Feel free to ask anything.', time: '9:55 AM' },
-            { id: 3, from: 'them', text: 'Can you send me the demo link?', time: '10:05 AM' },
-        ],
-    },
-    {
-        id: 3, platform: 'linkedin', name: 'Sarah Johnson', handle: 'Sarah Johnson',
-        avatar: 'SJ', avatarBg: '#0A66C2',
-        lastMessage: 'Interested in a partnership opportunity with your platform.',
-        time: '1h ago', unread: 0, status: 'resolved',
-        messages: [
-            { id: 1, from: 'them', text: 'Hello! I came across your LinkedIn post.', time: 'Yesterday' },
-            { id: 2, from: 'them', text: 'Interested in a partnership opportunity with your platform.', time: 'Yesterday' },
-            { id: 3, from: 'me', text: 'Hi Sarah! Would love to explore this. Let\'s set up a call.', time: 'Yesterday' },
-        ],
-    },
-    {
-        id: 4, platform: 'twitter', name: 'DevBytes', handle: '@devbytes_in',
-        avatar: 'DB', avatarBg: '#333',
-        lastMessage: 'Replying to your thread about AI marketing tools 🔥',
-        time: '3h ago', unread: 0, status: 'open',
-        messages: [
-            { id: 1, from: 'them', text: 'Replying to your thread about AI marketing tools 🔥', time: '7:00 AM' },
-            { id: 2, from: 'me', text: 'Thanks! Which part resonated most with you?', time: '7:30 AM' },
-        ],
-    },
-    {
-        id: 5, platform: 'instagram', name: 'Ayesha Khan', handle: '@ayesha.creates',
-        avatar: 'AK', avatarBg: '#833AB4',
-        lastMessage: 'Do you offer a free trial?',
-        time: '5h ago', unread: 2, status: 'open',
-        messages: [
-            { id: 1, from: 'them', text: 'Hey, I found you through a reel!', time: '5:10 AM' },
-            { id: 2, from: 'them', text: 'Do you offer a free trial?', time: '5:12 AM' },
-        ],
-    },
-];
+const MOCK_CONVERSATIONS = [];
 
 const TABS = ['All', 'Unread', 'Facebook', 'Instagram', 'LinkedIn', 'X'];
 
@@ -83,6 +29,45 @@ export default function InboxView() {
     const [reply, setReply] = useState('');
     const [conversations, setConversations] = useState(MOCK_CONVERSATIONS);
     const [search, setSearch] = useState('');
+
+    useEffect(() => {
+        // Subscribe to real-time incoming DMs from backend broadcast
+        const channel = supabase.channel('meta-inbox-updates');
+
+        channel.on('broadcast', { event: 'new_message' }, (payload) => {
+            const newConversation = payload.payload;
+            console.log("Received new real-time message:", newConversation);
+            
+            setConversations(prev => {
+                // Check if a conversation from this user already exists
+                const existingIndex = prev.findIndex(c => c.name === newConversation.name);
+                
+                if (existingIndex >= 0) {
+                    // Update existing conversation
+                    const updated = [...prev];
+                    const existing = updated[existingIndex];
+                    updated[existingIndex] = {
+                        ...existing,
+                        messages: [...existing.messages, ...newConversation.messages],
+                        lastMessage: newConversation.lastMessage,
+                        time: newConversation.time,
+                        unread: existing.unread + 1,
+                        status: 'open'
+                    };
+                    // Move to top
+                    const [moved] = updated.splice(existingIndex, 1);
+                    return [moved, ...updated];
+                } else {
+                    // Add new conversation to top
+                    return [newConversation, ...prev];
+                }
+            });
+        }).subscribe();
+
+        return () => {
+            supabase.removeChannel(channel);
+        };
+    }, []);
 
     const filtered = conversations.filter(c => {
         const matchTab =
@@ -126,41 +111,41 @@ export default function InboxView() {
     const totalUnread = conversations.reduce((sum, c) => sum + c.unread, 0);
 
     return (
-        <div className="flex h-full bg-[#070707] overflow-hidden">
+        <div className="flex h-full bg-[#f5f5f5] overflow-hidden">
 
             {/* ── LEFT: conversation list ─────────────────────────────── */}
-            <div className="w-[320px] flex-shrink-0 border-r border-[#1E1E1E] flex flex-col">
+            <div className="w-[320px] flex-shrink-0 border-r border-[#e0e0e0] flex flex-col bg-white">
 
                 {/* Header */}
-                <div className="px-4 pt-5 pb-3 border-b border-[#1E1E1E]">
+                <div className="px-4 pt-5 pb-3 border-b border-[#e0e0e0]">
                     <div className="flex items-center justify-between mb-3">
                         <div className="flex items-center gap-2">
-                            <h2 className="text-white font-bold font-['Space_Grotesk'] uppercase tracking-widest text-[13px]">Inbox</h2>
+                            <h2 className="text-gray-900 font-bold font-['Space_Grotesk'] uppercase tracking-widest text-[13px]">Inbox</h2>
                             {totalUnread > 0 && (
-                                <span className="bg-[#26cece] text-[#070707] text-[10px] font-bold font-mono px-1.5 py-0.5 rounded-sm">
+                                <span className="bg-[#26cece] text-white text-[10px] font-bold font-mono px-1.5 py-0.5 rounded-sm">
                                     {totalUnread}
                                 </span>
                             )}
                         </div>
-                        <button className="text-gray-500 hover:text-[#26cece] transition-colors">
+                        <button className="text-gray-400 hover:text-[#26cece] transition-colors">
                             <RefreshCw className="w-[14px] h-[14px]" />
                         </button>
                     </div>
 
                     {/* Search */}
                     <div className="relative">
-                        <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-[13px] h-[13px] text-gray-500" />
+                        <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-[13px] h-[13px] text-gray-400" />
                         <input
                             value={search}
                             onChange={e => setSearch(e.target.value)}
                             placeholder="Search conversations..."
-                            className="w-full bg-[#111111] border border-[#1E1E1E] text-gray-300 text-[12px] font-mono pl-7 pr-3 py-2 rounded-[2px] placeholder-gray-600 focus:outline-none focus:border-[#26cece]/50"
+                            className="w-full bg-[#f5f5f5] border border-[#e0e0e0] text-gray-700 text-[12px] font-mono pl-7 pr-3 py-2 rounded-[2px] placeholder-gray-400 focus:outline-none focus:border-[#26cece]/50"
                         />
                     </div>
                 </div>
 
                 {/* Tabs */}
-                <div className="flex gap-0.5 px-2 py-2 border-b border-[#1E1E1E] flex-wrap">
+                <div className="flex gap-0.5 px-2 py-2 border-b border-[#e0e0e0] flex-wrap">
                     {TABS.map(tab => {
                         const count = tab === 'Unread' ? conversations.filter(c => c.unread > 0).length
                             : tab === 'All' ? conversations.length
@@ -177,7 +162,7 @@ export default function InboxView() {
                                 className={`px-2 py-1 text-[10px] font-mono uppercase tracking-wider rounded-[2px] transition-colors ${
                                     activeTab === tab
                                         ? 'bg-[#26cece]/10 text-[#26cece] border border-[#26cece]/30'
-                                        : 'text-gray-500 hover:text-gray-300 border border-transparent'
+                                        : 'text-gray-400 hover:text-gray-700 border border-transparent'
                                 }`}
                             >
                                 {tab} {count > 0 && <span className="ml-0.5 opacity-60">{count}</span>}
@@ -189,16 +174,17 @@ export default function InboxView() {
                 {/* Conversation list */}
                 <div className="flex-1 overflow-y-auto">
                     {filtered.length === 0 ? (
-                        <div className="flex flex-col items-center justify-center h-full text-gray-600 font-mono text-[12px] gap-2">
-                            <AtSign className="w-8 h-8 opacity-30" />
-                            <span>No conversations</span>
+                        <div className="flex flex-col items-center justify-center h-full text-gray-400 font-mono text-[12px] gap-3 px-4 text-center">
+                            <AtSign className="w-10 h-10 opacity-20" />
+                            <span className="uppercase tracking-widest text-[11px]">No messages yet</span>
+                            <span className="text-[10px] opacity-60 leading-relaxed">Incoming DMs from Facebook & Instagram will appear here in real-time.</span>
                         </div>
                     ) : filtered.map(conv => (
                         <button
                             key={conv.id}
                             onClick={() => { setSelectedId(conv.id); markRead(conv.id); }}
-                            className={`w-full text-left px-4 py-3.5 border-b border-[#111111] hover:bg-[#111111] transition-colors group ${
-                                selectedId === conv.id ? 'bg-[#111111] border-l-2 border-l-[#26cece]' : 'border-l-2 border-l-transparent'
+                            className={`w-full text-left px-4 py-3.5 border-b border-[#f0f0f0] hover:bg-[#f9f9f9] transition-colors group ${
+                                selectedId === conv.id ? 'bg-[#f0fdfd] border-l-2 border-l-[#26cece]' : 'border-l-2 border-l-transparent'
                             }`}
                         >
                             <div className="flex items-start gap-3">
@@ -210,30 +196,30 @@ export default function InboxView() {
                                     >
                                         {conv.avatar}
                                     </div>
-                                    <div className="absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full bg-[#070707] flex items-center justify-center">
+                                    <div className="absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full bg-white border border-[#e0e0e0] flex items-center justify-center">
                                         <PlatformIcon platform={conv.platform} size={10} />
                                     </div>
                                 </div>
 
                                 <div className="flex-1 min-w-0">
                                     <div className="flex items-center justify-between mb-0.5">
-                                        <span className={`text-[12px] font-['Space_Grotesk'] font-semibold truncate ${conv.unread > 0 ? 'text-white' : 'text-gray-400'}`}>
+                                        <span className={`text-[12px] font-['Space_Grotesk'] font-semibold truncate ${conv.unread > 0 ? 'text-gray-900' : 'text-gray-500'}`}>
                                             {conv.name}
                                         </span>
-                                        <span className="text-[10px] font-mono text-gray-600 ml-2 flex-shrink-0">{conv.time}</span>
+                                        <span className="text-[10px] font-mono text-gray-400 ml-2 flex-shrink-0">{conv.time}</span>
                                     </div>
                                     <div className="flex items-center justify-between gap-1">
-                                        <p className={`text-[11px] font-mono truncate ${conv.unread > 0 ? 'text-gray-300' : 'text-gray-600'}`}>
+                                        <p className={`text-[11px] font-mono truncate ${conv.unread > 0 ? 'text-gray-600' : 'text-gray-400'}`}>
                                             {conv.lastMessage}
                                         </p>
                                         {conv.unread > 0 && (
-                                            <span className="flex-shrink-0 w-4 h-4 rounded-full bg-[#26cece] text-[#070707] text-[9px] font-bold flex items-center justify-center">
+                                            <span className="flex-shrink-0 w-4 h-4 rounded-full bg-[#26cece] text-white text-[9px] font-bold flex items-center justify-center">
                                                 {conv.unread}
                                             </span>
                                         )}
                                     </div>
                                     {conv.status === 'resolved' && (
-                                        <span className="inline-flex items-center gap-0.5 text-[9px] font-mono text-green-500/60 mt-0.5">
+                                        <span className="inline-flex items-center gap-0.5 text-[9px] font-mono text-green-500/70 mt-0.5">
                                             <Check className="w-2.5 h-2.5" /> resolved
                                         </span>
                                     )}
@@ -249,7 +235,7 @@ export default function InboxView() {
                 <div className="flex-1 flex flex-col min-w-0">
 
                     {/* Thread header */}
-                    <div className="flex items-center justify-between px-6 py-4 border-b border-[#1E1E1E] bg-[#0A0A0A]">
+                    <div className="flex items-center justify-between px-6 py-4 border-b border-[#e0e0e0] bg-white">
                         <div className="flex items-center gap-3">
                             <div
                                 className="w-9 h-9 rounded-full flex items-center justify-center text-white text-[12px] font-bold font-['Space_Grotesk'] flex-shrink-0"
@@ -259,28 +245,28 @@ export default function InboxView() {
                             </div>
                             <div>
                                 <div className="flex items-center gap-2">
-                                    <span className="text-white font-bold font-['Space_Grotesk'] text-[13px]">{selected.name}</span>
-                                    <div className="flex items-center gap-1 bg-[#111111] border border-[#1E1E1E] px-1.5 py-0.5 rounded-[2px]">
+                                    <span className="text-gray-900 font-bold font-['Space_Grotesk'] text-[13px]">{selected.name}</span>
+                                    <div className="flex items-center gap-1 bg-[#f5f5f5] border border-[#e0e0e0] px-1.5 py-0.5 rounded-[2px]">
                                         <PlatformIcon platform={selected.platform} size={10} />
-                                        <span className="text-[10px] font-mono text-gray-500">{PLATFORM_META[selected.platform]?.label}</span>
+                                        <span className="text-[10px] font-mono text-gray-400">{PLATFORM_META[selected.platform]?.label}</span>
                                     </div>
                                 </div>
-                                <span className="text-[11px] font-mono text-gray-600">{selected.handle}</span>
+                                <span className="text-[11px] font-mono text-gray-400">{selected.handle}</span>
                             </div>
                         </div>
 
                         <div className="flex items-center gap-2">
-                            <button className="text-[10px] font-mono uppercase tracking-wider text-gray-500 border border-[#1E1E1E] hover:border-[#26cece]/30 hover:text-[#26cece] px-3 py-1.5 rounded-[2px] transition-colors flex items-center gap-1.5">
+                            <button className="text-[10px] font-mono uppercase tracking-wider text-gray-500 border border-[#e0e0e0] hover:border-[#26cece]/30 hover:text-[#26cece] px-3 py-1.5 rounded-[2px] transition-colors flex items-center gap-1.5">
                                 <Check className="w-3 h-3" /> Mark Resolved
                             </button>
-                            <button className="text-gray-500 hover:text-white transition-colors p-1.5">
+                            <button className="text-gray-400 hover:text-gray-700 transition-colors p-1.5">
                                 <MoreVertical className="w-4 h-4" />
                             </button>
                         </div>
                     </div>
 
                     {/* Messages */}
-                    <div className="flex-1 overflow-y-auto px-6 py-6 space-y-4">
+                    <div className="flex-1 overflow-y-auto px-6 py-6 space-y-4 bg-[#f9f9f9]">
                         {selected.messages.map(msg => (
                             <div key={msg.id} className={`flex ${msg.from === 'me' ? 'justify-end' : 'justify-start'}`}>
                                 {msg.from === 'them' && (
@@ -294,14 +280,14 @@ export default function InboxView() {
                                 <div className={`max-w-[60%] ${msg.from === 'me' ? 'items-end' : 'items-start'} flex flex-col gap-1`}>
                                     <div className={`px-4 py-2.5 rounded-[2px] text-[13px] font-mono leading-relaxed ${
                                         msg.from === 'me'
-                                            ? 'bg-[#26cece]/10 border border-[#26cece]/20 text-white rounded-tr-none'
-                                            : 'bg-[#111111] border border-[#1E1E1E] text-gray-300 rounded-tl-none'
+                                            ? 'bg-[#26cece]/10 border border-[#26cece]/20 text-gray-800 rounded-tr-none'
+                                            : 'bg-white border border-[#e0e0e0] text-gray-700 rounded-tl-none'
                                     }`}>
                                         {msg.text}
                                     </div>
                                     <div className={`flex items-center gap-1 ${msg.from === 'me' ? 'flex-row-reverse' : ''}`}>
-                                        <span className="text-[10px] font-mono text-gray-600">{msg.time}</span>
-                                        {msg.from === 'me' && <CheckCheck className="w-3 h-3 text-[#26cece]/50" />}
+                                        <span className="text-[10px] font-mono text-gray-400">{msg.time}</span>
+                                        {msg.from === 'me' && <CheckCheck className="w-3 h-3 text-[#26cece]/60" />}
                                     </div>
                                 </div>
                             </div>
@@ -309,37 +295,37 @@ export default function InboxView() {
                     </div>
 
                     {/* Reply composer */}
-                    <div className="border-t border-[#1E1E1E] bg-[#0A0A0A] p-4">
-                        <div className="bg-[#111111] border border-[#1E1E1E] rounded-[2px] focus-within:border-[#26cece]/40 transition-colors">
+                    <div className="border-t border-[#e0e0e0] bg-white p-4">
+                        <div className="bg-[#f9f9f9] border border-[#e0e0e0] rounded-[2px] focus-within:border-[#26cece]/40 transition-colors">
                             <textarea
                                 value={reply}
                                 onChange={e => setReply(e.target.value)}
                                 onKeyDown={handleKeyDown}
                                 placeholder="Type a reply… (Enter to send)"
                                 rows={3}
-                                className="w-full bg-transparent text-gray-300 text-[13px] font-mono px-4 pt-3 pb-2 resize-none focus:outline-none placeholder-gray-700"
+                                className="w-full bg-transparent text-gray-700 text-[13px] font-mono px-4 pt-3 pb-2 resize-none focus:outline-none placeholder-gray-400"
                             />
                             <div className="flex items-center justify-between px-3 pb-2.5">
-                                <div className="flex items-center gap-3 text-gray-600">
+                                <div className="flex items-center gap-3 text-gray-400">
                                     <button className="hover:text-[#26cece] transition-colors"><Smile className="w-4 h-4" /></button>
                                     <button className="hover:text-[#26cece] transition-colors"><Paperclip className="w-4 h-4" /></button>
                                 </div>
                                 <button
                                     onClick={handleSend}
                                     disabled={!reply.trim()}
-                                    className="flex items-center gap-2 bg-[#26cece] text-[#070707] text-[11px] font-bold font-mono uppercase tracking-widest px-4 py-2 rounded-[2px] hover:bg-white transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                                    className="flex items-center gap-2 bg-[#26cece] text-white text-[11px] font-bold font-mono uppercase tracking-widest px-4 py-2 rounded-[2px] hover:bg-[#1fb8b8] transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
                                 >
                                     <Send className="w-3.5 h-3.5" /> Send
                                 </button>
                             </div>
                         </div>
-                        <p className="text-[10px] font-mono text-gray-700 mt-1.5">
+                        <p className="text-[10px] font-mono text-gray-400 mt-1.5">
                             Replying via {PLATFORM_META[selected.platform]?.label} · {selected.handle}
                         </p>
                     </div>
                 </div>
             ) : (
-                <div className="flex-1 flex flex-col items-center justify-center text-gray-600 gap-3">
+                <div className="flex-1 flex flex-col items-center justify-center text-gray-400 gap-3">
                     <AtSign className="w-12 h-12 opacity-20" />
                     <span className="font-mono text-[13px] uppercase tracking-widest">Select a conversation</span>
                 </div>

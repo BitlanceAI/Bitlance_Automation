@@ -88,6 +88,10 @@ app.use('/api/linkedin', linkedinRoutes);
 
 import twitterRoutes from './routes/social/twitterRoutes.js';
 app.use('/api/twitter', twitterRoutes);
+
+import metaRoutes from './routes/social/metaRoutes.js';
+app.use('/api/meta', metaRoutes);
+
 app.use('/api', articleRoutes); // blog generation + CRUD + public blog routes
 app.use('/api/gemini', geminiRoutes); // Gemini AI endpoints
 

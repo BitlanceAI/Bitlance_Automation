@@ -48,6 +48,169 @@ router.get('/', handleVerification);
 router.get('/whatsapp', handleVerification);
 
 /**
+ * POST /webhooks/meta
+ * Receive general Meta webhooks (including Facebook Page DMs and Instagram DMs)
+ */
+router.post('/', async (req, res) => {
+    // Meta requires a 200 OK immediately
+    res.sendStatus(200);
+
+    // Verify signature to ensure it came from Meta
+    if (!verifyMetaSignature(req)) {
+        console.warn('[Webhook] Invalid signature on general webhook. Body was:', JSON.stringify(req.body));
+        return;
+    }
+
+    try {
+        const body = req.body;
+        console.log('[Webhook] Received valid webhook with body object:', body.object);
+        console.log('[Webhook] Full payload:', JSON.stringify(body, null, 2));
+        
+        // Ensure this is an event from a page or instagram object
+        if (body.object === 'page' || body.object === 'instagram') {
+            
+            // Iterate over each entry (there may be multiple if batched)
+            for (const entry of body.entry || []) {
+                
+                // Iterate over each messaging/changes event
+                // Standard messages come under 'messaging' array
+                if (entry.messaging) {
+                    for (const webhookEvent of entry.messaging) {
+                        console.log('[Meta DM Received]:', JSON.stringify(webhookEvent, null, 2));
+                        
+                        const senderPsid = webhookEvent.sender.id;
+                        const recipientId = webhookEvent.recipient.id;
+                        
+                        // Check if it's a message
+                        if (webhookEvent.message) {
+                            // You can store this in your database or trigger AI reply
+                            const messageText = webhookEvent.message.text;
+                            console.log(`[DM] Message from ${senderPsid} to ${recipientId}: ${messageText}`);
+                            
+                            // Broadcast to frontend via Supabase Realtime
+                            const channel = supabase.channel('meta-inbox-updates');
+                            channel.send({
+                                type: 'broadcast',
+                                event: 'new_message',
+                                payload: {
+                                    id: Date.now(),
+                                    platform: entry.id === recipientId ? 'facebook' : 'instagram',
+                                    name: `User ${senderPsid}`,
+                                    handle: `@user_${senderPsid}`,
+                                    avatar: 'U',
+                                    avatarBg: '#1877F2',
+                                    lastMessage: messageText,
+                                    time: 'Just now',
+                                    unread: 1,
+                                    status: 'open',
+                                    messages: [
+                                        { 
+                                            id: Date.now(), 
+                                            from: 'them', 
+                                            text: messageText, 
+                                            time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) 
+                                        }
+                                    ]
+                                }
+                            });
+                        }
+                    }
+                }
+
+                // Some new API versions or Instagram send them under 'changes'
+                if (entry.changes) {
+                    for (const change of entry.changes) {
+                        if (change.field === 'messages') {
+                            console.log('[Meta DM Received (Changes API)]:', JSON.stringify(change.value, null, 2));
+                        }
+                    }
+                }
+            }
+        }
+    } catch (error) {
+        console.error('[Webhook] Error processing DM:', error);
+    }
+});
+
+/**
+ * POST /webhooks/meta/test-dm
+ * DEV ONLY: Simulate an incoming DM to test real-time inbox
+ */
+router.post('/test-dm', async (req, res) => {
+    const { senderName, message, platform } = req.body;
+    const text = message || 'Hello, this is a test DM!';
+    const name = senderName || 'Test User';
+    const plat = platform || 'facebook';
+
+    console.log(`[Test DM] Simulating DM from ${name}: ${text}`);
+
+    try {
+        const channel = supabase.channel('meta-inbox-updates');
+        await channel.send({
+            type: 'broadcast',
+            event: 'new_message',
+            payload: {
+                id: Date.now(),
+                platform: plat,
+                name: name,
+                handle: `@${name.toLowerCase().replace(/\s+/g, '.')}`,
+                avatar: name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2),
+                avatarBg: plat === 'instagram' ? '#E1306C' : '#1877F2',
+                lastMessage: text,
+                time: 'Just now',
+                unread: 1,
+                status: 'open',
+                messages: [
+                    {
+                        id: Date.now(),
+                        from: 'them',
+                        text: text,
+                        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                    }
+                ]
+            }
+        });
+
+        res.json({ success: true, message: 'Test DM broadcast sent' });
+    } catch (error) {
+        console.error('[Test DM] Error:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+/**
+ * POST /webhooks/meta/subscribe-page
+ * Subscribe a page to this app's webhooks so real DMs arrive
+ */
+router.post('/subscribe-page', async (req, res) => {
+    const { pageId, pageAccessToken } = req.body;
+
+    if (!pageId || !pageAccessToken) {
+        return res.status(400).json({ error: 'pageId and pageAccessToken are required' });
+    }
+
+    try {
+        const axios = (await import('axios')).default;
+        const response = await axios.post(
+            `https://graph.facebook.com/v25.0/${pageId}/subscribed_apps`,
+            null,
+            {
+                params: {
+                    subscribed_fields: 'messages,messaging_postbacks,message_reads,message_deliveries',
+                    access_token: pageAccessToken
+                }
+            }
+        );
+
+        console.log(`[Webhook] Page ${pageId} subscribed to app webhooks:`, response.data);
+        res.json({ success: true, data: response.data });
+    } catch (error) {
+        console.error('[Webhook] Page subscription error:', error.response?.data || error.message);
+        res.status(500).json({ error: error.response?.data || error.message });
+    }
+});
+
+/**
  * POST /webhooks/meta/leads
  * Receive Lead Gen form submissions from Meta
  */

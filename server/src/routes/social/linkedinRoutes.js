@@ -337,8 +337,8 @@ Rules:
 - No generic filler phrases like "In today's world" or "I'm excited to share"
 - Sound like a real person, not a corporate bot
 - Tone: ${toneGuide}
-- Formatting: LinkedIn supports a subset of markdown. Use *asterisks* around words for bold emphasis (e.g. *key point*). Use bullet points with the • character for lists. You MAY use emojis sparingly for visual structure.
-- IMPORTANT: Output the post text exactly as it should appear — do NOT strip asterisks. Asterisks around words will render as bold on LinkedIn and must be preserved in the output.`;
+- Formatting: Use bullet points with the • character for lists. You MAY use emojis sparingly for visual structure. DO NOT use asterisks (*) for formatting, bolding, or lists.
+- IMPORTANT: Output the post text exactly as it should appear in plain text. Do not include markdown asterisks (*).`;
 
         const userMessage = existingText
             ? `Rewrite and improve this LinkedIn post. Keep the core message but make it more engaging:\n\n${existingText}`
