@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/png" href="/favicon.png" />
+  <!-- Preconnect to critical third-party origins -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <!-- DNS prefetch for non-critical third-party origins (analytics, ads) -->
+  <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
+  <link rel="dns-prefetch" href="https://connect.facebook.net" />
+  <link rel="dns-prefetch" href="https://cdn.onesignal.com" />
+  <!-- Load only Inter (primary UI font) eagerly; specialty fonts load async -->
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap"
+    rel="stylesheet" media="print" onload="this.media='all'" />
+  <!-- Specialty monospace fonts loaded non-blocking -->
+  <link
+    href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=JetBrains+Mono:wght@400;500&display=swap"
+    rel="stylesheet" media="print" onload="this.media='all'" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bitlance Automation | AI Voice Bots & Business Automation</title>
+  <meta name="description"
+    content="Deploy autonomous AI agents, intelligent Voice Bots, and data-driven automation tools to capture leads, book appointments, and scale your business effortlessly." />
+
+  <!-- Open Graph / LinkedIn / Facebook -->
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://www.bitlancetechhub.com/" />
+  <meta property="og:title" content="Bitlance Automation | AI Voice Bots & Business Automation" />
+  <meta property="og:description"
+    content="Deploy autonomous AI agents, intelligent Voice Bots, and data-driven automation tools to capture leads, book appointments, and scale your business effortlessly." />
+  <meta property="og:image" content="/og-image.jpg" />
+
+  <!-- Twitter -->
+  <meta property="twitter:card" content="summary_large_image" />
+  <meta property="twitter:url" content="https://www.bitlancetechhub.com/" />
+  <meta property="twitter:title" content="Bitlance Automation | AI Voice Bots & Business Automation" />
+  <meta property="twitter:description"
+    content="Deploy autonomous AI agents, intelligent Voice Bots, and data-driven automation tools to capture leads, book appointments, and scale your business effortlessly." />
+  <meta property="twitter:image" content="/og-image.jpg" />
+  <!-- Organization + WebSite Structured Data for AI Entity Recognition -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "Organization",
+        "@id": "https://www.bitlancetechhub.com/#organization",
+        "name": "Bitlance Tech Hub",
+        "url": "https://www.bitlancetechhub.com",
+        "logo": {
+          "@type": "ImageObject",
+          "url": "https://www.bitlancetechhub.com/favicon.png"
+        },
+        "description": "Bitlance Tech Hub builds autonomous AI agents for business automation — including AI voice bots, SEO content agents, and social media automation tools that help companies scale without hiring.",
+        "foundingDate": "2017",
+        "sameAs": [
+          "https://www.linkedin.com/company/bitlance-tech-hub",
+          "https://twitter.com/bitlancetechhub"
+        ]
+      },
+      {
+        "@type": "WebSite",
+        "@id": "https://www.bitlancetechhub.com/#website",
+        "url": "https://www.bitlancetechhub.com",
+        "name": "Bitlance Tech Hub",
+        "publisher": { "@id": "https://www.bitlancetechhub.com/#organization" },
+        "potentialAction": {
+          "@type": "SearchAction",
+          "target": {
+            "@type": "EntryPoint",
+            "urlTemplate": "https://www.bitlancetechhub.com/blog?q={search_term_string}"
+          },
+          "query-input": "required name=search_term_string"
+        }
+      }
+    ]
+  }
+  </script>
+  <!-- End Structured Data -->
+
+  <!-- Google Analytics GA4 -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-7WE6LY54CL"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag() { dataLayer.push(arguments); }
+    gtag('js', new Date());
+    gtag('config', 'G-7WE6LY54CL', { send_page_view: false });
+  </script>
+  <!-- End Google Analytics GA4 -->
+
+  <!-- Meta Pixel Code -->
+  <script>
+    !function (f, b, e, v, n, t, s) {
+      if (f.fbq) return; n = f.fbq = function () {
+        n.callMethod ?
+          n.callMethod.apply(n, arguments) : n.queue.push(arguments)
+      };
+      if (!f._fbq) f._fbq = n; n.push = n; n.loaded = !0; n.version = '2.0';
+      n.queue = []; t = b.createElement(e); t.async = !0;
+      t.src = v; s = b.getElementsByTagName(e)[0];
+      s.parentNode.insertBefore(t, s)
+    }(window, document, 'script',
+      'https://connect.facebook.net/en_US/fbevents.js');
+    fbq('init', '916142120954550');
+    fbq('track', 'PageView');
+  </script>
+  <!-- End Meta Pixel Code -->
+
+  <!-- OneSignal Push Notifications -->
+  <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
+  <script>
+    window.OneSignalDeferred = window.OneSignalDeferred || [];
+    OneSignalDeferred.push(async function (OneSignal) {
+      await OneSignal.init({
+        appId: "b8119755-1466-495a-a428-2259043b9ed9",
+        safari_web_id: "web.onesignal.auto.6401d2fc-b951-4213-a02c-03159c046b78",
+        notifyButton: {
+          enable: true,
+        },
+      });
+      // Explicitly trigger the Slidedown Prompt
+      OneSignal.Slidedown.promptPush();
+    });
+  </script>
+  <!-- End OneSignal -->
+</head>
+
+<body>
+  <!-- Facebook SDK — deferred until after page load to avoid TBT impact -->
+
+  <!-- Meta Pixel noscript fallback -->
+  <noscript><img height="1" width="1" style="display:none"
+      src="https://www.facebook.com/tr?id=916142120954550&ev=PageView&noscript=1" /></noscript>
+
+  <div id="root"></div>
+  <script type="module" src="/src/main.jsx"></script>
+</body>
+
+</html>

@@ -1,0 +1,15 @@
+{
+    "name": "voice-agent-dashboard",
+    "version": "1.0.0",
+    "description": "Retell AI Voice Agent Dashboard",
+    "scripts": {
+        "start": "node server/src/index.js",
+        "build": "npm install --legacy-peer-deps && npm install --prefix client --legacy-peer-deps && npm run build --prefix client && npm install --prefix server --legacy-peer-deps"
+    },
+    "engines": {
+        "node": ">=18.0.0"
+    },
+    "dependencies": {
+        "concurrently": "^8.0.0"
+    }
+}

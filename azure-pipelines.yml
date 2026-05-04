@@ -1,0 +1,22 @@
+trigger:
+- main
+
+variables:
+  imageName: 'automation-client'
+  tag: '$(Build.BuildId)'
+
+pool:
+  vmImage: ubuntu-latest
+
+steps:
+
+- task: Docker@2
+  displayName: Build and Push to ACR
+  inputs:
+    command: buildAndPush
+    containerRegistry: 'bitlance-acr-connection'
+    repository: '$(imageName)'
+    dockerfile: '$(Build.SourcesDirectory)/client/Dockerfile'
+    tags: |
+      $(tag)
+      latest

@@ -1,0 +1,201 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ── Design tokens ───────────────────────────────────────────────────────────
+   Dark is the default (class="dark" always applied on <html>).
+   Light overrides live under :root:not(.dark) so they kick in
+   only when the user explicitly switches.
+   ──────────────────────────────────────────────────────────────────────────── */
+
+/* Light — default */
+:root {
+  --bg:           #FFFFFF;
+  --surface:      #F5F5F5;
+  --surface-2:    #EBEBEB;
+  --border:       #E0E0E0;
+  --accent:       #1AA8A8;   /* Slightly darker for contrast on white */
+  --accent-hover: #22BEBE;
+  --accent-muted: #1AA8A81A;
+  --text:         #0A0A0A;
+  --muted:        #777777;
+  --muted-2:      #CCCCCC;
+  color-scheme: light;
+}
+
+/* Dark — optional */
+.dark {
+  --bg:           #070707;
+  --surface:      #111111;
+  --surface-2:    #1A1A1A;
+  --border:       #1E1E1E;
+  --accent:       #26CECE;   /* Bitlance logo teal */
+  --accent-hover: #35DFDF;
+  --accent-muted: #26CECE1A;
+  --text:         #F0F0F0;
+  --muted:        #555555;
+  --muted-2:      #333333;
+  color-scheme: dark;
+}
+
+/* ── Base reset ───────────────────────────────────────────────────────────── */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Space Grotesk', system-ui, -apple-system, sans-serif;
+  background-color: var(--bg);
+  color: var(--text);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  transition: background-color 0.25s ease, color 0.25s ease;
+}
+
+/* ── Primary button ──────────────────────────────────────────────────────────
+   Uses brand teal — replaces the old purple gradient.
+   ──────────────────────────────────────────────────────────────────────────── */
+.btn-primary {
+  background-color: var(--accent);
+  color: #070707;
+  font-family: 'Space Grotesk', sans-serif;
+  font-weight: 700;
+  border: none;
+  box-shadow: 0 0 0 0 rgba(38, 206, 206, 0), 0 16px 48px -16px rgba(38, 206, 206, 0.35);
+  transition: background-color 0.15s ease, box-shadow 0.2s ease, transform 0.15s ease;
+}
+
+.btn-primary:hover {
+  background-color: var(--accent-hover);
+  box-shadow: 0 0 32px rgba(38, 206, 206, 0.3), 0 16px 48px -16px rgba(38, 206, 206, 0.45);
+}
+
+.btn-primary:active {
+  transform: scale(0.98);
+}
+
+.btn-primary:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+
+/* ── Audit CTA pulse animation ────────────────────────────────────────────── */
+@keyframes auditPulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(38, 206, 206, 0), 0 0 0 0 rgba(38, 206, 206, 0);
+    transform: translateZ(0) scale(1);
+  }
+  35% {
+    box-shadow: 0 0 0 10px rgba(38, 206, 206, 0.18), 0 0 32px 0 rgba(38, 206, 206, 0.22);
+    transform: translateZ(0) scale(1.03);
+  }
+  100% {
+    box-shadow: 0 0 0 22px rgba(38, 206, 206, 0), 0 0 0 0 rgba(38, 206, 206, 0);
+    transform: translateZ(0) scale(1);
+  }
+}
+
+.audit-highlight .audit-cta {
+  animation: auditPulse 1.6s ease-in-out infinite;
+  will-change: transform, box-shadow;
+}
+
+.audit-highlight .audit-cta:focus-visible {
+  animation: none;
+}
+
+/* ── Utility animations ───────────────────────────────────────────────────── */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp 0.8s ease-out forwards;
+}
+
+@keyframes gradient-x {
+  0%, 100% { background-size: 200% 200%; background-position: left center; }
+  50%       { background-size: 200% 200%; background-position: right center; }
+}
+
+.animate-gradient-x {
+  animation: gradient-x 3s ease infinite;
+}
+
+/* ── Shared utilities ─────────────────────────────────────────────────────── */
+.glass-nav {
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+/* ── SEO Landing Page utilities ──────────────────────────────────────────── */
+.orb {
+  position: absolute;
+  border-radius: 9999px;
+  filter: blur(80px);
+  pointer-events: none;
+}
+
+.gradient-text {
+  background: linear-gradient(135deg, #26CECE 0%, #2DD4BF 50%, #5EEAD4 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.grid-bg {
+  background-image:
+    linear-gradient(rgba(38,206,206,0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(38,206,206,0.04) 1px, transparent 1px);
+  background-size: 48px 48px;
+}
+
+.card-hover {
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+  /* Promote to compositor layer before hover to prevent layout jank */
+  will-change: transform;
+}
+.card-hover:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 20px 60px rgba(38,206,206,0.08);
+  border-color: rgba(38,206,206,0.2) !important;
+}
+
+.shimmer-btn {
+  position: relative;
+  overflow: hidden;
+}
+.shimmer-btn::after {
+  content: '';
+  position: absolute;
+  top: 0; left: -100%;
+  width: 60%; height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+  animation: shimmer 2.5s ease-in-out infinite;
+  will-change: transform;
+}
+
+@keyframes shimmer {
+  0%   { left: -100%; }
+  100% { left: 150%; }
+}
+
+/* ── Performance utilities ────────────────────────────────────────────────── */
+/* Apply to framer-motion or CSS-animated elements to force GPU compositing */
+.perf-animated {
+  will-change: transform, opacity;
+}
+
+/* Lazy-render off-screen decorative elements */
+.orb {
+  content-visibility: auto;
+}
+
+/* Prevent layout thrash from width-animating progress bars — use scaleX instead */
+.progress-composited {
+  transform-origin: left;
+  will-change: transform;
+}

@@ -1,0 +1,10 @@
+{
+  "version": 1,
+  "skills": {
+    "frontend-design": {
+      "source": "sickn33/antigravity-awesome-skills",
+      "sourceType": "github",
+      "computedHash": "f94901119d00bce26b5057e2f5f9aa6f8ac9099109ad328a827a0e22af107739"
+    }
+  }
+}
