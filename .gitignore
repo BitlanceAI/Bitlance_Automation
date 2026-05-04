@@ -65,8 +65,14 @@ Ai-agents/
 seo-agent-video/
 seo-landing-page/
 reports/
+blog-articles/
 graphic-agents/
 outputs/
+.agents/
+.claude/
+.cursor/
+
+
 # ===============================
 # Python Virtual Environment
 # ===============================
