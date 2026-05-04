@@ -1,0 +1,36 @@
+version: "3.9"
+
+services:
+  # ─────────────────────────────────────────────
+  # Node.js / Express API backend
+  # ─────────────────────────────────────────────
+  backend:
+    image: bitlanceaiapp.azurecr.io/aiautomation-backend:latest
+    container_name: automation-backend
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      PORT: 3001
+      WEBSITES_PORT: 3001
+    ports:
+      - "3001:3001"
+    networks:
+      - app-network
+
+  # ─────────────────────────────────────────────
+  # React / Vite frontend (Nginx)
+  # ─────────────────────────────────────────────
+  frontend:
+    image: bitlanceaiapp.azurecr.io/aiautomation-frontend:latest
+    container_name: automation-frontend
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
