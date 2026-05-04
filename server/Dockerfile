@@ -1,7 +1,7 @@
 # ============================================================
 # Node.js/Express Backend — Dockerfile
 # ============================================================
-FROM mcr.microsoft.com/mirror/docker/library/node:20-alpine AS production
+FROM mirror.gcr.io/library/node:20-alpine AS production
 
 # Install dumb-init for proper signal handling in containers
 RUN apk add --no-cache dumb-init

@@ -1,5 +1,5 @@
 # ── Stage 1: Build ──────────────────────────────────────────────────────────────
-FROM mcr.microsoft.com/mirror/docker/library/node:20-alpine AS builder
+FROM mirror.gcr.io/library/node:20-alpine AS builder
 
 WORKDIR /app
 
@@ -25,7 +25,7 @@ ENV VITE_API_URL=$VITE_API_URL \
 RUN npm run build
 
 # ── Stage 2: Serve ──────────────────────────────────────────────────────────────
-FROM mcr.microsoft.com/mirror/docker/library/nginx:1.27-alpine
+FROM mirror.gcr.io/library/nginx:1.27-alpine
 
 RUN rm /etc/nginx/conf.d/default.conf
 
