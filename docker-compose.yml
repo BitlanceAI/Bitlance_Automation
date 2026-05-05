@@ -17,7 +17,7 @@ services:
       PORT: 3001
       # Override localhost URLs that won't work inside Docker
       GRAPHIC_GENERATOR_URL: http://graphic-agents:8000
-      PYTHON_API_URL: http://graphic-agents:8000
+      PYTHON_API_URL: http://ai-agents:8000
     ports:
       - "3001:3001"
     networks:
@@ -45,6 +45,35 @@ services:
       - backend
     networks:
       - app-network
+
+  # ─────────────────────────────────────────────
+  # Python / FastAPI AI Agent (SEO/Blog)
+  # ─────────────────────────────────────────────
+  ai-agents:
+    build:
+      context: ./Ai-agents
+      dockerfile: Dockerfile
+    container_name: automation-ai-agents
+    restart: unless-stopped
+    environment:
+      - PORT=8000
+    networks:
+      - app-network
+
+  # ─────────────────────────────────────────────
+  # Python / FastAPI Graphic Agent
+  # ─────────────────────────────────────────────
+  graphic-agents:
+    build:
+      context: ./Graphic-agents
+      dockerfile: Dockerfile
+    container_name: automation-graphic-agents
+    restart: unless-stopped
+    environment:
+      - PORT=8000
+    networks:
+      - app-network
+
 
   # ─────────────────────────────────────────────
   # Static Ebook page

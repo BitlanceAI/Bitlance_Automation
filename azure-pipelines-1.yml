@@ -52,3 +52,15 @@ stages:
         tags: |
           $(tag)
           latest
+
+    # 4. Build & Push AI Agents (SEO/Blog)
+    - task: Docker@2
+      displayName: "Build & Push AI Agents"
+      inputs:
+        command: buildAndPush
+        repository: 'aiautomation-ai-agents'
+        dockerfile: '$(Build.SourcesDirectory)/Ai-agents/Dockerfile'
+        containerRegistry: $(dockerRegistryServiceConnection)
+        tags: |
+          $(tag)
+          latest
