@@ -21,6 +21,16 @@ stages:
     pool:
       vmImage: $(vmImageName)
     steps:
+      - task: AzureStaticWebApp@0
+        displayName: "Deploy Frontend to Static Web App"
+        env:
+          VITE_API_URL: $(VITE_API_URL)
+          VITE_API_BASE_URL: $(VITE_API_BASE_URL)
+        inputs:
+          azure_static_web_apps_api_token: $(AZURE_STATIC_WEB_APPS_API_TOKEN_NICE_WATER_02854560F)
+          app_location: "/client"
+          output_location: "dist"
+          api_location: ""
       # 1. Build & Push Backend
       - task: Docker@2
         displayName: "Build & Push Backend"
@@ -58,13 +68,4 @@ stages:
             latest
 
       # 4. Deploy Frontend to Azure Static Web App
-      - task: AzureStaticWebApp@0
-        displayName: "Deploy Frontend to Static Web App"
-        env:
-          VITE_API_URL: $(VITE_API_URL)
-          VITE_API_BASE_URL: $(VITE_API_BASE_URL)
-        inputs:
-          azure_static_web_apps_api_token: $(AZURE_STATIC_WEB_APPS_API_TOKEN_NICE_WATER_02854560F)
-          app_location: "/client"
-          output_location: "dist"
-          api_location: ""
+      
