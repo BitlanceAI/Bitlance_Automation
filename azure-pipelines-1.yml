@@ -56,6 +56,9 @@ stages:
     # 5. Deploy to Azure Static Web App
     - task: AzureStaticWebApp@0
       displayName: "Deploy Frontend to Static Web App"
+      env:
+        VITE_API_URL: $(VITE_API_URL)
+        VITE_API_BASE_URL: $(VITE_API_BASE_URL)
       inputs:
         app_location: "/client"
         output_location: "dist"
