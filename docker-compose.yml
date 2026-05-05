@@ -16,8 +16,8 @@ services:
       NODE_ENV: production
       PORT: 3001
       # Override localhost URLs that won't work inside Docker
-      GRAPHIC_GENERATOR_URL: http://ai-agents:8000
-      PYTHON_API_URL: http://ai-agents:8000
+      GRAPHIC_GENERATOR_URL: http://graphic-agents:8000
+      PYTHON_API_URL: http://graphic-agents:8000
     ports:
       - "3001:3001"
     networks:
