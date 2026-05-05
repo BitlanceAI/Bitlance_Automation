@@ -40,3 +40,15 @@ stages:
         tags: |
           $(tag)
           latest
+
+    # 3. Build & Push Graphic Agents
+    - task: Docker@2
+      displayName: "Build & Push Graphic Agents"
+      inputs:
+        command: buildAndPush
+        repository: 'aiautomation-graphic-agents'
+        dockerfile: '$(Build.SourcesDirectory)/Graphic-agents/Dockerfile'
+        containerRegistry: $(dockerRegistryServiceConnection)
+        tags: |
+          $(tag)
+          latest
