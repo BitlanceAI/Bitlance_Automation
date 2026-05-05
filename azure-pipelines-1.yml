@@ -2,13 +2,15 @@ trigger:
 - main
 
 variables:
-  # Ensure this matches the Service Connection name you create in Azure DevOps
-  dockerRegistryServiceConnection: 'BitlanceACRConnection'
-  containerRegistry: 'bitlanceaiapp.azurecr.io'
-  tag: '$(Build.BuildId)'
-  vmImageName: 'ubuntu-latest'
-  # Link the group created by Azure for the SWA token
-  - group: Azure-Static-Web-Apps-nice-water-02854560f-variable-group
+- name: dockerRegistryServiceConnection
+  value: 'BitlanceACRConnection'
+- name: containerRegistry
+  value: 'bitlanceaiapp.azurecr.io'
+- name: tag
+  value: '$(Build.BuildId)'
+- name: vmImageName
+  value: 'ubuntu-latest'
+- group: Azure-Static-Web-Apps-nice-water-02854560f-variable-group
 
 stages:
 - stage: Build
