@@ -64,3 +64,11 @@ stages:
         tags: |
           $(tag)
           latest
+
+    # 5. Deploy to Azure Static Web App
+    - task: AzureStaticWebApp@0
+      displayName: "Deploy Frontend to Static Web App"
+      inputs:
+        app_location: "/client"
+        output_location: "dist"
+        azure_static_web_apps_api_token: '7ae01889912f92f43a2cafae1c543c8082e0380038277ff50614af4599f3be3d07-cd2aedbc-9713-4d63-a994-5eb2df49b09200f242502854560f'
