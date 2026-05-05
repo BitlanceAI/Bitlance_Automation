@@ -1,0 +1,20 @@
+fastapi
+uvicorn[standard]
+pydantic
+python-dotenv
+pillow
+requests
+openai
+
+# LangChain agent stack
+langchain>=0.2.0
+langchain-openai>=0.1.0
+langchain-core>=0.2.0
+langchain-community>=0.2.0
+
+# Optional: uncomment for Google Gemini LLM support
+# langchain-google-genai
+
+# Optional: uncomment for Redis-backed session memory (production scaling)
+# redis
+# langchain-redis
