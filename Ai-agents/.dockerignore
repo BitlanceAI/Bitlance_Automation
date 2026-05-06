@@ -1,0 +1,35 @@
+# Virtual environments
+myenv/
+venv/
+.venv/
+__pycache__/
+
+# Local secrets (set via Azure App Settings instead)
+.env
+.env.*
+service-account.json
+
+# Git
+.git/
+.gitignore
+
+# IDE
+.idea/
+.vscode/
+.cursor/
+
+# Generated outputs
+outputs/
+generated/
+uploads/
+
+# Misc
+*.pyc
+*.pyo
+*.pyd
+.DS_Store
+README.md
+local_run.py
+check_imports.py
+test_data.json
+render.yaml
