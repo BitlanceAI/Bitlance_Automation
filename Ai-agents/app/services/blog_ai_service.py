@@ -330,9 +330,18 @@ MINIMUM WORDS   : {length_num}
     return {"blogText": blog_text.strip(), "wordCount": word_count}
 
 
-def generate_seo_title(blog_text: str, topic: str) -> str:
-    """Generate an SEO-optimised title from blog content."""
+def _clean_title(raw: str, topic: str) -> str:
+    """Strip model annotations and surrounding quotes from a generated SEO title."""
     import re
+    title = re.sub(r'[\(\[]\d+\s*(?:chars?|characters?)[\)\]]', '', raw, flags=re.IGNORECASE).strip()
+    title = title.strip('"\'')
+    return title if title else topic
+
+
+def generate_seo_title(blog_text: str, topic: str) -> str:
+    """Generate an SEO-optimised title from blog content.
+    Primary: Perplexity sonar-pro  →  Fallback: OpenAI GPT-4o
+    """
     prompt = (
         f"Based on this blog content, generate ONE perfect SEO title tag for this blog post.\n"
         f"Topic: {topic}\n\n"
@@ -346,67 +355,96 @@ def generate_seo_title(blog_text: str, topic: str) -> str:
         f"- Do NOT use clickbait or misleading language — accurately reflect the content.\n"
         f"- Use a power word or number if it fits naturally (e.g. 'Best', 'Complete Guide', '7 Tips')."
     )
+    system = "You are an expert SEO copywriter."
+
+    # ── Primary: Perplexity ───────────────────────────────────────────────────
     try:
-        raw = _perplexity_call(prompt, "You are an expert SEO copywriter.", max_tokens=60).strip()
-        # Strip any (xx chars) / [xx chars] / (xx characters) annotations the model may add
-        title = re.sub(r'[\(\[]\d+\s*(?:chars?|characters?)[\)\]]', '', raw, flags=re.IGNORECASE).strip()
-        # Strip surrounding quotes if the model wrapped the title
-        title = title.strip('"\'')
-        return title if title else topic
+        raw = _perplexity_call(prompt, system, max_tokens=60).strip()
+        return _clean_title(raw, topic)
     except Exception as e:
         print(f"Perplexity SEO title error: {e}")
-        return topic
+
+    # ── Fallback: OpenAI ──────────────────────────────────────────────────────
+    try:
+        raw = _openai_chat_call(prompt, system, max_tokens=60).strip()
+        return _clean_title(raw, topic)
+    except Exception as e:
+        print(f"OpenAI SEO title error: {e}")
+
+    return topic
 
 
 def check_plagiarism(blog_text: str) -> str:
     """
     Check plagiarism. Returns a human-readable result string.
-    Uses SerpAPI (real Google exact-phrase search) when SERP_API_KEY is set,
-    falls back to Perplexity sonar-pro otherwise.
+    Priority: SerpAPI (real Google search) → Perplexity → OpenAI → skip
     """
     if not blog_text or not blog_text.strip():
         return "Plagiarism check skipped - empty content"
 
+    # ── Primary: SerpAPI exact-phrase search ──────────────────────────────────
     if _SERP_AVAILABLE:
         try:
             result = plagiarism_check_tool.run(blog_text)
             print("check_plagiarism: used SerpAPI exact-phrase search")
             return result
         except Exception as e:
-            print(f"SerpAPI plagiarism check failed, falling back to Perplexity: {e}")
+            print(f"SerpAPI plagiarism check failed: {e}")
 
     prompt = (
         f'Check for plagiarism in this article. Reply "No plagiarism detected" if original, '
         f"otherwise summarize detected parts:\n\n{blog_text[:3000]}"
     )
+    system = "You are a plagiarism checker."
+
+    # ── Secondary: Perplexity ─────────────────────────────────────────────────
     try:
-        result = _perplexity_call(prompt, "You are a plagiarism checker.", max_tokens=500).strip()
+        result = _perplexity_call(prompt, system, max_tokens=500).strip()
         if "no plagiarism" not in result.lower():
             result += " ⚠️ Could not fully eliminate plagiarism, but the article is returned to user."
         return result
     except Exception as e:
         print(f"Perplexity plagiarism error: {e}")
-        return "Plagiarism check unavailable - service error"
+
+    # ── Fallback: OpenAI ──────────────────────────────────────────────────────
+    try:
+        result = _openai_chat_call(prompt, system, max_tokens=500).strip()
+        if "no plagiarism" not in result.lower():
+            result += " ⚠️ Could not fully eliminate plagiarism, but the article is returned to user."
+        return result
+    except Exception as e:
+        print(f"OpenAI plagiarism error: {e}")
+
+    return "Plagiarism check unavailable - all services failed"
 
 
 def generate_image_text(blog_text: str, topic: str) -> str:
-    """Generate a short (≤3 word) catchy headline for a blog header image."""
+    """Generate a short (≤3 word) catchy headline for a blog header image.
+    Primary: Perplexity  →  Fallback: OpenAI
+    """
     prompt = (
         f"Based on this blog content, create a short, simplest, small and catchy headline or phrase "
         f"(maximum 3 words) that would look good on a blog header image. "
         f"Make it engaging and relevant to the content:\n{blog_text[:1000]}\n"
         f"Topic: {topic}\nReturn only the headline text, nothing else."
     )
+    system = "You are a marketing copywriter expert at creating catchy headlines."
+
+    # ── Primary: Perplexity ───────────────────────────────────────────────────
     try:
-        text = _perplexity_call(
-            prompt,
-            "You are a marketing copywriter expert at creating catchy headlines.",
-            max_tokens=100,
-        ).strip()
+        text = _perplexity_call(prompt, system, max_tokens=100).strip()
         return text.replace('"', "").replace("'", "").strip()
     except Exception as e:
         print(f"Perplexity image text error: {e}")
-        return topic
+
+    # ── Fallback: OpenAI ──────────────────────────────────────────────────────
+    try:
+        text = _openai_chat_call(prompt, system, max_tokens=100).strip()
+        return text.replace('"', "").replace("'", "").strip()
+    except Exception as e:
+        print(f"OpenAI image text error: {e}")
+
+    return topic
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -585,49 +623,61 @@ MINIMUM WORDS   : {length_num}
 def generate_image(topic: str, image_text: str) -> str:
     """
     Generate a blog header image.
-    Strategy:
-      1. OpenAI gpt-image-2 (or equivalent) -> returns image URL string
-      2. Fall back to a solid-colour placeholder base64 PNG
+    Strategy (mirrors Graphic-agents image_service.py):
+      1. OpenAI gpt-image-2  — SDK call, b64_json response
+      2. OpenAI dall-e-3     — SDK call, url response (wider account support)
+      3. Solid-colour placeholder base64 PNG
+    Returns a data:image/png;base64,... string or a temporary URL.
     """
     import base64
     import io
-    import requests
 
-    prompt = (
-        f"Create a professional, text-free blog header image about: {topic}. "
-        f"Visual requirements: high-quality modern design, landscape orientation (16:9), "
-        f"clean professional appearance suitable for blog publication. "
-        f"CRITICAL: Do not include ANY text, words, letters, watermarks, signs, logos, or typography anywhere in the image."
+    dalle_prompt = (
+        f"Professional, text-free blog header image about: {topic}. "
+        f"Modern landscape design, clean and photorealistic. "
+        f"CRITICAL: No text, no words, no letters, no typography, no watermarks, no signs, no logos."
     )
 
-    # ── 1. OpenAI gpt-image-2 ───────────────────────────────────────────────
     if OPENAI_API_KEY:
+        from openai import OpenAI
+        client = OpenAI(api_key=OPENAI_API_KEY)
+
+        # ── 1. gpt-image-2 (b64_json — no response_format param needed) ──────
         try:
-            dalle_prompt = (
-                f"Professional, text-free blog header image about: {topic}. "
-                f"Modern landscape design, clean and photorealistic. "
-                f"CRITICAL: No text, no words, no letters, no typography, no watermarks, no signs, no logos."
+            result = client.images.generate(
+                model="gpt-image-2",
+                prompt=dalle_prompt,
+                size="1024x1024",
+                quality="low",
+                n=1,
             )
-            res = requests.post(
-                "https://api.openai.com/v1/images/generations",
-                headers={"Authorization": f"Bearer {OPENAI_API_KEY}", "Content-Type": "application/json"},
-                json={
-                    "model": "gpt-image-2",  # Using gpt-image-2 as requested
-                    "prompt": dalle_prompt,
-                    "n": 1,
-                    "size": "1024x1024",     # Standard size for image APIs
-                    "response_format": "url"
-                },
-                timeout=60,
-            )
-            res.raise_for_status()
-            url = res.json()["data"][0]["url"]
-            print(f"Image generated via OpenAI gpt-image-2 for: {topic}")
-            return url
+            img_data = result.data[0]
+            if hasattr(img_data, "b64_json") and img_data.b64_json:
+                print(f"Image generated via gpt-image-2 (b64) for: {topic}")
+                return f"data:image/png;base64,{img_data.b64_json}"
+            elif hasattr(img_data, "url") and img_data.url:
+                print(f"Image generated via gpt-image-2 (url) for: {topic}")
+                return img_data.url
         except Exception as e:
             print(f"OpenAI gpt-image-2 failed: {type(e).__name__}: {e}")
 
-    # ── 2. Solid-colour placeholder ───────────────────────────────────────────
+        # ── 2. dall-e-3 fallback (url response) ──────────────────────────────
+        try:
+            result = client.images.generate(
+                model="dall-e-3",
+                prompt=dalle_prompt,
+                size="1792x1024",   # landscape 16:9-ish
+                quality="standard",
+                n=1,
+            )
+            url = result.data[0].url
+            if url:
+                print(f"Image generated via dall-e-3 for: {topic}")
+                return url
+        except Exception as e:
+            print(f"OpenAI dall-e-3 failed: {type(e).__name__}: {e}")
+
+    # ── 3. Solid-colour placeholder ───────────────────────────────────────────
     print("All image generation methods failed. Returning placeholder.")
     from PIL import Image as _PILImage
     img = _PILImage.new("RGB", (1280, 720), (30, 58, 138))
@@ -635,6 +685,7 @@ def generate_image(topic: str, image_text: str) -> str:
     img.save(buf, format="PNG")
     b64 = base64.b64encode(buf.getvalue()).decode("utf-8")
     return f"data:image/png;base64,{b64}"
+
 
 
 # ─────────────────────────────────────────────────────────────────────────────
