@@ -383,6 +383,138 @@ export const getJobById = async (req, res) => {
 };
 
 /**
+ * POST /api/design/generate-social-post
+ * Full pipeline with persistence: category → Trends → AI → Persistence
+ */
+export const generateSocialPost = async (req, res) => {
+    try {
+        const { category, platforms, tone, extra_instructions, image_quality } = req.body;
+        const userId = req.user.id;
+
+        if (!category || !platforms || platforms.length === 0) {
+            return res.status(400).json({
+                success: false,
+                error: 'category and at least one platform are required',
+            });
+        }
+
+        // 1. Credit check (Social post costs 5 credits)
+        const creditCheck = await CreditLedgerService.validateCreditsAvailable(userId, 'design', 1);
+        if (!creditCheck.hasEnough) {
+            return res.status(402).json({
+                success: false,
+                error: 'Insufficient credits',
+                balance: creditCheck.currentBalance
+            });
+        }
+
+        // 2. Create Job Entry (Pending)
+        const { data: designJob, error: saveError } = await supabaseAdmin
+            .from('design_jobs')
+            .insert({
+                user_id: userId,
+                property_type: 'Social Post',
+                location: category,
+                price: 'N/A',
+                builder: 'N/A',
+                phone: 'N/A',
+                email: 'N/A',
+                address: 'N/A',
+                status: 'pending',
+                credits_used: COST_PER_FLYER,
+                metadata: { category, platforms, tone, extra_instructions, image_quality }
+            })
+            .select()
+            .single();
+
+        if (saveError) throw saveError;
+
+        // 3. Call Python Agent
+        const GRAPHIC_AGENT_URL = process.env.GRAPHIC_AGENT_URL || process.env.GRAPHIC_GENERATOR_URL || 'http://localhost:8001';
+        
+        let pyResponse;
+        try {
+            pyResponse = await axios.post(
+                `${GRAPHIC_AGENT_URL}/api/generate_social_post`,
+                {
+                    category,
+                    platforms,
+                    tone: tone || 'professional',
+                    extra_instructions: extra_instructions || '',
+                    image_quality: image_quality || 'low',
+                },
+                { timeout: 120000 }
+            );
+        } catch (err) {
+            await supabaseAdmin.from('design_jobs').update({ status: 'failed', error_message: err.message }).eq('id', designJob.id);
+            throw err;
+        }
+
+        const result = pyResponse.data;
+        if (!result.success) {
+            await supabaseAdmin.from('design_jobs').update({ status: 'failed', error_message: result.error }).eq('id', designJob.id);
+            throw new Error(result.error);
+        }
+
+        // 4. Upload Image to Storage
+        let flyerUrl = null;
+        if (result.image_base64) {
+            const fileContent = Buffer.from(result.image_base64, 'base64');
+            const fileName = `social_${designJob.id}_${Date.now()}.png`;
+
+            const { error: uploadError } = await supabaseAdmin
+                .storage
+                .from('designs')
+                .upload(fileName, fileContent, {
+                    contentType: 'image/png',
+                    upsert: false
+                });
+
+            if (uploadError) console.error('Upload error (history):', uploadError);
+            else {
+                const { data: publicUrlData } = supabaseAdmin.storage.from('designs').getPublicUrl(fileName);
+                flyerUrl = publicUrlData.publicUrl;
+            }
+        }
+
+        // 5. Update Job Entry (Completed)
+        await supabaseAdmin
+            .from('design_jobs')
+            .update({
+                status: 'completed',
+                flyer_url: flyerUrl,
+                metadata: {
+                    ...designJob.metadata,
+                    captions: result.captions,
+                    trending_keywords: result.trending_keywords,
+                    image_url: flyerUrl
+                }
+            })
+            .eq('id', designJob.id);
+
+        // 6. Deduct Credits
+        await CreditLedgerService.deductCreditsWithLedger({
+            userId,
+            agentType: 'design',
+            referenceId: designJob.id,
+            referenceTable: 'design_jobs',
+            usageQuantity: 1,
+            metadata: { category, type: 'social_post' }
+        });
+
+        return res.json({
+            ...result,
+            jobId: designJob.id,
+            flyerUrl: flyerUrl
+        });
+
+    } catch (error) {
+        console.error('[Design] generateSocialPost error:', error.message);
+        res.status(500).json({ success: false, error: error.message });
+    }
+};
+
+/**
  * POST /api/design/generate-from-prompt
  * Generate a real estate flyer from custom prompt
  */
@@ -559,6 +691,7 @@ function runPythonGenerator(scriptPath, inputData) {
 export default {
     generateFlyer,
     generateFromPrompt,
+    generateSocialPost,
     getJobs,
     getJobById
 };

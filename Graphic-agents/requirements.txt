@@ -6,6 +6,11 @@ pillow
 requests
 openai
 
+# SerpAPI official Python client (google_trends_autocomplete support)
+# Uses serpapi.Client(api_key=...) interface
+serpapi
+google-search-results
+
 # LangChain agent stack
 langchain>=0.2.0
 langchain-openai>=0.1.0

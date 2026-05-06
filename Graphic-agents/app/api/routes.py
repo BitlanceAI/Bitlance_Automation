@@ -28,6 +28,8 @@ from app.models import (
     PromptEnhanceRequest,
     PromptEnhanceResponse,
     PropertyDetailsRequest,
+    SocialPostRequest,
+    SocialPostResponse,
 )
 # Direct service imports — used when use_agent=False
 from app.services.image_service import ImageService
@@ -182,6 +184,56 @@ def generate_from_prompt(
 
 
 # ─────────────────────────────────────────────────────────────────────────────
+# POST /generate_social_post  —  Full pipeline endpoint
+# ─────────────────────────────────────────────────────────────────────────────
+
+@router.post("/generate_social_post", response_model=SocialPostResponse)
+def generate_social_post(request: SocialPostRequest):
+    """
+    Full social post pipeline: category → Google Trends → platform-aware captions → graphic.
+
+    Flow:
+      1. Fetch trending keywords for the category via Google Trends (SerpAPI)
+      2. Generate platform-specific captions (respecting char limits & style)
+      3. Generate a social media graphic via gpt-image-2
+      4. Return captions, keywords, and image data
+
+    Supports: twitter, linkedin, facebook, instagram
+    """
+    try:
+        logger.info(
+            "[Route: generate_social_post] category='%s' platforms=%s",
+            request.category, request.platforms,
+        )
+        from app.services.social_post_service import SocialPostService
+        service = SocialPostService()
+
+        result = service.generate_social_post(
+            category=request.category,
+            platforms=request.platforms,
+            tone=request.tone or "professional",
+            extra_instructions=request.extra_instructions or "",
+            image_quality=request.image_quality or "low",
+        )
+
+        images = result.get("images", [])
+        image_b64 = images[0]["b64_string"] if images else None
+
+        return SocialPostResponse(
+            success=True,
+            category=result["category"],
+            trending_keywords=result["trending_keywords"],
+            captions=result["captions"],
+            graphic_prompt=result["graphic_prompt"],
+            image_base64=image_b64,
+        )
+
+    except Exception as exc:
+        logger.exception("[Route: generate_social_post] Error: %s", exc)
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
+# ─────────────────────────────────────────────────────────────────────────────
 # Helper
 # ─────────────────────────────────────────────────────────────────────────────
 
@@ -199,3 +251,4 @@ def _agent_result_to_response(result: dict) -> GenerateResponse:
         images_base64=b64_list     if b64_list else None,
         trending_keywords=result.get("trending_keywords"),
     )
+

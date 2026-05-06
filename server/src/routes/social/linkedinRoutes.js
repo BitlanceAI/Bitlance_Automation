@@ -378,48 +378,55 @@ router.post('/trending-keywords', async (req, res) => {
             return res.status(500).json({ error: 'SerpAPI key not configured' });
         }
 
-        // 1. Fetch trending data from SerpAPI (Google Trends)
-        // We'll use the 'google_trends_trending_searches' engine or similar
-        // For a more specific niche, we might use 'google_search' with 'trending [niche]'
+        // 1. Fetch autocomplete suggestions via google_trends_autocomplete
         let trendingData = [];
         try {
             const serpResponse = await axios.get('https://serpapi.com/search.json', {
                 params: {
-                    engine: 'google_trends_trending_searches',
-                    geo: 'US', // default to US for trends
-                    api_key: serpApiKey
+                    engine: 'google_trends_autocomplete',
+                    q: niche,
+                    api_key: serpApiKey,
                 }
             });
 
-            // Extract trending searches from the response
-            // The structure varies, but usually it's in trending_searches
-            const trends = serpResponse.data.trending_searches || [];
-            trendingData = trends.map(t => t.query).slice(0, 15);
+            const autocomplete = serpResponse.data.autocomplete || [];
+            trendingData = autocomplete
+                .map(item => (typeof item === 'string' ? item : item.q || item.value || item.title || ''))
+                .filter(Boolean)
+                .slice(0, 15);
+
         } catch (serpError) {
-            console.error('SerpAPI error:', serpError.message);
-            // Fallback: If trends fail, try a search for 'trending topics in [niche]'
-            const searchResponse = await axios.get('https://serpapi.com/search.json', {
-                params: {
-                    q: `trending topics in ${niche}`,
-                    location: location,
-                    api_key: serpApiKey
-                }
-            });
-            const results = searchResponse.data.organic_results || [];
-            trendingData = results.map(r => r.title).slice(0, 10);
+            console.error('SerpAPI autocomplete error:', serpError.message);
+            // Fallback: regular google search for trending topics
+            try {
+                const searchResponse = await axios.get('https://serpapi.com/search.json', {
+                    params: {
+                        engine: 'google',
+                        q: `trending topics ${niche} 2025`,
+                        location,
+                        api_key: serpApiKey,
+                    }
+                });
+                const results = searchResponse.data.organic_results || [];
+                trendingData = results.map(r => r.title).filter(Boolean).slice(0, 10);
+            } catch (fallbackError) {
+                console.error('SerpAPI fallback also failed:', fallbackError.message);
+            }
         }
 
-        // 2. Use AI to process these into LinkedIn post ideas
+        // 2. Use AI to turn raw suggestions into LinkedIn post ideas
         const systemPrompt = `You are a social media strategist.
-Given a list of trending topics or search queries, identify the top 5 most relevant and engaging topics for a LinkedIn professional audience interested in ${niche}.
+Given a list of trending search suggestions, identify the top 5 most relevant and engaging topics for a ${niche} audience on LinkedIn/social media.
 For each topic, provide:
 1. A catchy Keyword/Topic Name
 2. A brief "Angle" or "Hook" for a post
 3. 2-3 targeted hashtags
 
-Format the output as a JSON array of objects: [{ "keyword": "...", "hook": "...", "hashtags": ["...", "..."] }]`;
+Format as a JSON array: [{ "keyword": "...", "hook": "...", "hashtags": ["...", "..."] }]`;
 
-        const userMessage = `Trending data: ${trendingData.join(', ')}`;
+        const userMessage = trendingData.length > 0
+            ? `Trending autocomplete suggestions for "${niche}": ${trendingData.join(', ')}`
+            : `Generate trending post ideas for the niche: "${niche}"`;
 
         const completion = await openai.chat.completions.create({
             model: 'gpt-4o-mini',
@@ -434,12 +441,13 @@ Format the output as a JSON array of objects: [{ "keyword": "...", "hook": "..."
         const aiResult = JSON.parse(completion.choices[0]?.message?.content || '{}');
         const topics = aiResult.topics || aiResult.suggestions || aiResult.results || Object.values(aiResult)[0] || [];
 
-        res.json({ success: true, topics });
+        res.json({ success: true, topics, raw_suggestions: trendingData });
     } catch (error) {
         console.error('Trending keywords error:', error.message);
         res.status(500).json({ error: error.message });
     }
 });
+
 
 
 /**
