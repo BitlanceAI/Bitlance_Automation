@@ -41,3 +41,23 @@ class GenerateResponse(BaseModel):
     trending_keywords: Optional[List[str]] = Field(default=None, description="Keywords used to enhance the prompt")
     image_size: Optional[str] = Field(default=None, description="Image size used for generation")
     image_quality: Optional[str] = Field(default=None, description="Image quality used for generation")
+
+
+class SocialPostRequest(BaseModel):
+    """Request body for the social post generation pipeline."""
+    category: str = Field(..., example="AI in healthcare", description="Topic/niche for the post — sent to Google Trends")
+    platforms: List[str] = Field(..., example=["twitter", "linkedin", "facebook", "instagram"], description="Target social media platforms")
+    tone: Optional[str] = Field(default="professional", example="professional", description="Writing tone: professional, casual, inspiring, witty")
+    extra_instructions: Optional[str] = Field(default="", description="Optional extra context or instructions for the AI")
+    image_quality: Optional[str] = Field(default="low", example="low", description="Image quality: low, medium, high, auto")
+
+
+class SocialPostResponse(BaseModel):
+    """Response body for the social post generation pipeline."""
+    success: bool = Field(..., example=True)
+    category: Optional[str] = Field(default=None)
+    trending_keywords: Optional[List[str]] = Field(default=None)
+    captions: Optional[dict] = Field(default=None, description="Platform-keyed captions: { twitter: '...', linkedin: '...', ... }")
+    graphic_prompt: Optional[str] = Field(default=None, description="The prompt used to generate the graphic")
+    image_base64: Optional[str] = Field(default=None, description="Base64-encoded image")
+    error: Optional[str] = Field(default=None)

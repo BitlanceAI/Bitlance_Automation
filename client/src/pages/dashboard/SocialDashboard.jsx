@@ -59,6 +59,7 @@ import SpecialDaysAIView from '../../components/social/SpecialDaysAIView';
 import TwitterThreadBuilderView from '../../components/social/TwitterThreadBuilderView';
 import UploadCSVView from '../../components/social/UploadCSVView';
 import InboxView from '../../components/social/InboxView';
+import SchedulePostView from '../../components/social/SchedulePostView';
 
 const XIcon = ({ className }) => (
     <svg viewBox="0 0 24 24" aria-hidden="true" className={className} fill="currentColor">
@@ -368,6 +369,7 @@ const SocialDashboard = () => {
     const [isPreviewOpen, setIsPreviewOpen] = useState(false);
     const [previewStep, setPreviewStep] = useState(1); // 1 = platform select, 2 = preview
     const [postTargets, setPostTargets] = useState([]); // profiles chosen in step 1
+    const [postSuccessCount, setPostSuccessCount] = useState(0);
 
     // WhatsApp share (Step 1 optional section)
     const [waShare, setWaShare] = useState({ enabled: false, mode: 'link', phone: '', sending: false, sent: false, copied: false, opened: false, error: null });
@@ -769,6 +771,7 @@ const SocialDashboard = () => {
             const failed = results.filter(r => !r.success);
             if (failed.length === 0) {
                 const total = postTargets.length;
+                setPostSuccessCount(prev => prev + 1);
                 setPostStatus({ type: 'success', message: `Post published to ${total} profile${total > 1 ? 's' : ''}!` });
                 setPostText('');
                 setSelectedProfileIds([]);
@@ -807,6 +810,8 @@ const SocialDashboard = () => {
         { id: 'special_days', icon: CalendarDays, label: 'Special Days Posts (AI)' },
         { divider: true },
         { id: 'twitter_thread', icon: XIcon, label: 'X (Twitter) Thread Builder' },
+        { divider: true },
+        { id: 'smart_schedule', icon: Zap, label: 'Smart Post Scheduler (AI)' },
     ];
 
     const libraryMenuItems = [
@@ -1163,6 +1168,16 @@ const SocialDashboard = () => {
                         <InboxView />
                     ) : activeView === 'graphics_ai' ? (
                         <GraphicsAIView />
+                    ) : activeView === 'smart_schedule' ? (
+                        <SchedulePostView 
+                            connectedProfiles={connectedProfiles}
+                            setPostText={setPostText}
+                            setMediaAttachment={setMediaAttachment}
+                            setIsPreviewOpen={setIsPreviewOpen}
+                            setPostTargets={setPostTargets}
+                            setPreviewStep={setPreviewStep}
+                            postSuccessCount={postSuccessCount}
+                        />
                     ) : (
                         /* ── SHARE VIEW — dashboard ─────────────────────────── */
                         <div className="flex-1 p-8 bg-white overflow-y-auto w-full">

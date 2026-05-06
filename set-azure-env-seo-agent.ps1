@@ -13,13 +13,14 @@ $RESOURCE_GROUP = "Bitlance_RG"        # ← Update if different
 
 # Required environment variables for the SEO AI Agent
 $settings = @(
+    "WEBSITES_ENABLE_APP_SERVICE_STORAGE=false",
     "WEBSITES_PORT=8000",
     "PORT=8000",
     "GEMINI_API_KEY=AIzaSyCK-UO7oFEjKIi_QFIIgo3ee1YZyKTu6Z4",
-    "OPENAI_API_KEY=<YOUR_OPENAI_API_KEY>",
-    "PERPLEXITY_API_KEY=<YOUR_PERPLEXITY_API_KEY>",
-    "SERP_API_KEY=<YOUR_SERP_API_KEY>",
-    "MOCK_AI=false"
+    "MOCK_AI=false",
+    "OPENAI_API_KEY=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",
+    "PERPLEXITY_API_KEY=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",
+    "SERP_API_KEY=885eaa5f335b5fefdfcc0d285f2c4735d71b5aa567de0b144a5e91e91668110f"
 )
 
 Write-Host "Setting $($settings.Count) environment variables for '$APP_NAME'..." -ForegroundColor Cyan

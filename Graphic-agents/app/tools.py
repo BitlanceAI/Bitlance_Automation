@@ -189,6 +189,53 @@ def generate_image(input_json: str) -> str:
 
 
 # ─────────────────────────────────────────────────────────────────────────────
+# Tool 5 — Social Post Pipeline
+# ─────────────────────────────────────────────────────────────────────────────
+
+@tool
+def generate_social_post(input_json: str) -> str:
+    """
+    Full social post pipeline: category → Google Trends → platform-aware captions → graphic.
+
+    Args:
+        input_json: A JSON string with keys:
+            - "category"           (str, required): Topic/niche for the post.
+            - "platforms"          (list[str], required): Target platforms e.g. ["twitter", "linkedin"].
+            - "tone"               (str, optional): Writing tone. Default: 'professional'.
+            - "extra_instructions" (str, optional): Extra context for the AI.
+            - "image_quality"      (str, optional): 'low', 'medium', 'high', 'auto'. Default: 'low'.
+
+    Returns:
+        A JSON string with captions per platform, trending keywords, and image metadata.
+    """
+    from app.services.social_post_service import SocialPostService
+    service = SocialPostService()
+    try:
+        data = json.loads(input_json)
+        result = service.generate_social_post(
+            category=data["category"],
+            platforms=data["platforms"],
+            tone=data.get("tone", "professional"),
+            extra_instructions=data.get("extra_instructions", ""),
+            image_quality=data.get("image_quality", "low"),
+        )
+        # Strip b64 from tool output to avoid context overflow
+        slim_result = {
+            "success": result["success"],
+            "category": result["category"],
+            "trending_keywords": result["trending_keywords"],
+            "captions": result["captions"],
+            "graphic_prompt": result["graphic_prompt"],
+            "images": [{"filepath": img["filepath"], "filename": img["filename"]} for img in result.get("images", [])],
+        }
+        logger.info("[Tool: generate_social_post] Pipeline complete for category='%s'", data["category"])
+        return json.dumps(slim_result)
+    except Exception as exc:
+        logger.error("[Tool: generate_social_post] FAILED: %s", exc)
+        return json.dumps({"error": str(exc)})
+
+
+# ─────────────────────────────────────────────────────────────────────────────
 # Tool Registry — used by the agent executor
 # ─────────────────────────────────────────────────────────────────────────────
 
@@ -197,4 +244,5 @@ ALL_TOOLS = [
     enhance_raw_prompt,
     build_prompt_from_details,
     generate_image,
+    generate_social_post,
 ]

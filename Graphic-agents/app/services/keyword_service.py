@@ -1,8 +1,12 @@
 """
-keyword_service.py — SERP API + OpenAI keyword extraction service.
+keyword_service.py — SerpAPI (google-search-results client) + OpenAI keyword service.
 
-Extracted from the original GraphicAIService.get_trending_keywords().
-Pure, stateless, testable in isolation.
+Uses the official serpapi Python client with the google_trends_autocomplete engine
+to fetch real-time trending search suggestions for a given niche/category.
+
+Flow:
+  1. Query SerpAPI google_trends_autocomplete for trending suggestions.
+  2. Ask OpenAI LLM to synthesize exactly 5 actionable keywords as JSON.
 """
 
 from __future__ import annotations
@@ -11,7 +15,6 @@ import json
 import logging
 from typing import Optional
 
-import requests
 from openai import OpenAI
 
 from app.config import APIKeys, ModelConfig, SystemPrompts
@@ -21,10 +24,10 @@ logger = logging.getLogger(__name__)
 
 class KeywordService:
     """
-    Fetches trending graphic design keywords for a given niche.
+    Fetches trending keywords for a given niche using SerpAPI + OpenAI.
 
     Flow:
-      1. (Optional) Query SERP API for real Google search snippets.
+      1. Query SerpAPI google_trends_autocomplete for real trending suggestions.
       2. Ask OpenAI LLM to extract / synthesize exactly 5 keywords as JSON.
     """
 
@@ -38,10 +41,10 @@ class KeywordService:
 
     def get_trending_keywords(self, niche: str) -> list[str]:
         """
-        Returns a list of 5 trending design keywords for the given niche.
+        Returns a list of 5 trending keywords for the given niche.
 
         Args:
-            niche: Business/design niche (e.g. "luxury real estate").
+            niche: Business/content niche (e.g. "AI in healthcare").
 
         Returns:
             List of 5 keyword strings.
@@ -50,8 +53,8 @@ class KeywordService:
             Exception: If OpenAI call fails.
         """
         logger.info("[KeywordService] Fetching trends for niche='%s'", niche)
-        context = self._fetch_serp_context(niche)
-        keywords = self._extract_keywords_via_llm(niche, context)
+        suggestions = self._fetch_trends_autocomplete(niche)
+        keywords = self._extract_keywords_via_llm(niche, suggestions)
         logger.info("[KeywordService] Keywords extracted: %s", keywords)
         return keywords
 
@@ -59,42 +62,92 @@ class KeywordService:
     # Private helpers
     # ──────────────────────────────────────────────────────────────────────────
 
-    def _fetch_serp_context(self, niche: str) -> str:
-        """Attempt a SERP API lookup; gracefully return empty string on failure."""
+    def _fetch_trends_autocomplete(self, niche: str) -> list[str]:
+        """
+        Fetch trending autocomplete suggestions via SerpAPI google_trends_autocomplete.
+        Returns a list of suggestion strings; returns [] gracefully on any failure.
+        """
         if not self.serpapi_key:
-            logger.debug("[KeywordService] No SERPAPI key — skipping SERP lookup.")
-            return ""
+            logger.debug("[KeywordService] No SERPAPI key — skipping trends lookup.")
+            return []
 
-        params = {
-            "engine":  "google",
-            "q":       f"trending design keywords for {niche} graphic design",
-            "api_key": self.serpapi_key,
-        }
         try:
-            resp = requests.get("https://serpapi.com/search", params=params, timeout=10)
+            import serpapi  # google-search-results package
+
+            client = serpapi.Client(api_key=self.serpapi_key)
+            results = client.search({
+                "engine": "google_trends_autocomplete",
+                "q": niche,
+            })
+
+            # Response uses 'suggestions' key (not 'autocomplete')
+            # Each item: { "q": "...", "title": "...", "type": "..." }
+            suggestions_raw = results.get("suggestions", [])
+            suggestions = []
+            for item in suggestions_raw:
+                # Each item is typically {"q": "...", "type": "..."} or just a string
+                if isinstance(item, dict):
+                    q = item.get("q") or item.get("value") or item.get("title") or ""
+                    if q:
+                        suggestions.append(q)
+                elif isinstance(item, str):
+                    suggestions.append(item)
+
+            logger.debug("[KeywordService] Got %d autocomplete suggestions", len(suggestions))
+            return suggestions[:15]  # cap at 15 for LLM context
+
+        except ImportError:
+            logger.warning("[KeywordService] serpapi package not installed — falling back to requests.")
+            return self._fetch_trends_via_requests(niche)
+        except Exception as exc:
+            logger.warning("[KeywordService] SerpAPI autocomplete failed: %s — continuing without.", exc)
+            return []
+
+    def _fetch_trends_via_requests(self, niche: str) -> list[str]:
+        """Fallback using raw HTTP if serpapi package is unavailable."""
+        try:
+            import requests
+            resp = requests.get(
+                "https://serpapi.com/search.json",
+                params={
+                    "engine": "google_trends_autocomplete",
+                    "q": niche,
+                    "api_key": self.serpapi_key,
+                },
+                timeout=10,
+            )
             resp.raise_for_status()
             data = resp.json()
-            snippets = [r.get("snippet", "") for r in data.get("organic_results", [])[:5]]
-            context = " ".join(snippets)
-            logger.debug("[KeywordService] SERP context length: %d chars", len(context))
-            return context
+            # Response uses 'suggestions' key
+            suggestions_raw = data.get("suggestions", data.get("autocomplete", []))
+            suggestions = []
+            for item in suggestions_raw:
+                if isinstance(item, dict):
+                    q = item.get("q") or item.get("value") or item.get("title") or ""
+                    if q:
+                        suggestions.append(q)
+                elif isinstance(item, str):
+                    suggestions.append(item)
+            return suggestions[:15]
         except Exception as exc:
-            logger.warning("[KeywordService] SERP API failed: %s — continuing without context.", exc)
-            return ""
+            logger.warning("[KeywordService] Requests fallback also failed: %s", exc)
+            return []
 
-    def _extract_keywords_via_llm(self, niche: str, context: str) -> list[str]:
-        """Ask the LLM to produce exactly 5 keywords as a JSON array."""
-        if context:
+    def _extract_keywords_via_llm(self, niche: str, suggestions: list[str]) -> list[str]:
+        """Ask the LLM to produce exactly 5 actionable keywords as a JSON array."""
+        if suggestions:
             user_msg = (
-                f"Based on the following search results about '{niche}' graphic design trends:\n"
-                f"{context}\n\n"
-                f"Extract exactly 5 current trending design keywords, visual motifs, or styles for this niche. "
-                f"Return ONLY a valid JSON array of strings. Do not include markdown or code blocks."
+                f"Google Trends autocomplete suggestions for '{niche}':\n"
+                f"{json.dumps(suggestions)}\n\n"
+                f"From these trending suggestions, extract exactly 5 specific, actionable "
+                f"keywords or phrases most relevant for social media content about '{niche}'. "
+                f"Return ONLY a valid JSON array of strings. No markdown, no code blocks."
             )
         else:
             user_msg = (
-                f"List 5 current trending design keywords, visual motifs, or styles for the niche: '{niche}'. "
-                f"Return ONLY a valid JSON array of strings. Do not include markdown or code blocks."
+                f"List 5 current trending keywords, topics, or phrases for the niche: '{niche}'. "
+                f"Focus on what's relevant for social media posts right now. "
+                f"Return ONLY a valid JSON array of strings. No markdown, no code blocks."
             )
 
         response = self.client.chat.completions.create(
@@ -111,7 +164,6 @@ class KeywordService:
     @staticmethod
     def _parse_keyword_response(content: str) -> list[str]:
         """Robustly parse JSON array from LLM response with markdown-fence fallback."""
-        # Strip markdown fences if present
         cleaned = content
         for fence in ("```json", "```"):
             cleaned = cleaned.replace(fence, "")

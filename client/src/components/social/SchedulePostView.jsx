@@ -1,0 +1,661 @@
+import React, { useState, useEffect } from 'react';
+import {
+    Sparkles, TrendingUp, Loader2, CheckCircle2, XCircle,
+    Send, Linkedin, Facebook, Instagram, Copy, Check, RefreshCw,
+    Zap, Clock, ChevronDown, ChevronUp, ImageIcon, X
+} from 'lucide-react';
+import API_BASE_URL from '../../config.js';
+import { supabase } from '../../services/supabaseClient';
+import { useWorkspace } from '../../context/WorkspaceContext';
+
+const XIcon = ({ className }) => (
+    <svg viewBox="0 0 24 24" aria-hidden="true" className={className} fill="currentColor">
+        <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 22.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+    </svg>
+);
+
+const PLATFORMS = [
+    { id: 'linkedin', label: 'LinkedIn', icon: Linkedin, color: '#0A66C2', maxChars: 3000 },
+    { id: 'twitter', label: 'X (Twitter)', icon: XIcon, color: '#000', maxChars: 280 },
+    { id: 'facebook', label: 'Facebook', icon: Facebook, color: '#1877F2', maxChars: 500 },
+    { id: 'instagram', label: 'Instagram', icon: Instagram, color: '#E4405F', maxChars: 2200 },
+];
+
+const TONES = [
+    { id: 'professional', label: 'Professional', emoji: '💼' },
+    { id: 'casual', label: 'Casual', emoji: '😎' },
+    { id: 'inspiring', label: 'Inspiring', emoji: '✨' },
+    { id: 'witty', label: 'Witty', emoji: '🎯' },
+];
+
+const STEPS = [
+    { id: 1, label: 'Configure', icon: Zap },
+    { id: 2, label: 'Generating', icon: Loader2 },
+    { id: 3, label: 'Review & Post', icon: Send },
+];
+
+const getToken = async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    return session?.access_token;
+};
+
+const SchedulePostView = ({ 
+    connectedProfiles = [], 
+    setPostText, 
+    setMediaAttachment, 
+    setIsPreviewOpen, 
+    setPostTargets, 
+    setPreviewStep,
+    postSuccessCount = 0
+}) => {
+    const { workspaceHeaders } = useWorkspace();
+
+    // View state: 'pipeline' or 'history'
+    const [activeTab, setActiveTab] = useState('create');
+    const [history, setHistory] = useState([]);
+    const [loadingHistory, setLoadingHistory] = useState(false);
+
+    // Step 1: Config
+    const [category, setCategory] = useState('');
+    const [selectedPlatforms, setSelectedPlatforms] = useState(['linkedin']);
+    const [tone, setTone] = useState('professional');
+    const [extraInstructions, setExtraInstructions] = useState('');
+
+    // Pipeline state
+    const [step, setStep] = useState(1);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState(null);
+    const [pipelineStatus, setPipelineStatus] = useState('');
+
+    // Results
+    const [result, setResult] = useState(null);
+    const [editedCaptions, setEditedCaptions] = useState({});
+    const [copiedPlatform, setCopiedPlatform] = useState(null);
+    const [expandedCaption, setExpandedCaption] = useState(null);
+    const [justPosted, setJustPosted] = useState(false);
+
+    useEffect(() => {
+        if (postSuccessCount > 0) {
+            setJustPosted(true);
+            setTimeout(() => setJustPosted(false), 5000);
+            
+            // Reset state
+            setStep(1);
+            setResult(null);
+            setPipelineStatus('');
+            setCategory('');
+            setExtraInstructions('');
+            
+            // Switch to history to show the new post
+            setActiveTab('history');
+            fetchHistory();
+        }
+    }, [postSuccessCount]);
+
+    const fetchHistory = async () => {
+        setLoadingHistory(true);
+        try {
+            const token = await getToken();
+            const res = await fetch(`${API_BASE_URL}/api/design/jobs`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    ...workspaceHeaders,
+                }
+            });
+            const data = await res.json();
+            // Filter only social posts
+            const socialPosts = (data.jobs || []).filter(j => j.property_type === 'Social Post');
+            setHistory(socialPosts);
+        } catch (err) {
+            console.error("Failed to fetch history:", err);
+        } finally {
+            setLoadingHistory(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchHistory();
+    }, []);
+
+    const handleSelectFromHistory = (item) => {
+        setResult({
+            category: item.location,
+            trending_keywords: item.metadata?.trending_keywords || [],
+            captions: item.metadata?.captions || {},
+            image_url: item.flyer_url,
+            // Since we don't have the original base64 in history (we have URL), 
+            // handlePrepareForPost needs to be updated to handle URL too
+        });
+        setEditedCaptions(item.metadata?.captions || {});
+        setStep(3);
+        setActiveTab('create');
+    };
+
+    // Helper to convert base64 to File
+    const base64ToFile = (base64String, fileName) => {
+        try {
+            const arr = base64String.split(',');
+            const mime = arr[0].match(/:(.*?);/)[1];
+            const bstr = atob(arr[1]);
+            let n = bstr.length;
+            const u8arr = new Uint8Array(n);
+            while (n--) {
+                u8arr[n] = bstr.charCodeAt(n);
+            }
+            return new File([u8arr], fileName, { type: mime });
+        } catch (e) {
+            console.error("Base64 conversion error:", e);
+            return null;
+        }
+    };
+
+    // Helper to convert URL to File
+    const urlToFile = async (url, fileName) => {
+        try {
+            const response = await fetch(url);
+            const blob = await response.blob();
+            return new File([blob], fileName, { type: blob.type });
+        } catch (e) {
+            console.error("URL to File conversion error:", e);
+            return null;
+        }
+    };
+
+    const handlePrepareForPost = async () => {
+        if (!result) return;
+
+        // 1. Pick the primary caption (first available)
+        const firstPlatform = Object.keys(editedCaptions)[0];
+        const finalCaption = editedCaptions[firstPlatform] || '';
+        setPostText(finalCaption);
+
+        // 2. Handle Image
+        if (result.image_base64) {
+            const file = base64ToFile(`data:image/png;base64,${result.image_base64}`, `ai_post_${Date.now()}.png`);
+            if (file) {
+                setMediaAttachment({
+                    file,
+                    mediaCategory: 'IMAGE',
+                    preview: `data:image/png;base64,${result.image_base64}`
+                });
+            }
+        } else if (result.image_url) {
+            const file = await urlToFile(result.image_url, `ai_post_${Date.now()}.png`);
+            if (file) {
+                setMediaAttachment({
+                    file,
+                    mediaCategory: 'IMAGE',
+                    preview: result.image_url
+                });
+            }
+        }
+
+        // 3. Set Targets (find matching profiles for selected platforms)
+        const targets = connectedProfiles.filter(p => selectedPlatforms.includes(p.platform));
+        setPostTargets(targets);
+
+        // 4. Open Modal
+        setPreviewStep(1);
+        setIsPreviewOpen(true);
+    };
+
+    const togglePlatform = (id) => {
+        setSelectedPlatforms(prev =>
+            prev.includes(id) ? prev.filter(p => p !== id) : [...prev, id]
+        );
+    };
+
+    const handleGenerate = async () => {
+        if (!category.trim() || selectedPlatforms.length === 0) return;
+        setStep(2);
+        setLoading(true);
+        setError(null);
+        setPipelineStatus('Fetching trending keywords...');
+
+        try {
+            const token = await getToken();
+            if (!token) throw new Error('Not authenticated');
+
+            setPipelineStatus('Generating captions & graphic...');
+
+            const res = await fetch(`${API_BASE_URL}/api/design/generate-social-post`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`,
+                    ...workspaceHeaders,
+                },
+                body: JSON.stringify({
+                    category: category.trim(),
+                    platforms: selectedPlatforms,
+                    tone,
+                    extra_instructions: extraInstructions.trim(),
+                    image_quality: 'low',
+                }),
+            });
+
+            if (!res.ok) {
+                const errData = await res.json().catch(() => ({}));
+                throw new Error(errData.error || `Server error ${res.status}`);
+            }
+
+            const data = await res.json();
+            if (!data.success) throw new Error(data.error || 'Generation failed');
+
+            setResult(data);
+            setEditedCaptions(data.captions || {});
+            setStep(3);
+        } catch (err) {
+            setError(err.message);
+            setStep(1);
+        } finally {
+            setLoading(false);
+            setPipelineStatus('');
+        }
+    };
+
+    const handleCopy = async (platform) => {
+        const text = editedCaptions[platform] || '';
+        await navigator.clipboard.writeText(text);
+        setCopiedPlatform(platform);
+        setTimeout(() => setCopiedPlatform(null), 2000);
+    };
+
+    const handleReset = () => {
+        setStep(1);
+        setResult(null);
+        setEditedCaptions({});
+        setError(null);
+    };
+
+    const renderConfig = () => (
+        <div className="space-y-6">
+            <div>
+                <label className="block text-[11px] font-mono uppercase tracking-widest text-gray-500 mb-2">
+                    Content Category / Niche *
+                </label>
+                <input
+                    type="text"
+                    value={category}
+                    onChange={e => setCategory(e.target.value)}
+                    placeholder="e.g. AI in Healthcare, SaaS Growth, Web3 Marketing..."
+                    className="w-full bg-white border border-slate-200 rounded-[2px] px-4 py-3 text-[15px] text-slate-900 placeholder:text-gray-400 focus:outline-none focus:border-[#26cece] transition-colors"
+                />
+                <p className="mt-1.5 text-[11px] text-gray-400 font-mono">
+                    We'll find trending keywords in this niche via Google Trends
+                </p>
+            </div>
+
+            <div>
+                <label className="block text-[11px] font-mono uppercase tracking-widest text-gray-500 mb-2">
+                    Target Platforms *
+                </label>
+                <div className="grid grid-cols-2 gap-2">
+                    {PLATFORMS.map(p => {
+                        const Icon = p.icon;
+                        const selected = selectedPlatforms.includes(p.id);
+                        return (
+                            <button
+                                key={p.id}
+                                onClick={() => togglePlatform(p.id)}
+                                className={`flex items-center gap-2.5 px-4 py-3 rounded-[2px] border text-[13px] font-mono transition-all cursor-pointer ${
+                                    selected
+                                        ? 'bg-[#26cece]/10 border-[#26cece] text-[#26cece]'
+                                        : 'bg-white border-slate-200 text-gray-500 hover:border-slate-300'
+                                }`}
+                            >
+                                <Icon className="w-4 h-4 flex-shrink-0" />
+                                <span>{p.label}</span>
+                                <span className="ml-auto text-[10px] text-gray-400">{p.maxChars}ch</span>
+                            </button>
+                        );
+                    })}
+                </div>
+            </div>
+
+            <div>
+                <label className="block text-[11px] font-mono uppercase tracking-widest text-gray-500 mb-2">
+                    Writing Tone
+                </label>
+                <div className="flex flex-wrap gap-2">
+                    {TONES.map(t => (
+                        <button
+                            key={t.id}
+                            onClick={() => setTone(t.id)}
+                            className={`px-3 py-2 rounded-[2px] border text-[12px] font-mono transition-all cursor-pointer ${
+                                tone === t.id
+                                    ? 'bg-[#26cece]/10 border-[#26cece] text-[#26cece]'
+                                    : 'bg-white border-slate-200 text-gray-500 hover:border-slate-300'
+                            }`}
+                        >
+                            {t.emoji} {t.label}
+                        </button>
+                    ))}
+                </div>
+            </div>
+
+            <div>
+                <label className="block text-[11px] font-mono uppercase tracking-widest text-gray-500 mb-2">
+                    Extra Instructions (optional)
+                </label>
+                <textarea
+                    value={extraInstructions}
+                    onChange={e => setExtraInstructions(e.target.value)}
+                    placeholder="Any specific angle, CTA, or context you want included..."
+                    className="w-full bg-white border border-slate-200 rounded-[2px] px-4 py-3 text-[14px] text-slate-900 placeholder:text-gray-400 focus:outline-none focus:border-[#26cece] transition-colors resize-none min-h-[80px]"
+                />
+            </div>
+
+            <button
+                onClick={handleGenerate}
+                disabled={!category.trim() || selectedPlatforms.length === 0}
+                className="w-full flex items-center justify-center gap-2 bg-[#26cece] hover:bg-[#1fb8b8] disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-mono text-[13px] uppercase tracking-widest py-3.5 rounded-[2px] transition-colors cursor-pointer"
+            >
+                <Sparkles className="w-4 h-4" />
+                Generate Smart Post
+            </button>
+
+            {error && (
+                <div className="flex items-start gap-2 p-3 bg-red-50 border border-red-200 rounded-[2px]">
+                    <XCircle className="w-4 h-4 text-red-500 mt-0.5 flex-shrink-0" />
+                    <p className="text-[13px] text-red-600">{error}</p>
+                </div>
+            )}
+        </div>
+    );
+
+    const renderLoading = () => (
+        <div className="flex flex-col items-center justify-center py-20 space-y-6">
+            <div className="relative">
+                <div className="w-20 h-20 rounded-full border-4 border-[#26cece]/20 flex items-center justify-center">
+                    <Loader2 className="w-8 h-8 text-[#26cece] animate-spin" />
+                </div>
+                <div className="absolute -inset-2 rounded-full border-2 border-[#26cece]/10 animate-ping" />
+            </div>
+            <div className="text-center space-y-2">
+                <h3 className="text-[16px] font-bold font-['Space_Grotesk'] text-slate-900">
+                    AI Pipeline Running
+                </h3>
+                <p className="text-[13px] text-gray-500 font-mono animate-pulse">
+                    {pipelineStatus}
+                </p>
+            </div>
+            <div className="w-64 space-y-2 text-[11px] font-mono text-gray-400">
+                {['Fetching Google Trends', 'Writing platform captions', 'Generating graphic'].map((s, i) => (
+                    <div key={i} className="flex items-center gap-2">
+                        <div className={`w-2 h-2 rounded-full ${i === 0 ? 'bg-[#26cece] animate-pulse' : 'bg-gray-200'}`} />
+                        {s}
+                    </div>
+                ))}
+            </div>
+        </div>
+    );
+
+    const renderReview = () => {
+        if (!result) return null;
+        return (
+            <div className="space-y-6">
+                <div className="flex items-center justify-between">
+                    <div>
+                        <h3 className="text-[16px] font-bold font-['Space_Grotesk'] text-slate-900 flex items-center gap-2">
+                            <CheckCircle2 className="w-5 h-5 text-emerald-500" />
+                            Posts Generated
+                        </h3>
+                        <p className="text-[12px] text-gray-500 font-mono mt-0.5">
+                            Category: {result.category}
+                        </p>
+                    </div>
+                    <button
+                        onClick={handleReset}
+                        className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-mono uppercase tracking-widest text-gray-500 hover:text-[#26cece] border border-slate-200 hover:border-[#26cece]/30 rounded-[2px] transition-colors cursor-pointer"
+                    >
+                        <RefreshCw className="w-3 h-3" /> New Post
+                    </button>
+                </div>
+
+                {result.trending_keywords?.length > 0 && (
+                    <div className="p-3 bg-[#26cece]/5 border border-[#26cece]/15 rounded-[2px]">
+                        <div className="flex items-center gap-1.5 text-[11px] font-mono uppercase tracking-widest text-[#26cece] mb-2">
+                            <TrendingUp className="w-3.5 h-3.5" />
+                            Trending Keywords Used
+                        </div>
+                        <div className="flex flex-wrap gap-1.5">
+                            {result.trending_keywords.map((kw, i) => (
+                                <span key={i} className="px-2 py-0.5 bg-white border border-[#26cece]/20 rounded-[2px] text-[11px] text-slate-700 font-mono">
+                                    {kw}
+                                </span>
+                            ))}
+                        </div>
+                    </div>
+                )}
+
+                {result.image_base64 && (
+                    <div>
+                        <div className="flex items-center gap-1.5 text-[11px] font-mono uppercase tracking-widest text-gray-500 mb-2">
+                            <ImageIcon className="w-3.5 h-3.5" />
+                            Generated Graphic
+                        </div>
+                        <div className="border border-slate-200 rounded-[2px] overflow-hidden bg-slate-50">
+                            <img
+                                src={`data:image/png;base64,${result.image_base64}`}
+                                alt="Generated social post graphic"
+                                className="w-full max-h-[400px] object-contain"
+                            />
+                        </div>
+                    </div>
+                )}
+
+                <div className="space-y-3">
+                    <div className="text-[11px] font-mono uppercase tracking-widest text-gray-500">
+                        Platform Captions
+                    </div>
+                    {Object.entries(editedCaptions).map(([platform, caption]) => {
+                        const spec = PLATFORMS.find(p => p.id === platform);
+                        if (!spec) return null;
+                        const Icon = spec.icon;
+                        const isExpanded = expandedCaption === platform;
+                        const charCount = caption.length;
+                        const isOverLimit = charCount > spec.maxChars;
+
+                        return (
+                            <div key={platform} className="border border-slate-200 rounded-[2px] overflow-hidden">
+                                <button
+                                    onClick={() => setExpandedCaption(isExpanded ? null : platform)}
+                                    className="w-full flex items-center gap-3 px-4 py-3 bg-slate-50 hover:bg-slate-100 transition-colors cursor-pointer"
+                                >
+                                    <Icon className="w-4 h-4 flex-shrink-0" style={{ color: spec.color }} />
+                                    <span className="text-[13px] font-mono font-medium text-slate-900">{spec.label}</span>
+                                    <span className={`ml-auto text-[11px] font-mono ${isOverLimit ? 'text-red-500' : 'text-gray-400'}`}>
+                                        {charCount}/{spec.maxChars}
+                                    </span>
+                                    {isExpanded ? <ChevronUp className="w-4 h-4 text-gray-400" /> : <ChevronDown className="w-4 h-4 text-gray-400" />}
+                                </button>
+                                {isExpanded && (
+                                    <div className="p-4 space-y-3">
+                                        <textarea
+                                            value={caption}
+                                            onChange={e => setEditedCaptions(prev => ({ ...prev, [platform]: e.target.value }))}
+                                            className="w-full bg-white border border-slate-200 rounded-[2px] p-3 text-[14px] text-slate-900 focus:outline-none focus:border-[#26cece] transition-colors resize-none min-h-[120px]"
+                                        />
+                                        <div className="flex items-center gap-2">
+                                            <button
+                                                onClick={() => handleCopy(platform)}
+                                                className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-mono uppercase tracking-widest bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-[2px] transition-colors cursor-pointer"
+                                            >
+                                                {copiedPlatform === platform ? <Check className="w-3 h-3 text-emerald-500" /> : <Copy className="w-3 h-3" />}
+                                                {copiedPlatform === platform ? 'Copied' : 'Copy'}
+                                            </button>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        );
+                    })}
+                </div>
+
+                <div className="pt-4 border-t border-slate-200">
+                    <button
+                        onClick={handlePrepareForPost}
+                        className="w-full flex items-center justify-center gap-2 bg-[#26cece] hover:bg-white text-[#070707] font-bold font-['Space_Grotesk'] uppercase tracking-widest py-4 rounded-[2px] shadow-none hover:-translate-y-1 hover:shadow-[4px_4px_0_0_#333] transition-all duration-200 cursor-pointer"
+                    >
+                        <Send className="w-5 h-5" />
+                        Publish to Social Media
+                    </button>
+                    <p className="mt-3 text-center text-[11px] font-mono text-gray-400 uppercase tracking-widest">
+                        This will open the preview & publishing modal
+                    </p>
+                </div>
+            </div>
+        );
+    };
+
+    const renderHistory = () => (
+        <div className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {history.length === 0 ? (
+                    <div className="col-span-full py-20 text-center space-y-3">
+                        <div className="w-16 h-16 rounded-full bg-slate-100 flex items-center justify-center mx-auto">
+                            <Clock className="w-8 h-8 text-gray-300" />
+                        </div>
+                        <p className="text-[13px] font-mono text-gray-500 uppercase tracking-widest">
+                            No history found yet
+                        </p>
+                    </div>
+                ) : (
+                    history.map((item) => (
+                        <div 
+                            key={item.id}
+                            onClick={() => handleSelectFromHistory(item)}
+                            className="group bg-white border border-slate-200 rounded-[2px] overflow-hidden hover:border-[#26cece]/50 transition-all cursor-pointer"
+                        >
+                            <div className="aspect-video bg-slate-50 relative overflow-hidden">
+                                {item.flyer_url ? (
+                                    <img src={item.flyer_url} alt="" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                                ) : (
+                                    <div className="w-full h-full flex items-center justify-center">
+                                        <ImageIcon className="w-8 h-8 text-slate-200" />
+                                    </div>
+                                )}
+                                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center">
+                                    <div className="opacity-0 group-hover:opacity-100 bg-white text-slate-900 px-4 py-2 text-[11px] font-mono uppercase tracking-widest transition-opacity">
+                                        Use This Post
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="p-4 space-y-1">
+                                <div className="flex items-center justify-between">
+                                    <span className="text-[12px] font-bold font-['Space_Grotesk'] text-slate-900 truncate uppercase">
+                                        {item.location}
+                                    </span>
+                                    <span className="text-[10px] font-mono text-gray-400">
+                                        {new Date(item.created_at).toLocaleDateString()}
+                                    </span>
+                                </div>
+                                <p className="text-[11px] font-mono text-gray-500 line-clamp-2 italic">
+                                    {Object.values(item.metadata?.captions || {})[0] || 'No caption'}
+                                </p>
+                            </div>
+                        </div>
+                    ))
+                )}
+            </div>
+        </div>
+    );
+
+    return (
+        <div className="flex-1 p-8 bg-white overflow-y-auto w-full">
+            <div className="max-w-3xl mx-auto space-y-6">
+                <div className="flex items-center justify-between">
+                    <div>
+                        <h2 className="text-xl font-bold font-['Space_Grotesk'] text-slate-900 uppercase tracking-tight flex items-center gap-2">
+                            <Zap className="w-5 h-5 text-[#26cece]" />
+                            Smart Post Scheduler
+                        </h2>
+                        <p className="text-[13px] text-gray-500 font-mono mt-1">
+                            {activeTab === 'create' ? 'Category → Google Trends → AI Captions → Graphic → Publish' : 'Access your past AI-generated social content'}
+                        </p>
+                    </div>
+
+                    <div className="flex items-center bg-slate-100 p-1 rounded-[2px] border border-slate-200">
+                        <button
+                            onClick={() => setActiveTab('create')}
+                            className={`px-4 py-1.5 text-[11px] font-mono uppercase tracking-widest rounded-[1px] transition-all cursor-pointer ${
+                                activeTab === 'create' ? 'bg-white text-[#26cece] shadow-sm font-bold' : 'text-gray-500 hover:text-slate-900'
+                            }`}
+                        >
+                            Create
+                        </button>
+                        <button
+                            onClick={() => {
+                                setActiveTab('history');
+                                fetchHistory();
+                            }}
+                            className={`px-4 py-1.5 text-[11px] font-mono uppercase tracking-widest rounded-[1px] transition-all cursor-pointer ${
+                                activeTab === 'history' ? 'bg-white text-[#26cece] shadow-sm font-bold' : 'text-gray-500 hover:text-slate-900'
+                            }`}
+                        >
+                            History
+                        </button>
+                    </div>
+                </div>
+                
+                {justPosted && (
+                    <div className="bg-emerald-50 border border-emerald-200 rounded-[2px] p-4 flex items-center gap-3 animate-in fade-in slide-in-from-top-4 duration-300">
+                        <div className="w-8 h-8 rounded-[2px] bg-emerald-100 flex items-center justify-center">
+                            <CheckCircle2 className="w-5 h-5 text-emerald-600" />
+                        </div>
+                        <div className="flex-1">
+                            <p className="text-[13px] font-bold text-emerald-900 uppercase tracking-tight font-['Space_Grotesk']">Post Published Successfully!</p>
+                            <p className="text-[11px] text-emerald-700 font-mono uppercase tracking-widest mt-0.5">Your content is now live. Check your history below.</p>
+                        </div>
+                        <button onClick={() => setJustPosted(false)} className="text-emerald-400 hover:text-emerald-600">
+                            <X className="w-4 h-4" />
+                        </button>
+                    </div>
+                )}
+
+                {activeTab === 'create' ? (
+                    <>
+                        <div className="flex items-center gap-2">
+                            {STEPS.map((s, i) => {
+                                const Icon = s.icon;
+                                const isActive = step === s.id;
+                                const isDone = step > s.id;
+                                return (
+                                    <React.Fragment key={s.id}>
+                                        {i > 0 && <div className={`flex-1 h-px ${isDone ? 'bg-[#26cece]' : 'bg-slate-200'}`} />}
+                                        <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-[2px] text-[11px] font-mono uppercase tracking-widest transition-colors ${
+                                            isActive ? 'bg-[#26cece]/10 text-[#26cece] border border-[#26cece]/30' :
+                                            isDone ? 'bg-emerald-50 text-emerald-600 border border-emerald-200' :
+                                            'text-gray-400 border border-slate-200'
+                                        }`}>
+                                            {isDone ? <CheckCircle2 className="w-3.5 h-3.5" /> : <Icon className={`w-3.5 h-3.5 ${isActive && s.id === 2 ? 'animate-spin' : ''}`} />}
+                                            {s.label}
+                                        </div>
+                                    </React.Fragment>
+                                );
+                            })}
+                        </div>
+
+                        <div className="bg-slate-50 border border-slate-200 rounded-[2px] p-6 shadow-[0_4px_24px_0_rgba(0,0,0,0.08)]">
+                            {step === 1 && renderConfig()}
+                            {step === 2 && renderLoading()}
+                            {step === 3 && renderReview()}
+                        </div>
+                    </>
+                ) : (
+                    <div className="bg-slate-50 border border-slate-200 rounded-[2px] p-6 shadow-[0_4px_24px_0_rgba(0,0,0,0.08)]">
+                        {loadingHistory ? (
+                            <div className="py-20 flex flex-col items-center justify-center space-y-4">
+                                <Loader2 className="w-8 h-8 text-[#26cece] animate-spin" />
+                                <p className="text-[12px] font-mono text-gray-500 uppercase tracking-widest">Loading History...</p>
+                            </div>
+                        ) : renderHistory()}
+                    </div>
+                )}
+            </div>
+        </div>
+    );
+};
+
+export default SchedulePostView;
