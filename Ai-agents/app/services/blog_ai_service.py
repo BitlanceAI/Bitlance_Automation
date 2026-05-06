@@ -171,7 +171,9 @@ def generate_blog_content(
     interlink_instructions = ""
     if interlinks:
         links_str = "\n".join(
-            [f'- "{lnk["title"]}" → {lnk["link"]}' for lnk in interlinks]
+            f'- "{lnk["title"]}" → {lnk["link"]}'
+            for lnk in interlinks
+            if isinstance(lnk, dict) and lnk.get("link")
         )
         interlink_instructions = f"""
         ══ INTERNAL LINKING — MANDATORY & STRICT ══
@@ -440,7 +442,9 @@ def openai_generate_blog_content(
     interlink_instructions = ""
     if interlinks:
         links_str = "\n".join(
-            [f'- "{lnk["title"]}" → {lnk["link"]}' for lnk in interlinks]
+            f'- "{lnk["title"]}" → {lnk["link"]}'
+            for lnk in interlinks
+            if isinstance(lnk, dict) and lnk.get("link")
         )
         interlink_instructions = f"""
         ══ MANDATORY INTERNAL LINKING (STRICT) ══

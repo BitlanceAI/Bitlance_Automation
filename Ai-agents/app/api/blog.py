@@ -82,7 +82,21 @@ def generate_blog(body: GenerateBlogRequest):
     # ── 3. WordPress interlinks (optional) ────────────────────────────────────
     # Use pre-built interlinks if provided by Node.js (e.g. from Supabase articles)
     if body.interlinks:
-        interlinks = body.interlinks
+        # Normalise: each element must be {"title": str, "link": str}.
+        # The client sometimes sends a plain list of URL strings instead of dicts.
+        raw_links = body.interlinks
+        interlinks = []
+        for item in raw_links:
+            if isinstance(item, dict):
+                # Already a dict — ensure both keys exist
+                title = item.get("title") or item.get("url") or str(item.get("link", ""))
+                link  = item.get("link")  or item.get("url") or ""
+                if link:
+                    interlinks.append({"title": title or link, "link": link})
+            elif isinstance(item, str) and item.strip():
+                # Plain URL string — use the URL as both title and link
+                interlinks.append({"title": item.strip(), "link": item.strip()})
+            # else: skip malformed entries
         print(f"Using {len(interlinks)} pre-built interlinks from server")
     elif body.wp_api_url or body.wp_url:
         interlinks = []

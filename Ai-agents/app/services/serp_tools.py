@@ -9,8 +9,13 @@ Perplexity for research-heavy tasks:
 
 Each tool is a proper LangChain BaseTool subclass so it can be dropped into
 any LangChain agent or called standalone via tool.run(input).
+
+SerpAPI call strategy (mirrors Graphic-agents keyword_service.py):
+  Primary  — official `serpapi` Python client (google_trends_autocomplete engine)
+  Fallback — raw HTTP request to serpapi.com/search.json
 """
 
+import logging
 import os
 import json
 import requests
@@ -20,22 +25,94 @@ from langchain.tools import BaseTool
 from pydantic import BaseModel, Field
 
 
-SERP_API_KEY = os.getenv("SERP_API_KEY")
+logger = logging.getLogger(__name__)
+
+SERP_API_KEY = os.getenv("SERP_API_KEY") or os.getenv("SERPAPI_API_KEY")
 SERP_BASE_URL = "https://serpapi.com/search.json"
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# SHARED HELPER
+# SHARED HELPERS
 # ─────────────────────────────────────────────────────────────────────────────
 
 def _serp_request(params: dict) -> dict:
-    """Fire a SerpAPI request and return parsed JSON. Raises on HTTP error."""
+    """Fire a SerpAPI request via raw HTTP and return parsed JSON. Raises on HTTP error."""
     if not SERP_API_KEY:
         raise RuntimeError("SERP_API_KEY is not set")
     params["api_key"] = SERP_API_KEY
     res = requests.get(SERP_BASE_URL, params=params, timeout=30)
     res.raise_for_status()
     return res.json()
+
+
+def _fetch_trends_autocomplete(query: str) -> list[str]:
+    """
+    Fetch trending autocomplete suggestions via SerpAPI google_trends_autocomplete.
+    Mirrors Graphic-agents keyword_service.py:
+      - Primary: official serpapi.Client
+      - Fallback: raw HTTP request
+    Returns up to 15 suggestion strings; returns [] gracefully on any failure.
+    """
+    if not SERP_API_KEY:
+        logger.debug("[serp_tools] No SERP_API_KEY — skipping autocomplete lookup.")
+        return []
+
+    def _parse_suggestions(raw: list) -> list[str]:
+        """Parse suggestions list that may contain dicts or plain strings."""
+        suggestions = []
+        for item in raw:
+            if isinstance(item, dict):
+                q = item.get("q") or item.get("value") or item.get("title") or ""
+                if q:
+                    suggestions.append(q)
+            elif isinstance(item, str) and item:
+                suggestions.append(item)
+        return suggestions[:15]
+
+    # ── 1. Official serpapi client ────────────────────────────────────────────
+    try:
+        import serpapi  # google-search-results package
+
+        client = serpapi.Client(api_key=SERP_API_KEY)
+        results = client.search({
+            "engine": "google_trends_autocomplete",
+            "q": query,
+        })
+        suggestions_raw = results.get("suggestions", [])
+        suggestions = _parse_suggestions(suggestions_raw)
+        logger.debug("[serp_tools] serpapi.Client got %d autocomplete suggestions", len(suggestions))
+        return suggestions
+
+    except ImportError:
+        logger.warning("[serp_tools] serpapi package not installed — falling back to requests.")
+    except Exception as exc:
+        logger.warning("[serp_tools] serpapi.Client autocomplete failed: %s — falling back.", exc)
+
+    # ── 2. Raw HTTP fallback ──────────────────────────────────────────────────
+    try:
+        resp = requests.get(
+            SERP_BASE_URL,
+            params={
+                "engine": "google_trends_autocomplete",
+                "q": query,
+                "api_key": SERP_API_KEY,
+            },
+            timeout=10,
+        )
+        resp.raise_for_status()
+        data = resp.json()
+        suggestions_raw = data.get("suggestions", data.get("autocomplete", []))
+        suggestions = _parse_suggestions(suggestions_raw)
+        logger.debug("[serp_tools] requests fallback got %d autocomplete suggestions", len(suggestions))
+        return suggestions
+    except Exception as exc:
+        logger.warning("[serp_tools] Requests autocomplete fallback also failed: %s", exc)
+        return []
+
+
+def _current_year() -> int:
+    from datetime import datetime
+    return datetime.now().year
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -48,8 +125,11 @@ class TrendingTopicsInput(BaseModel):
 
 class TrendingTopicsTool(BaseTool):
     """
-    Find trending blog topic + keyword ideas for a given industry using real
-    Google Search data (People Also Ask + Related Searches via SerpAPI).
+    Find trending blog topic + keyword ideas for a given industry.
+
+    Strategy (mirrors Graphic-agents keyword_service.py):
+      1. Query SerpAPI google_trends_autocomplete for real trending suggestions.
+      2. Fall back to Google organic/PAA search if autocomplete yields nothing.
 
     Returns a dict: {"topic": str, "keywords": str}
     """
@@ -63,34 +143,56 @@ class TrendingTopicsTool(BaseTool):
     args_schema: Type[BaseModel] = TrendingTopicsInput
 
     def _run(self, industry: str) -> dict:
-        data = _serp_request({
-            "q": f"trending {industry} blog topics {_current_year()}",
-            "hl": "en",
-            "gl": "us",
-            "num": 10,
-        })
+        logger.info("[TrendingTopicsTool] Fetching trends for industry='%s'", industry)
 
-        # ── Extract People Also Ask questions as topic candidates ─────────────
-        paa = data.get("related_questions", [])
-        topic_candidates = [q.get("question", "") for q in paa if q.get("question")]
+        # ── Step 1: google_trends_autocomplete (primary) ──────────────────────
+        suggestions = _fetch_trends_autocomplete(industry)
 
-        # ── Extract Related Searches as keyword signals ───────────────────────
-        related = data.get("related_searches", [])
-        keyword_candidates = [r.get("query", "") for r in related if r.get("query")]
+        if suggestions:
+            # Use the first suggestion as the topic candidate
+            topic = suggestions[0]
+            # Use remaining suggestions (up to 5 more) as keyword signals
+            keyword_candidates = suggestions[1:6]
+        else:
+            topic = None
+            keyword_candidates = []
 
-        # ── Extract top organic titles as additional topic candidates ─────────
-        organic = data.get("organic_results", [])
-        for r in organic[:5]:
-            title = r.get("title", "")
-            if title:
-                topic_candidates.append(title)
+        # ── Step 2: Google organic/PAA search (fallback / enrichment) ─────────
+        try:
+            data = _serp_request({
+                "q": f"trending {industry} blog topics {_current_year()}",
+                "hl": "en",
+                "gl": "us",
+                "num": 10,
+            })
 
-        # Pick the best topic (first PAA question, else first organic title)
-        topic = topic_candidates[0] if topic_candidates else f"Top trends in {industry}"
+            # PAA questions as additional topic candidates
+            paa = data.get("related_questions", [])
+            paa_topics = [q.get("question", "") for q in paa if q.get("question")]
 
-        # Build keyword list: industry + related searches (deduplicated, max 6)
-        seen = set()
-        keywords_list = []
+            # Related searches as keyword signals
+            related = data.get("related_searches", [])
+            related_kws = [r.get("query", "") for r in related if r.get("query")]
+
+            # Organic titles as fallback topic candidates
+            organic = data.get("organic_results", [])
+            organic_topics = [r.get("title", "") for r in organic[:5] if r.get("title")]
+
+            # Pick topic: autocomplete first → PAA → organic title → fallback
+            if not topic:
+                topic = (paa_topics or organic_topics or [f"Top trends in {industry}"])[0]
+
+            # Merge keyword signals: autocomplete suggestions + related searches
+            keyword_candidates = keyword_candidates + related_kws
+
+        except Exception as exc:
+            logger.warning("[TrendingTopicsTool] Google organic search failed: %s", exc)
+            if not topic:
+                topic = f"Top trends in {industry}"
+
+        # ── Build deduplicated keyword list (industry + signals, max 6) ────────
+        seen: set[str] = set()
+        keywords_list: list[str] = []
         for kw in [industry] + keyword_candidates:
             kw_clean = kw.strip()
             if kw_clean and kw_clean.lower() not in seen:
@@ -99,10 +201,12 @@ class TrendingTopicsTool(BaseTool):
             if len(keywords_list) >= 6:
                 break
 
-        return {
+        result = {
             "topic": topic,
             "keywords": ", ".join(keywords_list),
         }
+        logger.info("[TrendingTopicsTool] Result: %s", result)
+        return result
 
     async def _arun(self, industry: str) -> dict:  # pragma: no cover
         raise NotImplementedError("async not supported — use _run")
@@ -118,8 +222,11 @@ class KeywordResearchInput(BaseModel):
 
 class KeywordResearchTool(BaseTool):
     """
-    Return a comma-separated list of high-value SEO keywords for a topic,
-    sourced from real Google Search related-searches and People Also Ask data.
+    Return a comma-separated list of high-value SEO keywords for a topic.
+
+    Strategy (mirrors Graphic-agents keyword_service.py):
+      1. Query SerpAPI google_trends_autocomplete for real trending suggestions.
+      2. Enrich with Google organic related-searches and People Also Ask data.
     """
 
     name: str = "keyword_research"
@@ -131,29 +238,41 @@ class KeywordResearchTool(BaseTool):
     args_schema: Type[BaseModel] = KeywordResearchInput
 
     def _run(self, topic: str) -> str:
-        data = _serp_request({
-            "q": topic,
-            "hl": "en",
-            "gl": "us",
-            "num": 10,
-        })
+        logger.info("[KeywordResearchTool] Researching keywords for topic='%s'", topic)
 
         keywords: list[str] = []
 
-        # Related searches (most reliable signal)
-        for item in data.get("related_searches", []):
-            q = item.get("query", "").strip()
-            if q:
-                keywords.append(q)
+        # ── Step 1: google_trends_autocomplete (primary — mirrors Graphic-agents) ─
+        suggestions = _fetch_trends_autocomplete(topic)
+        keywords.extend(suggestions)
+        logger.debug("[KeywordResearchTool] %d autocomplete suggestions", len(suggestions))
 
-        # People Also Ask questions (longer-tail)
-        for item in data.get("related_questions", []):
-            q = item.get("question", "").strip()
-            if q:
-                keywords.append(q)
+        # ── Step 2: Google organic related-searches + PAA (enrichment) ─────────
+        try:
+            data = _serp_request({
+                "q": topic,
+                "hl": "en",
+                "gl": "us",
+                "num": 10,
+            })
 
-        # Deduplicate while preserving order
-        seen = set()
+            # Related searches (most reliable SEO signal)
+            for item in data.get("related_searches", []):
+                q = item.get("query", "").strip()
+                if q:
+                    keywords.append(q)
+
+            # People Also Ask questions (longer-tail keywords)
+            for item in data.get("related_questions", []):
+                q = item.get("question", "").strip()
+                if q:
+                    keywords.append(q)
+
+        except Exception as exc:
+            logger.warning("[KeywordResearchTool] Google organic search failed: %s", exc)
+
+        # ── Deduplicate while preserving order, cap at 10 ─────────────────────
+        seen: set[str] = set()
         unique_kws: list[str] = []
         for kw in keywords:
             if kw.lower() not in seen:
@@ -162,11 +281,13 @@ class KeywordResearchTool(BaseTool):
             if len(unique_kws) >= 10:
                 break
 
-        # Always include the original topic itself
+        # Always ensure the original topic is present
         if topic.lower() not in seen:
             unique_kws.insert(0, topic)
 
-        return ", ".join(unique_kws) if unique_kws else topic
+        result = ", ".join(unique_kws) if unique_kws else topic
+        logger.info("[KeywordResearchTool] Keywords: %s", result)
+        return result
 
     async def _arun(self, topic: str) -> str:  # pragma: no cover
         raise NotImplementedError("async not supported — use _run")
@@ -234,17 +355,16 @@ class PlagiarismCheckTool(BaseTool):
                 })
                 organic = data.get("organic_results", [])
                 if len(organic) >= _MATCH_THRESHOLD:
-                    # Check if any snippet closely matches the sentence
                     for result in organic:
                         snippet = result.get("snippet", "").lower()
-                        # Overlap: if 8+ words from query appear in snippet, flag it
+                        # Flag if 8+ words from query appear in the snippet
                         matches = sum(1 for w in query_words if w.lower() in snippet)
                         if matches >= 8:
                             source_url = result.get("link", "unknown source")
                             flagged.append(f'  • "{" ".join(query_words)}…" → {source_url}')
                             break
             except Exception as e:
-                print(f"SERP plagiarism check error for sentence: {e}")
+                logger.warning("[PlagiarismCheckTool] SERP check error: %s", e)
                 continue
 
         if not flagged:
@@ -265,18 +385,9 @@ class PlagiarismCheckTool(BaseTool):
 # CONVENIENCE — pre-built instances ready to import
 # ─────────────────────────────────────────────────────────────────────────────
 
-trending_topics_tool    = TrendingTopicsTool()
-keyword_research_tool   = KeywordResearchTool()
-plagiarism_check_tool   = PlagiarismCheckTool()
+trending_topics_tool  = TrendingTopicsTool()
+keyword_research_tool = KeywordResearchTool()
+plagiarism_check_tool = PlagiarismCheckTool()
 
 # All three as a list for agent tool registration
 ALL_SERP_TOOLS = [trending_topics_tool, keyword_research_tool, plagiarism_check_tool]
-
-
-# ─────────────────────────────────────────────────────────────────────────────
-# INTERNAL UTIL
-# ─────────────────────────────────────────────────────────────────────────────
-
-def _current_year() -> int:
-    from datetime import datetime
-    return datetime.now().year
