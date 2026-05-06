@@ -58,15 +58,31 @@ def _fetch_trends_autocomplete(query: str) -> list[str]:
         return []
 
     def _parse_suggestions(raw: list) -> list[str]:
-        """Parse suggestions list that may contain dicts or plain strings."""
+        """Parse suggestions list that may contain dicts or plain strings.
+
+        google_trends_autocomplete returns 'q' as a Knowledge Graph entity ID
+        (e.g. '/m/02vkk45', '/g/11c6vfccs0') for topic-type entries.
+        In those cases, 'title' holds the human-readable label — prefer it.
+        """
         suggestions = []
         for item in raw:
             if isinstance(item, dict):
-                q = item.get("q") or item.get("value") or item.get("title") or ""
-                if q:
-                    suggestions.append(q)
-            elif isinstance(item, str) and item:
-                suggestions.append(item)
+                q     = item.get("q", "")
+                title = item.get("title") or item.get("value") or ""
+
+                # KG entity IDs start with /m/ or /g/ — use title instead
+                if q.startswith(("/m/", "/g/")):
+                    label = title.strip()
+                else:
+                    label = (q or title).strip()
+
+                if label:
+                    suggestions.append(label)
+            elif isinstance(item, str):
+                s = item.strip()
+                # Skip bare KG entity IDs that sometimes appear as plain strings
+                if s and not s.startswith(("/m/", "/g/")):
+                    suggestions.append(s)
         return suggestions[:15]
 
     # ── 1. Official serpapi client ────────────────────────────────────────────
