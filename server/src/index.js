@@ -7,9 +7,11 @@ if (process.env.INSECURE_TLS === 'true' || process.env.NODE_ENV !== 'production'
     process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 }
 
+import dotenv from 'dotenv';
+dotenv.config();
+
 import express from 'express';
 import cors from 'cors';
-import dotenv from 'dotenv';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import dns from 'dns';
@@ -19,9 +21,6 @@ const __dirname = path.dirname(__filename);
 
 // Force IPv4 to avoid Supabase connection timeouts
 dns.setDefaultResultOrder('ipv4first');
-
-// Load env vars
-dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 3001;
