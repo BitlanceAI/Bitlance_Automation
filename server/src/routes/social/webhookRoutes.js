@@ -18,7 +18,7 @@ function verifyMetaSignature(req) {
 
     const expectedSignature = 'sha256=' + crypto
         .createHmac('sha256', META_APP_SECRET)
-        .update(JSON.stringify(req.body))
+        .update(req.rawBody || JSON.stringify(req.body))
         .digest('hex');
 
     return crypto.timingSafeEqual(

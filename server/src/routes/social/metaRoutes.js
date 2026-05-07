@@ -46,10 +46,49 @@ router.get('/oauth/url', (req, res) => {
     if (!META_APP_ID) {
         return res.status(500).json({ error: 'Meta App ID not configured' });
     }
-    // Set a custom redirect URL if needed, here we'll assume it's configured in frontend
+    
+    // The redirectUri is the BACKEND URL that Facebook will call
+    // If not provided in query, use the fallback from env
     const redirectUri = req.query.redirect_uri || META_REDIRECT_URI;
-    const authUrl = MetaService.getOAuthUrl(META_APP_ID, redirectUri);
+    
+    // We can pass the "final" frontend destination in the state parameter
+    // If the frontend passed a redirect_uri, it's likely where it wants to end up
+    const state = req.query.redirect_uri ? encodeURIComponent(req.query.redirect_uri) : 'meta_auth';
+    
+    const authUrl = MetaService.getOAuthUrl(META_APP_ID, redirectUri, state);
     res.json({ success: true, url: authUrl });
+});
+
+/**
+ * OAuth Callback handler (Backend)
+ * GET /api/meta/oauth/callback
+ */
+router.get('/oauth/callback', (req, res) => {
+    const { code, state, error, error_description } = req.query;
+    const clientUrl = process.env.CLIENT_URL || 'http://localhost:5173';
+    
+    // If state contains a URL, use it as the final destination
+    let destination = clientUrl + '/dashboard';
+    if (state && state !== 'meta_auth') {
+        try {
+            destination = decodeURIComponent(state);
+        } catch (e) {
+            console.error('Failed to decode state URL:', e);
+        }
+    }
+
+    if (error) {
+        return res.redirect(`${destination}?error=${error}&description=${error_description}`);
+    }
+    
+    if (!code) {
+        return res.redirect(`${destination}?error=no_code`);
+    }
+
+    // Redirect back to frontend with the code
+    // The frontend SocialDashboard.jsx will detect this and call /api/meta/connect
+    const separator = destination.includes('?') ? '&' : '?';
+    res.redirect(`${destination}${separator}code=${code}&platform=meta`);
 });
 
 /**
