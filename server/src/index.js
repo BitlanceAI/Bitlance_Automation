@@ -156,6 +156,12 @@ app.get('/payment/complete', (req, res) => {
     res.redirect(`${clientUrl}/payment/complete${qs ? `?${qs}` : ''}`);
 });
 
+// Meta OAuth redirect bounce — support the /auth/meta/callback path
+app.get('/auth/meta/callback', (req, res) => {
+    const qs = new URLSearchParams(req.query).toString();
+    res.redirect(`/api/meta/oauth/callback${qs ? `?${qs}` : ''}`);
+});
+
 
 
 // Legacy routes handling
