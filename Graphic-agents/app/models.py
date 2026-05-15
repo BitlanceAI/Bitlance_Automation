@@ -48,6 +48,7 @@ class SocialPostRequest(BaseModel):
     category: str = Field(..., example="AI in healthcare", description="Topic/niche for the post — sent to Google Trends")
     platforms: List[str] = Field(..., example=["twitter", "linkedin", "facebook", "instagram"], description="Target social media platforms")
     tone: Optional[str] = Field(default="professional", example="professional", description="Writing tone: professional, casual, inspiring, witty")
+    language: Optional[str] = Field(default="English", example="Hindi", description="Language of the generated post")
     extra_instructions: Optional[str] = Field(default="", description="Optional extra context or instructions for the AI")
     image_quality: Optional[str] = Field(default="low", example="low", description="Image quality: low, medium, high, auto")
 

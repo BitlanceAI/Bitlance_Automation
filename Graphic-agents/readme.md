@@ -5,7 +5,12 @@ npm run dev
 Step 2: Start Python Graphic Agents backend
 cd Graphic-agents
 # Activate virtual env if needed
+python -m venv venv
 venv\Scripts\activate
+#Install required packages (one-time only)
+python -m pip install -r requirements.txt
+# Update .env with your actual provider keys
+pip install python-dotenv
 uvicorn app.main:app --reload --port 8001
 Step 3: Test in browser
 Open your frontend (http://localhost:5173). Go to the 'Graphics AI' section.
