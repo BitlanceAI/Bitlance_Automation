@@ -24,6 +24,10 @@ from typing import Optional, Type
 from langchain.tools import BaseTool
 from pydantic import BaseModel, Field
 
+class SerpRateLimitError(Exception):
+    """Raised when SerpAPI returns a 429 Too Many Requests."""
+    pass
+
 
 logger = logging.getLogger(__name__)
 
@@ -41,6 +45,8 @@ def _serp_request(params: dict) -> dict:
         raise RuntimeError("SERP_API_KEY is not set")
     params["api_key"] = SERP_API_KEY
     res = requests.get(SERP_BASE_URL, params=params, timeout=30)
+    if res.status_code == 429:
+        raise SerpRateLimitError(f"SerpAPI Rate Limit (429): {res.text}")
     res.raise_for_status()
     return res.json()
 
@@ -379,6 +385,9 @@ class PlagiarismCheckTool(BaseTool):
                             source_url = result.get("link", "unknown source")
                             flagged.append(f'  • "{" ".join(query_words)}…" → {source_url}')
                             break
+            except SerpRateLimitError as e:
+                logger.warning("[PlagiarismCheckTool] Rate limit hit. Aborting SERP checks.")
+                raise e
             except Exception as e:
                 logger.warning("[PlagiarismCheckTool] SERP check error: %s", e)
                 continue

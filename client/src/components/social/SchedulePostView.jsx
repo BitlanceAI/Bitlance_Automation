@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import {
     Sparkles, TrendingUp, Loader2, CheckCircle2, XCircle,
     Send, Linkedin, Facebook, Instagram, Copy, Check, RefreshCw,
-    Zap, Clock, ChevronDown, ChevronUp, ImageIcon, X
+    Zap, Clock, ChevronDown, ChevronUp, ImageIcon, X, MessageSquare
 } from 'lucide-react';
 import API_BASE_URL from '../../config.js';
 import { supabase } from '../../services/supabaseClient';
@@ -26,6 +26,22 @@ const TONES = [
     { id: 'casual', label: 'Casual', emoji: '😎' },
     { id: 'inspiring', label: 'Inspiring', emoji: '✨' },
     { id: 'witty', label: 'Witty', emoji: '🎯' },
+];
+
+const LANGUAGES = [
+    { id: 'English', label: 'English' },
+    { id: 'Hindi', label: 'Hindi (हिंदी)' },
+    { id: 'Bengali', label: 'Bengali (বাংলা)' },
+    { id: 'Telugu', label: 'Telugu (తెలుగు)' },
+    { id: 'Marathi', label: 'Marathi (मराठी)' },
+    { id: 'Tamil', label: 'Tamil (தமிழ்)' },
+    { id: 'Gujarati', label: 'Gujarati (ગુજરાતી)' },
+    { id: 'Urdu', label: 'Urdu (اردو)' },
+    { id: 'Kannada', label: 'Kannada (ಕನ್ನಡ)' },
+    { id: 'Odia', label: 'Odia (ଓଡ଼ିଆ)' },
+    { id: 'Malayalam', label: 'Malayalam (മലയാളം)' },
+    { id: 'Punjabi', label: 'Punjabi (ਪੰਜਾਬੀ)' },
+    { id: 'Assamese', label: 'Assamese (অসমীয়া)' }
 ];
 
 const STEPS = [
@@ -59,6 +75,7 @@ const SchedulePostView = ({
     const [category, setCategory] = useState('');
     const [selectedPlatforms, setSelectedPlatforms] = useState(['linkedin']);
     const [tone, setTone] = useState('professional');
+    const [language, setLanguage] = useState('English');
     const [extraInstructions, setExtraInstructions] = useState('');
 
     // Pipeline state
@@ -229,6 +246,7 @@ const SchedulePostView = ({
                     category: category.trim(),
                     platforms: selectedPlatforms,
                     tone,
+                    language,
                     extra_instructions: extraInstructions.trim(),
                     image_quality: 'low',
                 }),
@@ -313,24 +331,43 @@ const SchedulePostView = ({
                 </div>
             </div>
 
-            <div>
-                <label className="block text-[11px] font-mono uppercase tracking-widest text-gray-500 mb-2">
-                    Writing Tone
-                </label>
-                <div className="flex flex-wrap gap-2">
-                    {TONES.map(t => (
-                        <button
-                            key={t.id}
-                            onClick={() => setTone(t.id)}
-                            className={`px-3 py-2 rounded-[2px] border text-[12px] font-mono transition-all cursor-pointer ${
-                                tone === t.id
-                                    ? 'bg-[#26cece]/10 border-[#26cece] text-[#26cece]'
-                                    : 'bg-white border-slate-200 text-gray-500 hover:border-slate-300'
-                            }`}
-                        >
-                            {t.emoji} {t.label}
-                        </button>
-                    ))}
+            {/* Language & Tone Section */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 pt-6 border-t border-[#f0f0f0]">
+                <div>
+                    <h3 className="text-[13px] font-bold text-gray-900 font-mono uppercase tracking-widest mb-4 flex items-center gap-2">
+                        <MessageSquare className="w-4 h-4 text-purple-500" /> Language
+                    </h3>
+                    <select 
+                        value={language}
+                        onChange={(e) => setLanguage(e.target.value)}
+                        className="w-full bg-[#f9f9f9] border border-[#d0d0d0] text-gray-700 text-[13px] font-sans rounded-[4px] px-4 py-3 focus:outline-none focus:border-purple-500 hover:border-gray-400 transition-colors"
+                    >
+                        {LANGUAGES.map(lang => (
+                            <option key={lang.id} value={lang.id}>{lang.label}</option>
+                        ))}
+                    </select>
+                </div>
+                
+                <div>
+                    <h3 className="text-[13px] font-bold text-gray-900 font-mono uppercase tracking-widest mb-4 flex items-center gap-2">
+                        <MessageSquare className="w-4 h-4 text-orange-500" /> Tone of Voice
+                    </h3>
+                    <div className="grid grid-cols-2 gap-3">
+                        {TONES.map(t => (
+                            <button
+                                key={t.id}
+                                onClick={() => setTone(t.id)}
+                                className={`flex items-center gap-2 px-4 py-3 rounded-[4px] border transition-all ${
+                                    tone === t.id 
+                                        ? 'bg-orange-50 border-orange-200 text-orange-700 font-bold' 
+                                        : 'bg-white border-[#e0e0e0] text-gray-600 hover:border-orange-200 hover:bg-orange-50/50'
+                                }`}
+                            >
+                                <span className="text-lg">{t.emoji}</span>
+                                <span className="text-[13px] font-sans">{t.label}</span>
+                            </button>
+                        ))}
+                    </div>
                 </div>
             </div>
 

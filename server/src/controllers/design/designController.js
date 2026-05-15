@@ -388,7 +388,7 @@ export const getJobById = async (req, res) => {
  */
 export const generateSocialPost = async (req, res) => {
     try {
-        const { category, platforms, tone, extra_instructions, image_quality } = req.body;
+        const { category, platforms, tone, extra_instructions, image_quality, language } = req.body;
         const userId = req.user.id;
 
         if (!category || !platforms || platforms.length === 0) {
@@ -422,7 +422,7 @@ export const generateSocialPost = async (req, res) => {
                 address: 'N/A',
                 status: 'pending',
                 credits_used: COST_PER_FLYER,
-                metadata: { category, platforms, tone, extra_instructions, image_quality }
+                metadata: { category, platforms, tone, extra_instructions, image_quality, language }
             })
             .select()
             .single();
@@ -442,6 +442,7 @@ export const generateSocialPost = async (req, res) => {
                     tone: tone || 'professional',
                     extra_instructions: extra_instructions || '',
                     image_quality: image_quality || 'low',
+                    language: language || 'English'
                 },
                 { timeout: 120000 }
             );

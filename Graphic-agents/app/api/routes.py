@@ -212,6 +212,7 @@ def generate_social_post(request: SocialPostRequest):
             category=request.category,
             platforms=request.platforms,
             tone=request.tone or "professional",
+            language=request.language or "English",
             extra_instructions=request.extra_instructions or "",
             image_quality=request.image_quality or "low",
         )

@@ -19,6 +19,15 @@ PERPLEXITY_API_KEY = os.getenv("PERPLEXITY_API_KEY")
 OPENAI_API_KEY    = os.getenv("OPENAI_API_KEY")
 GEMINI_API_KEY    = os.getenv("GEMINI_API_KEY")
 
+try:
+    from openai import OpenAI
+    _OPENAI_SDK_AVAILABLE = True
+    _openai_client = OpenAI(api_key=OPENAI_API_KEY) if OPENAI_API_KEY else None
+except ImportError:
+    _OPENAI_SDK_AVAILABLE = False
+    _openai_client = None
+
+
 # Import SERP tools — will be None if the module fails to load
 try:
     from app.services.serp_tools import (
@@ -638,14 +647,11 @@ def generate_image(topic: str, image_text: str) -> str:
         f"CRITICAL: No text, no words, no letters, no typography, no watermarks, no signs, no logos."
     )
 
-    if OPENAI_API_KEY:
-        from openai import OpenAI
-        client = OpenAI(api_key=OPENAI_API_KEY)
-
-        # ── 1. gpt-image-2 (b64_json — no response_format param needed) ──────
+    if _OPENAI_SDK_AVAILABLE and _openai_client:
+        # ── 1. gpt-image-2-2026-04-21 (primary) ────────────────────────────────────
         try:
-            result = client.images.generate(
-                model="gpt-image-2",
+            result = _openai_client.images.generate(
+                model="gpt-image-2-2026-04-21",
                 prompt=dalle_prompt,
                 size="1024x1024",
                 quality="low",
@@ -653,27 +659,29 @@ def generate_image(topic: str, image_text: str) -> str:
             )
             img_data = result.data[0]
             if hasattr(img_data, "b64_json") and img_data.b64_json:
-                print(f"Image generated via gpt-image-2 (b64) for: {topic}")
+                print(f"Image generated via gpt-image-2-2026-04-21 for: {topic}")
                 return f"data:image/png;base64,{img_data.b64_json}"
             elif hasattr(img_data, "url") and img_data.url:
-                print(f"Image generated via gpt-image-2 (url) for: {topic}")
+                print(f"Image generated via gpt-image-2-2026-04-21 (url) for: {topic}")
                 return img_data.url
         except Exception as e:
-            print(f"OpenAI gpt-image-2 failed: {type(e).__name__}: {e}")
+            print(f"OpenAI gpt-image-2-2026-04-21 failed: {type(e).__name__}: {e}")
 
-        # ── 2. dall-e-3 fallback (url response) ──────────────────────────────
+        # ── 2. dall-e-3 fallback (b64_json) ────────────────────────────────────────
         try:
-            result = client.images.generate(
+            result = _openai_client.images.generate(
                 model="dall-e-3",
                 prompt=dalle_prompt,
-                size="1792x1024",   # landscape 16:9-ish
+                size="1024x1024",
                 quality="standard",
                 n=1,
             )
-            url = result.data[0].url
-            if url:
+            img_data = result.data[0]
+            if hasattr(img_data, "b64_json") and img_data.b64_json:
                 print(f"Image generated via dall-e-3 for: {topic}")
-                return url
+                return f"data:image/png;base64,{img_data.b64_json}"
+            elif hasattr(img_data, "url") and img_data.url:
+                return img_data.url
         except Exception as e:
             print(f"OpenAI dall-e-3 failed: {type(e).__name__}: {e}")
 

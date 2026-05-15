@@ -79,6 +79,7 @@ class SocialPostService:
         category: str,
         platforms: list[str],
         tone: str = "professional",
+        language: str = "English",
         extra_instructions: str = "",
         image_quality: str = "low",
     ) -> dict:
@@ -89,6 +90,7 @@ class SocialPostService:
             category:           The topic/niche for the post (e.g. "AI in healthcare")
             platforms:          List of target platforms (e.g. ["twitter", "linkedin"])
             tone:               Writing tone (professional, casual, inspiring, witty)
+            language:           Language to write the post in
             extra_instructions: Optional extra context from the user
             image_quality:      Image quality for the graphic (low/medium/high/auto)
 
@@ -103,8 +105,8 @@ class SocialPostService:
             }
         """
         logger.info(
-            "[SocialPostService] Starting pipeline | category='%s' | platforms=%s",
-            category, platforms,
+            "[SocialPostService] Starting pipeline | category='%s' | platforms=%s | language='%s'",
+            category, platforms, language
         )
 
         # ── Step 1: Fetch trending keywords ──────────────────────────────────
@@ -123,12 +125,13 @@ class SocialPostService:
                 platform=platform_key,
                 trending_keywords=trending_keywords,
                 tone=tone,
+                language=language,
                 extra_instructions=extra_instructions,
             )
             captions[platform_key] = caption
 
         # ── Step 3: Generate graphic ─────────────────────────────────────────
-        graphic_prompt = self._build_graphic_prompt(category, trending_keywords)
+        graphic_prompt = self._build_graphic_prompt(category, trending_keywords, language)
         images = self.image_svc.generate(
             prompt=graphic_prompt,
             quality=image_quality,
@@ -190,6 +193,7 @@ class SocialPostService:
         platform: str,
         trending_keywords: list[str],
         tone: str,
+        language: str,
         extra_instructions: str,
     ) -> str:
         """Generate a single platform-specific caption."""
@@ -209,6 +213,7 @@ class SocialPostService:
             f"- STRICT max {spec['max_chars']} characters\n"
             f"- Platform style: {spec['style']}\n"
             f"- Tone: {tone_guide}\n"
+            f"- Language: MUST write entirely in {language}\n"
             f"- Incorporate trending keywords naturally (don't force them)\n"
             f"- No generic filler. Sound like a real person.\n"
             f"- DO NOT use markdown asterisks (*) for formatting.\n"
@@ -240,7 +245,7 @@ class SocialPostService:
 
         return caption
 
-    def _build_graphic_prompt(self, category: str, trending_keywords: list[str]) -> str:
+    def _build_graphic_prompt(self, category: str, trending_keywords: list[str], language: str) -> str:
         """Build an image generation prompt for the social post graphic."""
         keywords_str = ", ".join(trending_keywords[:3]) if trending_keywords else ""
 
@@ -248,7 +253,7 @@ class SocialPostService:
             "You are an expert prompt engineer for AI image generation (gpt-image-2).\n"
             "Create a vivid, detailed image prompt for a social media post graphic.\n"
             "The image should be eye-catching, modern, and suitable for professional social media.\n"
-            "NO text overlays, NO logos, NO watermarks — clean visual only.\n"
+            f"If there is any text in the image, it MUST be written in the {language} language.\n"
             "Return ONLY the image prompt, nothing else."
         )
 

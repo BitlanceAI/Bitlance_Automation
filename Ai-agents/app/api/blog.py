@@ -16,7 +16,7 @@ load_dotenv(dotenv_path=env_path)
 
 import requests as _requests
 from fastapi import APIRouter, HTTPException
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from app.services import blog_ai_service as ai
 
@@ -28,18 +28,35 @@ router = APIRouter()
 # ─────────────────────────────────────────────────────────────────────────────
 
 class GenerateBlogRequest(BaseModel):
-    topic: Optional[str] = None
-    industry: Optional[str] = None
-    keywords: Optional[str] = ""
-    language: Optional[str] = "English"
-    style: Optional[str] = "Professional"
-    length: Optional[str] = "Medium (500-1000 words)"
-    audience: Optional[str] = "General Public"
-    image_option: Optional[str] = "auto"    # auto | custom | none
+    topic: Optional[str] = Field(default=None, examples=["Why Pune is the Best City for Real Estate Investment in 2026"])
+    industry: Optional[str] = Field(default=None, examples=["Real Estate"])
+    keywords: Optional[str] = Field(default="", examples=["Pune real estate, property investment Pune"])
+    language: Optional[str] = Field(default="English")
+    style: Optional[str] = Field(default="Professional")
+    length: Optional[str] = Field(default="Medium (500-1000 words)")
+    audience: Optional[str] = Field(default="General Public")
+    image_option: Optional[str] = Field(default="auto")    # auto | custom | none
     custom_image_url: Optional[str] = None
     wp_url: Optional[str] = None            # website URL for interlinking (embedded in content)
     wp_api_url: Optional[str] = None        # actual WordPress site URL for REST API fetching (may differ from wp_url)
     interlinks: Optional[list] = None       # pre-built interlinks from Node.js [{title, link}]
+
+    model_config = {
+        "json_schema_extra": {
+            "examples": [
+                {
+                    "topic": "Why Pune is the Best City for Real Estate Investment in 2026",
+                    "industry": "Real Estate",
+                    "keywords": "Pune real estate, property investment Pune, best places to invest in Pune",
+                    "language": "English",
+                    "style": "Professional and Data-driven",
+                    "length": "Medium (500-1000 words)",
+                    "audience": "Property Investors and First-time Homebuyers",
+                    "image_option": "auto"
+                }
+            ]
+        }
+    }
 
 
 LENGTH_MAPPING = {
@@ -162,7 +179,7 @@ def generate_blog(body: GenerateBlogRequest):
     blog_html = ai.format_markdown_to_html(blog_text)
 
     # ── 9. Return everything — Node.js handles persistence ────────────────────
-    return {
+    result_data = {
         "success": True,
         "article": blog_html,          # HTML content
         "markdown": blog_text,         # raw Markdown
@@ -173,3 +190,93 @@ def generate_blog(body: GenerateBlogRequest):
         "topic": topic,
         "keywords": keywords,
     }
+
+    # ── 10. Save to outputs folder for local debugging ─────────────────────────
+    outputs_dir = Path(__file__).resolve().parent.parent.parent / "outputs"
+    outputs_dir.mkdir(exist_ok=True)
+    try:
+        import json
+        with open(outputs_dir / "last_blog.json", "w", encoding="utf-8") as f:
+            json.dump(result_data, f, indent=2, ensure_ascii=False)
+        with open(outputs_dir / "last_blog.html", "w", encoding="utf-8") as f:
+            f.write(blog_html)
+        print("Successfully saved blog output to outputs/ directory")
+    except Exception as e:
+        print(f"Failed to save to outputs directory: {e}")
+
+    return result_data
+
+
+class TestImageRequest(BaseModel):
+    topic: str = Field(..., examples=["The Future of PropTech in Commercial Real Estate"])
+    image_text: Optional[str] = Field(default=None, examples=["PropTech Future"])
+
+    model_config = {
+        "json_schema_extra": {
+            "examples": [
+                {
+                    "topic": "The Future of PropTech in Commercial Real Estate",
+                    "image_text": "PropTech Future"
+                }
+            ]
+        }
+    }
+
+
+@router.post("/test-image", summary="Test Image Generation Pipeline")
+def test_image_generation(body: TestImageRequest):
+    """
+    Isolated endpoint to test the image generation pipeline and fallback tiers
+    without running the entire blog generation process.
+    """
+    try:
+        # Generate the small text for the image if not provided
+        if not body.image_text:
+            # We mock blog_text for the image text generator
+            body.image_text = ai.generate_image_text(f"This is a blog about {body.topic}.", body.topic)
+
+        image_url = ai.generate_image(body.topic, body.image_text)
+        
+        # Try to infer what model was used based on the result
+        model_used = "unknown"
+        if image_url.startswith("data:image/png;base64,"):
+            if "iVBORw0KGgoAAAANSUhEUgAABQAAAAOACAYAAAC" in image_url[:100]: # Standard PIL blue background signature
+                model_used = "PIL Placeholder (Fallback)"
+            else:
+                model_used = "gpt-image-2-2026-04-21 (or dall-e-3 fallback)"
+        elif "dalle" in image_url or "openai" in image_url:
+            model_used = "dall-e-3 (url)"
+
+        return_data = {
+            "success": True,
+            "topic": body.topic,
+            "image_text": body.image_text,
+            "image_url": image_url,
+            "inferred_model_used": model_used
+        }
+
+        # ── Save image to outputs folder ──────────────────────────────────────
+        outputs_dir = Path(__file__).resolve().parent.parent.parent / "outputs"
+        outputs_dir.mkdir(exist_ok=True)
+        try:
+            if image_url.startswith("data:image/png;base64,"):
+                import base64
+                b64_data = image_url.split(",")[1]
+                with open(outputs_dir / "test_image.png", "wb") as f:
+                    f.write(base64.b64decode(b64_data))
+                print("Saved base64 image to outputs/test_image.png")
+            elif image_url.startswith("http"):
+                img_resp = _requests.get(image_url, timeout=30)
+                if img_resp.status_code == 200:
+                    with open(outputs_dir / "test_image.png", "wb") as f:
+                        f.write(img_resp.content)
+                    print("Downloaded URL image to outputs/test_image.png")
+        except Exception as e:
+            print(f"Failed to save test image to outputs directory: {e}")
+
+        return return_data
+    except Exception as e:
+        return {
+            "success": False,
+            "error": str(e)
+        }
