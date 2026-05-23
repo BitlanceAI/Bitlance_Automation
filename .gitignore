@@ -163,3 +163,10 @@ Thumbs.db
 .eclipse/
 .netrwhist
 *.session.vim
+
+# ===============================
+# PowerShell & Configuration Files
+# ===============================
+set-azure-env-*.ps1
+*.ps1.bak
+set-env.ps1
