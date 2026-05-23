@@ -125,3 +125,41 @@ yarn.lock
 .turbo/
 .DS_Store
 Thumbs.db
+
+# ===============================
+# Media Files (Use CDN instead)
+# ===============================
+*.mp4
+*.mov
+*.avi
+*.webm
+*.flv
+*.mkv
+
+# ===============================
+# Archives & Compressed Files
+# ===============================
+*.rar
+*.zip
+*.7z
+*.tar
+*.gz
+*.tar.gz
+*.tar.bz2
+
+# ===============================
+# Presentations & Large Documents
+# ===============================
+*.pptx
+*.ppt
+*.key
+
+# ===============================
+# IDE & Tool Generated Files
+# ===============================
+.vscode/settings.json
+.idea/
+*.sublime-*
+.eclipse/
+.netrwhist
+*.session.vim
