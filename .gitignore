@@ -76,3 +76,52 @@ outputs/
 # ===============================
 myenv/
 **/myenv/
+.venv/
+venv/
+ENV/
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+pip-log.txt
+pip-delete-this-directory.txt
+
+# ===============================
+# Build & Temporary Output
+# ===============================
+build_output.txt
+**/build_output.txt
+dist/
+**/dist/
+
+# ===============================
+# Code Review & Temporary Files
+# ===============================
+code-review-graph/
+code-review-graph~*
+*.tmp
+*.bak
+*.backup
+
+# ===============================
+# CI/CD Pipeline Files (Development)
+# ===============================
+azure-pipelines-*.yml
+azure-static-web-apps-*.yml
+
+# ===============================
+# Lock Files & Configuration
+# ===============================
+skills-lock.json
+pnpm-lock.yaml
+package-lock.json
+yarn.lock
+
+# ===============================
+# Temporary & Cache Files
+# ===============================
+.cache/
+.turbo/
+.DS_Store
+Thumbs.db
