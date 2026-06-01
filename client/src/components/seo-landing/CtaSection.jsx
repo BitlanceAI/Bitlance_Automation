@@ -3,7 +3,7 @@ import { motion, useInView } from 'framer-motion';
 import { ArrowRight, MessageCircle, Check } from 'lucide-react';
 
 const APP_URL = 'https://www.bitlancetechhub.com';
-const WA_URL = 'https://wa.me/917697762374?text=Hi%20Bitlance!%20I%27d%20like%20to%20know%20more%20about%20the%20SEO%20AI%20Agent.';
+const WA_URL = 'https://wa.me/917697762374?text=Hi%20Bitlance!%20I%27d%20like%20to%20know%20more%20about%20the%20GEO%20(Generative)%20AI%20Agent.';
 
 export default function CtaSection() {
   const ref = useRef(null);
@@ -43,7 +43,7 @@ export default function CtaSection() {
           transition={{ delay: 0.2, duration: 0.6 }}
           className="text-white/50 text-sm sm:text-lg md:text-xl mb-10 max-w-2xl mx-auto leading-relaxed"
         >
-          Join 200+ businesses using Bitlance SEO AI Agent to drive organic traffic on autopilot.
+          Join 200+ businesses using Bitlance GEO (Generative) AI Agent to drive organic traffic on autopilot.
           No agency fees. No manual work. Just rankings.
         </motion.p>
 

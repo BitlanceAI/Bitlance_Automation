@@ -33,4 +33,4 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
     CMD curl -f http://localhost:${PORT}/ || exit 1
 
 # Run the application — Azure sets PORT, we honour it
-CMD ["sh", "-c", "echo 'Starting SEO AI Agent on port ${PORT}' && uvicorn app.main:app --host 0.0.0.0 --port ${PORT}"]
+CMD ["sh", "-c", "echo 'Starting GEO (Generative) AI Agent on port ${PORT}' && uvicorn app.main:app --host 0.0.0.0 --port ${PORT}"]

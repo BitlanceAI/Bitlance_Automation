@@ -130,7 +130,7 @@ function App() {
       navigate('/dashboard/agents/whatsapp');
     } else if (agent.title === 'AI Voice Agent') {
       navigate('/dashboard/agents/voice');
-    } else if (agent.title === 'SEO AI Agent') {
+    } else if (agent.title === 'GEO (Generative) AI Agent') {
       navigate('/dashboard/agents/seo');
     } else if (agent.title === 'Graphic Designer AI') {
       navigate('/dashboard/agents/design');

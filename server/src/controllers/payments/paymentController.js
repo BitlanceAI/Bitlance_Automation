@@ -61,7 +61,7 @@ export async function createOrder(req, res) {
                 return_url: `${process.env.SERVER_URL}/payment/complete?order_id=${orderId}&verification_id=${verificationId}`,
                 notify_url: `${process.env.SERVER_URL}/api/payment/webhook`,
             },
-            order_note: `SEO AI Agent subscription — DigiLocker ID: ${verificationId}`,
+            order_note: `GEO (Generative) AI Agent subscription — DigiLocker ID: ${verificationId}`,
         };
 
         console.log('[Payment] URL:', PG_BASE, '| ID:', process.env.CASHFREE_CLIENT_ID?.slice(0, 10), '| SECRET:', process.env.CASHFREE_CLIENT_SECRET?.slice(0, 14));

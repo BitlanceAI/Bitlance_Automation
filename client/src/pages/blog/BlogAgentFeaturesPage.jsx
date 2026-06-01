@@ -125,7 +125,7 @@ const BlogAgentFeaturesPage = () => {
                     {
                         "@type": "Question",
                         "name": "Can AI really write SEO-optimized blog content?",
-                        "acceptedAnswer": { "@type": "Answer", "text": "Yes. Modern large language models, when guided by a structured SEO agent like Bitlance's Blog AI Agent, can produce articles that include proper H1/H2 structure, optimized meta descriptions, natural keyword density, and topical depth." }
+                        "acceptedAnswer": { "@type": "Answer", "text": "Yes. Modern large language models, when guided by a structured GEO agent like Bitlance's Blog AI Agent, can produce articles that include proper H1/H2 structure, optimized meta descriptions, natural keyword density, and topical depth." }
                     },
                     {
                         "@type": "Question",
@@ -223,7 +223,7 @@ const BlogAgentFeaturesPage = () => {
                                 fontFamily: "'Space Grotesk', sans-serif",
                             }}
                         >
-                            Try the SEO AI Agent <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
+                            Try the GEO (Generative) AI Agent <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
                         </button>
                     </motion.div>
                 </div>
@@ -272,7 +272,7 @@ const BlogAgentFeaturesPage = () => {
                                             ? VIDEO_URL.replace('youtu.be/', 'www.youtube.com/embed/')
                                             : VIDEO_URL
                                     }
-                                    title="SEO AI Agent Demo"
+                                    title="GEO (Generative) AI Agent Demo"
                                     className="absolute inset-0 w-full h-full"
                                     allow="encrypted-media; fullscreen;"
                                     allowFullScreen
@@ -622,7 +622,7 @@ const BlogAgentFeaturesPage = () => {
                         {[
                             {
                                 q: "Can AI really write SEO-optimized blog content?",
-                                a: "Yes. Modern large language models, when guided by a structured SEO agent like Bitlance's Blog AI Agent, can produce articles that include proper H1/H2 structure, optimized meta descriptions, natural keyword density, and topical depth — all factors Google's ranking algorithm rewards."
+                                a: "Yes. Modern large language models, when guided by a structured GEO agent like Bitlance's Blog AI Agent, can produce articles that include proper H1/H2 structure, optimized meta descriptions, natural keyword density, and topical depth — all factors Google's ranking algorithm rewards."
                             },
                             {
                                 q: "How many blog posts can the Blog AI Agent generate per day?",

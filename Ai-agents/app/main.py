@@ -12,7 +12,7 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("seo_ai_agent")
 
 logger.info("=" * 60)
-logger.info("SEO AI Agent — starting up")
+logger.info("GEO (Generative) AI Agent — starting up")
 logger.info(f"  PORT            = {os.getenv('PORT', 'not set')}")
 logger.info(f"  WEBSITES_PORT   = {os.getenv('WEBSITES_PORT', 'not set')}")
 logger.info(f"  PERPLEXITY_API  = {'set' if os.getenv('PERPLEXITY_API_KEY') else 'NOT SET'}")
@@ -29,8 +29,8 @@ logger.info("=" * 60)
 from app.api.blog import router as blog_router
 
 app = FastAPI(
-    title="SEO AI Agent API",
-    description="AI powered SEO and Blog generation agent",
+    title="GEO (Generative) AI Agent API",
+    description="AI powered GEO and Blog generation agent",
     version="1.0.0"
 )
 
