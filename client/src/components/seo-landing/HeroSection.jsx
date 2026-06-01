@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { ArrowRight, Send, Search, ShieldCheck, RefreshCw } from 'lucide-react';
-import seoVideo from '../../assets/SEO_AI_agent-_implementation.mp4';
+import seoVideo from '../../assets/GEO_AI_agent-_implementation.mp4';
 
 const APP_URL = 'https://www.bitlancetechhub.com';
 const BRAND = '#26CECE';

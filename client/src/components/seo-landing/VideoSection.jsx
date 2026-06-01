@@ -1,7 +1,7 @@
 import { useRef, useState } from 'react';
 import { motion, useInView } from 'framer-motion';
 import { Play, X, Clapperboard, Timer, Bot, UploadCloud } from 'lucide-react';
-import seoVideo from '../../assets/SEO_AI_agent-_implementation.mp4';
+import seoVideo from '../../assets/GEO_AI_agent-_implementation.mp4';
 
 const VIDEO_URL = seoVideo;
 const THUMBNAIL_URL = null; // Set to a real thumbnail URL or null for gradient placeholder
