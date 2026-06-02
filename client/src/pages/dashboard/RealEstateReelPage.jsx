@@ -1538,7 +1538,7 @@ export default function RealEstateReelPage() {
                   <span className="text-[9px] text-[#26cece] font-mono uppercase">Sync active</span>
                 </div>
                 <div className="p-3 bg-[#070707] border border-[#1e1e1e] rounded-[1px] flex justify-between items-center">
-                  <span className="text-xs text-[#a0a0a0] font-mono uppercase tracking-wide">SEO Blog Embeds</span>
+                  <span className="text-xs text-[#a0a0a0] font-mono uppercase tracking-wide">GEO Blog Embeds</span>
                   <span className="text-[9px] text-[#26cece] font-mono uppercase">Sync active</span>
                 </div>
               </div>

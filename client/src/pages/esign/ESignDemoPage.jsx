@@ -19,7 +19,7 @@ const PLANS = [
     sites: 1,
     features: ['8 articles/month', '1 WordPress site', 'Basic keyword research', 'Plagiarism check', 'Email support'],
     disabled: ['Auto-publish', 'Interlinking', 'Push notifications'],
-    for: 'Small businesses testing SEO automation',
+    for: 'Small businesses testing GEO automation',
   },
   {
     id: 'growth',
@@ -139,7 +139,7 @@ function buildPDF(fields = {}, plan = PLANS[1], signed = false) {
   y += 6;
 
   section('2. SCOPE OF SERVICE');
-  para(`Automation-Bitlance agrees to provide access to the "GEO (Generative) AI Agent — ${plan.name} Plan". The service includes ${plan.articles} articles per month across ${plan.sites ? plan.sites + ' WordPress site(s)' : 'unlimited WordPress sites'}, automated SEO content generation, and publishing pipeline. The service includes onboarding, technical support, and platform access for the duration of the active subscription.`);
+  para(`Automation-Bitlance agrees to provide access to the "GEO (Generative) AI Agent — ${plan.name} Plan". The service includes ${plan.articles} articles per month across ${plan.sites ? plan.sites + ' WordPress site(s)' : 'unlimited WordPress sites'}, automated GEO content generation, and publishing pipeline. The service includes onboarding, technical support, and platform access for the duration of the active subscription.`);
 
   section('3. PAYMENT TERMS');
   para(`The Client agrees to pay ${plan.label} billed on the subscription start date. Payments are processed securely via Cashfree Payments. All amounts are inclusive of applicable GST. Subscriptions auto-renew unless cancelled 7 days prior to billing.`);

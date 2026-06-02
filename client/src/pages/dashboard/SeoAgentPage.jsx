@@ -466,7 +466,7 @@ const SeoAgentPage = () => {
 
     /**
      * POST /api/google-sheets/run-seo
-     * Read titles from inputCol, generate SEO, write to outputCol.
+     * Read titles from inputCol, generate GEO, write to outputCol.
      */
     const handleRunSEOSheet = async () => {
         if (!sheetId.trim()) {
@@ -497,7 +497,7 @@ const SeoAgentPage = () => {
             if (data.success) {
                 setSheetResults(data);
             } else {
-                setSheetError(data.error || 'SEO pipeline failed');
+                setSheetError(data.error || 'GEO pipeline failed');
             }
         } catch (err) {
             setSheetError(err.message);
@@ -637,7 +637,7 @@ const SeoAgentPage = () => {
                         <div className="flex items-center gap-2">
                             <Bot className="text-[#26cece]" size={24} />
                             <h1 className="text-xl font-bold text-[#26cece] font-['Space_Grotesk'] tracking-tight">
-                                SEO AutoGen
+                                GEO AutoGen
                             </h1>
                         </div>
                     </div>
@@ -749,12 +749,12 @@ const SeoAgentPage = () => {
                             <div className="bg-slate-50 rounded-[2px] border border-slate-200 p-6 md:p-8">
                                 <h2 className="text-2xl font-bold mb-6 text-slate-900 flex items-center gap-3 font-['Space_Grotesk'] tracking-tight">
                                     <Bot className="text-[#26cece]" size={24} />
-                                    AI SEO Article Generator
+                                    AI GEO Article Generator
                                 </h2>
                                 <div className="mb-6 flex items-start gap-3 p-4 bg-white rounded-[2px] border border-slate-200">
                                     <Bot className="w-5 h-5 mt-0.5 text-[#26cece] shrink-0" />
                                     <p className="text-[13px] text-slate-500 leading-relaxed font-sans">
-                                        Just enter a title — our AI automatically researches the best <strong>industry positioning</strong>, <strong>SEO keywords</strong>, and <strong className="text-slate-900">content strategy</strong> using AI SEO best practices (E-E-A-T, authority signals, structured content for AI citation).
+                                        Just enter a title — our AI automatically researches the best <strong>industry positioning</strong>, <strong>GEO keywords</strong>, and <strong className="text-slate-900">content strategy</strong> using AI GEO best practices (E-E-A-T, authority signals, structured content for AI citation).
                                     </p>
                                 </div>
 
@@ -810,7 +810,7 @@ const SeoAgentPage = () => {
                                                 <div className="flex items-center gap-2">
                                                     <TableProperties className="text-[#26cece]" size={18} />
                                                     <span className="text-[11px] font-mono tracking-widest uppercase text-[#26cece] font-bold">
-                                                        Google Sheets SEO Pipeline
+                                                        Google Sheets GEO Pipeline
                                                     </span>
                                                 </div>
                                                 {/* Connect / Status badge */}
@@ -830,7 +830,7 @@ const SeoAgentPage = () => {
                                             </div>
 
                                             <p className="text-[11px] text-slate-500 font-mono leading-relaxed">
-                                                Reads titles from column <strong className="text-slate-900">{sheetInputCol || 'A'}</strong>, runs AI SEO on each, and writes results to column <strong className="text-slate-900">{sheetOutputCol || 'B'}</strong>.
+                                                Reads titles from column <strong className="text-slate-900">{sheetInputCol || 'A'}</strong>, runs AI GEO on each, and writes results to column <strong className="text-slate-900">{sheetOutputCol || 'B'}</strong>.
                                                 Empty rows are automatically skipped.
                                             </p>
 
@@ -868,7 +868,7 @@ const SeoAgentPage = () => {
                                                 </div>
                                                 <div className="space-y-2">
                                                     <label className="block text-[10px] font-mono tracking-widest uppercase text-slate-500">
-                                                        Output Column (SEO Result)
+                                                        Output Column (GEO Result)
                                                     </label>
                                                     <input
                                                         type="text"
@@ -896,7 +896,7 @@ const SeoAgentPage = () => {
                                                             }`}
                                                     >
                                                         <span className="text-[11px] font-bold tracking-widest uppercase flex items-center gap-1.5">
-                                                            <Zap size={11} /> SEO Titles
+                                                            <Zap size={11} /> GEO Titles
                                                         </span>
                                                         <span className="text-[10px] text-slate-500 font-normal">~1–3s per row</span>
                                                     </button>
@@ -946,7 +946,7 @@ const SeoAgentPage = () => {
                                                 ) : sheetPipelineMode === 'blog' ? (
                                                     <><Bot size={14} /> Auto Blog from Sheet</>
                                                 ) : (
-                                                    <><Play size={14} fill="currentColor" /> Run SEO on Sheet</>
+                                                    <><Play size={14} fill="currentColor" /> Run GEO on Sheet</>
                                                 )}
                                             </button>
 
@@ -1210,7 +1210,7 @@ const SeoAgentPage = () => {
                                         ) : (
                                             <>
                                                 <Zap fill="currentColor" size={24} />
-                                                Generate SEO Content
+                                                Generate GEO Content
                                                 <span className="text-[12px] font-mono ml-2 opacity-70 border-l border-white/30 pl-2">
                                                     Cost 10 credits
                                                 </span>
@@ -1230,7 +1230,7 @@ const SeoAgentPage = () => {
 
                                     {currentSeoTitle && (
                                         <div className="mb-6 p-5 bg-slate-50 border border-slate-200 rounded-[2px]">
-                                            <strong className="text-slate-500 uppercase tracking-widest text-[10px] block mb-1 font-mono">SEO Optimized Title (H1)</strong>
+                                            <strong className="text-slate-500 uppercase tracking-widest text-[10px] block mb-1 font-mono">GEO Optimized Title (H1)</strong>
                                             <p className="text-slate-900 font-mono text-[14px]">{currentSeoTitle}</p>
                                         </div>
                                     )}

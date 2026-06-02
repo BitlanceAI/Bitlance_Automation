@@ -49,7 +49,7 @@ function computeSeoScore(formData) {
             earned: titleLen >= 50 && titleLen <= 60 ? 15 : titleLen >= 30 ? 8 : 0,
         },
         {
-            label: 'SEO title set',
+            label: 'GEO title set',
             pass: seoTitleLen >= 10,
             warn: false,
             detail: seoTitleLen ? `${seoTitleLen} chars` : 'Missing',
@@ -126,7 +126,7 @@ function SeoScorePanel({ formData }) {
         <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm p-6 border border-gray-100 dark:border-slate-700">
             <h2 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white flex items-center gap-2">
                 <BarChart2 className="w-5 h-5" />
-                SEO Score
+                GEO Score
             </h2>
 
             {/* Score ring */}
@@ -392,15 +392,15 @@ const BlogEditorPage = () => {
                             </div>
                         </div>
 
-                        {/* SEO Settings */}
+                        {/* GEO Settings */}
                         <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm p-6 border border-gray-100 dark:border-slate-700">
                             <h2 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white flex items-center gap-2">
                                 <FileText className="w-5 h-5" />
-                                SEO Metadata
+                                GEO Metadata
                             </h2>
                             <div className="space-y-4">
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">SEO Title</label>
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">GEO Title</label>
                                     <input
                                         type="text"
                                         name="seo_title"
@@ -425,7 +425,7 @@ const BlogEditorPage = () => {
 
                     {/* Sidebar */}
                     <div className="space-y-6">
-                        {/* SEO Score Panel */}
+                        {/* GEO Score Panel */}
                         <SeoScorePanel formData={formData} />
 
                         {/* Admin Options */}

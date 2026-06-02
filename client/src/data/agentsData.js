@@ -20,7 +20,7 @@ export const agents = [
       "Automated keyword research",
       "Content optimization",
       "SERP monitoring",
-      "SEO audits"
+      "GEO audits"
     ],
     status: "Available"
   },

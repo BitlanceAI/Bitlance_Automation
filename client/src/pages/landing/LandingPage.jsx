@@ -166,9 +166,9 @@ const LandingPage = () => {
                             "@type": "Service",
                             "name": "GEO (Generative) AI Agent",
                             "provider": { "@id": "https://www.bitlancetechhub.com/#organization" },
-                            "description": "Automated SEO content generation and publishing pipeline. Researches trending topics, writes articles, checks plagiarism, and publishes to WordPress automatically.",
+                            "description": "Automated GEO content generation and publishing pipeline. Researches trending topics, writes articles, checks plagiarism, and publishes to WordPress automatically.",
                             "areaServed": "IN",
-                            "serviceType": "SEO Automation"
+                            "serviceType": "GEO Automation"
                         },
                         {
                             "@type": "FAQPage",

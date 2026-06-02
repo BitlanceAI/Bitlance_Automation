@@ -11,9 +11,9 @@ const BlogAgentContent = ({ navigate }) => {
     const workflowSteps = [
         { icon: <Search className="w-8 h-8" style={{ color: TEAL }} />, title: "Trending Topics", badge: "SerpAPI", desc: "Searches Google in real-time to find trending topics and People Also Ask questions for your industry.", delay: 0.1 },
         { icon: <Tag className="w-8 h-8" style={{ color: TEAL }} />, title: "Keyword Research", badge: "SerpAPI", desc: "Extracts related searches and PAA signals from Google to build a real, rankable keyword set.", delay: 0.2 },
-        { icon: <Wand2 className="w-8 h-8" style={{ color: TEAL }} />, title: "Content Generation", badge: "Perplexity AI", desc: "Injects SERP-sourced topic and keywords into a writing prompt to craft a fully SEO-optimized article.", delay: 0.3 },
+        { icon: <Wand2 className="w-8 h-8" style={{ color: TEAL }} />, title: "Content Generation", badge: "Perplexity AI", desc: "Injects SERP-sourced topic and keywords into a writing prompt to craft a fully GEO-optimized article.", delay: 0.3 },
         { icon: <ShieldCheck className="w-8 h-8" style={{ color: TEAL }} />, title: "Plagiarism Check", badge: "SerpAPI", desc: "Runs exact-phrase Google searches on key sentences to verify the content is original before publishing.", delay: 0.4 },
-        { icon: <Globe className="w-8 h-8" style={{ color: TEAL }} />, title: "Auto-Publish", badge: "WordPress", desc: "Posts directly to your website with images, SEO title, and tags — fully hands-free.", delay: 0.5 }
+        { icon: <Globe className="w-8 h-8" style={{ color: TEAL }} />, title: "Auto-Publish", badge: "WordPress", desc: "Posts directly to your website with images, GEO title, and tags — fully hands-free.", delay: 0.5 }
     ];
 
     return (
@@ -23,11 +23,11 @@ const BlogAgentContent = ({ navigate }) => {
         >
             <div className="text-center mb-16 max-w-3xl mx-auto">
                 <h2 className="text-3xl md:text-4xl font-black tracking-tight mb-4 leading-[1.08] text-black" style={{ fontFamily: "'Space Grotesk', sans-serif", letterSpacing: '-0.03em' }}>
-                    Automate Your SEO with the<br /><span style={{ color: TEAL }}>Blog AI Agent</span>
+                    Automate Your GEO with the<br /><span style={{ color: TEAL }}>Blog AI Agent</span>
                 </h2>
                 <p className="text-base font-medium text-black mx-auto max-w-xl leading-relaxed">
                     Stop writing manually. Our autonomous agent takes your keywords and turns them into
-                    fully-formatted, SEO-optimized blog posts published straight to your website.
+                    fully-formatted, GEO-optimized blog posts published straight to your website.
                 </p>
             </div>
 

@@ -10,7 +10,7 @@ const seoProductPlans = [
     {
         name: 'Starter',
         monthly: 1999,
-        desc: 'For founders testing SEO automation.',
+        desc: 'For founders testing GEO automation.',
         features: ['8 articles / month', '1 WordPress site', 'Basic keyword research', 'Plagiarism check', 'Email support'],
         missing: ['Auto-publish', 'Interlinking', 'Push notifications'],
         cta: 'Start Free Trial',
@@ -42,9 +42,9 @@ const seoServicePlans = [
     {
         name: 'Basic',
         monthly: 14999,
-        desc: 'Fully managed SEO content — we handle everything.',
+        desc: 'Fully managed GEO content — we handle everything.',
         features: ['12 articles / month', 'Keyword & competitor research', 'WordPress publishing', 'Monthly performance report', 'Email support'],
-        missing: ['Dedicated SEO manager', 'Custom content strategy', 'Backlink outreach'],
+        missing: ['Dedicated GEO manager', 'Custom content strategy', 'Backlink outreach'],
         cta: 'Get Started',
         ctaLink: '/apply',
     },
@@ -52,8 +52,8 @@ const seoServicePlans = [
         name: 'Professional',
         monthly: 29999,
         popular: true,
-        desc: 'Full SEO strategy + execution by our team.',
-        features: ['30 articles / month', 'Custom content strategy', 'Keyword + competitor analysis', 'WordPress publishing', 'Interlinking & on-page SEO', 'Bi-weekly performance calls', 'Priority support'],
+        desc: 'Full GEO strategy + execution by our team.',
+        features: ['30 articles / month', 'Custom content strategy', 'Keyword + competitor analysis', 'WordPress publishing', 'Interlinking & on-page GEO', 'Bi-weekly performance calls', 'Priority support'],
         missing: ['Backlink outreach'],
         cta: 'Start Closing',
         ctaLink: '/apply',
@@ -61,8 +61,8 @@ const seoServicePlans = [
     {
         name: 'Premium',
         monthly: null,
-        desc: 'Dedicated SEO manager + custom volume. Enterprise only.',
-        features: ['60+ articles / month', 'Dedicated SEO manager', 'Custom content strategy', 'Backlink outreach', 'Full on-page & technical SEO', 'Weekly reporting & calls', 'SLA guarantee'],
+        desc: 'Dedicated GEO manager + custom volume. Enterprise only.',
+        features: ['60+ articles / month', 'Dedicated GEO manager', 'Custom content strategy', 'Backlink outreach', 'Full on-page & technical GEO', 'Weekly reporting & calls', 'SLA guarantee'],
         missing: [],
         cta: 'Contact Sales',
         ctaLink: '/contact',
@@ -238,7 +238,7 @@ const AgentPricingSection = () => {
                         </button>
                     </div>
 
-                    {/* SEO sub-toggle: Product vs Service */}
+                    {/* GEO sub-toggle: Product vs Service */}
                     {agent === 'seo' && (
                         <div className="flex rounded overflow-hidden border border-gray-200">
                             <button

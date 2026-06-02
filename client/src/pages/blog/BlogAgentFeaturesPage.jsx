@@ -46,8 +46,8 @@ const BlogAgentFeaturesPage = () => {
         },
         {
             icon: <LineChart className="w-6 h-6" style={{ color: TEAL }} />,
-            title: "Built-In SEO Optimization",
-            description: "Every post is generated with SEO best practices: proper H1/H2 tags, optimized meta descriptions, and keyword density checks to ensure it ranks on Google."
+            title: "Built-In GEO Optimization",
+            description: "Every post is generated with GEO best practices: proper H1/H2 tags, optimized meta descriptions, and keyword density checks to ensure it ranks on Google."
         },
         {
             icon: <Zap className="w-6 h-6" style={{ color: TEAL }} />,
@@ -81,7 +81,7 @@ const BlogAgentFeaturesPage = () => {
             step: "03",
             badge: "Perplexity AI",
             title: "Content Generation",
-            desc: "Injects SERP-sourced topic and keywords into a writing prompt to craft a fully SEO-optimized article."
+            desc: "Injects SERP-sourced topic and keywords into a writing prompt to craft a fully GEO-optimized article."
         },
         {
             icon: <ShieldCheck className="w-8 h-8" style={{ color: TEAL }} />,
@@ -95,7 +95,7 @@ const BlogAgentFeaturesPage = () => {
             step: "05",
             badge: "WordPress",
             title: "Auto-Publish",
-            desc: "Posts directly to your website with images, SEO title, and tags — fully hands-free."
+            desc: "Posts directly to your website with images, GEO title, and tags — fully hands-free."
         }
     ];
 
@@ -107,13 +107,13 @@ const BlogAgentFeaturesPage = () => {
                 "name": "Bitlance Blog AI Agent",
                 "applicationCategory": "BusinessApplication",
                 "operatingSystem": "Web",
-                "description": "An autonomous AI agent that researches topics, writes SEO-optimized blog posts, and publishes them directly to your website 24/7.",
+                "description": "An autonomous AI agent that researches topics, writes GEO-optimized blog posts, and publishes them directly to your website 24/7.",
                 "offers": { "@type": "Offer", "url": "https://www.bitlancetechhub.com/dashboard/agents/seo" },
                 "featureList": [
                     "Automated keyword targeting from Excel uploads",
                     "Autonomous long-form content generation",
                     "Direct CMS publishing (WordPress and custom backends)",
-                    "Built-in SEO optimization with meta descriptions",
+                    "Built-in GEO optimization with meta descriptions",
                     "Bulk generation and scheduling capability",
                     "Plagiarism and AI detection safe content"
                 ],
@@ -124,7 +124,7 @@ const BlogAgentFeaturesPage = () => {
                 "mainEntity": [
                     {
                         "@type": "Question",
-                        "name": "Can AI really write SEO-optimized blog content?",
+                        "name": "Can AI really write GEO-optimized blog content?",
                         "acceptedAnswer": { "@type": "Answer", "text": "Yes. Modern large language models, when guided by a structured GEO agent like Bitlance's Blog AI Agent, can produce articles that include proper H1/H2 structure, optimized meta descriptions, natural keyword density, and topical depth." }
                     },
                     {
@@ -135,7 +135,7 @@ const BlogAgentFeaturesPage = () => {
                     {
                         "@type": "Question",
                         "name": "Does the Blog AI Agent post directly to WordPress?",
-                        "acceptedAnswer": { "@type": "Answer", "text": "Yes. The agent can authenticate with your WordPress CMS via the REST API and publish posts directly — including formatting, featured image attachment, category and tag assignment, and meta SEO fields." }
+                        "acceptedAnswer": { "@type": "Answer", "text": "Yes. The agent can authenticate with your WordPress CMS via the REST API and publish posts directly — including formatting, featured image attachment, category and tag assignment, and meta GEO fields." }
                     },
                     {
                         "@type": "Question",
@@ -150,10 +150,10 @@ const BlogAgentFeaturesPage = () => {
     return (
         <div className="min-h-screen text-white" style={{ background: '#070707' }}>
             <SEOHead
-                title="AI Blog Writing Agent — Automated SEO Content at Scale"
-                description="The Bitlance Blog AI Agent researches, writes, optimizes, and publishes high-ranking SEO articles to your site 24/7. Stop writing manually. Generate 50+ posts a week automatically."
+                title="AI Blog Writing Agent — Automated GEO Content at Scale"
+                description="The Bitlance Blog AI Agent researches, writes, optimizes, and publishes high-ranking GEO articles to your site 24/7. Stop writing manually. Generate 50+ posts a week automatically."
                 canonicalUrl="https://www.bitlancetechhub.com/features/blog-agent"
-                keywords="AI blog writer, automated SEO content, AI content agent, blog automation, auto-publish WordPress, AI writing tool, SEO content generator"
+                keywords="AI blog writer, automated GEO content, AI content agent, blog automation, auto-publish WordPress, AI writing tool, GEO content generator"
                 structuredData={blogAgentSchema}
             />
             <Navbar />
@@ -189,7 +189,7 @@ const BlogAgentFeaturesPage = () => {
                         className="text-5xl md:text-7xl font-extrabold mb-8 leading-[1.06] tracking-tight"
                         style={{ fontFamily: "'Space Grotesk', sans-serif", letterSpacing: '-0.03em' }}
                     >
-                        Put Your SEO on <br />
+                        Put Your GEO on <br />
                         <span style={{ color: TEAL }}>Absolute Autopilot</span>
                     </motion.h1>
 
@@ -347,12 +347,12 @@ const BlogAgentFeaturesPage = () => {
                                 className="text-3xl md:text-5xl font-extrabold mb-6 leading-tight"
                                 style={{ fontFamily: "'Space Grotesk', sans-serif", letterSpacing: '-0.03em' }}
                             >
-                                Everything an SEO Manager Does,{' '}
+                                Everything an GEO Manager Does,{' '}
                                 <span style={{ color: TEAL }}>Done in Seconds.</span>
                             </h2>
                             <p className="text-white/50 max-w-2xl mx-auto text-base" style={{ fontFamily: "'DM Mono', monospace" }}>
                                 Replacing costly agencies with an autonomous machine that never sleeps, never gets
-                                writer's block, and perfectly follows SEO formulas.
+                                writer's block, and perfectly follows GEO formulas.
                             </p>
                         </div>
                     </ScrollReveal>
@@ -537,7 +537,7 @@ const BlogAgentFeaturesPage = () => {
                                 Perfect for Scaling Agencies &amp; SaaS
                             </h2>
                             <p className="text-white/60 text-base mb-8 leading-relaxed" style={{ fontFamily: "'DM Mono', monospace" }}>
-                                Don't let your domain authority sit idle. Whether you are an SEO agency managing 50
+                                Don't let your domain authority sit idle. Whether you are an GEO agency managing 50
                                 client sites, or a SaaS company trying to capture top-of-funnel leads, the Blog Agent
                                 is the ultimate infinite-content machine.
                             </p>
@@ -615,13 +615,13 @@ const BlogAgentFeaturesPage = () => {
                             Frequently Asked Questions
                         </h2>
                         <p className="text-white/50 text-base" style={{ fontFamily: "'DM Mono', monospace" }}>
-                            Common questions about AI-generated SEO content and the Blog AI Agent.
+                            Common questions about AI-generated GEO content and the Blog AI Agent.
                         </p>
                     </div>
                     <div className="space-y-3">
                         {[
                             {
-                                q: "Can AI really write SEO-optimized blog content?",
+                                q: "Can AI really write GEO-optimized blog content?",
                                 a: "Yes. Modern large language models, when guided by a structured GEO agent like Bitlance's Blog AI Agent, can produce articles that include proper H1/H2 structure, optimized meta descriptions, natural keyword density, and topical depth — all factors Google's ranking algorithm rewards."
                             },
                             {
@@ -630,7 +630,7 @@ const BlogAgentFeaturesPage = () => {
                             },
                             {
                                 q: "Does the Blog AI Agent post directly to WordPress?",
-                                a: "Yes. The agent can authenticate with your WordPress CMS via the REST API and publish posts directly — including formatting, featured image attachment, category and tag assignment, and meta SEO fields — without you needing to copy-paste anything."
+                                a: "Yes. The agent can authenticate with your WordPress CMS via the REST API and publish posts directly — including formatting, featured image attachment, category and tag assignment, and meta GEO fields — without you needing to copy-paste anything."
                             },
                             {
                                 q: "Will AI-generated content pass Google's quality guidelines?",

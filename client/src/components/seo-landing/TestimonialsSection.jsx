@@ -7,7 +7,7 @@ const testimonials = [
     role: 'Founder',
     avatar: '/testimonals/akshay_lakde.jpeg',
     rating: 5,
-    text: 'We went from 0 to 3,400 monthly organic visitors in 60 days using Bitlance SEO. The auto-publish feature alone saves us 15 hours a week.',
+    text: 'We went from 0 to 3,400 monthly organic visitors in 60 days using Bitlance GEO. The auto-publish feature alone saves us 15 hours a week.',
     metric: '+3,400 organic/month',
     metricLabel: 'in 60 days',
   },
@@ -40,7 +40,7 @@ const testimonials = [
   },
   {
     name: 'Tejaunsh Nyati',
-    role: 'SEO Consultant',
+    role: 'GEO Consultant',
     avatar: '/testimonals/tejaunsh_nyati.jpeg',
     rating: 5,
     text: "I use Bitlance for all my client sites. The keyword research + auto-publish saves me 3 hours per article. My clients see page-1 rankings within weeks.",

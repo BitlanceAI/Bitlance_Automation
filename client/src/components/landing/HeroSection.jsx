@@ -11,7 +11,7 @@ const slides = [
         title1: 'Automate Your Traffic with the',
         title2: 'GEO (Generative) AI Agent',
         icon: Edit3,
-        description: 'Stop writing manually. Our autonomous agent runs keyword research and turns them into fully-formatted, SEO-optimised blog posts.',
+        description: 'Stop writing manually. Our autonomous agent runs keyword research and turns them into fully-formatted, GEO-optimised blog posts.',
         features: ['Keyword Research', 'Auto-Publishing', 'SERP Tracking'],
     },
     {

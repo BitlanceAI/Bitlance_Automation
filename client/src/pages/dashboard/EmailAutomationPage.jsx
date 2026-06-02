@@ -53,7 +53,7 @@ const EmailAutomationPage = () => {
     const [enrolForm, setEnrolForm] = useState({ email: '', name: '', sequence_type: 'welcome' });
     const [enrolling, setEnrolling] = useState(false);
 
-    // Import SEO leads form
+    // Import GEO leads form
     const [seoImportForm, setSeoImportForm] = useState({ sheetId: '', emailColumn: 'email', nameColumn: 'name' });
     const [importingSeo, setImportingSeo] = useState(false);
 
@@ -151,7 +151,7 @@ const EmailAutomationPage = () => {
         } catch { toast.error('Cannot reach server'); }
     };
 
-    // ── Import SEO leads from Google Sheets ───────────────────────────────────
+    // ── Import GEO leads from Google Sheets ───────────────────────────────────
 
     const handleImportSeoLeads = async (e) => {
         e.preventDefault();
@@ -165,7 +165,7 @@ const EmailAutomationPage = () => {
             });
             const data = await res.json();
             if (data.success) {
-                toast.success(`✅ Imported ${data.enrolled} emails for SEO marketing sequence`);
+                toast.success(`✅ Imported ${data.enrolled} emails for GEO marketing sequence`);
                 setSeoImportForm({ sheetId: '', emailColumn: 'email', nameColumn: 'name' });
                 fetchSequences();
                 if (data.skippedRows?.length > 0) {
@@ -289,7 +289,7 @@ const EmailAutomationPage = () => {
                                     <option value="welcome">Welcome (7 emails / 14 days)</option>
                                     <option value="nurture">Nurture (8 emails / 21 days)</option>
                                     <option value="reengagement">Re-engagement (4 emails / 14 days)</option>
-                                    <option value="seo_marketing">SEO Marketing (5 emails / 14 days)</option>
+                                    <option value="seo_marketing">GEO Marketing (5 emails / 14 days)</option>
                                 </select>
                             </div>
                             <button type="submit" disabled={enrolling}
@@ -301,15 +301,15 @@ const EmailAutomationPage = () => {
                     </div>
                 </div>
 
-                {/* Import SEO Leads from Google Sheets */}
+                {/* Import GEO Leads from Google Sheets */}
                 <div className="bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-emerald-900/20 dark:to-teal-900/20 rounded-2xl shadow-sm border border-emerald-200 dark:border-emerald-800 p-6">
                     <div className="flex items-center gap-2 mb-5">
                         <div className="p-2 rounded-lg bg-emerald-500/20">
                             <Users className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
                         </div>
                         <div>
-                            <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Import SEO Marketing Leads</h2>
-                            <p className="text-xs text-gray-600 dark:text-gray-400">Bulk import emails from Google Sheets to send SEO AI agent marketing sequence</p>
+                            <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Import GEO Marketing Leads</h2>
+                            <p className="text-xs text-gray-600 dark:text-gray-400">Bulk import emails from Google Sheets to send GEO AI agent marketing sequence</p>
                         </div>
                     </div>
                     <form onSubmit={handleImportSeoLeads} className="space-y-4">

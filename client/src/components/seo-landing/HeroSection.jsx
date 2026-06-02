@@ -120,7 +120,7 @@ export default function HeroSection() {
           style={{ background: 'rgba(38,206,206,0.08)', border: '1px solid rgba(38,206,206,0.25)' }}
         >
           <span className="w-2 h-2 rounded-full animate-pulse" style={{ background: BRAND }} />
-          <span className="text-sm font-semibold" style={{ color: BRAND }}>AI-Powered SEO Engine</span>
+          <span className="text-sm font-semibold" style={{ color: BRAND }}>AI-Powered GEO Engine</span>
         </Motion.div>
 
         {/* Headline */}

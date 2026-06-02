@@ -155,7 +155,7 @@ function App() {
     normalizedPath.startsWith('/l/') ||
     normalizedPath.includes('/apply/audit') ||
     normalizedPath.includes('/apply') || // Hide Main Nav for Landing Pages and Audit Funnel
-    normalizedPath === '/seo'; // SEO landing has its own NavBar
+    normalizedPath === '/seo'; // GEO landing has its own NavBar
 
   return (
     <ThemeProvider>

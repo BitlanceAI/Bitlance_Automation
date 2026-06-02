@@ -14,7 +14,7 @@ const STEPS = [
     {
         id: 'article-title',
         title: 'Step 2 — Enter Your Topic',
-        desc: 'Type the article title or topic you want the AI to write about. Be specific — e.g. "Best SEO strategies for real estate 2025" ranks better than "SEO tips".',
+        desc: 'Type the article title or topic you want the AI to write about. Be specific — e.g. "Best GEO strategies for real estate 2025" ranks better than "GEO tips".',
         position: 'bottom',
     },
     {
@@ -26,7 +26,7 @@ const STEPS = [
     {
         id: 'article-options',
         title: 'Step 4 — Article Settings',
-        desc: 'Set language, writing style, length, and target audience. These guide how the AI frames the content. "Professional" + "Long" works best for SEO.',
+        desc: 'Set language, writing style, length, and target audience. These guide how the AI frames the content. "Professional" + "Long" works best for GEO.',
         position: 'top',
     },
     {
@@ -38,13 +38,13 @@ const STEPS = [
     {
         id: 'article-output',
         title: 'Step 6 — Review Output',
-        desc: 'Your generated article appears here. Read through it, check the SEO title, and make any tweaks before publishing.',
+        desc: 'Your generated article appears here. Read through it, check the GEO title, and make any tweaks before publishing.',
         position: 'left',
     },
     {
         id: 'wp-upload',
         title: 'Step 7 — Publish to WordPress',
-        desc: 'Happy with the article? Click this button to push it directly to your WordPress site — with title, content, image, and SEO fields, all set automatically.',
+        desc: 'Happy with the article? Click this button to push it directly to your WordPress site — with title, content, image, and GEO fields, all set automatically.',
         position: 'top',
     },
 ];
