@@ -154,7 +154,7 @@ export const generateAndSaveArticleInternal = async ({
             {
                 topic, industry, keywords, language, style, length, audience, image_option, custom_image_url, wp_url, wp_api_url, interlinks
             },
-            { headers: { Authorization: `Bearer ${token}` }, timeout: 300000 }
+            { headers: { Authorization: `Bearer ${token}` }, timeout: 600000 }
         );
         genData = genRes.data;
         if (!genData.success) throw new Error(genData.error || 'Generation failed');
@@ -276,7 +276,7 @@ export const generateArticle = async (req, res) => {
 
     // ── 1. Credit pre-flight ──────────────────────────────────────────────────
     try {
-        const check = await CreditLedgerService.validateCredits(userId, 'blog', 1);
+        const check = await CreditLedgerService.validateCreditsAvailable(userId, 'blog', 1);
         if (!check.hasEnough) {
             return res.status(402).json({
                 success: false,
@@ -357,7 +357,7 @@ export const bulkGenerateArticles = async (req, res) => {
         }
 
         // Credit check for bulk
-        const check = await CreditLedgerService.validateCredits(userId, 'blog', rows.length);
+        const check = await CreditLedgerService.validateCreditsAvailable(userId, 'blog', rows.length);
         if (!check.hasEnough) {
             return res.status(402).json({
                 success: false,
