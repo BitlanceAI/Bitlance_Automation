@@ -83,7 +83,23 @@ export const AuthProvider = ({ children }) => {
         refreshCredits,
         signUp: (data) => supabase.auth.signUp(data),
         signIn: (data) => supabase.auth.signInWithPassword(data),
-        signOut: () => supabase.auth.signOut(),
+        signOut: async () => {
+            try {
+                await supabase.auth.signOut();
+            } catch (e) {
+                console.error("SignOut error:", e);
+            } finally {
+                // Force clear local storage to prevent trapping the user if token is expired
+                Object.keys(localStorage).forEach(key => {
+                    if (key.startsWith('sb-')) {
+                        localStorage.removeItem(key);
+                    }
+                });
+                setUser(null);
+                setSession(null);
+                window.location.href = '/login';
+            }
+        },
         token: session?.access_token || null,
     };
 
