@@ -57,11 +57,10 @@ Language: {language}
 
 INSTRUCTIONS:
 1. Identify 5 high-intent questions people actually ask about "{topic}". If "CURRENT GOOGLE 'PEOPLE ALSO ASK'" is provided above, you MUST prioritize those exact questions.
-2. For each answer, start with a direct, definitive, "bottom-line-up-front" (BLUF) sentence.
-3. Use HTML formatting in the answer: include <ul>, <li>, and <strong> where applicable.
-4. Keep the tone professional, objective, and factual.
-5. Identify 3 core "Entities" or "Keywords" related to the topic.
-6. CRITICAL: Your entire response must be a single, perfectly valid JSON object. Ensure all double quotes are properly escaped. Do NOT use any raw unescaped backslashes (\). 
+2. Use HTML formatting in the answer: include <ul>, <li>, and <strong> where applicable.
+3. Keep the tone professional, objective, and factual.
+4. Identify 3 core "Entities" or "Keywords" related to the topic.
+5. CRITICAL: Your entire response must be a single, perfectly valid JSON object. Ensure all double quotes are properly escaped. Do NOT use any raw unescaped backslashes (\). 
 
 Return the result as a valid JSON object matching this exact structure:
 {{

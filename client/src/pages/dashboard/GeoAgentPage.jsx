@@ -192,7 +192,7 @@ export default function GeoAgentPage() {
                       <span className="absolute top-4 right-4 text-[10px] uppercase font-bold text-[#26cece] bg-[#26cece]/10 px-2 py-1 rounded">
                         {faq.intent}
                       </span>
-                      <h5 className="text-lg font-bold text-slate-800 mb-4 pr-24 border-b border-slate-100 pb-2">Q: {faq.question}</h5>
+                      <h5 className="text-lg font-bold text-slate-800 mb-4 pr-24 border-b border-slate-100 pb-2">{faq.question}</h5>
                       <div className="text-slate-600 prose prose-sm max-w-none prose-p:mb-3 prose-ul:my-3 prose-li:my-1" dangerouslySetInnerHTML={{ __html: faq.answer }} />
                     </div>
                   ))}
