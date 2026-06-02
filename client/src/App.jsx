@@ -32,7 +32,7 @@ const GraphicDesignerPage = lazy(() => import('./pages/dashboard/GraphicDesigner
 const MetaAdsPage = lazy(() => import('./pages/dashboard/MetaAdsPage'));
 const EmailAutomationPage = lazy(() => import('./pages/dashboard/EmailAutomationPage'));
 const RealEstateReelPage = lazy(() => import('./pages/dashboard/RealEstateReelPage'));
-const GeoAgentPage = lazy(() => import('./pages/dashboard/GeoAgentPage'));
+
 
 // Admin (heavy: jspdf, xlsx)
 const AdminDashboard = lazy(() => import('./pages/admin/AdminDashboard'));
@@ -251,11 +251,6 @@ function App() {
                 <Route path="/dashboard/agents/video" element={
                   <AuthGuard>
                     <RealEstateReelPage />
-                  </AuthGuard>
-                } />
-                <Route path="/dashboard/agents/geo" element={
-                  <AuthGuard>
-                    <GeoAgentPage />
                   </AuthGuard>
                 } />
                 <Route path="/dashboard/agents/meta" element={

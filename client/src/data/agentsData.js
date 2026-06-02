@@ -24,18 +24,7 @@ export const agents = [
     ],
     status: "Available"
   },
-  {
-    icon: Globe,
-    title: "GEO FAQ AI Agent",
-    description: "Generates AI-optimized Q&A schema for Generative Engine Optimization.",
-    features: [
-      "Generative Engine Q&A",
-      "Structured Schema Markup",
-      "Direct Answer Optimization",
-      "Perplexity & SearchGPT Ready"
-    ],
-    status: "Available"
-  },
+
 
   {
     icon: Palette,

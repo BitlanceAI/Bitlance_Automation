@@ -176,6 +176,23 @@ def generate_blog_content(
     word_count = 0
     current_attempts = 0
 
+    # Fetch real-time People Also Ask questions
+    real_questions = []
+    try:
+        api_key = os.getenv("SERP_API_KEY") or os.getenv("SERPAPI_API_KEY")
+        if api_key:
+            search_data = requests.get("https://serpapi.com/search.json", params={
+                "api_key": api_key, "q": topic, "hl": "en", "gl": "us", "num": 5
+            }, timeout=5).json()
+            paa_list = search_data.get("related_questions", [])
+            real_questions = [q.get("question") for q in paa_list if q.get("question")]
+    except Exception as e:
+        print(f"PAA fetch failed: {e}")
+
+    paa_instructions = ""
+    if real_questions:
+        paa_instructions = f"\n   You MUST use these EXACT real-world Google search questions for your FAQs:\n   " + "\n   ".join([f"- {q}" for q in real_questions])
+
     # Build interlinking instructions
     interlink_instructions = ""
     if interlinks:
@@ -276,7 +293,7 @@ MINIMUM WORDS   : {length_num}
 
 6. FAQ SECTION  (H2: "Frequently Asked Questions About {primary_keyword}")
    - Add EXACTLY 5 Q&A pairs.
-   - Each question targets a "People Also Ask" query for this topic.
+   - Each question targets a "People Also Ask" query for this topic.{paa_instructions}
    - Format:
        ### Question text here?
        Answer in 40–80 words. Direct, factual, complete sentence. No fluff.
@@ -486,6 +503,23 @@ def openai_generate_blog_content(
     """Fallback blog content generation via OpenAI GPT-4o."""
     interlinks = interlinks or []
 
+    # Fetch real-time People Also Ask questions
+    real_questions = []
+    try:
+        api_key = os.getenv("SERP_API_KEY") or os.getenv("SERPAPI_API_KEY")
+        if api_key:
+            search_data = requests.get("https://serpapi.com/search.json", params={
+                "api_key": api_key, "q": topic, "hl": "en", "gl": "us", "num": 5
+            }, timeout=5).json()
+            paa_list = search_data.get("related_questions", [])
+            real_questions = [q.get("question") for q in paa_list if q.get("question")]
+    except Exception as e:
+        print(f"PAA fetch failed: {e}")
+
+    paa_instructions = ""
+    if real_questions:
+        paa_instructions = f"\n   You MUST use these EXACT real-world Google search questions for your FAQs:\n   " + "\n   ".join([f"- {q}" for q in real_questions])
+
     interlink_instructions = ""
     if interlinks:
         links_str = "\n".join(
@@ -571,7 +605,7 @@ MINIMUM WORDS   : {length_num}
 
 6. FAQ SECTION  (H2: "Frequently Asked Questions About {primary_keyword}")
    - Add EXACTLY 5 Q&A pairs.
-   - Each question targets a "People Also Ask" query for this topic.
+   - Each question targets a "People Also Ask" query for this topic.{paa_instructions}
    - Format:
        ### Question text here?
        Answer in 40–80 words. Direct, factual, complete sentence. No fluff.
