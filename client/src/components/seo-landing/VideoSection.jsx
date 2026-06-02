@@ -1,7 +1,7 @@
 import { useRef, useState } from 'react';
 import { motion as Motion, useInView } from 'framer-motion';
 import { Play, X, Clapperboard, Timer, Bot, UploadCloud } from 'lucide-react';
-const seoVideo = "https://assets.mixkit.co/videos/preview/mixkit-luxury-home-with-swimming-pool-1478-large.mp4";
+import seoVideo from '../../assets/GEO_AI_agent-_implementation.mp4';
 
 const VIDEO_URL = seoVideo;
 const THUMBNAIL_URL = null; // Set to a real thumbnail URL or null for gradient placeholder
@@ -30,7 +30,7 @@ export default function VideoSection({ videoRef: externalRef }) {
             See It <span className="gradient-text">In Action</span>
           </h2>
           <p className="mt-4 text-white/50 text-base sm:text-lg max-w-xl mx-auto">
-            Watch the SEO AI Agent take a keyword from input to a published WordPress article — in under 3 minutes.
+            Watch the GEO (Generative) AI Agent take a keyword from input to a published WordPress article — in under 3 minutes.
           </p>
         </Motion.div>
 
@@ -55,7 +55,7 @@ export default function VideoSection({ videoRef: externalRef }) {
               ) : (
                 <iframe
                   src={VIDEO_URL}
-                  title="Bitlance SEO AI Agent Demo"
+                  title="Bitlance GEO (Generative) AI Agent Demo"
                   className="absolute inset-0 w-full h-full"
                   style={{ border: 'none' }}
                   allow="encrypted-media; fullscreen"
@@ -107,7 +107,7 @@ export default function VideoSection({ videoRef: externalRef }) {
                   <div className="mb-4 text-brand">
                     <Clapperboard size={56} strokeWidth={1.5} />
                   </div>
-                  <p className="text-white/40 text-sm">SEO AI Agent — Live Demo</p>
+                  <p className="text-white/40 text-sm">GEO (Generative) AI Agent — Live Demo</p>
                 </div>
               )}
 

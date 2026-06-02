@@ -33,7 +33,7 @@ const Footer = () => (
                     <ul className="space-y-3">
                         <FooterLink to="/"                            label="Home" />
                         <FooterLink to="/agents"                      label="All AI Agents" />
-                        <FooterLink to="/dashboard/agents/seo"        label="SEO AI Agent" />
+                        <FooterLink to="/dashboard/agents/seo"        label="GEO (Generative) AI Agent" />
                         <FooterLink to="/dashboard/agents/meta"       label="Meta Ads AI" />
                         <FooterLink to="/dashboard/agents/whatsapp"     label="WhatsApp Automation" />
                         <FooterLink to="/dashboard/agents/voice"      label="AI Voice Agent" />

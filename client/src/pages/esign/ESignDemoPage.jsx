@@ -88,7 +88,7 @@ function buildPDF(fields = {}, plan = PLANS[1], signed = false) {
   const infoRows = [
     ['Agreement No.', `AB-${Date.now().toString(36).toUpperCase().slice(-6)}`],
     ['Date', new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'long', year: 'numeric' })],
-    ['Service', `SEO AI Agent — ${plan.name} Plan`],
+    ['Service', `GEO (Generative) AI Agent — ${plan.name} Plan`],
     ['Price', plan.label],
     ['Articles/Month', `${plan.articles}`],
     ['WordPress Sites', plan.sites ? `${plan.sites}` : 'Unlimited'],
@@ -139,7 +139,7 @@ function buildPDF(fields = {}, plan = PLANS[1], signed = false) {
   y += 6;
 
   section('2. SCOPE OF SERVICE');
-  para(`Automation-Bitlance agrees to provide access to the "SEO AI Agent — ${plan.name} Plan". The service includes ${plan.articles} articles per month across ${plan.sites ? plan.sites + ' WordPress site(s)' : 'unlimited WordPress sites'}, automated SEO content generation, and publishing pipeline. The service includes onboarding, technical support, and platform access for the duration of the active subscription.`);
+  para(`Automation-Bitlance agrees to provide access to the "GEO (Generative) AI Agent — ${plan.name} Plan". The service includes ${plan.articles} articles per month across ${plan.sites ? plan.sites + ' WordPress site(s)' : 'unlimited WordPress sites'}, automated SEO content generation, and publishing pipeline. The service includes onboarding, technical support, and platform access for the duration of the active subscription.`);
 
   section('3. PAYMENT TERMS');
   para(`The Client agrees to pay ${plan.label} billed on the subscription start date. Payments are processed securely via Cashfree Payments. All amounts are inclusive of applicable GST. Subscriptions auto-renew unless cancelled 7 days prior to billing.`);
@@ -484,7 +484,7 @@ const ESignPage = () => {
               <div className="h-px bg-[#1a1a1a]" />
               <div className="flex justify-between text-sm">
                 <span className="text-gray-400">Plan</span>
-                <span className="text-white font-medium">SEO AI Agent — {selectedPlan.name}</span>
+                <span className="text-white font-medium">GEO (Generative) AI Agent — {selectedPlan.name}</span>
               </div>
               <div className="h-px bg-[#1a1a1a]" />
               <div className="flex justify-between text-sm">

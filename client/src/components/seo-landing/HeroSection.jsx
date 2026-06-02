@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion as Motion } from 'framer-motion';
 import { ArrowRight, Send, Search, ShieldCheck, RefreshCw } from 'lucide-react';
-const seoVideo = "https://assets.mixkit.co/videos/preview/mixkit-luxury-home-with-swimming-pool-1478-large.mp4";
+import seoVideo from '../../assets/SEO_AI_agent-_implementation.mp4';
 
 const APP_URL = 'https://www.bitlancetechhub.com';
 const BRAND = '#26CECE';

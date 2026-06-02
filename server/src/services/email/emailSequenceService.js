@@ -5,7 +5,7 @@
  *   • welcome      — triggered when a new user signs up (7 emails / 14 days)
  *   • nurture      — triggered when a new lead is added   (8 emails / 21 days)
  *   • reengagement — triggered when a user is inactive 30+ days (4 emails / 14 days)
- *   • seo_marketing — bulk import for SEO AI agent leads (5 emails / 14 days)
+ *   • seo_marketing — bulk import for GEO (Generative) AI Agent leads (5 emails / 14 days)
  *
  * Each run (called by emailSequenceCron):
  *   1. Enrols new candidates who don't yet have a sequence entry

@@ -120,7 +120,7 @@ export default function TestimonialsSection() {
             Loved by <span className="gradient-text">200+ Businesses</span>
           </h2>
           <p className="mt-4 text-[#A0A0A0] text-base sm:text-lg max-w-xl mx-auto">
-            Real results from real customers who let our SEO AI Agent do the heavy lifting.
+            Real results from real customers who let our GEO (Generative) AI Agent do the heavy lifting.
           </p>
         </Motion.div>
 

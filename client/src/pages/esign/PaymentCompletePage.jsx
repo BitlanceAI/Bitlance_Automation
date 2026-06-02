@@ -90,7 +90,7 @@ function generateAgreementPDF(fields) {
     doc.setFontSize(9);
     doc.setTextColor(60, 60, 60);
     [
-        '1. The client agrees to subscribe to the SEO AI Agent service at Rs. 4,999/month.',
+        '1. The client agrees to subscribe to the GEO (Generative) AI Agent service at Rs. 4,999/month.',
         '2. The subscription auto-renews monthly unless cancelled with 15 days written notice.',
         '3. Automation-Bitlance retains rights to all AI-generated content strategies.',
         '4. The client confirms their identity has been verified via Aadhaar through DigiLocker.',

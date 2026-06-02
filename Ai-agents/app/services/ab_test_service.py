@@ -1,5 +1,5 @@
 """
-A/B Test Service for SEO AI Agent Blog Generation Pipeline
+A/B Test Service for GEO (Generative) AI Agent Blog Generation Pipeline
 ===========================================================
 
 Active experiment:

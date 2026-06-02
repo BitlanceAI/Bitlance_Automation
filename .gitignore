@@ -131,6 +131,7 @@ Thumbs.db
 # Media Files (Use CDN instead)
 # ===============================
 *.mp4
+!client/src/assets/GEO_AI_agent-_implementation.mp4
 *.mov
 *.avi
 *.webm

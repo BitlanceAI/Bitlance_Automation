@@ -654,7 +654,7 @@ const SeoAgentPage = () => {
                             {agentStats && (
                                 <div className="absolute top-full mt-2 right-0 bg-white border border-slate-200 rounded-[2px] p-4 shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 w-56 z-20">
                                     <div className="text-xs space-y-2 font-mono">
-                                        <div className="font-bold text-[#26cece] mb-3 uppercase tracking-widest text-[10px]">SEO Agent Stats</div>
+                                        <div className="font-bold text-[#26cece] mb-3 uppercase tracking-widest text-[10px]">GEO Agent Stats</div>
                                         <div className="flex justify-between items-center bg-slate-50 p-2 rounded-[2px] border border-slate-200">
                                             <span className="text-slate-500 uppercase text-[10px]">Total Used:</span>
                                             <span className="text-[#26cece] font-bold">{agentStats.totalCreditsUsed.toLocaleString()}</span>

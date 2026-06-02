@@ -14,7 +14,7 @@ import {
 export const agents = [
   {
     icon: Brain,
-    title: "SEO AI Agent",
+    title: "GEO (Generative) AI Agent",
     description: "Automates keyword research and content optimization.",
     features: [
       "Automated keyword research",

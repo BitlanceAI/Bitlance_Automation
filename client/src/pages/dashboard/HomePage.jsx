@@ -114,8 +114,8 @@ const HomePage = () => {
 
     const agents = [
         {
-            title: 'SEO AI Agent',
-            description: 'Dominate search rankings with automated content and SEO optimization.',
+            title: 'GEO (Generative) AI Agent',
+            description: 'Dominate search and AI engine rankings with automated content and GEO optimization.',
             icon: Search,
             path: '/dashboard/agents/seo',
             color: 'from-amber-500 to-orange-500',

@@ -5,7 +5,7 @@ import { Check, X, ArrowRight, Phone, Zap, Mic, Package, Wrench } from 'lucide-r
 
 const T = '#26CECE';
 
-// ─── SEO AI Agent — Product (Self-Serve SaaS) ───────────────────────────────
+// ─── GEO (Generative) AI Agent — Product (Self-Serve SaaS) ───────────────────────────────
 const seoProductPlans = [
     {
         name: 'Starter',
@@ -37,7 +37,7 @@ const seoProductPlans = [
     },
 ];
 
-// ─── SEO AI Agent — Service (Done For You) ──────────────────────────────────
+// ─── GEO (Generative) AI Agent — Service (Done For You) ──────────────────────────────────
 const seoServicePlans = [
     {
         name: 'Basic',
@@ -225,7 +225,7 @@ const AgentPricingSection = () => {
                                 ? { background: T, color: '#000' }
                                 : { background: '#ffffff', color: '#000' }}
                         >
-                            <Zap size={13} /> SEO AI Agent
+                            <Zap size={13} /> GEO AI Agent
                         </button>
                         <button
                             onClick={() => setAgent('voice')}

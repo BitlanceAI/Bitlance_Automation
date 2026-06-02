@@ -204,7 +204,7 @@ const BlogAgentSection = ({ onOpenBooking }) => {
                             fontFamily: "'Space Grotesk', sans-serif",
                         }}
                     >
-                        Try the SEO AI Agent <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
+                        Try the GEO (Generative) AI Agent <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
                     </button>
 
                     <button

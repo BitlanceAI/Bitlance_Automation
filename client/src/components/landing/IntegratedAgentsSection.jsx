@@ -65,7 +65,7 @@ const BlogAgentContent = ({ navigate }) => {
 
             <div className="flex justify-center mt-8">
                 <button onClick={() => navigate('/dashboard/agents/seo')} className="group inline-flex items-center gap-3 font-extrabold text-base transition-all hover:bg-black hover:text-white" style={{ background: TEAL, color: '#000', padding: '16px 32px', borderRadius: 2, border: 'none', cursor: 'pointer', fontFamily: "'Space Grotesk', sans-serif" }}>
-                    Try the SEO AI Agent <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
+                    Try the GEO (Generative) AI Agent <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
                 </button>
             </div>
         </motion.div>
@@ -226,7 +226,7 @@ const IntegratedAgentsSection = ({ onOpenBooking }) => {
     const [activeTab, setActiveTab] = useState('blog');
 
     const tabs = [
-        { id: 'blog', label: 'SEO Blog Agent', icon: Globe, color: TEAL },
+        { id: 'blog', label: 'GEO Blog Agent', icon: Globe, color: TEAL },
         { id: 'voice', label: 'AI Voice Agent', icon: Phone, color: TEAL },
         { id: 'whatsapp', label: 'WhatsApp Agent', icon: MessageCircle, color: '#25D366' },
         { id: 'graphic', label: 'Graphic AI Agent', icon: Palette, color: '#8B5CF6' }

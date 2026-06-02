@@ -135,7 +135,7 @@ const LandingPage = () => {
                             "name": "Bitlance Tech Hub",
                             "url": "https://www.bitlancetechhub.com",
                             "logo": "https://www.bitlancetechhub.com/logo/logo (1).jpg",
-                            "description": "Bitlance builds autonomous AI agents — Voice Bots, WhatsApp Chatbots, and SEO AI Agents — that capture, qualify, and follow up with leads automatically.",
+                            "description": "Bitlance builds autonomous AI agents — Voice Bots, WhatsApp Chatbots, and GEO (Generative) AI Agents — that capture, qualify, and follow up with leads automatically.",
                             "foundingLocation": "India",
                             "sameAs": ["https://twitter.com/bitlancetechhub"]
                         },
@@ -164,7 +164,7 @@ const LandingPage = () => {
                         },
                         {
                             "@type": "Service",
-                            "name": "SEO AI Agent",
+                            "name": "GEO (Generative) AI Agent",
                             "provider": { "@id": "https://www.bitlancetechhub.com/#organization" },
                             "description": "Automated SEO content generation and publishing pipeline. Researches trending topics, writes articles, checks plagiarism, and publishes to WordPress automatically.",
                             "areaServed": "IN",
