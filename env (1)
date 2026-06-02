@@ -1,0 +1,13 @@
+
+
+# Use production URL only for deployed builds; comment out for local dev
+# VITE_API_BASE_URL=https://automation-dashboard-s3m6.onrender.com
+VITE_API_URL=http://127.0.0.1:3001
+VITE_FIREBASE_VAPID_KEY=BDBDI7gCYxatxkhJKHNE-8BlafETIe9HvyiXh4cZ8VrMe_6ZV52cWTFQyYrc-doq5f0qCy_UUkReymj6MD782tg
+VITE_FIREBASE_API_KEY=AIzaSyBiqRvXwRXIvL23Avfu2iCEGrF92UL9v1Y
+VITE_FIREBASE_BLOGS_API_KEY=AIzaSyDtSwhXr-phrrGDXyPP61j1uVINozhgxNk
+VITE_WEB3FORMS_ACCESS_KEY=1fbb73e0-3f07-45b7-b9aa-21f4d33166d3
+PUBLIC_SUPABASE_URL=https://paskzwoegduhzehkxoyu.supabase.co
+PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBhc2t6d29lZ2R1aHplaGt4b3l1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjE1NjA0ODksImV4cCI6MjA3NzEzNjQ4OX0.Kyy7bJf1R5MouHNFvOrPbJVYfNADxsciRDXFZZpmd-8
+# LinkedIn credentials have been moved to server/.env
+# Cashfree credentials belong in server/.env only — never expose here

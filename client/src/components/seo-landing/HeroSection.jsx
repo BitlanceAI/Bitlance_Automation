@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
-import { motion } from 'framer-motion';
+import { motion as Motion } from 'framer-motion';
 import { ArrowRight, Send, Search, ShieldCheck, RefreshCw } from 'lucide-react';
-import seoVideo from '../../assets/SEO_AI_agent-_implementation.mp4';
+const seoVideo = "https://assets.mixkit.co/videos/preview/mixkit-luxury-home-with-swimming-pool-1478-large.mp4";
 
 const APP_URL = 'https://www.bitlancetechhub.com';
 const BRAND = '#26CECE';
@@ -22,7 +22,6 @@ const STATS = [
 
 // Typewriter effect for the headline
 const useTypewriter = (words, speed = 120, pause = 1800) => {
-  const [displayed, setDisplayed] = useState('');
   const [wordIdx, setWordIdx] = useState(0);
   const [charIdx, setCharIdx] = useState(0);
   const [deleting, setDeleting] = useState(false);
@@ -37,14 +36,15 @@ const useTypewriter = (words, speed = 120, pause = 1800) => {
     } else if (deleting && charIdx > 0) {
       timeout = setTimeout(() => setCharIdx(c => c - 1), speed / 2);
     } else {
-      setDeleting(false);
-      setWordIdx(i => (i + 1) % words.length);
+      timeout = setTimeout(() => {
+        setDeleting(false);
+        setWordIdx(i => (i + 1) % words.length);
+      }, speed / 2);
     }
-    setDisplayed(current.slice(0, charIdx));
     return () => clearTimeout(timeout);
   }, [charIdx, deleting, wordIdx, words, speed, pause]);
 
-  return displayed;
+  return words[wordIdx].slice(0, charIdx);
 };
 
 export default function HeroSection() {
@@ -85,7 +85,7 @@ export default function HeroSection() {
 
       {/* Floating stat badges */}
       {STATS.map(({ value, label, pos }, i) => (
-        <motion.div
+        <Motion.div
           key={label}
           className={`absolute ${pos} hidden sm:block z-20`}
           initial={{ opacity: 0, scale: 0.7 }}
@@ -104,14 +104,14 @@ export default function HeroSection() {
             <div className="text-3xl font-black" style={{ color: BRAND, lineHeight: 1 }}>{value}</div>
             <div className="text-xs text-white/55 mt-1 font-medium">{label}</div>
           </div>
-        </motion.div>
+        </Motion.div>
       ))}
 
       {/* Main content */}
       <div className="relative z-10 flex flex-col items-center text-center max-w-4xl mx-auto">
 
         {/* Badge */}
-        <motion.div
+        <Motion.div
           initial={{ opacity: 0, y: -12 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
@@ -121,10 +121,10 @@ export default function HeroSection() {
         >
           <span className="w-2 h-2 rounded-full animate-pulse" style={{ background: BRAND }} />
           <span className="text-sm font-semibold" style={{ color: BRAND }}>AI-Powered SEO Engine</span>
-        </motion.div>
+        </Motion.div>
 
         {/* Headline */}
-        <motion.h1
+        <Motion.h1
           initial={{ opacity: 0, y: 24 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
@@ -142,11 +142,11 @@ export default function HeroSection() {
               style={{ background: BRAND, verticalAlign: 'middle' }}
             />
           </span>
-        </motion.h1>
+        </Motion.h1>
 
 
         {/* Feature pills — below sub-headline */}
-        <motion.div
+        <Motion.div
           initial={{ opacity: 0, y: 12 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
@@ -154,7 +154,7 @@ export default function HeroSection() {
           className="flex flex-wrap justify-center gap-3"
         >
           {PILLS.map(({ icon, text }, i) => (
-            <motion.div
+            <Motion.div
               key={text}
               initial={{ opacity: 0, x: 16 }}
               whileInView={{ opacity: 1, x: 0 }}
@@ -169,14 +169,14 @@ export default function HeroSection() {
             >
               <span>{icon}</span>
               <span>{text}</span>
-            </motion.div>
+            </Motion.div>
           ))}
-        </motion.div>
+        </Motion.div>
 
       </div>
 
       {/* Video */}
-      <motion.div
+      <Motion.div
         initial={{ opacity: 0, y: 40 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, margin: "-100px" }}
@@ -252,10 +252,10 @@ export default function HeroSection() {
             <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent pointer-events-none" />
           </div>
         </div>
-      </motion.div>
+      </Motion.div>
 
       {/* CTA + Social proof — below video */}
-      <motion.div
+      <Motion.div
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
@@ -306,7 +306,7 @@ export default function HeroSection() {
             <span className="text-white/70 text-sm font-medium">Loved by top founders</span>
           </div>
         </div>
-      </motion.div>
+      </Motion.div>
     </section>
   );
 }

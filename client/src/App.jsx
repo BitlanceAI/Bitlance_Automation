@@ -31,6 +31,8 @@ const SeoAgentPage = lazy(() => import('./pages/dashboard/SeoAgentPage'));
 const GraphicDesignerPage = lazy(() => import('./pages/dashboard/GraphicDesignerPage'));
 const MetaAdsPage = lazy(() => import('./pages/dashboard/MetaAdsPage'));
 const EmailAutomationPage = lazy(() => import('./pages/dashboard/EmailAutomationPage'));
+const RealEstateReelPage = lazy(() => import('./pages/dashboard/RealEstateReelPage'));
+const GeoAgentPage = lazy(() => import('./pages/dashboard/GeoAgentPage'));
 
 // Admin (heavy: jspdf, xlsx)
 const AdminDashboard = lazy(() => import('./pages/admin/AdminDashboard'));
@@ -136,6 +138,10 @@ function App() {
       navigate('/dashboard/agents/design');
     } else if (agent.title === 'Meta Ads Automation AI') {
       navigate('/dashboard/agents/meta');
+    } else if (agent.title === 'Real Estate Reel AI Agent') {
+      navigate('/dashboard/agents/video');
+    } else if (agent.title === 'GEO FAQ AI Agent') {
+      navigate('/dashboard/agents/geo');
     }
   };
 
@@ -240,6 +246,16 @@ function App() {
                 <Route path="/dashboard/agents/design" element={
                   <AuthGuard>
                     <GraphicDesignerPage />
+                  </AuthGuard>
+                } />
+                <Route path="/dashboard/agents/video" element={
+                  <AuthGuard>
+                    <RealEstateReelPage />
+                  </AuthGuard>
+                } />
+                <Route path="/dashboard/agents/geo" element={
+                  <AuthGuard>
+                    <GeoAgentPage />
                   </AuthGuard>
                 } />
                 <Route path="/dashboard/agents/meta" element={

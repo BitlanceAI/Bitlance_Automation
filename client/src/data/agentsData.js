@@ -7,7 +7,8 @@ import {
   Shield,
   Palette,
   MessageCircle,
-  MessageSquare
+  MessageSquare,
+  Globe
 } from 'lucide-react';
 
 export const agents = [
@@ -20,6 +21,18 @@ export const agents = [
       "Content optimization",
       "SERP monitoring",
       "SEO audits"
+    ],
+    status: "Available"
+  },
+  {
+    icon: Globe,
+    title: "GEO FAQ AI Agent",
+    description: "Generates AI-optimized Q&A schema for Generative Engine Optimization.",
+    features: [
+      "Generative Engine Q&A",
+      "Structured Schema Markup",
+      "Direct Answer Optimization",
+      "Perplexity & SearchGPT Ready"
     ],
     status: "Available"
   },
@@ -75,6 +88,18 @@ export const agents = [
     status: "Coming Soon"
   },
 
+  {
+    icon: Video,
+    title: "Real Estate Reel AI Agent",
+    description: "Convert a reference YouTube video style and property details into a cinematic real estate reel with an AI avatar presenter.",
+    features: [
+      "YouTube style analysis",
+      "AI script generation",
+      "Voice & avatar synthesis",
+      "Cinematic scene matching"
+    ],
+    status: "Available"
+  },
   {
     icon: Video,
     title: "UGC Video AI Agent",

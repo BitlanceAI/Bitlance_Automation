@@ -67,6 +67,7 @@ import authRoutes from './routes/auth/authRoutes.js';
 import linkedinRoutes from './routes/social/linkedinRoutes.js';
 import articleRoutes from './routes/blog/articleRoutes.js';
 import geminiRoutes from './routes/seo/gemini.js';
+import geoRoutes from './routes/geo/geoRoutes.js';
 
 // Mount routes
 app.use('/api/auth', authRoutes);
@@ -93,6 +94,7 @@ app.use('/api/meta', metaRoutes);
 
 app.use('/api', articleRoutes); // blog generation + CRUD + public blog routes
 app.use('/api/gemini', geminiRoutes); // Gemini AI endpoints
+app.use('/api/geo', geoRoutes); // GEO FAQ AI endpoint
 
 // Meta Webhooks (no /api prefix as Meta expects direct path)
 import webhookRoutes from './routes/social/webhookRoutes.js';
@@ -136,6 +138,9 @@ app.use('/api/digilocker', digiLockerRoutes);
 
 import paymentRoutes from './routes/payments/paymentRoutes.js';
 app.use('/api/payment', paymentRoutes);
+
+import videoRoutes from './routes/video/videoRoutes.js';
+app.use('/api/video', videoRoutes);
 
 import sitemapRoutes from './routes/seo/sitemapRoutes.js';
 app.use('/', sitemapRoutes);

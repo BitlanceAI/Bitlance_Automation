@@ -27,10 +27,12 @@ logger.info("=" * 60)
 # ==================================================
 
 from app.api.blog import router as blog_router
+from app.api.video import router as video_router
+from app.api.geo import router as geo_router
 
 app = FastAPI(
-    title="SEO AI Agent API",
-    description="AI powered SEO and Blog generation agent",
+    title="SEO & Video & GEO AI Agent API",
+    description="AI powered SEO, Real Estate Video, and GEO generation agent",
     version="1.0.0"
 )
 
@@ -51,6 +53,8 @@ app.add_middleware(
 # ==================================================
 
 app.include_router(blog_router, prefix="/api/blog")
+app.include_router(video_router, prefix="/api/video")
+app.include_router(geo_router, prefix="/api/geo")
 
 # ==================================================
 # HEALTH CHECK

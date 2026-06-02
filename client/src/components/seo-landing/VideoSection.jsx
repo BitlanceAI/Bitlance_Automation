@@ -1,7 +1,7 @@
 import { useRef, useState } from 'react';
-import { motion, useInView } from 'framer-motion';
+import { motion as Motion, useInView } from 'framer-motion';
 import { Play, X, Clapperboard, Timer, Bot, UploadCloud } from 'lucide-react';
-import seoVideo from '../../assets/SEO_AI_agent-_implementation.mp4';
+const seoVideo = "https://assets.mixkit.co/videos/preview/mixkit-luxury-home-with-swimming-pool-1478-large.mp4";
 
 const VIDEO_URL = seoVideo;
 const THUMBNAIL_URL = null; // Set to a real thumbnail URL or null for gradient placeholder
@@ -20,7 +20,7 @@ export default function VideoSection({ videoRef: externalRef }) {
       <div className="orb w-[600px] h-[600px] bg-brand/5 -bottom-32 left-1/2 -translate-x-1/2" />
 
       <div className="max-w-5xl mx-auto relative z-10" ref={ref}>
-        <motion.div
+        <Motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={inView ? { opacity: 1, y: 0 } : {}}
           className="text-center mb-12"
@@ -32,10 +32,10 @@ export default function VideoSection({ videoRef: externalRef }) {
           <p className="mt-4 text-white/50 text-base sm:text-lg max-w-xl mx-auto">
             Watch the SEO AI Agent take a keyword from input to a published WordPress article — in under 3 minutes.
           </p>
-        </motion.div>
+        </Motion.div>
 
         {/* Video container */}
-        <motion.div
+        <Motion.div
           initial={{ opacity: 0, scale: 0.96 }}
           animate={inView ? { opacity: 1, scale: 1 } : {}}
           transition={{ delay: 0.2, duration: 0.7 }}
@@ -121,7 +121,7 @@ export default function VideoSection({ videoRef: externalRef }) {
               </p>
             </div>
           )}
-        </motion.div>
+        </Motion.div>
 
         {/* Feature callouts below video */}
         <div className="mt-8 grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -130,7 +130,7 @@ export default function VideoSection({ videoRef: externalRef }) {
             { icon: <Bot size={20} className="text-brand" />, text: 'No prompting or editing required' },
             { icon: <UploadCloud size={20} className="text-brand" />, text: 'Publishes directly to WordPress' },
           ].map((item, i) => (
-            <motion.div
+            <Motion.div
               key={i}
               initial={{ opacity: 0, y: 16 }}
               animate={inView ? { opacity: 1, y: 0 } : {}}
@@ -139,7 +139,7 @@ export default function VideoSection({ videoRef: externalRef }) {
             >
               <span className="flex-shrink-0">{item.icon}</span>
               <span className="text-sm text-white/60 font-medium">{item.text}</span>
-            </motion.div>
+            </Motion.div>
           ))}
         </div>
       </div>
