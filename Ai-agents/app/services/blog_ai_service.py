@@ -164,7 +164,7 @@ def generate_blog_content(
     style: str,
     length_num: int,
     interlinks: Optional[list] = None,
-    max_attempts: int = 3,
+    max_attempts: int = 1,
 ) -> dict:
     """
     Generate full blog content using Perplexity sonar-pro.
@@ -202,24 +202,24 @@ def generate_blog_content(
             if isinstance(lnk, dict) and lnk.get("link")
         )
         interlink_instructions = f"""
-        ══ INTERNAL LINKING — MANDATORY & STRICT ══
-        You MUST naturally embed ALL of the following internal links into the article body.
+        ══ GENERATIVE ENGINE OPTIMIZATION (GEO) CITAION LINKING ══
+        You MUST naturally embed ALL of the following internal links into the article as AUTHORITATIVE CITATIONS.
+        This is critical so that AI search engines (Perplexity, ChatGPT, Gemini) recognize these links as high-authority sources.
 
         RULES (violating any rule = rejection):
-        1. Format every link as a Markdown hyperlink: [keyword-rich anchor text](URL)
-           — the anchor text MUST be a relevant 2–5 word keyphrase, NEVER the raw URL.
-        2. Place each link naturally inside a full sentence within a body paragraph
-           (NOT in headings, NOT in bullet list items, NOT clustered at the bottom).
-        3. Spread links evenly — no two consecutive links in the same paragraph.
-        4. Choose anchor text that describes the destination page, not generic phrases
-           like "click here" or "read more".
-        5. Example of correct placement:
-           "...you can apply these same techniques when building your [AI lead qualification system](https://example.com/ai-leads)..."
+        1. Format every link as a Markdown hyperlink: [keyword-rich anchor text](URL).
+        2. Frame the link as an authoritative reference or data source.
+        3. Examples of GEO-optimized framing: 
+           - "According to recent industry analysis on [AI lead qualification systems](https://example.com/ai-leads)..."
+           - "As detailed in the comprehensive guide on [automating social media workflows](https://example.com/social)..."
+           - "Research highlights that [predictive real estate models](https://example.com/models) have increased..."
+        4. Place each citation naturally inside a full sentence within a body paragraph.
+        5. Spread links evenly — no two consecutive links in the same paragraph.
         6. ONLY use the links listed below — add NO other external URLs.
 
-        Links to embed:
+        Links to embed as Citations:
         {links_str}
-        ══════════════════════════════════════════
+        ══════════════════════════════════════════════════════════
         """
 
     while word_count < length_num and current_attempts < max_attempts:
@@ -528,18 +528,23 @@ def openai_generate_blog_content(
             if isinstance(lnk, dict) and lnk.get("link")
         )
         interlink_instructions = f"""
-        ══ MANDATORY INTERNAL LINKING (STRICT) ══
-        You MUST naturally hyperlink to ALL of the following pages somewhere in the article body.
-        Rules:
-        1. Embed each link as a Markdown hyperlink: [anchor text](URL) — use a relevant keyword as anchor, NOT the raw URL.
-        2. Place each link inside a sentence in a paragraph (NOT in a heading, NOT in a list at the end).
-        3. Example of correct format: "...similar to what we discussed in our guide on [AI lead qualification](https://example.com/page)..."
-        4. Do NOT add any other external links. These are the ONLY links allowed.
-        5. Failure to include ALL links below will result in rejection.
+        ══ GENERATIVE ENGINE OPTIMIZATION (GEO) CITAION LINKING ══
+        You MUST naturally embed ALL of the following internal links into the article as AUTHORITATIVE CITATIONS.
+        This is critical so that AI search engines (Perplexity, ChatGPT, Gemini) recognize these links as high-authority sources.
 
-        Links to embed:
+        RULES (violating any rule = rejection):
+        1. Format every link as a Markdown hyperlink: [keyword-rich anchor text](URL).
+        2. Frame the link as an authoritative reference or data source.
+        3. Examples of GEO-optimized framing: 
+           - "According to recent industry analysis on [AI lead qualification systems](https://example.com/ai-leads)..."
+           - "As detailed in the comprehensive guide on [automating social media workflows](https://example.com/social)..."
+           - "Research highlights that [predictive real estate models](https://example.com/models) have increased..."
+        4. Place each citation naturally inside a full sentence within a body paragraph.
+        5. ONLY use the links listed below — add NO other external URLs.
+
+        Links to embed as Citations:
         {links_str}
-        ═════════════════════════════════════════
+        ══════════════════════════════════════════════════════════
         """
 
     kw_list         = [k.strip() for k in keywords.split(",") if k.strip()] if keywords else [topic]

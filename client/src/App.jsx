@@ -140,8 +140,6 @@ function App() {
       navigate('/dashboard/agents/meta');
     } else if (agent.title === 'Real Estate Reel AI Agent') {
       navigate('/dashboard/agents/video');
-    } else if (agent.title === 'GEO FAQ AI Agent') {
-      navigate('/dashboard/agents/geo');
     }
   };
 
