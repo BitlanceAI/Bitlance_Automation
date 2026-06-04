@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { supabase } from '../../services/supabaseClient';
 import {
@@ -45,6 +45,7 @@ import RankTrackerPanel from '../../components/seo/RankTrackerPanel';
 
 const SeoAgentPage = () => {
     const navigate = useNavigate();
+    const location = useLocation();
     const { user, credits, isAdmin, refreshCredits } = useAuth();
 
     // Tour state
@@ -56,12 +57,12 @@ const SeoAgentPage = () => {
     const tabs = [
         { id: 'generate', label: 'Generate', icon: Zap },
         { id: 'blogs', label: 'Blog Manager', icon: FileText },
-        { id: 'queue', label: 'Auto Queue', icon: Clock },
-        { id: 'ranks', label: 'Rank Tracker', icon: TrendingUp },
-
+        ...(optimizationMode === 'GEO' ? [{ id: 'queue', label: 'Auto Queue', icon: Clock }] : []),
+        ...(optimizationMode === 'SEO' ? [{ id: 'ranks', label: 'Rank Tracker', icon: TrendingUp }] : []),
     ];
 
-    // Mode State — removed (now always auto-research mode)
+    // Mode State
+    const [optimizationMode, setOptimizationMode] = useState(location.state?.defaultMode || 'GEO');
 
     // Form State
     const [topic, setTopic] = useState('');
@@ -224,6 +225,7 @@ const SeoAgentPage = () => {
                 category,
                 tags: tags.split(',').map(t => t.trim()).filter(Boolean),
                 source_type: sourceType,
+                optimization_mode: optimizationMode,
                 // WordPress
                 wp_url: sourceType === 'wordpress' && selectedWpProfile ? selectedWpProfile.profileData?.wp_url : '',
                 wp_api_url: interlinkUrl || null,  // custom interlinking URL — Python fetches existing posts from here
@@ -637,7 +639,7 @@ const SeoAgentPage = () => {
                         <div className="flex items-center gap-2">
                             <Bot className="text-[#26cece]" size={24} />
                             <h1 className="text-xl font-bold text-[#26cece] font-['Space_Grotesk'] tracking-tight">
-                                GEO AutoGen
+                                {optimizationMode} AutoGen
                             </h1>
                         </div>
                     </div>
@@ -734,9 +736,9 @@ const SeoAgentPage = () => {
             <main className="max-w-7xl mx-auto p-6 md:p-8">
 
                 {/* Non-generate tab content */}
-                {activeTab === 'blogs' && <BlogManagerPanel />}
-                {activeTab === 'queue' && <WpAutoQueuePanel />}
-                {activeTab === 'ranks' && <RankTrackerPanel />}
+                {activeTab === 'blogs' && <BlogManagerPanel optimizationMode={optimizationMode} />}
+                {activeTab === 'queue' && <WpAutoQueuePanel optimizationMode={optimizationMode} />}
+                {activeTab === 'ranks' && <RankTrackerPanel optimizationMode={optimizationMode} />}
                 {activeTab === 'push' && <PushNotificationPanel />}
 
 
@@ -749,7 +751,7 @@ const SeoAgentPage = () => {
                             <div className="bg-slate-50 rounded-[2px] border border-slate-200 p-6 md:p-8">
                                 <h2 className="text-2xl font-bold mb-6 text-slate-900 flex items-center gap-3 font-['Space_Grotesk'] tracking-tight">
                                     <Bot className="text-[#26cece]" size={24} />
-                                    AI GEO Article Generator
+                                    AI {optimizationMode} Article Generator
                                 </h2>
                                 <div className="mb-6 flex items-start gap-3 p-4 bg-white rounded-[2px] border border-slate-200">
                                     <Bot className="w-5 h-5 mt-0.5 text-[#26cece] shrink-0" />
@@ -759,6 +761,33 @@ const SeoAgentPage = () => {
                                 </div>
 
                                 <div className="space-y-6">
+                                    {/* Optimization Mode Selector */}
+                                    <div>
+                                        <label className="block text-[10px] font-mono tracking-widest uppercase text-slate-500 mb-3">Optimization Mode *</label>
+                                        <div className="grid grid-cols-2 gap-3">
+                                            <button
+                                                type="button"
+                                                onClick={() => setOptimizationMode('GEO')}
+                                                className={`px-3 py-3 rounded-[2px] border font-bold font-mono tracking-widest uppercase text-[10px] transition-all ${optimizationMode === 'GEO'
+                                                    ? 'border-[#26cece] bg-white text-[#26cece] shadow-[2px_2px_0_0_#26cece]'
+                                                    : 'border-slate-200 hover:border-slate-300 text-slate-500 hover:text-slate-900'
+                                                    }`}
+                                            >
+                                                🧠 GEO (Generative Engine)
+                                            </button>
+                                            <button
+                                                type="button"
+                                                onClick={() => setOptimizationMode('SEO')}
+                                                className={`px-3 py-3 rounded-[2px] border font-bold font-mono tracking-widest uppercase text-[10px] transition-all ${optimizationMode === 'SEO'
+                                                    ? 'border-[#26cece] bg-white text-[#26cece] shadow-[2px_2px_0_0_#26cece]'
+                                                    : 'border-slate-200 hover:border-slate-300 text-slate-500 hover:text-slate-900'
+                                                    }`}
+                                            >
+                                                🌐 SEO (Search Engine)
+                                            </button>
+                                        </div>
+                                    </div>
+
                                     {/* Source Type Selector */}
                                     <div data-tour="source-type">
                                         <label className="block text-[10px] font-mono tracking-widest uppercase text-slate-500 mb-3">Source Type *</label>
@@ -1210,7 +1239,7 @@ const SeoAgentPage = () => {
                                         ) : (
                                             <>
                                                 <Zap fill="currentColor" size={24} />
-                                                Generate GEO Content
+                                                Generate {optimizationMode} Content
                                                 <span className="text-[12px] font-mono ml-2 opacity-70 border-l border-white/30 pl-2">
                                                     Cost 10 credits
                                                 </span>
@@ -1298,7 +1327,14 @@ const SeoAgentPage = () => {
                                         </div>
                                     ) : (
                                         <div className="space-y-3">
-                                            {articles.slice(0, 10).map((article) => (
+                                            {articles.filter(a => {
+                                                if (a.optimization_mode === 'SEO' || a.optimization_mode === 'GEO') {
+                                                    return a.optimization_mode === optimizationMode;
+                                                }
+                                                const contentStr = (a.content || '').toLowerCase();
+                                                const hasFaq = contentStr.includes('faq') || contentStr.includes('frequently asked questions');
+                                                return optimizationMode === 'GEO' ? hasFaq : !hasFaq;
+                                            }).slice(0, 10).map((article) => (
                                                 <div
                                                     key={article.id}
                                                     className="p-3 rounded-[2px] border border-slate-200 hover:border-[#26cece] bg-slate-50 transition-all cursor-pointer group"

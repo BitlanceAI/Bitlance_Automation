@@ -132,14 +132,16 @@ function App() {
       navigate('/dashboard/agents/whatsapp');
     } else if (agent.title === 'AI Voice Agent') {
       navigate('/dashboard/agents/voice');
-    } else if (agent.title === 'GEO (Generative) AI Agent') {
-      navigate('/dashboard/agents/seo');
+    } else if (agent.title === 'GEO (Generative) AI Agent' || agent.title === 'SEO (Search Engine) AI Agent') {
+      navigate('/dashboard/agents/seo', { state: { defaultMode: agent.title === 'SEO (Search Engine) AI Agent' ? 'SEO' : 'GEO' } });
     } else if (agent.title === 'Graphic Designer AI') {
       navigate('/dashboard/agents/design');
     } else if (agent.title === 'Meta Ads Automation AI') {
       navigate('/dashboard/agents/meta');
     } else if (agent.title === 'Real Estate Reel AI Agent') {
       navigate('/dashboard/agents/video');
+    } else if (agent.title === 'Email Automation AI') {
+      navigate('/dashboard/email-automation');
     }
   };
 

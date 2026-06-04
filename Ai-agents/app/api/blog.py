@@ -40,6 +40,7 @@ class GenerateBlogRequest(BaseModel):
     wp_url: Optional[str] = None            # website URL for interlinking (embedded in content)
     wp_api_url: Optional[str] = None        # actual WordPress site URL for REST API fetching (may differ from wp_url)
     interlinks: Optional[list] = None       # pre-built interlinks from Node.js [{title, link}]
+    optimization_mode: Optional[str] = Field(default="SEO", description="SEO or GEO mode")
 
     model_config = {
         "json_schema_extra": {
@@ -143,16 +144,17 @@ def generate_blog(body: GenerateBlogRequest):
 
     # ── 4. Content generation ─────────────────────────────────────────────────
     length_num = LENGTH_MAPPING.get(body.length, 500)
+    mode = body.optimization_mode.upper() if body.optimization_mode else "SEO"
     try:
         content_result = ai.generate_blog_content(
             topic, keywords, body.language, body.audience, body.style,
-            length_num, interlinks
+            length_num, interlinks, mode=mode
         )
     except Exception as e:
         print(f"Content gen failed, falling back to OpenAI: {e}")
         content_result = ai.openai_generate_blog_content(
             topic, keywords, body.language, body.audience, body.style,
-            length_num, interlinks
+            length_num, interlinks, mode=mode
         )
 
     blog_text = content_result["blogText"]

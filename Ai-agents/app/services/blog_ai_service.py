@@ -165,6 +165,7 @@ def generate_blog_content(
     length_num: int,
     interlinks: Optional[list] = None,
     max_attempts: int = 1,
+    mode: str = "SEO",
 ) -> dict:
     """
     Generate full blog content using Perplexity sonar-pro.
@@ -201,8 +202,9 @@ def generate_blog_content(
             for lnk in interlinks
             if isinstance(lnk, dict) and lnk.get("link")
         )
-        interlink_instructions = f"""
-        ══ GENERATIVE ENGINE OPTIMIZATION (GEO) CITAION LINKING ══
+        if mode == "GEO":
+            interlink_instructions = f"""
+        ══ GENERATIVE ENGINE OPTIMIZATION (GEO) CITATION LINKING ══
         You MUST naturally embed ALL of the following internal links into the article as AUTHORITATIVE CITATIONS.
         This is critical so that AI search engines (Perplexity, ChatGPT, Gemini) recognize these links as high-authority sources.
 
@@ -221,6 +223,16 @@ def generate_blog_content(
         {links_str}
         ══════════════════════════════════════════════════════════
         """
+        else:
+            interlink_instructions = f"""
+        ══ SEO INTERNAL LINKING ══
+        You MUST naturally embed ALL of the following internal links into the article to scale on Google search engines.
+        Use natural anchor text within the body of the article. Do not cluster them together.
+        
+        Links to embed:
+        {links_str}
+        ══════════════════════════════════════════════════════════
+        """
 
     while word_count < length_num and current_attempts < max_attempts:
         current_attempts += 1
@@ -235,10 +247,25 @@ def generate_blog_content(
         secondary_kws   = ", ".join(kw_list[1:6]) if len(kw_list) > 1 else ""
         lsi_note        = f"Secondary/LSI keywords to weave in naturally: {secondary_kws}" if secondary_kws else ""
 
+        if mode == "SEO":
+            expert_persona = "You are a world-class SEO content strategist. Your ONLY goal is to produce a blog post that scales and ranks on the first page of Google Search."
+        else:
+            expert_persona = "You are a Generative Engine Optimization (GEO) expert. Your ONLY goal is to produce content optimized for LLM citations, Perplexity, and AI search engines."
+
+        faq_section = ""
+        if mode == "GEO":
+            faq_section = f"""
+6. FAQ SECTION  (H2: "Frequently Asked Questions About {{primary_keyword}}")
+   - Add EXACTLY 5 Q&A pairs.
+   - Each question targets a "People Also Ask" query for this topic.{paa_instructions}
+   - Format:
+       ### Question text here?
+       Answer in 40–80 words. Direct, factual, complete sentence. No fluff.
+   - This format is eligible for AI engine parsing.
+"""
+
         prompt = f"""
-You are a world-class SEO content strategist and expert blogger with 10+ years of experience
-ranking content on the first page of Google. Your ONLY goal is to produce a single, complete,
-publishable blog post that earns a Page 1 ranking for the primary keyword.
+{expert_persona}
 
 ═══════════════ ASSIGNMENT ═══════════════
 TOPIC            : "{topic}"
@@ -290,15 +317,7 @@ MINIMUM WORDS   : {length_num}
    - "Common Mistakes to Avoid" (3–5 pitfalls with brief explanations)
    - "[Primary Keyword] Best Practices" (expert-level tips)
    - "Real-World Examples / Case Studies" (concrete results with numbers)
-
-6. FAQ SECTION  (H2: "Frequently Asked Questions About {primary_keyword}")
-   - Add EXACTLY 5 Q&A pairs.
-   - Each question targets a "People Also Ask" query for this topic.{paa_instructions}
-   - Format:
-       ### Question text here?
-       Answer in 40–80 words. Direct, factual, complete sentence. No fluff.
-   - This format is eligible for Google's FAQ rich result schema.
-
+{faq_section}
 7. CONCLUSION  (H2: "Final Thoughts: [Primary Keyword]")
    - 80–120 words.
    - Summarise the 3 most important takeaways.
@@ -499,6 +518,7 @@ def openai_generate_blog_content(
     style: str,
     length_num: int,
     interlinks: Optional[list] = None,
+    mode: str = "SEO",
 ) -> dict:
     """Fallback blog content generation via OpenAI GPT-4o."""
     interlinks = interlinks or []
@@ -527,8 +547,9 @@ def openai_generate_blog_content(
             for lnk in interlinks
             if isinstance(lnk, dict) and lnk.get("link")
         )
-        interlink_instructions = f"""
-        ══ GENERATIVE ENGINE OPTIMIZATION (GEO) CITAION LINKING ══
+        if mode == "GEO":
+            interlink_instructions = f"""
+        ══ GENERATIVE ENGINE OPTIMIZATION (GEO) CITATION LINKING ══
         You MUST naturally embed ALL of the following internal links into the article as AUTHORITATIVE CITATIONS.
         This is critical so that AI search engines (Perplexity, ChatGPT, Gemini) recognize these links as high-authority sources.
 
@@ -546,16 +567,41 @@ def openai_generate_blog_content(
         {links_str}
         ══════════════════════════════════════════════════════════
         """
+        else:
+            interlink_instructions = f"""
+        ══ SEO INTERNAL LINKING ══
+        You MUST naturally embed ALL of the following internal links into the article to scale on Google search engines.
+        Use natural anchor text within the body of the article. Do not cluster them together.
+        
+        Links to embed:
+        {links_str}
+        ══════════════════════════════════════════════════════════
+        """
 
     kw_list         = [k.strip() for k in keywords.split(",") if k.strip()] if keywords else [topic]
     primary_keyword = kw_list[0]
     secondary_kws   = ", ".join(kw_list[1:6]) if len(kw_list) > 1 else ""
     lsi_note        = f"Secondary/LSI keywords to weave in naturally: {secondary_kws}" if secondary_kws else ""
 
+    if mode == "SEO":
+        expert_persona = "You are a world-class SEO content strategist. Your ONLY goal is to produce a blog post that scales and ranks on the first page of Google Search."
+    else:
+        expert_persona = "You are a Generative Engine Optimization (GEO) expert. Your ONLY goal is to produce content optimized for LLM citations, Perplexity, and AI search engines."
+
+    faq_section = ""
+    if mode == "GEO":
+        faq_section = f"""
+6. FAQ SECTION  (H2: "Frequently Asked Questions About {{primary_keyword}}")
+   - Add EXACTLY 5 Q&A pairs.
+   - Each question targets a "People Also Ask" query for this topic.{paa_instructions}
+   - Format:
+       ### Question text here?
+       Answer in 40–80 words. Direct, factual, complete sentence. No fluff.
+   - This format is eligible for AI engine parsing.
+"""
+
     prompt = f"""
-You are a world-class SEO content strategist and expert blogger with 10+ years of experience
-ranking content on the first page of Google. Your ONLY goal is to produce a single, complete,
-publishable blog post that earns a Page 1 ranking for the primary keyword.
+{expert_persona}
 
 ═══════════════ ASSIGNMENT ═══════════════
 TOPIC            : "{topic}"
@@ -607,15 +653,7 @@ MINIMUM WORDS   : {length_num}
    - "Common Mistakes to Avoid" (3–5 pitfalls with brief explanations)
    - "[Primary Keyword] Best Practices" (expert-level tips)
    - "Real-World Examples / Case Studies" (concrete results with numbers)
-
-6. FAQ SECTION  (H2: "Frequently Asked Questions About {primary_keyword}")
-   - Add EXACTLY 5 Q&A pairs.
-   - Each question targets a "People Also Ask" query for this topic.{paa_instructions}
-   - Format:
-       ### Question text here?
-       Answer in 40–80 words. Direct, factual, complete sentence. No fluff.
-   - This format is eligible for Google's FAQ rich result schema.
-
+{faq_section}
 7. CONCLUSION  (H2: "Final Thoughts: [Primary Keyword]")
    - 80–120 words.
    - Summarise the 3 most important takeaways.

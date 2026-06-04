@@ -4,9 +4,10 @@ import { Link } from 'react-router-dom';
 import axios from 'axios';
 import { toast } from 'react-hot-toast';
 import { useAuth } from '../../context/AuthContext';
+import blogService from '../../services/blogService';
 import API_BASE_URL from '../../config.js';
 
-const BlogManagerPanel = () => {
+const BlogManagerPanel = ({ optimizationMode = 'GEO' }) => {
     const { token } = useAuth();
     const [posts, setPosts] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -15,10 +16,20 @@ const BlogManagerPanel = () => {
         if (!token) return; // Wait until auth token is available
         setLoading(true);
         try {
-            const res = await axios.get(`${API_BASE_URL}/api/blog/posts`, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
-            if (res.data.success) setPosts(res.data.posts);
+            // Use blogService directly to bypass intermediate backend caching/RLS issues
+            const articles = await blogService.getArticles();
+            // Transform keys to match backend response for compatibility
+            const transformed = articles.map(a => ({
+                id: a.id,
+                topic: a.topic,
+                seo_title: a.seoTitle,
+                content: a.content,
+                image_url: a.imageUrl,
+                optimization_mode: a.optimization_mode,
+                created_at: a.createdAt,
+                status: 'published'
+            }));
+            setPosts(transformed);
         } catch (error) {
             console.error(error);
             toast.error('Failed to load posts');
@@ -39,6 +50,20 @@ const BlogManagerPanel = () => {
             fetchPosts();
         } catch (error) { toast.error('Failed to delete post'); }
     };
+
+    const isTargetMode = (post, targetMode) => {
+        if (post.optimization_mode === 'SEO' || post.optimization_mode === 'GEO') {
+            return post.optimization_mode === targetMode;
+        }
+        // Legacy posts fallback: GEO has FAQ, SEO does not
+        const contentStr = (post.content || '').toLowerCase();
+        const hasFaq = contentStr.includes('faq') || contentStr.includes('frequently asked questions');
+        
+        if (targetMode === 'GEO') return hasFaq;
+        return !hasFaq;
+    };
+
+    const filteredPosts = posts.filter(post => isTargetMode(post, optimizationMode));
 
     return (
         <div className="space-y-6">
@@ -65,14 +90,19 @@ const BlogManagerPanel = () => {
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-100">
-                            {posts.length === 0 && !loading ? (
-                                <tr><td colSpan="4" className="px-6 py-10 text-center text-slate-400 font-mono text-[12px] uppercase">No posts found. Create your first blog post!</td></tr>
+                            {filteredPosts.length === 0 && !loading ? (
+                                <tr><td colSpan="4" className="px-6 py-10 text-center text-slate-400 font-mono text-[12px] uppercase">No posts found.</td></tr>
                             ) : (
-                                posts.map((post) => (
+                                filteredPosts.map((post) => (
                                     <tr key={post.id} className="hover:bg-slate-50 transition-colors">
                                         <td className="px-6 py-4">
-                                            <div className="flex flex-col">
-                                                <span className="font-bold text-slate-900 font-['Space_Grotesk'] line-clamp-1">{post.topic || post.seo_title}</span>
+                                            <div className="flex flex-col gap-1">
+                                                <div className="flex items-center gap-2">
+                                                    <span className="font-bold text-slate-900 font-['Space_Grotesk'] line-clamp-1">{post.topic || post.seo_title}</span>
+                                                    <span className={`text-[9px] font-mono uppercase tracking-widest px-1.5 py-0.5 rounded-[2px] ${(post.optimization_mode || 'GEO') === 'SEO' ? 'bg-indigo-100 text-indigo-700' : 'bg-teal-100 text-teal-700'}`}>
+                                                        {post.optimization_mode || 'GEO'}
+                                                    </span>
+                                                </div>
                                                 <span className="text-[12px] text-[#26cece] font-mono">/{post.slug}</span>
                                             </div>
                                         </td>

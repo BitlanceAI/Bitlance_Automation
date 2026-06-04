@@ -24,8 +24,18 @@ export const agents = [
     ],
     status: "Available"
   },
-
-
+  {
+    icon: Globe,
+    title: "SEO (Search Engine) AI Agent",
+    description: "Automates blog generation and content scaling on Google Search Engines.",
+    features: [
+      "Automated keyword research",
+      "Search Engine Optimization",
+      "Dynamic HTML rendering",
+      "SEO audits"
+    ],
+    status: "Available"
+  },
   {
     icon: Palette,
     title: "Graphic Designer AI",
@@ -75,6 +85,18 @@ export const agents = [
       "Performance analytics"
     ],
     status: "Coming Soon"
+  },
+  {
+    icon: Target,
+    title: "Email Automation AI",
+    description: "AI-powered personalized bulk emailing to targeted audiences, extracting contacts based on genre.",
+    features: [
+      "Targeted lead scraping",
+      "AI personalized copy",
+      "Bulk dispatching",
+      "Auto-reply handling"
+    ],
+    status: "Available"
   },
 
   {

@@ -139,7 +139,7 @@ export const generateAndSaveArticleInternal = async ({
     userId, token, topic, industry, keywords, language, style, length, audience,
     image_option, custom_image_url, wp_url, wp_api_url, interlinks, author_name, author_bio, author_profile_id,
     author_details, category = 'Technology', tags = [], is_published = false,
-    custom_slug, target_table
+    custom_slug, target_table, optimization_mode = 'GEO'
 }) => {
     const tableName = getTableName(userId, target_table);
 
@@ -206,6 +206,7 @@ export const generateAndSaveArticleInternal = async ({
         estimated_read_time: readTime,
         social_share_enabled: true,
         comments_enabled: true,
+        optimization_mode: optimization_mode,
     };
 
     const { data: savedArticle, error: saveError } = await (tableName === 'company_articles' ? supabaseAdmin : scoped)
@@ -554,7 +555,7 @@ export const publicListBlogs = async (req, res) => {
     try {
         const { data, error, count } = await supabaseAdmin
             .from('company_articles')
-            .select('id, topic, seo_title, seo_description, image_url, featured_image, slug, category, tags, author_name, publish_date, created_at, estimated_read_time, word_count', { count: 'exact' })
+            .select('id, topic, seo_title, seo_description, image_url, featured_image, slug, category, tags, author_name, publish_date, created_at, estimated_read_time, word_count, optimization_mode', { count: 'exact' })
             .eq('is_published', true)
             .order(sort, { ascending: order === 'asc' })
             .range(offset, offset + parseInt(limit) - 1);
