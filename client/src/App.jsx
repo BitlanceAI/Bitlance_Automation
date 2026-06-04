@@ -133,7 +133,8 @@ function App() {
     } else if (agent.title === 'AI Voice Agent') {
       navigate('/dashboard/agents/voice');
     } else if (agent.title === 'GEO (Generative) AI Agent' || agent.title === 'SEO (Search Engine) AI Agent') {
-      navigate('/dashboard/agents/seo', { state: { defaultMode: agent.title === 'SEO (Search Engine) AI Agent' ? 'SEO' : 'GEO' } });
+      const isSeo = agent.title === 'SEO (Search Engine) AI Agent';
+      navigate(isSeo ? '/dashboard/agents/seo' : '/dashboard/agents/geo', { state: { defaultMode: isSeo ? 'SEO' : 'GEO' } });
     } else if (agent.title === 'Graphic Designer AI') {
       navigate('/dashboard/agents/design');
     } else if (agent.title === 'Meta Ads Automation AI') {
@@ -234,6 +235,11 @@ function App() {
                   </AuthGuard>
                 } />
                 <Route path="/dashboard/agents/seo" element={
+                  <AuthGuard>
+                    <SeoAgentPage />
+                  </AuthGuard>
+                } />
+                <Route path="/dashboard/agents/geo" element={
                   <AuthGuard>
                     <SeoAgentPage />
                   </AuthGuard>
