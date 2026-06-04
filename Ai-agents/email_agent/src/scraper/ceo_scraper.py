@@ -359,22 +359,8 @@ class CEOScraper:
         if generic_emails:
             print(f"ℹ️ Found generic corporate emails: {generic_emails}. Analyzing pattern...")
         
-        # 6. Fallback to smart corporate email format generation
-        if first_name and last_name:
-            clean_first = re.sub(r'[^a-zA-Z0-9]', '', first_name).lower()
-            clean_last = re.sub(r'[^a-zA-Z0-9]', '', last_name).lower()
-            
-            # Default most common corporate email patterns
-            patterns = [
-                f"{clean_first}.{clean_last}@{domain}",  # first.last
-                f"{clean_first[0]}{clean_last}@{domain}", # finitiallast
-                f"{clean_first}@{domain}"                 # first
-            ]
-            
-            fallback_email = patterns[0]
-            print(f"⚠️ No direct CEO email found. Generated highest probability corporate pattern: {fallback_email} (Confidence: 80%)")
-            return {"email": fallback_email, "confidence": 80}
-            
+        # 6. We no longer fallback to generating an email pattern because the user wants ONLY verified emails
+        print(f"⚠️ No direct CEO email found. Skipping generated fallback per strict verification rules.")
         return {"email": "Not Found", "confidence": 0}
 
     def get_email_and_linkedin_via_apollo(self, full_name, company_name, domain=None, company_wiki_url=None, forbes_profile_url=None):
@@ -438,14 +424,8 @@ class CEOScraper:
             except Exception as e:
                 print(f"[{datetime.now()}] Apollo People Match error: {e}")
 
-        # Step 3: High-probability corporate fallback if Apollo fails or returned nothing
+        # Step 3: Try our advanced Wikipedia & Forbes scraping fallback if Apollo fails
         if result['email'] == "Not Found" and first_name and last_name and domain and domain != "N/A":
-            # Remove non-alphanumeric chars from names (e.g. Xin Bao'an -> xin.baoan)
-            clean_first = re.sub(r'[^a-zA-Z0-9]', '', first_name).lower()
-            clean_last = re.sub(r'[^a-zA-Z0-9]', '', last_name).lower()
-            fallback_email = f"{clean_first}.{clean_last}@{domain}"
-            
-            # Try our advanced Wikipedia & Forbes scraping fallback first!
             scrape_res = self.scrape_email_from_forbes_wikipedia_fallback(
                 full_name, company_name, domain, company_wiki_url, forbes_profile_url
             )
@@ -454,10 +434,7 @@ class CEOScraper:
                 result["email"] = scrape_res["email"]
                 result["confidence"] = scrape_res["confidence"]
             else:
-                # Naive pattern fallback
-                result['email'] = fallback_email
-                result['confidence'] = 60
-                print(f"[{datetime.now()}] Advanced scraping fallback found nothing. Generated corporate pattern fallback for {full_name}: {fallback_email} (confidence: 60%)")
+                print(f"[{datetime.now()}] Advanced scraping fallback found nothing. Skipping email generation per strict verification rules.")
 
         return result
 
@@ -621,19 +598,15 @@ class CEOScraper:
                 entry["Mobile / Contact"] = "+1-XXX-XXX-XXXX (Switchboard)"
 
             # Categorize as verified or unverified based on confidence
-            if apollo_confidence >= 80:
+            # Only 95+ are considered verified (99 = Apollo Verified, 95 = Wikipedia Direct Scrape)
+            if apollo_confidence >= 95:
                 verified_data.append(entry)
             else:
-                # Keep unverified data only if we haven't hit the unverified quota
-                if len(unverified_data) < max_unverified:
-                    unverified_data.append(entry)
-                # Or if we still need to reach the target_count total and we can't find enough verified
-                elif len(verified_data) + len(unverified_data) < target_count:
-                    unverified_data.append(entry)
+                # User specifically requested to completely ignore unverified emails
+                print(f"[{datetime.now()}] Ignoring CEO {entry['Full Name']} due to lack of verified email (Confidence: {apollo_confidence})")
 
         # Combine and trim to exact target_count
-        data_list = verified_data + unverified_data
-        data_list = data_list[:target_count]
+        data_list = verified_data[:target_count]
             
         # Add the two hardcoded test emails as requested by the user
         data_list.append({
