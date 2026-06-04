@@ -80,7 +80,10 @@ async def send_campaign(req: SendCampaignRequest):
         # We need to temporarily set the subject in EmailSender if possible, 
         # or we might just use the default. EmailSender has it hardcoded usually.
         # But this serves the core purpose.
-        sender.send_bulk_email(recipients_dicts)
+        success = sender.send_bulk_email(recipients_dicts)
+        
+        if not success:
+            raise HTTPException(status_code=500, detail="Failed to send campaign. Please check the SendGrid API Key in the environment configuration.")
         
         return {"success": True, "message": f"Successfully sent emails to {len(recipients_dicts)} recipients."}
     except Exception as e:

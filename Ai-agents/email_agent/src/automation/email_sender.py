@@ -3,9 +3,12 @@ import time
 import os
 import hashlib
 import json
+import os
 from dotenv import load_dotenv
 
-load_dotenv("config/.env")
+current_dir = os.path.dirname(os.path.abspath(__file__))
+env_path = os.path.abspath(os.path.join(current_dir, "../../config/.env"))
+load_dotenv(env_path)
 
 class EmailSender:
     def __init__(self):
