@@ -667,5 +667,5 @@ class CEOScraper:
 
 if __name__ == "__main__":
     scraper = CEOScraper()
-    df = scraper.run_full_pipeline(limit=10)
+    df = scraper.run_full_pipeline(target_count=10)
     print(df.head())

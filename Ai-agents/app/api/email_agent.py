@@ -34,7 +34,7 @@ async def scrape_ceos(req: ScrapeRequest):
         from src.scraper.ceo_scraper import CEOScraper
         
         scraper = CEOScraper()
-        df = scraper.run_full_pipeline(limit=req.limit, use_forbes=False)
+        df = scraper.run_full_pipeline(target_count=req.limit, use_forbes=False)
         
         if df.empty:
             return {"success": True, "data": []}

@@ -655,7 +655,7 @@ export const publicGetComments = async (req, res) => {
 
         if (error) {
             // Ignore if table doesn't exist yet, just return empty array instead of failing
-            if (error.code === '42P01') {
+            if (error.code === '42P01' || (error.message && error.message.includes('schema cache'))) {
                 return res.json({ success: true, comments: [] });
             }
             throw error;
@@ -715,7 +715,7 @@ export const publicPostComment = async (req, res) => {
             .single();
 
         if (error) {
-            if (error.code === '42P01') {
+            if (error.code === '42P01' || (error.message && error.message.includes('schema cache'))) {
                 return res.status(400).json({ success: false, error: 'Comments table has not been created in Supabase yet.' });
             }
             throw error;
