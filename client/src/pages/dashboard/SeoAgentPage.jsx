@@ -54,15 +54,15 @@ const SeoAgentPage = () => {
     // Tab State
     const [activeTab, setActiveTab] = useState('generate');
 
+    // Mode State
+    const [optimizationMode, setOptimizationMode] = useState(location.state?.defaultMode || 'GEO');
+
     const tabs = [
         { id: 'generate', label: 'Generate', icon: Zap },
         { id: 'blogs', label: 'Blog Manager', icon: FileText },
         ...(optimizationMode === 'GEO' ? [{ id: 'queue', label: 'Auto Queue', icon: Clock }] : []),
         ...(optimizationMode === 'SEO' ? [{ id: 'ranks', label: 'Rank Tracker', icon: TrendingUp }] : []),
     ];
-
-    // Mode State
-    const [optimizationMode, setOptimizationMode] = useState(location.state?.defaultMode || 'GEO');
 
     // Form State
     const [topic, setTopic] = useState('');
