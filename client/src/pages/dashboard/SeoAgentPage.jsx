@@ -60,8 +60,8 @@ const SeoAgentPage = () => {
     const tabs = [
         { id: 'generate', label: 'Generate', icon: Zap },
         { id: 'blogs', label: 'Blog Manager', icon: FileText },
-        ...(optimizationMode === 'GEO' ? [{ id: 'queue', label: 'Auto Queue', icon: Clock }] : []),
-        ...(optimizationMode === 'SEO' ? [{ id: 'ranks', label: 'Rank Tracker', icon: TrendingUp }] : []),
+        { id: 'queue', label: 'Auto Queue', icon: Clock },
+        { id: 'ranks', label: 'Rank Tracker', icon: TrendingUp },
     ];
 
     // Form State

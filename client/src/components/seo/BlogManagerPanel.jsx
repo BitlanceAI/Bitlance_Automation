@@ -16,17 +16,22 @@ const BlogManagerPanel = ({ optimizationMode = 'GEO' }) => {
         if (!token) return; // Wait until auth token is available
         setLoading(true);
         try {
-            // Use blogService directly to bypass intermediate backend caching/RLS issues
-            const articles = await blogService.getArticles();
-            // Transform keys to match backend response for compatibility
-            const transformed = articles.map(a => ({
+            const response = await axios.get(`${API_BASE_URL}/api/blog/posts`, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            const fetchedPosts = response.data.posts || [];
+            
+            const transformed = fetchedPosts.map(a => ({
                 id: a.id,
                 topic: a.topic,
-                seo_title: a.seoTitle,
+                seo_title: a.seo_title,
                 content: a.content,
-                image_url: a.imageUrl,
+                image_url: a.image_url,
                 optimization_mode: a.optimization_mode,
-                created_at: a.createdAt,
+                created_at: a.created_at,
+                publish_date: a.publish_date,
+                slug: a.slug,
+                is_published: a.is_published,
                 status: 'published'
             }));
             setPosts(transformed);
@@ -72,7 +77,7 @@ const BlogManagerPanel = ({ optimizationMode = 'GEO' }) => {
                     <h2 className="text-2xl font-bold text-slate-900 font-['Space_Grotesk'] uppercase tracking-tight">Blog Posts</h2>
                     <p className="mt-1 text-slate-500 font-sans text-sm">Manage and schedule your content</p>
                 </div>
-                <Link to="/blog/new"
+                <Link to="/blogs/new"
                     className="flex items-center gap-2 bg-[#26cece] text-white font-bold font-['Space_Grotesk'] tracking-widest uppercase py-3 px-6 rounded-[2px] transition-all hover:-translate-y-1 hover:shadow-[4px_4px_0_0_#333] text-[12px]">
                     <Plus size={16} /> Create New Post
                 </Link>
@@ -119,10 +124,10 @@ const BlogManagerPanel = ({ optimizationMode = 'GEO' }) => {
                                         </td>
                                         <td className="px-6 py-4 text-right">
                                             <div className="flex justify-end gap-2">
-                                                <Link to={`/blogs/${post.id}`} target="_blank" className="p-2 text-slate-400 hover:text-[#26cece] rounded-[2px] hover:bg-white transition-colors border border-transparent hover:border-slate-200">
+                                                <Link to={`/blogs/${post.slug || post.id}`} target="_blank" className="p-2 text-slate-400 hover:text-[#26cece] rounded-[2px] hover:bg-white transition-colors border border-transparent hover:border-slate-200">
                                                     <Eye size={16} />
                                                 </Link>
-                                                <Link to={`/blog/edit/${post.id}`} className="p-2 text-slate-400 hover:text-slate-900 rounded-[2px] hover:bg-white transition-colors border border-transparent hover:border-slate-200">
+                                                <Link to={`/blogs/edit/${post.id}`} className="p-2 text-slate-400 hover:text-slate-900 rounded-[2px] hover:bg-white transition-colors border border-transparent hover:border-slate-200">
                                                     <Edit3 size={16} />
                                                 </Link>
                                                 <button onClick={() => handleDelete(post.id)} className="p-2 text-slate-400 hover:text-rose-500 rounded-[2px] hover:bg-rose-50 transition-colors border border-transparent hover:border-rose-100">

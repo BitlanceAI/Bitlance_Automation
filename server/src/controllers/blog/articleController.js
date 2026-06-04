@@ -591,7 +591,16 @@ export const publicGetBlog = async (req, res) => {
 
     try {
         const query = supabaseAdmin.from('company_articles').select('*').eq('is_published', true);
-        const { data, error } = await (isUuid ? query.eq('id', identifier) : query.eq('slug', identifier)).single();
+        let { data, error } = await (isUuid ? query.eq('id', identifier) : query.eq('slug', identifier)).single();
+        
+        // If not found in company_articles, check regular articles table
+        if (error || !data) {
+            const query2 = supabaseAdmin.from('articles').select('*');
+            const res2 = await (isUuid ? query2.eq('id', identifier) : query2.eq('slug', identifier)).single();
+            data = res2.data;
+            error = res2.error;
+        }
+
         if (error || !data) return res.status(404).json({ success: false, error: 'Article not found' });
         res.json({ success: true, article: data });
     } catch (err) {
@@ -616,11 +625,23 @@ export const publicGetComments = async (req, res) => {
         // First resolve the article_id if it's a slug
         let articleId = identifier;
         if (!isUuid) {
-            const { data: art, error: artErr } = await supabaseAdmin
+            let { data: art, error: artErr } = await supabaseAdmin
                 .from('company_articles')
                 .select('id')
                 .eq('slug', identifier)
                 .single();
+                
+            if (artErr || !art) {
+                // Fallback to regular articles table
+                const res2 = await supabaseAdmin
+                    .from('articles')
+                    .select('id')
+                    .eq('slug', identifier)
+                    .single();
+                art = res2.data;
+                artErr = res2.error;
+            }
+                
             if (artErr || !art) return res.status(404).json({ success: false, error: 'Article not found' });
             articleId = art.id;
         }
@@ -661,11 +682,23 @@ export const publicPostComment = async (req, res) => {
         // First resolve the article_id if it's a slug
         let articleId = identifier;
         if (!isUuid) {
-            const { data: art, error: artErr } = await supabaseAdmin
+            let { data: art, error: artErr } = await supabaseAdmin
                 .from('company_articles')
                 .select('id')
                 .eq('slug', identifier)
                 .single();
+                
+            if (artErr || !art) {
+                // Fallback to regular articles table
+                const res2 = await supabaseAdmin
+                    .from('articles')
+                    .select('id')
+                    .eq('slug', identifier)
+                    .single();
+                art = res2.data;
+                artErr = res2.error;
+            }
+                
             if (artErr || !art) return res.status(404).json({ success: false, error: 'Article not found' });
             articleId = art.id;
         }
