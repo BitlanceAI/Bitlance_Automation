@@ -16,7 +16,7 @@ const BlogManagerPanel = ({ optimizationMode = 'GEO' }) => {
         if (!token) return; // Wait until auth token is available
         setLoading(true);
         try {
-            const response = await axios.get(`${API_BASE_URL}/api/blog/posts`, {
+            const response = await axios.get(`${API_BASE_URL}/api/blog/posts?limit=100`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             const fetchedPosts = response.data.posts || [];

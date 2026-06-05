@@ -49,7 +49,7 @@ function computeSeoScore(formData) {
             earned: titleLen >= 50 && titleLen <= 60 ? 15 : titleLen >= 30 ? 8 : 0,
         },
         {
-            label: 'GEO title set',
+            label: 'SEO / GEO title set',
             pass: seoTitleLen >= 10,
             warn: false,
             detail: seoTitleLen ? `${seoTitleLen} chars` : 'Missing',
@@ -126,7 +126,7 @@ function SeoScorePanel({ formData }) {
         <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm p-6 border border-gray-100 dark:border-slate-700">
             <h2 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white flex items-center gap-2">
                 <BarChart2 className="w-5 h-5" />
-                GEO Score
+                SEO / GEO Score
             </h2>
 
             {/* Score ring */}
@@ -326,7 +326,7 @@ const BlogEditorPage = () => {
     return (
         <div className="min-h-screen bg-gray-50 dark:bg-slate-900 pb-12">
             <Navbar />
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-28 pb-10">
                 <div className="flex items-center gap-4 mb-8">
                     <Link to="/blog-manager" className="p-2 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-lg text-gray-500">
                         <ArrowLeft className="w-5 h-5" />
@@ -396,11 +396,11 @@ const BlogEditorPage = () => {
                         <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm p-6 border border-gray-100 dark:border-slate-700">
                             <h2 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white flex items-center gap-2">
                                 <FileText className="w-5 h-5" />
-                                GEO Metadata
+                                SEO / GEO Metadata
                             </h2>
                             <div className="space-y-4">
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">GEO Title</label>
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">SEO / GEO Title</label>
                                     <input
                                         type="text"
                                         name="seo_title"

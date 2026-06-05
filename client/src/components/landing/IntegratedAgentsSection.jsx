@@ -64,7 +64,7 @@ const BlogAgentContent = ({ navigate }) => {
             </div>
 
             <div className="flex justify-center mt-8">
-                <button onClick={() => navigate('/dashboard/agents/seo')} className="group inline-flex items-center gap-3 font-extrabold text-base transition-all hover:bg-black hover:text-white" style={{ background: TEAL, color: '#000', padding: '16px 32px', borderRadius: 2, border: 'none', cursor: 'pointer', fontFamily: "'Space Grotesk', sans-serif" }}>
+                <button onClick={() => navigate('/dashboard/agents/geo')} className="group inline-flex items-center gap-3 font-extrabold text-base transition-all hover:bg-black hover:text-white" style={{ background: TEAL, color: '#000', padding: '16px 32px', borderRadius: 2, border: 'none', cursor: 'pointer', fontFamily: "'Space Grotesk', sans-serif" }}>
                     Try the GEO (Generative) AI Agent <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
                 </button>
             </div>

@@ -163,9 +163,15 @@ def upload_image_to_supabase(image_url: str, scoped_supabase: Client) -> str:
     Falls back to original URL on any error.
     """
     try:
-        img_res = requests.get(image_url, timeout=30)
-        img_res.raise_for_status()
-        file_bytes = img_res.content
+        import base64
+        if image_url.startswith("data:image"):
+            # Format: data:image/png;base64,iVBORw0KGgo...
+            header, encoded = image_url.split(",", 1)
+            file_bytes = base64.b64decode(encoded)
+        else:
+            img_res = requests.get(image_url, timeout=30)
+            img_res.raise_for_status()
+            file_bytes = img_res.content
         file_name = f"blog-{int(time.time())}-{random.randint(0, 999)}.png"
 
         scoped_supabase.storage.from_("blog-images").upload(

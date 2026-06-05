@@ -44,7 +44,7 @@ def _serp_request(params: dict) -> dict:
     if not SERP_API_KEY:
         raise RuntimeError("SERP_API_KEY is not set")
     params["api_key"] = SERP_API_KEY
-    res = requests.get(SERP_BASE_URL, params=params, timeout=10)
+    res = requests.get(SERP_BASE_URL, params=params, timeout=60)
     if res.status_code == 429:
         raise SerpRateLimitError(f"SerpAPI Rate Limit (429): {res.text}")
     res.raise_for_status()
@@ -119,7 +119,7 @@ def _fetch_trends_autocomplete(query: str) -> list[str]:
                 "q": query,
                 "api_key": SERP_API_KEY,
             },
-            timeout=10,
+            timeout=60,
         )
         resp.raise_for_status()
         data = resp.json()

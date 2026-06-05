@@ -177,8 +177,8 @@ def generate_blog(body: GenerateBlogRequest):
     elif body.image_option == "custom":
         image_url = body.custom_image_url
 
-    # ── 8. Convert Markdown → HTML ────────────────────────────────────────────
-    blog_html = ai.format_markdown_to_html(blog_text)
+    # ── 8. Skip Markdown → HTML conversion (Frontend uses ReactMarkdown) ──────
+    blog_html = blog_text
 
     # ── 9. Return everything — Node.js handles persistence ────────────────────
     result_data = {

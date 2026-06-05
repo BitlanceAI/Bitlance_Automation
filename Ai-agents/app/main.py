@@ -29,6 +29,7 @@ logger.info("=" * 60)
 from app.api.blog import router as blog_router
 from app.api.video import router as video_router
 from app.api.email_agent import router as email_agent_router
+from app.api.geo_tracker import router as geo_tracker_router
 
 app = FastAPI(
     title="GEO (Generative) AI Agent API",
@@ -55,6 +56,7 @@ app.add_middleware(
 app.include_router(blog_router, prefix="/api/blog")
 app.include_router(video_router, prefix="/api/video")
 app.include_router(email_agent_router, prefix="/api/email-agent")
+app.include_router(geo_tracker_router, prefix="/api/geo-tracker")
 
 # ==================================================
 # HEALTH CHECK

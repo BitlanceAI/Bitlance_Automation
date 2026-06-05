@@ -184,7 +184,7 @@ def generate_blog_content(
         if api_key:
             search_data = requests.get("https://serpapi.com/search.json", params={
                 "api_key": api_key, "q": topic, "hl": "en", "gl": "us", "num": 5
-            }, timeout=5).json()
+            }, timeout=60).json()
             paa_list = search_data.get("related_questions", [])
             real_questions = [q.get("question") for q in paa_list if q.get("question")]
     except Exception as e:
@@ -255,13 +255,115 @@ def generate_blog_content(
         faq_section = ""
         if mode == "GEO":
             faq_section = f"""
-6. FAQ SECTION  (H2: "Frequently Asked Questions About {{primary_keyword}}")
-   - Add EXACTLY 5 Q&A pairs.
-   - Each question targets a "People Also Ask" query for this topic.{paa_instructions}
+11. FAQ SECTION  (H2: "Frequently Asked Questions About {primary_keyword}")
+   - Add EXACTLY 5 Q&A pairs directly related to '{primary_keyword}'.
+   - {paa_instructions if paa_instructions else f"Generate 5 highly relevant 'People Also Ask' style questions specifically about {primary_keyword}."}
    - Format:
        ### Question text here?
        Answer in 40–80 words. Direct, factual, complete sentence. No fluff.
    - This format is eligible for AI engine parsing.
+"""
+
+        if mode == "SEO":
+            mandatory_structure = f"""
+1. H1 TITLE
+   - Must contain the primary keyword within the first 4 words.
+   - Avoid unnatural or awkward phrasing like "How to utilize AI? 7 Ways".
+   - Use dynamic, natural, and highly compelling phrasing (e.g., "How AI Will Shape the New Era: 7 Practical Ways to Stay Ahead").
+   - 50–70 characters.
+
+2. STATISTICS AT A GLANCE BLOCK
+   - Add a bolded H2: "{primary_keyword} Facts at a Glance" (or similar title adapted to the topic).
+   - Include 4-5 fast, scannable bullet points (•) with hard, highly technical facts (e.g., "Modern GPUs contain 20B+ transistors" or "AI workloads see 10–50x acceleration"). Do not scatter the statistics; keep them tightly clustered here.
+
+3. META DESCRIPTION BLOCK (immediately after H1, inside a Markdown blockquote >)
+   - 140–155 characters, includes primary keyword, states clear benefit.
+   - Format: > **Meta:** <your meta description here>
+
+4. INTRODUCTION (120–160 words)
+   - First sentence MUST contain the primary keyword in bold: **{primary_keyword}**.
+   - Open with a striking statistic, question, or provocative statement.
+   - State exactly what the reader will learn and why it matters to them.
+   - End with a smooth transition into the Table of Contents.
+
+5. TABLE OF CONTENTS
+   - Markdown bulleted list of every H2 section below (no H3s).
+   - Format: - [Section Title](#anchor)
+
+6. MAIN BODY — 5 to 7 H2 SECTIONS
+   Each section MUST:
+   a) Open with a sentence that naturally contains a keyword variation or LSI term.
+   b) Deliver ONE clear, actionable insight — no generic observations.
+   c) Include at least ONE of: a numbered step list, a bullet list, a data point,
+      a comparison table, a real-world example, or a pro tip callout.
+   d) Use H3 subsections (2–3 per H2) for complex topics to create a clear hierarchy.
+   e) Paragraphs: 2–4 sentences max. No walls of text.
+   f) Bold the most important phrase or takeaway in each paragraph.
+   g) Strong Entity Coverage: You MUST explicitly mention major knowledge graph entities (e.g., OpenAI, Google DeepMind, Anthropic, NVIDIA, AWS) where relevant.
+   h) Deep Technical Citations & Expert Sources: You MUST cite highly authoritative sources, including research citations, technical reports, and specific architecture references (e.g., Stanford AI Index, Gartner, Deloitte, NVIDIA architecture whitepapers) to boost EEAT.
+
+   REQUIRED SECTIONS:
+   - Dynamic, Editorial Topic Sections: DO NOT use templated headings like "Benefits", "Challenges", "Mistakes", "Future Trends", or "Conclusion".
+   - Instead, create 5-7 highly specific, dynamic, editorial-style headings tailored precisely to the topic.
+   - Examples of good dynamic headings: "Why AI Matters Right Now", "The AI Opportunity Gap", "The 5-Step AI Adoption Framework", "When AI Becomes Dangerous", "What Happens By 2030".
+   - Ensure you cover contrarian viewpoints and deep analysis, avoiding generic surface-level observations.
+
+7. CONCLUSION  (H2: "Final Thoughts: [Primary Keyword]")
+   - 80–120 words.
+   - Summarise the 3 most important takeaways.
+   - Restate the primary keyword naturally.
+   - End with a strong, specific call-to-action.
+"""
+        else:
+            mandatory_structure = f"""
+1. H1 TITLE
+   - Must contain the primary keyword within the first 4 words.
+   - Make it compelling and highly clickable.
+
+2. META DESCRIPTION BLOCK (immediately after H1, inside a Markdown blockquote >) 
+   - 140–155 characters, includes primary keyword, states clear benefit.
+
+3. QUICK ANSWER BLOCK (Critical for AI Retrieval)
+   - Add a bolded H2: "Quick Answer"
+   - Write a dense, 3-4 sentence direct answer to the core topic/keyword. 
+   - No fluff, highly factual, perfect for AI ingestion.
+
+4. AI OVERVIEW SUMMARY
+   - Add a bolded H2: "AI Overview Summary"
+   - Summarize the entire article's thesis in a highly quotable 50-word paragraph.
+
+5. STATISTICS BOX
+   - Add a bolded H2: "{primary_keyword} Statistics"
+   - Include 4-6 bullet points with hard data (e.g., "30% of tasks automatable", "8 hours saved").
+
+6. DEDICATED FACT BOX
+   - Add a bolded H2: "{primary_keyword} Facts"
+   - Provide 4-5 fast, scannable facts using checkmarks (✓). Example: "✓ AI improves feedback speed".
+
+7. TABLE OF CONTENTS
+   - Markdown bulleted list of every H2 section below.
+
+8. MAIN BODY — Dynamic Topic-Specific Sections
+   - DO NOT use generic templates like "Benefits", "Steps", "Mistakes".
+   - Create 4-6 specific, highly relevant H2 sections tailored precisely to the topic.
+   - High Entity Density (Increase by 40%): You MUST explicitly mention specific industry-standard hardware, software, organizations, and frameworks relevant to the topic (e.g., if AI: OpenAI, DeepMind; if GPUs: NVIDIA Blackwell, PyTorch; if automation: Zapier, HubSpot). Do not use generic terms.
+   - Research Source Layer: You MUST cite highly authoritative academic or institutional sources (e.g., Stanford AI Index, OECD, UNESCO, Harvard Education Review, MIT Technology Review, McKinsey) to build maximum trust.
+
+9. MYTH VS REALITY TABLE
+   - You MUST include a highly detailed Markdown Comparison Table explicitly comparing "Myth" vs "Reality" for the topic.
+   - Format: | Myth | Reality | Explanation |
+
+10. CITATION MAGNETS (Expert Insights)
+    - You MUST include 2 "Expert Insight" blocks (use > blockquotes).
+    - Make these highly analytical, original, and controversial or deep so they get cited by LLMs.
+{faq_section}
+12. KEY TAKEAWAYS BLOCK
+    - Add a bolded H2: "Key Takeaways"
+    - Provide 5 extremely concise bullet points summarizing the core thesis of the article.
+
+13. CONCLUSION  (H2: "Final Thoughts: {primary_keyword}")
+    - 80–120 words.
+    - End with a strong, specific call-to-action.
 """
 
         prompt = f"""
@@ -279,50 +381,7 @@ MINIMUM WORDS   : {length_num}
 ═══════════════════════════════════════════
 
 ══ MANDATORY ARTICLE STRUCTURE (follow exactly, in order) ══
-
-1. H1 TITLE
-   - Must contain the primary keyword within the first 4 words.
-   - Make it compelling and click-worthy (use a number, power word, or promise).
-   - 50–65 characters.
-
-2. META DESCRIPTION BLOCK (immediately after H1, inside a Markdown blockquote >) 
-   - 140–155 characters, includes primary keyword, states clear benefit.
-   - Format: > **Meta:** <your meta description here>
-
-3. INTRODUCTION (120–160 words)
-   - First sentence MUST contain the primary keyword in bold: **{primary_keyword}**.
-   - Open with a striking statistic, question, or provocative statement.
-   - State exactly what the reader will learn and why it matters to them.
-   - End with a smooth transition into the Table of Contents.
-
-4. TABLE OF CONTENTS
-   - Markdown bulleted list of every H2 section below (no H3s).
-   - Format: - [Section Title](#anchor)
-
-5. MAIN BODY — 5 to 7 H2 SECTIONS
-   Each section MUST:
-   a) Open with a sentence that naturally contains a keyword variation or LSI term.
-   b) Deliver ONE clear, actionable insight — no generic observations.
-   c) Include at least ONE of: a numbered step list, a bullet list, a data point,
-      a comparison table, a real-world example, or a pro tip callout.
-   d) Use H3 subsections (2–3 per H2) for complex topics to create a clear hierarchy.
-   e) Paragraphs: 2–4 sentences max. No walls of text.
-   f) Bold the most important phrase or takeaway in each paragraph.
-
-   REQUIRED SECTIONS (adapt headings to the topic, keep substance):
-   - "What Is [Primary Keyword] and Why It Matters" (definition + context)
-   - "How [Primary Keyword] Works" (mechanism / technical deep-dive)
-   - "Key Benefits / Advantages" (data-backed benefits, use bullet list)
-   - "Step-by-Step Guide / How to [Primary Keyword]" (numbered steps, 5–8 steps)
-   - "Common Mistakes to Avoid" (3–5 pitfalls with brief explanations)
-   - "[Primary Keyword] Best Practices" (expert-level tips)
-   - "Real-World Examples / Case Studies" (concrete results with numbers)
-{faq_section}
-7. CONCLUSION  (H2: "Final Thoughts: [Primary Keyword]")
-   - 80–120 words.
-   - Summarise the 3 most important takeaways.
-   - Restate the primary keyword naturally.
-   - End with a strong, specific call-to-action (not generic "let us know below").
+{mandatory_structure}
 
 ══ KEYWORD PLACEMENT — CRITICAL FOR RANKING ══
 - Primary keyword appears in: H1, first sentence of intro, at least 2 H2 headings,
@@ -333,9 +392,11 @@ MINIMUM WORDS   : {length_num}
 - Use synonyms and related terms in H3 headings to build topical authority.
 
 ══ E-E-A-T SIGNALS (Google's quality framework) ══
-- Write as a clear subject-matter expert: cite specific numbers, studies, or tools.
+- Write as a clear subject-matter expert: explicitly cite highly authoritative sources (e.g., Gartner, HubSpot, Salesforce, Deloitte, McKinsey, World Economic Forum, or their industry equivalents).
+- Include original insights: Do not just explain; analyze. Include contrarian opinions, unique frameworks, and original observations (e.g., "The hidden weakness of...", "Why X might fail...", "When NOT to automate...").
+- Stronger Topical Authority: Dive deep into broad subtopics (e.g., CRM, Marketing, HR, Finance, AI, Workflow). Ensure the article covers the topic holistically. Do not just skim the surface.
+- Competitor Gap Coverage: Anticipate what top-ranking articles discuss and intentionally cover advanced subtopics they miss.
 - Include first-person insights where natural ("In my experience...", "I've seen...").
-- Add at least ONE comparison (tool A vs tool B, approach X vs approach Y).
 - Demonstrate depth: go beyond surface-level explanations into the "why" and "how".
 
 ══ FEATURED SNIPPET OPTIMISATION ══
@@ -350,7 +411,7 @@ MINIMUM WORDS   : {length_num}
 - Use **bold** for key terms (first occurrence) and critical takeaways.
 - Use *italic* for emphasis only — sparingly (max 3 per section).
 - Use > blockquotes for expert quotes, pro tips, or key statistics.
-- Use comparison tables (Markdown) where two or more options are compared.
+- Use comparison tables (Markdown) where beneficial to compare features/ideas.
 - Do NOT use horizontal rules (---) between sections — use heading hierarchy instead.
 
 ⚠️ ABSOLUTE RULES (any violation = full rejection):
@@ -359,7 +420,9 @@ MINIMUM WORDS   : {length_num}
   "In today's fast-paced world", "In the digital age", "Without further ado".
 - {"ONLY use the internal links listed above — add NO other external URLs anywhere." if interlinks else "Do NOT add any external links or URLs anywhere in the content."}
 - Every sentence must add value — delete any sentence that could be cut without loss.
+- The entire article MUST be written ONLY in {language}. Absolutely no foreign words or characters.
 - Output ONLY clean, valid Markdown. No preamble, no meta-commentary, no "Here is your article:".
+- NEVER output HTML tags (e.g., <h1>, <p>, <h2>, <strong>, <ul>). You MUST use ONLY pure Markdown syntax (e.g., #, ##, **, -, *).
 - {continuation}
         """
 
@@ -530,7 +593,7 @@ def openai_generate_blog_content(
         if api_key:
             search_data = requests.get("https://serpapi.com/search.json", params={
                 "api_key": api_key, "q": topic, "hl": "en", "gl": "us", "num": 5
-            }, timeout=5).json()
+            }, timeout=60).json()
             paa_list = search_data.get("related_questions", [])
             real_questions = [q.get("question") for q in paa_list if q.get("question")]
     except Exception as e:
@@ -570,7 +633,8 @@ def openai_generate_blog_content(
         else:
             interlink_instructions = f"""
         ══ SEO INTERNAL LINKING ══
-        You MUST naturally embed ALL of the following internal links into the article to scale on Google search engines.
+        You MUST naturally embed 2 to 3 of the MOST RELEVANT internal links from the list below into the article.
+        Do NOT embed all of them. Google prefers relevance over quantity. Select only the top 2-3 links that best fit the context.
         Use natural anchor text within the body of the article. Do not cluster them together.
         
         Links to embed:
@@ -591,16 +655,137 @@ def openai_generate_blog_content(
     faq_section = ""
     if mode == "GEO":
         faq_section = f"""
-6. FAQ SECTION  (H2: "Frequently Asked Questions About {{primary_keyword}}")
-   - Add EXACTLY 5 Q&A pairs.
-   - Each question targets a "People Also Ask" query for this topic.{paa_instructions}
+11. FAQ SECTION  (H2: "Frequently Asked Questions About {primary_keyword}")
+   - Add EXACTLY 5 Q&A pairs directly related to '{primary_keyword}'.
+   - {paa_instructions if paa_instructions else f"Generate 5 highly relevant 'People Also Ask' style questions specifically about {primary_keyword}."}
    - Format:
        ### Question text here?
        Answer in 40–80 words. Direct, factual, complete sentence. No fluff.
    - This format is eligible for AI engine parsing.
 """
 
-    prompt = f"""
+    if mode == "SEO":
+        advanced_optimization = """
+══ ELITE 2026 SEO CONTENT OPTIMIZER ══
+- Semantic SEO & Entities: Naturally weave in missing semantic keywords and related entities. Ensure deep topical authority by covering subtopics competitors likely mention.
+- Search Intent Match: Directly address the underlying user intent within the first 100 words.
+- Content Depth: Expand shallow sections. Every single section MUST provide unique value.
+- Featured Snippet Potential: Format definitions and lists to trigger Google's Position Zero.
+- Readability & Heading Structure: Improve all headings and subheadings. Clear H1-H2-H3 hierarchy with scannable, actionable content. Remove fluff, repetition, and AI-sounding language.
+"""
+    else:
+        advanced_optimization = """
+══ ELITE 2026 GEO (Generative Engine Optimization) SPECIALIST ══
+- AI Citation Potential: Structure claims so they are highly probable to be cited by Perplexity, ChatGPT, Gemini, and Claude. Make answers direct and explicit.
+- Direct Answer Quality: Provide extremely dense, fact-rich sentences. Prefer facts over storytelling.
+- AI Overview Readiness: Write modular, self-contained paragraphs that an AI engine can easily extract and summarize without losing context. Create highly quotable paragraphs.
+- Knowledge Graph Relevance: Add authoritative industry terms and entities explicitly.
+- Retrieval-Friendly Formatting: Convert hidden answers into clear answer blocks. Use concise explanations before detailed explanations.
+"""
+
+        if mode == "SEO":
+            mandatory_structure = f"""
+1. H1 TITLE
+   - Must contain the primary keyword within the first 4 words.
+   - Avoid unnatural or awkward phrasing like "How to utilize AI? 7 Ways".
+   - Use dynamic, natural, and highly compelling phrasing (e.g., "How AI Will Shape the New Era: 7 Practical Ways to Stay Ahead").
+   - 50–70 characters.
+
+2. STATISTICS AT A GLANCE BLOCK
+   - Add a bolded H2: "{primary_keyword} Facts at a Glance" (or similar title adapted to the topic).
+   - Include 4-5 fast, scannable bullet points (•) with hard, highly technical facts (e.g., "Modern GPUs contain 20B+ transistors" or "AI workloads see 10–50x acceleration"). Do not scatter the statistics; keep them tightly clustered here.
+
+3. META DESCRIPTION BLOCK (immediately after H1, inside a Markdown blockquote >)
+   - 140–155 characters, includes primary keyword, states clear benefit.
+   - Format: > **Meta:** <your meta description here>
+
+4. INTRODUCTION (120–160 words)
+   - First sentence MUST contain the primary keyword in bold: **{primary_keyword}**.
+   - Open with a striking statistic, question, or provocative statement.
+   - State exactly what the reader will learn and why it matters to them.
+   - End with a smooth transition into the Table of Contents.
+
+5. TABLE OF CONTENTS
+   - Markdown bulleted list of every H2 section below (no H3s).
+   - Format: - [Section Title](#anchor)
+
+6. MAIN BODY — 5 to 7 H2 SECTIONS
+   Each section MUST:
+   a) Open with a sentence that naturally contains a keyword variation or LSI term.
+   b) Deliver ONE clear, actionable insight — no generic observations.
+   c) Include at least ONE of: a numbered step list, a bullet list, a data point,
+      a comparison table, a real-world example, or a pro tip callout.
+   d) Use H3 subsections (2–3 per H2) for complex topics to create a clear hierarchy.
+   e) Paragraphs: 2–4 sentences max. No walls of text.
+   f) Bold the most important phrase or takeaway in each paragraph.
+   g) Strong Entity Coverage: You MUST explicitly mention major knowledge graph entities (e.g., OpenAI, Google DeepMind, Anthropic, NVIDIA, AWS) where relevant.
+   h) Deep Technical Citations & Expert Sources: You MUST cite highly authoritative sources, including research citations, technical reports, and specific architecture references (e.g., Stanford AI Index, Gartner, Deloitte, NVIDIA architecture whitepapers) to boost EEAT.
+
+   REQUIRED SECTIONS:
+   - Dynamic, Editorial Topic Sections: DO NOT use templated headings like "Benefits", "Challenges", "Mistakes", "Future Trends", or "Conclusion".
+   - Instead, create 5-7 highly specific, dynamic, editorial-style headings tailored precisely to the topic.
+   - Examples of good dynamic headings: "Why AI Matters Right Now", "The AI Opportunity Gap", "The 5-Step AI Adoption Framework", "When AI Becomes Dangerous", "What Happens By 2030".
+   - Ensure you cover contrarian viewpoints and deep analysis, avoiding generic surface-level observations.
+
+7. CONCLUSION  (H2: "Final Thoughts: [Primary Keyword]")
+   - 80–120 words.
+   - Summarise the 3 most important takeaways.
+   - Restate the primary keyword naturally.
+   - End with a strong, specific call-to-action.
+"""
+        else:
+            mandatory_structure = f"""
+1. H1 TITLE
+   - Must contain the primary keyword within the first 4 words.
+   - Make it compelling and highly clickable.
+
+2. META DESCRIPTION BLOCK (immediately after H1, inside a Markdown blockquote >) 
+   - 140–155 characters, includes primary keyword, states clear benefit.
+
+3. QUICK ANSWER BLOCK (Critical for AI Retrieval)
+   - Add a bolded H2: "Quick Answer"
+   - Write a dense, 3-4 sentence direct answer to the core topic/keyword. 
+   - No fluff, highly factual, perfect for AI ingestion.
+
+4. AI OVERVIEW SUMMARY
+   - Add a bolded H2: "AI Overview Summary"
+   - Summarize the entire article's thesis in a highly quotable 50-word paragraph.
+
+5. STATISTICS BOX
+   - Add a bolded H2: "{primary_keyword} Statistics"
+   - Include 4-6 bullet points with hard data (e.g., "30% of tasks automatable", "8 hours saved").
+
+6. DEDICATED FACT BOX
+   - Add a bolded H2: "{primary_keyword} Facts"
+   - Provide 4-5 fast, scannable facts using checkmarks (✓). Example: "✓ AI improves feedback speed".
+
+7. TABLE OF CONTENTS
+   - Markdown bulleted list of every H2 section below.
+
+8. MAIN BODY — Dynamic Topic-Specific Sections
+   - DO NOT use generic templates like "Benefits", "Steps", "Mistakes".
+   - Create 4-6 specific, highly relevant H2 sections tailored precisely to the topic.
+   - High Entity Density (Increase by 40%): You MUST explicitly mention specific industry-standard hardware, software, organizations, and frameworks relevant to the topic (e.g., if AI: OpenAI, DeepMind; if GPUs: NVIDIA Blackwell, PyTorch; if automation: Zapier, HubSpot). Do not use generic terms.
+   - Research Source Layer: You MUST cite highly authoritative academic or institutional sources (e.g., Stanford AI Index, OECD, UNESCO, Harvard Education Review, MIT Technology Review, McKinsey) to build maximum trust.
+
+9. MYTH VS REALITY TABLE
+   - You MUST include a highly detailed Markdown Comparison Table explicitly comparing "Myth" vs "Reality" for the topic.
+   - Format: | Myth | Reality | Explanation |
+
+10. CITATION MAGNETS (Expert Insights)
+    - You MUST include 2 "Expert Insight" blocks (use > blockquotes).
+    - Make these highly analytical, original, and controversial or deep so they get cited by LLMs.
+{faq_section}
+12. KEY TAKEAWAYS BLOCK
+    - Add a bolded H2: "Key Takeaways"
+    - Provide 5 extremely concise bullet points summarizing the core thesis of the article.
+
+13. CONCLUSION  (H2: "Final Thoughts: {primary_keyword}")
+    - 80–120 words.
+    - End with a strong, specific call-to-action.
+"""
+
+        prompt = f"""
 {expert_persona}
 
 ═══════════════ ASSIGNMENT ═══════════════
@@ -615,50 +800,7 @@ MINIMUM WORDS   : {length_num}
 ═══════════════════════════════════════════
 
 ══ MANDATORY ARTICLE STRUCTURE (follow exactly, in order) ══
-
-1. H1 TITLE
-   - Must contain the primary keyword within the first 4 words.
-   - Make it compelling and click-worthy (use a number, power word, or promise).
-   - 50–65 characters.
-
-2. META DESCRIPTION BLOCK (immediately after H1, inside a Markdown blockquote >)
-   - 140–155 characters, includes primary keyword, states clear benefit.
-   - Format: > **Meta:** <your meta description here>
-
-3. INTRODUCTION (120–160 words)
-   - First sentence MUST contain the primary keyword in bold: **{primary_keyword}**.
-   - Open with a striking statistic, question, or provocative statement.
-   - State exactly what the reader will learn and why it matters to them.
-   - End with a smooth transition into the Table of Contents.
-
-4. TABLE OF CONTENTS
-   - Markdown bulleted list of every H2 section below (no H3s).
-   - Format: - [Section Title](#anchor)
-
-5. MAIN BODY — 5 to 7 H2 SECTIONS
-   Each section MUST:
-   a) Open with a sentence that naturally contains a keyword variation or LSI term.
-   b) Deliver ONE clear, actionable insight — no generic observations.
-   c) Include at least ONE of: a numbered step list, a bullet list, a data point,
-      a comparison table, a real-world example, or a pro tip callout.
-   d) Use H3 subsections (2–3 per H2) for complex topics to create a clear hierarchy.
-   e) Paragraphs: 2–4 sentences max. No walls of text.
-   f) Bold the most important phrase or takeaway in each paragraph.
-
-   REQUIRED SECTIONS (adapt headings to the topic, keep substance):
-   - "What Is [Primary Keyword] and Why It Matters" (definition + context)
-   - "How [Primary Keyword] Works" (mechanism / technical deep-dive)
-   - "Key Benefits / Advantages" (data-backed benefits, use bullet list)
-   - "Step-by-Step Guide / How to [Primary Keyword]" (numbered steps, 5–8 steps)
-   - "Common Mistakes to Avoid" (3–5 pitfalls with brief explanations)
-   - "[Primary Keyword] Best Practices" (expert-level tips)
-   - "Real-World Examples / Case Studies" (concrete results with numbers)
-{faq_section}
-7. CONCLUSION  (H2: "Final Thoughts: [Primary Keyword]")
-   - 80–120 words.
-   - Summarise the 3 most important takeaways.
-   - Restate the primary keyword naturally.
-   - End with a strong, specific call-to-action (not generic "let us know below").
+{mandatory_structure}
 
 ══ KEYWORD PLACEMENT — CRITICAL FOR RANKING ══
 - Primary keyword appears in: H1, first sentence of intro, at least 2 H2 headings,
@@ -668,11 +810,13 @@ MINIMUM WORDS   : {length_num}
 - Bold the primary keyword on FIRST occurrence in the body text only.
 - Use synonyms and related terms in H3 headings to build topical authority.
 
-══ E-E-A-T SIGNALS (Google's quality framework) ══
-- Write as a clear subject-matter expert: cite specific numbers, studies, or tools.
-- Include first-person insights where natural ("In my experience...", "I've seen...").
-- Add at least ONE comparison (tool A vs tool B, approach X vs approach Y).
-- Demonstrate depth: go beyond surface-level explanations into the "why" and "how".
+══ E-E-A-T & CONTENT QUALITY SIGNALS ══
+- Experience & Expertise: Write as a clear subject-matter expert. Explicitly cite authoritative industry sources (e.g., Gartner, HubSpot, Salesforce, Deloitte, McKinsey, World Economic Forum, or their industry equivalents).
+- Original Insights & Analysis: Google rewards unique observations. Do not just explain—analyze. Include contrarian opinions, unique frameworks, and expert critiques (e.g., "The hidden weakness of...", "When NOT to automate...").
+- Stronger Topical Authority: Dive deep into broad subtopics (e.g., CRM, Marketing, HR, Finance, AI, Workflow). Ensure the article covers the topic holistically. Do not just skim the surface with generic points.
+- Competitor Gap Coverage: Anticipate what top competitors will write and cover the gaps. Add depth that standard AI content completely misses.
+- Authoritativeness & Trustworthiness: Demonstrate depth. Add statistics when relevant. Ensure research-backed points instead of generic observations.
+- Clarity & Actionability: Every paragraph must be clear and actionable. Add comparison tables (in Markdown) where beneficial to highlight differences.
 
 ══ FEATURED SNIPPET OPTIMISATION ══
 - Include ONE paragraph directly below an H2 that answers "What is {primary_keyword}?"
@@ -682,11 +826,13 @@ MINIMUM WORDS   : {length_num}
 
 {interlink_instructions}
 
+{advanced_optimization}
+
 ══ FORMATTING RULES ══
 - Use **bold** for key terms (first occurrence) and critical takeaways.
 - Use *italic* for emphasis only — sparingly (max 3 per section).
 - Use > blockquotes for expert quotes, pro tips, or key statistics.
-- Use comparison tables (Markdown) where two or more options are compared.
+- Use comparison tables (Markdown) where beneficial to compare features/ideas.
 - Do NOT use horizontal rules (---) between sections.
 
 ⚠️ ABSOLUTE RULES (any violation = full rejection):
@@ -695,7 +841,9 @@ MINIMUM WORDS   : {length_num}
   "In today's fast-paced world", "In the digital age", "Without further ado".
 - {"ONLY use the internal links listed above — add NO other external URLs anywhere." if interlinks else "Do NOT add any external links or URLs anywhere in the content."}
 - Every sentence must add value — delete any sentence that could be cut without loss.
+- The entire article MUST be written ONLY in {language}. Absolutely no foreign words or characters.
 - Output ONLY clean, valid Markdown. No preamble, no meta-commentary.
+- NEVER output HTML tags (e.g., <h1>, <p>, <h2>, <strong>, <ul>). You MUST use ONLY pure Markdown syntax (e.g., #, ##, **, -, *).
     """
 
     blog_text = _openai_chat_call(
@@ -708,68 +856,33 @@ MINIMUM WORDS   : {length_num}
 
 def generate_image(topic: str, image_text: str) -> str:
     """
-    Generate a blog header image.
-    Strategy (mirrors Graphic-agents image_service.py):
-      1. OpenAI gpt-image-2  — SDK call, b64_json response
-      2. OpenAI dall-e-3     — SDK call, url response (wider account support)
-      3. Solid-colour placeholder base64 PNG
-    Returns a data:image/png;base64,... string or a temporary URL.
+    Generate a real AI image for the blog header using OpenAI DALL-E 3.
     """
-    import base64
-    import io
-
-    dalle_prompt = (
-        f"Professional, text-free blog header image about: {topic}. "
-        f"Modern landscape design, clean and photorealistic. "
-        f"CRITICAL: No text, no words, no letters, no typography, no watermarks, no signs, no logos."
-    )
-
-    if _OPENAI_SDK_AVAILABLE and _openai_client:
-        # ── 1. gpt-image-2-2026-04-21 (primary) ────────────────────────────────────
-        try:
-            result = _openai_client.images.generate(
-                model="gpt-image-2-2026-04-21",
-                prompt=dalle_prompt,
-                size="1024x1024",
-                quality="low",
-                n=1,
-            )
-            img_data = result.data[0]
-            if hasattr(img_data, "b64_json") and img_data.b64_json:
-                print(f"Image generated via gpt-image-2-2026-04-21 for: {topic}")
-                return f"data:image/png;base64,{img_data.b64_json}"
-            elif hasattr(img_data, "url") and img_data.url:
-                print(f"Image generated via gpt-image-2-2026-04-21 (url) for: {topic}")
-                return img_data.url
-        except Exception as e:
-            print(f"OpenAI gpt-image-2-2026-04-21 failed: {type(e).__name__}: {e}")
-
-        # ── 2. dall-e-3 fallback (b64_json) ────────────────────────────────────────
-        try:
-            result = _openai_client.images.generate(
-                model="dall-e-3",
-                prompt=dalle_prompt,
-                size="1024x1024",
-                quality="standard",
-                n=1,
-            )
-            img_data = result.data[0]
-            if hasattr(img_data, "b64_json") and img_data.b64_json:
-                print(f"Image generated via dall-e-3 for: {topic}")
-                return f"data:image/png;base64,{img_data.b64_json}"
-            elif hasattr(img_data, "url") and img_data.url:
-                return img_data.url
-        except Exception as e:
-            print(f"OpenAI dall-e-3 failed: {type(e).__name__}: {e}")
-
-    # ── 3. Solid-colour placeholder ───────────────────────────────────────────
-    print("All image generation methods failed. Returning placeholder.")
-    from PIL import Image as _PILImage
-    img = _PILImage.new("RGB", (1280, 720), (30, 58, 138))
-    buf = io.BytesIO()
-    img.save(buf, format="PNG")
-    b64 = base64.b64encode(buf.getvalue()).decode("utf-8")
-    return f"data:image/png;base64,{b64}"
+    if not OPENAI_API_KEY:
+        print("OPENAI_API_KEY not set, skipping image generation.")
+        return ""
+        
+    try:
+        headers = {
+            "Authorization": f"Bearer {OPENAI_API_KEY}",
+            "Content-Type": "application/json",
+        }
+        prompt = f"A high-quality, professional blog header image about: {topic}. Visual style: modern, clean, flat vector or 3D render. Include typography: '{image_text}'."
+        payload = {
+            "model": "gpt-image-2",
+            "prompt": prompt,
+            "n": 1,
+            "size": "1792x1024",
+            "quality": "auto",
+        }
+        print(f"Generating image with gpt-image-2 for topic: '{topic}'")
+        res = requests.post("https://api.openai.com/v1/images/generations", headers=headers, json=payload, timeout=120)
+        res.raise_for_status()
+        b64_data = res.json()["data"][0].get("b64_json", "")
+        return f"data:image/png;base64,{b64_data}"
+    except Exception as e:
+        print(f"Error generating image with gpt-image-2: {e}")
+        return ""
 
 
 

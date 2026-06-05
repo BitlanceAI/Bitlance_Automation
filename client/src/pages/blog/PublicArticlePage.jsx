@@ -4,6 +4,9 @@ import SEOHead from '../../components/layout/SEOHead';
 import { Loader2, ArrowLeft, Calendar, User, Clock, Share2, Tag, Facebook, Twitter, Linkedin, Globe, Mail, Phone, MessageSquare, Send, ArrowRight } from 'lucide-react';
 import API_BASE_URL from '../../config.js';
 import { trackBlogRead, trackDemoClick } from '../../lib/analytics';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+import rehypeRaw from 'rehype-raw';
 
 const TEAL = '#26CECE';
 
@@ -263,11 +266,11 @@ const PublicArticlePage = () => {
                     </div>
 
                     {article.image_url && (
-                        <div className="w-full mt-10 p-2" style={{ background: '#f9fafb', border: '1px solid #e5e7eb' }}>
+                        <div className="w-full mt-10 mb-6 flex justify-center">
                             <img
                                 src={article.image_url}
                                 alt={article.seo_title || article.topic}
-                                className="w-full h-auto object-cover max-h-[600px] transition-all duration-700"
+                                className="max-w-full max-h-[400px] object-contain rounded-sm border border-gray-200"
                                 onError={(e) => e.target.style.display = 'none'}
                             />
                         </div>
@@ -281,10 +284,16 @@ const PublicArticlePage = () => {
                 {/* Article Content */}
                 <article className="flex-1 max-w-3xl">
                     <div
-                        className="prose prose-lg max-w-none prose-headings:font-extrabold prose-headings:text-black prose-headings:uppercase prose-headings:tracking-tight prose-a:no-underline hover:prose-a:underline prose-img:border prose-img:border-gray-200 prose-img:p-1 prose-img:bg-gray-50 text-gray-700 whitespace-pre-wrap leading-relaxed marker:text-[#26CECE]"
+                        className="prose prose-lg max-w-none prose-headings:font-extrabold prose-headings:text-black prose-headings:uppercase prose-headings:tracking-tight prose-a:no-underline hover:prose-a:underline prose-img:border prose-img:border-gray-200 prose-img:p-1 prose-img:bg-gray-50 text-gray-700 leading-relaxed marker:text-[#26CECE] prose-table:border-collapse prose-th:border prose-th:border-gray-300 prose-th:bg-gray-100 prose-th:p-3 prose-td:border prose-td:border-gray-300 prose-td:p-3"
                         style={{ fontFamily: "'Space Grotesk', sans-serif" }}
-                        dangerouslySetInnerHTML={{ __html: article.content }}
-                    />
+                    >
+                        <ReactMarkdown 
+                            remarkPlugins={[remarkGfm]}
+                            rehypePlugins={[rehypeRaw]}
+                        >
+                            {article.content}
+                        </ReactMarkdown>
+                    </div>
                     
                     {/* Inject teal color for prose links manually or via custom tag class */}
                     <style dangerouslySetInnerHTML={{__html: `

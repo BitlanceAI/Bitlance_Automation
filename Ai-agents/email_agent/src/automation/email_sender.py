@@ -116,7 +116,7 @@ if __name__ == "__main__":
     # Test with mock data
     sender = EmailSender()
     test_data = [
-        {"email": "test@example.com", "first_name": "Test", "company": "Acme Corp", "industry": "Technology"}
+        {"email": "uttamrajsingh423@gmail.com", "first_name": "Uttam", "company": "Acme Corp", "industry": "Technology"}
     ]
     # Reduce sleep for test
-    # sender.send_bulk_email(test_data)
+    sender.send_bulk_email(test_data)

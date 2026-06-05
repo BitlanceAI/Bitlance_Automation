@@ -25,7 +25,7 @@ const BlogAgentFeaturesPage = () => {
     }, []);
 
     const handleOpenBooking = () => {
-        navigate('/dashboard/agents/seo');
+        navigate('/dashboard/agents/geo');
     };
 
     const features = [
@@ -108,7 +108,7 @@ const BlogAgentFeaturesPage = () => {
                 "applicationCategory": "BusinessApplication",
                 "operatingSystem": "Web",
                 "description": "An autonomous AI agent that researches topics, writes GEO-optimized blog posts, and publishes them directly to your website 24/7.",
-                "offers": { "@type": "Offer", "url": "https://www.bitlancetechhub.com/dashboard/agents/seo" },
+                "offers": { "@type": "Offer", "url": "https://www.bitlancetechhub.com/dashboard/agents/geo" },
                 "featureList": [
                     "Automated keyword targeting from Excel uploads",
                     "Autonomous long-form content generation",

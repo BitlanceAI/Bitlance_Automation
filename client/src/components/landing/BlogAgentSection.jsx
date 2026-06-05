@@ -191,7 +191,7 @@ const BlogAgentSection = ({ onOpenBooking }) => {
                     className="mt-16 flex flex-col sm:flex-row justify-center items-center gap-4"
                 >
                     <button
-                        onClick={() => navigate('/dashboard/agents/seo')}
+                        onClick={() => navigate('/dashboard/agents/geo')}
                         className="group inline-flex items-center gap-3 font-extrabold text-base transition-all"
                         style={{
                             background: TEAL,

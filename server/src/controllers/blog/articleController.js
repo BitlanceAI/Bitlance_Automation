@@ -152,7 +152,7 @@ export const generateAndSaveArticleInternal = async ({
         const genRes = await axios.post(
             `${PYTHON_API_URL}/api/blog/generate`,
             {
-                topic, industry, keywords, language, style, length, audience, image_option, custom_image_url, wp_url, wp_api_url, interlinks
+                topic, industry, keywords, language, style, length, audience, image_option, custom_image_url, wp_url, wp_api_url, interlinks, optimization_mode
             },
             { headers: { Authorization: `Bearer ${token}` }, timeout: 600000 }
         );

@@ -1,5 +1,6 @@
 import { supabaseAdmin } from '../../config/supabaseClient.js';
 import { google } from 'googleapis';
+import axios from 'axios';
 
 const db = supabaseAdmin;
 
@@ -140,5 +141,30 @@ export const getSites = async (req, res) => {
         res.json({ success: true, sites });
     } catch (err) {
         res.status(400).json({ success: false, error: err.message });
+    }
+};
+
+// POST /api/seo/geo-track
+export const trackGeoRank = async (req, res) => {
+    try {
+        const { query, target_url } = req.body;
+        if (!query || !target_url) {
+            return res.status(400).json({ success: false, error: 'query and target_url are required' });
+        }
+
+        const AI_AGENT_URL = process.env.PYTHON_API_URL || process.env.AI_AGENT_URL || 'http://localhost:8001';
+        
+        const response = await axios.post(`${AI_AGENT_URL}/api/geo-tracker/track`, {
+            query,
+            target_url
+        });
+
+        res.json(response.data);
+    } catch (error) {
+        console.error('Error tracking GEO rank:', error.response?.data || error.message);
+        res.status(500).json({ 
+            success: false, 
+            error: error.response?.data?.detail || 'Failed to track GEO rank' 
+        });
     }
 };

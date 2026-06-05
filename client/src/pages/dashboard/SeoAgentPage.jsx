@@ -42,6 +42,7 @@ import BlogManagerPanel from '../../components/seo/BlogManagerPanel';
 import SEOHead from '../../components/layout/SEOHead';
 import WpAutoQueuePanel from '../../components/seo/WpAutoQueuePanel';
 import RankTrackerPanel from '../../components/seo/RankTrackerPanel';
+import GeoRankTrackerPanel from '../../components/seo/GeoRankTrackerPanel';
 
 const SeoAgentPage = () => {
     const navigate = useNavigate();
@@ -55,13 +56,17 @@ const SeoAgentPage = () => {
     const [activeTab, setActiveTab] = useState('generate');
 
     // Mode State
-    const [optimizationMode, setOptimizationMode] = useState(location.state?.defaultMode || 'GEO');
+    const [optimizationMode, setOptimizationMode] = useState(() => {
+        if (location.pathname.includes('/agents/seo')) return 'SEO';
+        if (location.pathname.includes('/agents/geo')) return 'GEO';
+        return location.state?.defaultMode || 'GEO';
+    });
 
     const tabs = [
         { id: 'generate', label: 'Generate', icon: Zap },
         { id: 'blogs', label: 'Blog Manager', icon: FileText },
         { id: 'queue', label: 'Auto Queue', icon: Clock },
-        { id: 'ranks', label: 'Rank Tracker', icon: TrendingUp },
+        { id: 'ranks', label: optimizationMode === 'GEO' ? 'GEO Tracker' : 'Rank Tracker', icon: TrendingUp },
     ];
 
     // Form State
@@ -733,12 +738,16 @@ const SeoAgentPage = () => {
             )}
 
             {/* Main Content */}
-            <main className="max-w-7xl mx-auto p-6 md:p-8">
+            <main className="max-w-7xl mx-auto p-6 md:p-8 pt-28 md:pt-32">
 
                 {/* Non-generate tab content */}
                 {activeTab === 'blogs' && <BlogManagerPanel optimizationMode={optimizationMode} />}
                 {activeTab === 'queue' && <WpAutoQueuePanel optimizationMode={optimizationMode} />}
-                {activeTab === 'ranks' && <RankTrackerPanel optimizationMode={optimizationMode} />}
+                {activeTab === 'ranks' && optimizationMode === 'GEO' ? (
+                    <GeoRankTrackerPanel />
+                ) : activeTab === 'ranks' ? (
+                    <RankTrackerPanel optimizationMode={optimizationMode} />
+                ) : null}
                 {activeTab === 'push' && <PushNotificationPanel />}
 
 
@@ -761,32 +770,7 @@ const SeoAgentPage = () => {
                                 </div>
 
                                 <div className="space-y-6">
-                                    {/* Optimization Mode Selector */}
-                                    <div>
-                                        <label className="block text-[10px] font-mono tracking-widest uppercase text-slate-500 mb-3">Optimization Mode *</label>
-                                        <div className="grid grid-cols-2 gap-3">
-                                            <button
-                                                type="button"
-                                                onClick={() => setOptimizationMode('GEO')}
-                                                className={`px-3 py-3 rounded-[2px] border font-bold font-mono tracking-widest uppercase text-[10px] transition-all ${optimizationMode === 'GEO'
-                                                    ? 'border-[#26cece] bg-white text-[#26cece] shadow-[2px_2px_0_0_#26cece]'
-                                                    : 'border-slate-200 hover:border-slate-300 text-slate-500 hover:text-slate-900'
-                                                    }`}
-                                            >
-                                                🧠 GEO (Generative Engine)
-                                            </button>
-                                            <button
-                                                type="button"
-                                                onClick={() => setOptimizationMode('SEO')}
-                                                className={`px-3 py-3 rounded-[2px] border font-bold font-mono tracking-widest uppercase text-[10px] transition-all ${optimizationMode === 'SEO'
-                                                    ? 'border-[#26cece] bg-white text-[#26cece] shadow-[2px_2px_0_0_#26cece]'
-                                                    : 'border-slate-200 hover:border-slate-300 text-slate-500 hover:text-slate-900'
-                                                    }`}
-                                            >
-                                                🌐 SEO (Search Engine)
-                                            </button>
-                                        </div>
-                                    </div>
+                                    {/* Optimization Mode Selector Removed per user request */}
 
                                     {/* Source Type Selector */}
                                     <div data-tour="source-type">
@@ -1265,12 +1249,14 @@ const SeoAgentPage = () => {
                                     )}
 
                                     {currentImageUrl && (
-                                        <img
-                                            src={currentImageUrl}
-                                            alt="Blog featured image"
-                                            className="mb-6 w-full rounded-[2px] border border-slate-200"
-                                            onError={(e) => e.target.style.display = 'none'}
-                                        />
+                                        <div className="w-full mb-8 flex justify-center">
+                                            <img
+                                                src={currentImageUrl}
+                                                alt="Blog featured image"
+                                                className="w-full max-w-4xl h-auto object-contain rounded-sm border border-slate-200"
+                                                onError={(e) => e.target.style.display = 'none'}
+                                            />
+                                        </div>
                                     )}
 
                                     <div
@@ -1334,7 +1320,7 @@ const SeoAgentPage = () => {
                                                 const contentStr = (a.content || '').toLowerCase();
                                                 const hasFaq = contentStr.includes('faq') || contentStr.includes('frequently asked questions');
                                                 return optimizationMode === 'GEO' ? hasFaq : !hasFaq;
-                                            }).slice(0, 10).map((article) => (
+                                            }).map((article) => (
                                                 <div
                                                     key={article.id}
                                                     className="p-3 rounded-[2px] border border-slate-200 hover:border-[#26cece] bg-slate-50 transition-all cursor-pointer group"
