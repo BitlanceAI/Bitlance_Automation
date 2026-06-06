@@ -125,7 +125,7 @@ const HomePage = () => {
             title: 'WhatsApp Automation',
             description: 'AI-powered bulk messaging, follow-ups, and lead engagement on WhatsApp.',
             icon: MessageSquare,
-            path: '/dashboard/agents/whatsapp',
+            path: 'https://wacrm.bitlancetechhub.com/',
             color: 'from-green-500 to-emerald-500',
             stats: 'Active Broadcasts'
         },
@@ -173,32 +173,39 @@ const HomePage = () => {
                             {agents.map((agent, index) => (
                                 <div
                                     key={index}
-                                    onClick={() => { trackAgentOpen(agent.title); navigate(agent.path); }}
-                                    className="group relative bg-slate-50 rounded-[2px] p-8 border border-slate-200 transition-all duration-200 cursor-pointer hover:-translate-y-1 hover:border-[#333] hover:shadow-[4px_4px_0px_0px_#26cece]"
-                                >
-                                    <div className="relative z-10 flex flex-col h-full">
-                                        <div className="w-12 h-12 flex flex-shrink-0 items-center justify-center text-[#26CECE] mb-6 border border-slate-200 bg-white rounded-[2px] group-hover:bg-[#26CECE] group-hover:text-white transition-colors">
-                                            <agent.icon size={24} />
-                                        </div>
-
-                                        <h3 className="text-xl font-bold text-slate-900 mb-3 uppercase tracking-tight">
-                                            {agent.title}
-                                        </h3>
-
-                                        <p className="text-slate-600 mb-8 leading-relaxed text-[14px] font-sans flex-grow">
-                                            {agent.description}
-                                        </p>
-
-                                        <div className="flex items-center justify-between mt-auto pt-6 border-t border-slate-200">
-                                            <div className="text-[10px] font-mono font-semibold uppercase tracking-widest text-[#26CECE]">
-                                                {agent.stats}
+                                        onClick={() => { 
+                                            trackAgentOpen(agent.title); 
+                                            if (agent.path.startsWith('http')) {
+                                                window.location.href = agent.path;
+                                            } else {
+                                                navigate(agent.path); 
+                                            }
+                                        }}
+                                        className="group relative bg-slate-50 rounded-[2px] p-8 border border-slate-200 transition-all duration-200 cursor-pointer hover:-translate-y-1 hover:border-[#333] hover:shadow-[4px_4px_0px_0px_#26cece]"
+                                    >
+                                        <div className="relative z-10 flex flex-col h-full">
+                                            <div className="w-12 h-12 flex flex-shrink-0 items-center justify-center text-[#26CECE] mb-6 border border-slate-200 bg-white rounded-[2px] group-hover:bg-[#26CECE] group-hover:text-white transition-colors">
+                                                <agent.icon size={24} />
                                             </div>
-                                            <div className="w-8 h-8 rounded-[2px] bg-white border border-slate-200 flex items-center justify-center text-slate-400 group-hover:text-[#26CECE] transition-colors">
-                                                <ArrowRight size={16} />
+
+                                            <h3 className="text-xl font-bold text-slate-900 mb-3 uppercase tracking-tight">
+                                                {agent.title}
+                                            </h3>
+
+                                            <p className="text-slate-600 mb-8 leading-relaxed text-[14px] font-sans flex-grow">
+                                                {agent.description}
+                                            </p>
+
+                                            <div className="flex items-center justify-between mt-auto pt-6 border-t border-slate-200">
+                                                <div className="text-[10px] font-mono font-semibold uppercase tracking-widest text-[#26CECE]">
+                                                    {agent.stats}
+                                                </div>
+                                                <div className="w-8 h-8 rounded-[2px] bg-white border border-slate-200 flex items-center justify-center text-slate-400 group-hover:text-[#26CECE] transition-colors">
+                                                    <ArrowRight size={16} />
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
-                                </div>
                             ))}
                         </div>
                     </div>
