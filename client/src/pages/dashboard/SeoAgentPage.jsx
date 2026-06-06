@@ -96,6 +96,39 @@ const SeoAgentPage = () => {
     const [imageOption, setImageOption] = useState('auto'); // 'auto', 'custom', 'none'
     const [customImageUrl, setCustomImageUrl] = useState('');
 
+    // Quick Author Image State
+    const [quickAuthorImage, setQuickAuthorImage] = useState('');
+    const [isUploadingQuickAuthor, setIsUploadingQuickAuthor] = useState(false);
+
+    const handleQuickAuthorUpload = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        setIsUploadingQuickAuthor(true);
+        try {
+            const fileExt = file.name.split('.').pop();
+            const fileName = `author-${Math.random()}.${fileExt}`;
+            const filePath = `profiles/${fileName}`;
+
+            const { error: uploadError } = await supabase.storage
+                .from('blog-images')
+                .upload(filePath, file);
+
+            if (uploadError) throw uploadError;
+
+            const { data } = supabase.storage
+                .from('blog-images')
+                .getPublicUrl(filePath);
+
+            setQuickAuthorImage(data.publicUrl);
+        } catch (error) {
+            console.error('Error uploading author image:', error);
+            alert('Failed to upload image. Please try again.');
+        } finally {
+            setIsUploadingQuickAuthor(false);
+        }
+    };
+
     // Source Type State
     const [sourceType, setSourceType] = useState('manual'); // 'manual', 'wordpress', or 'sheets'
 
@@ -253,10 +286,12 @@ const SeoAgentPage = () => {
                     // Override author_name with the profile's name to ensure consistency
                     payload.author_name = selectedProfile.profileData?.name;
                     payload.author_bio = selectedProfile.profileData?.bio; // Add bio if supported by API
+                    payload.author_image_url = selectedProfile.profileData?.profile_image;
                 } else if (selectedProfile.type === 'manual') {
                     authorDetails = selectedProfile.profileData;
                     payload.author_name = authorDetails.name;
                     payload.author_bio = authorDetails.bio;
+                    payload.author_image_url = authorDetails.profile_image;
 
                     if (selectedProfile.saveAsNew) {
                         const { data: { session } } = await supabase.auth.getSession();
@@ -278,6 +313,16 @@ const SeoAgentPage = () => {
                             console.error('Failed to create profile:', err);
                         }
                     }
+                }
+            }
+
+            // Override author image with quick upload/url if provided
+            if (quickAuthorImage) {
+                payload.author_image_url = quickAuthorImage;
+                if (authorDetails) {
+                    authorDetails.profile_image = quickAuthorImage;
+                } else {
+                    authorDetails = { profile_image: quickAuthorImage };
                 }
             }
 
@@ -1136,6 +1181,7 @@ const SeoAgentPage = () => {
                                                     🚫 None
                                                 </button>
                                             </div>
+
                                             {imageOption === 'custom' && (
                                                 <div className="mt-3">
                                                     <input
@@ -1152,6 +1198,48 @@ const SeoAgentPage = () => {
                                         {/* New Fields: Author & Category */}
                                         <div className="space-y-3" data-tour="profile-select">
                                             <ProfileSelection onProfileSelect={handleProfileSelect} />
+                                            
+                                            <div className="mt-4 p-3 bg-slate-50 border border-slate-200 rounded-[2px]">
+                                                <label className="block text-[10px] font-mono tracking-widest uppercase text-slate-500 mb-2">Author Circular Image (Optional)</label>
+                                                <p className="text-[10px] text-slate-400 font-mono mb-3 leading-relaxed">
+                                                    Overrides the profile image. Upload from machine or paste a URL.
+                                                </p>
+                                                
+                                                <div className="flex flex-col gap-3">
+                                                    <div className="flex gap-3">
+                                                        <label className="flex-1 px-3 py-2 bg-white border border-slate-200 hover:border-[#26cece] rounded-[2px] cursor-pointer transition-colors flex items-center justify-center gap-2">
+                                                            {isUploadingQuickAuthor ? (
+                                                                <RefreshCw size={14} className="text-[#26cece] animate-spin" />
+                                                            ) : (
+                                                                <User size={14} className="text-slate-500" />
+                                                            )}
+                                                            <span className="text-[11px] font-mono uppercase font-bold text-slate-600">
+                                                                {isUploadingQuickAuthor ? 'Uploading...' : 'Upload Image'}
+                                                            </span>
+                                                            <input 
+                                                                type="file" 
+                                                                className="hidden" 
+                                                                accept="image/*"
+                                                                onChange={handleQuickAuthorUpload}
+                                                                disabled={isUploadingQuickAuthor}
+                                                            />
+                                                        </label>
+                                                    </div>
+                                                    <input
+                                                        type="url"
+                                                        value={quickAuthorImage}
+                                                        onChange={(e) => setQuickAuthorImage(e.target.value)}
+                                                        placeholder="Or paste image URL here..."
+                                                        className="w-full px-3 py-2 rounded-[2px] bg-white border border-slate-200 focus:ring-0 focus:border-[#26cece] outline-none transition-all text-slate-900 font-mono text-[12px] placeholder-slate-400"
+                                                    />
+                                                    {quickAuthorImage && (
+                                                        <div className="flex items-center gap-3 mt-2 p-2 bg-white border border-emerald-200 rounded-[2px]">
+                                                            <img src={quickAuthorImage} alt="Author Preview" className="w-8 h-8 rounded-full object-cover border border-[#26cece]" />
+                                                            <span className="text-[10px] font-mono text-emerald-600 font-bold uppercase tracking-widest">Image Ready</span>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </div>
                                         </div>
 
                                         <div className="space-y-3">

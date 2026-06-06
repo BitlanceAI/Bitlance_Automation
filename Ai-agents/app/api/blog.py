@@ -41,6 +41,8 @@ class GenerateBlogRequest(BaseModel):
     wp_api_url: Optional[str] = None        # actual WordPress site URL for REST API fetching (may differ from wp_url)
     interlinks: Optional[list] = None       # pre-built interlinks from Node.js [{title, link}]
     optimization_mode: Optional[str] = Field(default="SEO", description="SEO or GEO mode")
+    author_name: Optional[str] = None
+    author_image_url: Optional[str] = None
 
     model_config = {
         "json_schema_extra": {
@@ -142,19 +144,36 @@ def generate_blog(body: GenerateBlogRequest):
     else:
         interlinks = []
 
+    # ── 3.5 Backlink Intelligence Layer ───────────────────────────────────────
+    backlink_analysis = None
+    external_links = []
+    try:
+        print("Running Backlink Intelligence Layer...")
+        backlink_analysis = ai.generate_backlink_analysis(topic, keywords, interlinks)
+        if backlink_analysis:
+            if "insertedLinks" in backlink_analysis:
+                interlinks = backlink_analysis["insertedLinks"]
+                print(f"Backlink Layer selected {len(interlinks)} highly relevant internal links.")
+            if "externalLinks" in backlink_analysis:
+                external_links = backlink_analysis["externalLinks"]
+                print(f"Backlink Layer selected {len(external_links)} highly authoritative external links.")
+    except Exception as e:
+        print(f"Backlink Intelligence Layer failed: {e}")
+        backlink_analysis = None
+
     # ── 4. Content generation ─────────────────────────────────────────────────
     length_num = LENGTH_MAPPING.get(body.length, 500)
     mode = body.optimization_mode.upper() if body.optimization_mode else "SEO"
     try:
         content_result = ai.generate_blog_content(
             topic, keywords, body.language, body.audience, body.style,
-            length_num, interlinks, mode=mode
+            length_num, interlinks, external_links, mode=mode
         )
     except Exception as e:
         print(f"Content gen failed, falling back to OpenAI: {e}")
         content_result = ai.openai_generate_blog_content(
             topic, keywords, body.language, body.audience, body.style,
-            length_num, interlinks, mode=mode
+            length_num, interlinks, external_links, mode=mode
         )
 
     blog_text = content_result["blogText"]
@@ -191,6 +210,7 @@ def generate_blog(body: GenerateBlogRequest):
         "plagiarismCheck": plagiarism_check,
         "topic": topic,
         "keywords": keywords,
+        "backlinkAnalysis": backlink_analysis,
     }
 
     # ── 10. Save to outputs folder for local debugging ─────────────────────────

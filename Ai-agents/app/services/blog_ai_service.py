@@ -164,6 +164,7 @@ def generate_blog_content(
     style: str,
     length_num: int,
     interlinks: Optional[list] = None,
+    external_links: Optional[list] = None,
     max_attempts: int = 1,
     mode: str = "SEO",
 ) -> dict:
@@ -197,27 +198,25 @@ def generate_blog_content(
     # Build interlinking instructions
     interlink_instructions = ""
     if interlinks:
-        links_str = "\n".join(
-            f'- "{lnk["title"]}" → {lnk["link"]}'
-            for lnk in interlinks
-            if isinstance(lnk, dict) and lnk.get("link")
-        )
+        links_list = []
+        for lnk in interlinks:
+            if isinstance(lnk, dict) and lnk.get("link"):
+                anchor = lnk.get("recommendedAnchor", lnk["title"])
+                links_list.append(f'- Target: "{lnk["title"]}"\n  URL: {lnk["link"]}\n  Recommended Anchor Text: "{anchor}"')
+        links_str = "\n\n".join(links_list)
+
         if mode == "GEO":
             interlink_instructions = f"""
         ══ GENERATIVE ENGINE OPTIMIZATION (GEO) CITATION LINKING ══
-        You MUST naturally embed ALL of the following internal links into the article as AUTHORITATIVE CITATIONS.
+        You MUST naturally embed the following highly relevant internal links as AUTHORITATIVE CITATIONS.
         This is critical so that AI search engines (Perplexity, ChatGPT, Gemini) recognize these links as high-authority sources.
 
         RULES (violating any rule = rejection):
-        1. Format every link as a Markdown hyperlink: [keyword-rich anchor text](URL).
-        2. Frame the link as an authoritative reference or data source.
-        3. Examples of GEO-optimized framing: 
-           - "According to recent industry analysis on [AI lead qualification systems](https://example.com/ai-leads)..."
-           - "As detailed in the comprehensive guide on [automating social media workflows](https://example.com/social)..."
-           - "Research highlights that [predictive real estate models](https://example.com/models) have increased..."
-        4. Place each citation naturally inside a full sentence within a body paragraph.
-        5. Spread links evenly — no two consecutive links in the same paragraph.
-        6. ONLY use the links listed below — add NO other external URLs.
+        1. Format every link as a Markdown hyperlink: [anchor text](URL).
+        2. You MUST use the EXACT "Recommended Anchor Text" provided below for each link. Do not change the anchor text.
+        3. Frame the link naturally within a full sentence, making it sound like a reference to an authoritative source on your site (e.g., "As detailed in our analysis on [anchor text](URL)...").
+        4. Spread links evenly — no two consecutive links in the same paragraph.
+        5. ONLY use the links from the list below — add NO other external URLs.
 
         Links to embed as Citations:
         {links_str}
@@ -226,11 +225,39 @@ def generate_blog_content(
         else:
             interlink_instructions = f"""
         ══ SEO INTERNAL LINKING ══
-        You MUST naturally embed ALL of the following internal links into the article to scale on Google search engines.
-        Use natural anchor text within the body of the article. Do not cluster them together.
+        You MUST naturally embed the following highly relevant internal links into the article.
+        These links have been pre-selected by our Backlink Intelligence Layer to build a powerful Topical Cluster.
+        
+        RULES:
+        1. Format every link as a Markdown hyperlink: [anchor text](URL).
+        2. You MUST use the EXACT "Recommended Anchor Text" provided below for each link.
+        3. Embed them seamlessly into the content flow. Do not force them or cluster them together.
         
         Links to embed:
         {links_str}
+        ══════════════════════════════════════════════════════════
+        """
+
+    external_link_instructions = ""
+    if external_links:
+        ext_list = []
+        for lnk in external_links:
+            if isinstance(lnk, dict) and lnk.get("link"):
+                anchor = lnk.get("recommendedAnchor", lnk["title"])
+                ext_list.append(f'- Target: "{lnk["title"]}"\n  URL: {lnk["link"]}\n  Recommended Anchor Text: "{anchor}"')
+        ext_str = "\n\n".join(ext_list)
+        
+        external_link_instructions = f"""
+        ══ EXTERNAL AUTHORITY CITATIONS ══
+        You MUST naturally embed the following high-authority EXTERNAL links as citations to build EEAT.
+        
+        RULES:
+        1. Format every link as a Markdown hyperlink: [anchor text](URL).
+        2. You MUST use the EXACT "Recommended Anchor Text" provided below.
+        3. Frame the link naturally within a sentence as an authoritative reference (e.g., "According to the recent report by [anchor text](URL)...").
+        
+        External Links to embed:
+        {ext_str}
         ══════════════════════════════════════════════════════════
         """
 
@@ -268,102 +295,104 @@ def generate_blog_content(
             mandatory_structure = f"""
 1. H1 TITLE
    - Must contain the primary keyword within the first 4 words.
-   - Avoid unnatural or awkward phrasing like "How to utilize AI? 7 Ways".
-   - Use dynamic, natural, and highly compelling phrasing (e.g., "How AI Will Shape the New Era: 7 Practical Ways to Stay Ahead").
-   - 50–70 characters.
+   - Use dynamic, natural, and highly compelling phrasing.
 
-2. STATISTICS AT A GLANCE BLOCK
-   - Add a bolded H2: "{primary_keyword} Facts at a Glance" (or similar title adapted to the topic).
-   - Include 4-5 fast, scannable bullet points (•) with hard, highly technical facts (e.g., "Modern GPUs contain 20B+ transistors" or "AI workloads see 10–50x acceleration"). Do not scatter the statistics; keep them tightly clustered here.
-
-3. META DESCRIPTION BLOCK (immediately after H1, inside a Markdown blockquote >)
+2. META DESCRIPTION BLOCK (immediately after H1, inside a Markdown blockquote >)
    - 140–155 characters, includes primary keyword, states clear benefit.
    - Format: > **Meta:** <your meta description here>
 
-4. INTRODUCTION (120–160 words)
+3. QUICK DEFINITION & WHY IT MATTERS
+   - Start directly with a bolded introductory paragraph covering the "Quick Definition" of the topic.
+   - Follow with a paragraph explaining "Why {primary_keyword} Matters Today".
    - First sentence MUST contain the primary keyword in bold: **{primary_keyword}**.
-   - Open with a striking statistic, question, or provocative statement.
-   - State exactly what the reader will learn and why it matters to them.
-   - End with a smooth transition into the Table of Contents.
 
-5. TABLE OF CONTENTS
+4. TABLE OF CONTENTS
    - Markdown bulleted list of every H2 section below (no H3s).
    - Format: - [Section Title](#anchor)
 
-6. MAIN BODY — 5 to 7 H2 SECTIONS
-   Each section MUST:
-   a) Open with a sentence that naturally contains a keyword variation or LSI term.
-   b) Deliver ONE clear, actionable insight — no generic observations.
-   c) Include at least ONE of: a numbered step list, a bullet list, a data point,
-      a comparison table, a real-world example, or a pro tip callout.
-   d) Use H3 subsections (2–3 per H2) for complex topics to create a clear hierarchy.
-   e) Paragraphs: 2–4 sentences max. No walls of text.
-   f) Bold the most important phrase or takeaway in each paragraph.
-   g) Strong Entity Coverage: You MUST explicitly mention major knowledge graph entities (e.g., OpenAI, Google DeepMind, Anthropic, NVIDIA, AWS) where relevant.
-   h) Deep Technical Citations & Expert Sources: You MUST cite highly authoritative sources, including research citations, technical reports, and specific architecture references (e.g., Stanford AI Index, Gartner, Deloitte, NVIDIA architecture whitepapers) to boost EEAT.
+5. ADOPTION STATISTICS BLOCK
+   - Add a bolded H2: "{primary_keyword} Adoption Statistics" (or similar title adapted to topic).
+   - Provide 4-6 fast, scannable standalone statistics using bullet points (•) and real hard data/percentages. 
+   - Example: "• 96% of top 1 million servers run Linux", "• 90%+ cloud workloads use Linux". Google loves standalone statistics sections.
 
-   REQUIRED SECTIONS:
-   - Dynamic, Editorial Topic Sections: DO NOT use templated headings like "Benefits", "Challenges", "Mistakes", "Future Trends", or "Conclusion".
-   - Instead, create 5-7 highly specific, dynamic, editorial-style headings tailored precisely to the topic.
-   - Examples of good dynamic headings: "Why AI Matters Right Now", "The AI Opportunity Gap", "The 5-Step AI Adoption Framework", "When AI Becomes Dangerous", "What Happens By 2030".
-   - Ensure you cover contrarian viewpoints and deep analysis, avoiding generic surface-level observations.
+6. MAIN BODY — EDITORIAL & CONTRARIAN SECTIONS
+   - Do NOT use generic headings. Structure the body using exactly these types of editorial sections:
+      a. How {primary_keyword} Evolved
+      b. 7 Reasons Modern {primary_keyword} Is Better / Works Better
+      c. Real Benchmarks and Performance Numbers (Include exact numbers, examples like "120 FPS vs 55 FPS", specific workload comparisons, RTX vs GTX, etc.)
+      d. When Traditional/Older Options Still Make Sense (A Contrarian Section for balanced analysis, e.g. budget constraints, legacy software)
+      e. {primary_keyword} Buying Guide or Implementation Strategy
+      f. Future of {primary_keyword}
+   - Strong Entity Coverage: You MUST explicitly mention major knowledge graph entities relevant to the topic (e.g., NVIDIA Hopper, Blackwell, CUDA, PyTorch, OpenAI, AWS, Intel Arc, AMD ROCm).
+   - Deep Technical Citations & Expert Sources: You MUST cite highly authoritative sources, including specific whitepapers, benchmark reports (e.g., MLPerf), architecture documentation, and the Stanford AI Index. Do NOT just say "According to vendors..." - be specific (e.g., "According to NVIDIA's Hopper architecture documentation...").
+   - Keyword Usage: Do NOT force keywords. Google understands synonyms. Mix up your terms (e.g., instead of repeating "Modern GPU", use "GPU architecture evolution", "Modern graphics processors", "AI-enabled hardware").
 
-7. CONCLUSION  (H2: "Final Thoughts: [Primary Keyword]")
+7. MYTH VS FACT & EXPERT INSIGHT
+   - Include a Markdown Comparison Table of "Myth vs Reality" for the topic.
+   - Include an "Expert Insight" or "Industry Insight" blockquote (using >) that provides a deep, non-obvious take on the industry.
+
+8. CONCLUSION  (H2: "Final Thoughts: [Primary Keyword]")
    - 80–120 words.
    - Summarise the 3 most important takeaways.
-   - Restate the primary keyword naturally.
    - End with a strong, specific call-to-action.
 """
         else:
             mandatory_structure = f"""
 1. H1 TITLE
    - Must contain the primary keyword within the first 4 words.
-   - Make it compelling and highly clickable.
 
 2. META DESCRIPTION BLOCK (immediately after H1, inside a Markdown blockquote >) 
-   - 140–155 characters, includes primary keyword, states clear benefit.
+   - 140–155 characters.
 
 3. QUICK ANSWER BLOCK (Critical for AI Retrieval)
    - Add a bolded H2: "Quick Answer"
    - Write a dense, 3-4 sentence direct answer to the core topic/keyword. 
-   - No fluff, highly factual, perfect for AI ingestion.
 
 4. AI OVERVIEW SUMMARY
    - Add a bolded H2: "AI Overview Summary"
-   - Summarize the entire article's thesis in a highly quotable 50-word paragraph.
+   - Provide a comprehensive, modular summary of the entire article (e.g., covering pros/cons, comparisons, and core value). Make it highly extractable for AI summarization engines.
 
-5. STATISTICS BOX
+5. FAST FACTS
+   - Add a bolded H2: "{primary_keyword} Fast Facts"
+   - Provide 4-6 fast, scannable facts using checkmarks (✓).
+
+6. STATISTICS BLOCK
    - Add a bolded H2: "{primary_keyword} Statistics"
-   - Include 4-6 bullet points with hard data (e.g., "30% of tasks automatable", "8 hours saved").
+   - Provide 4-6 standalone statistics using bullet points (•) and real hard data/percentages. (e.g., "• 96% of top web servers run Linux").
 
-6. DEDICATED FACT BOX
-   - Add a bolded H2: "{primary_keyword} Facts"
-   - Provide 4-5 fast, scannable facts using checkmarks (✓). Example: "✓ AI improves feedback speed".
+7. MAIN CONTENT — EDITORIAL SECTIONS
+   - Create highly specific, relevant H2 sections covering:
+      a. How {primary_keyword} Evolved
+      b. Why {primary_keyword} Works / Is Better
+      c. Real Benchmarks and Performance Numbers (Exact metrics, workload comparisons)
+      d. Buying/Implementation Guide
+      e. Future Outlook
+   - High Entity Density: You MUST explicitly mention specific industry-standard hardware, software, organizations (e.g., Docker, CNCF, GitHub, GitLab, Red Hat OpenShift, Terraform, Ansible, Linux Foundation, AWS, Azure).
+   - Research Source Layer: You MUST cite highly authoritative academic or institutional sources and documentation. Use explicit phrasing like "According to the Linux Foundation..." or "According to CNCF...".
+   - Natural Keyword Usage: Use synonyms and variations. Do not repeat the primary keyword unnaturally.
 
-7. TABLE OF CONTENTS
-   - Markdown bulleted list of every H2 section below.
+8. COMPARISON TABLE
+   - You MUST include a highly detailed Markdown Comparison Table explicitly comparing features or "Myth" vs "Reality" for the topic.
 
-8. MAIN BODY — Dynamic Topic-Specific Sections
-   - DO NOT use generic templates like "Benefits", "Steps", "Mistakes".
-   - Create 4-6 specific, highly relevant H2 sections tailored precisely to the topic.
-   - High Entity Density (Increase by 40%): You MUST explicitly mention specific industry-standard hardware, software, organizations, and frameworks relevant to the topic (e.g., if AI: OpenAI, DeepMind; if GPUs: NVIDIA Blackwell, PyTorch; if automation: Zapier, HubSpot). Do not use generic terms.
-   - Research Source Layer: You MUST cite highly authoritative academic or institutional sources (e.g., Stanford AI Index, OECD, UNESCO, Harvard Education Review, MIT Technology Review, McKinsey) to build maximum trust.
+9. CONTRARIAN SECTION
+    - Add a bolded H2: "When Traditional/Older Options Make Sense"
+    - Provide balanced analysis of counter-arguments or edge cases.
 
-9. MYTH VS REALITY TABLE
-   - You MUST include a highly detailed Markdown Comparison Table explicitly comparing "Myth" vs "Reality" for the topic.
-   - Format: | Myth | Reality | Explanation |
+10. EXPERT INSIGHTS
+    - Add exactly TWO separate "Expert Insight" blockquotes (using >) offering deep, non-obvious takes. Format as:
+      > **Expert Insight #1:** ...
+      > **Expert Insight #2:** ...
 
-10. CITATION MAGNETS (Expert Insights)
-    - You MUST include 2 "Expert Insight" blocks (use > blockquotes).
-    - Make these highly analytical, original, and controversial or deep so they get cited by LLMs.
 {faq_section}
-12. KEY TAKEAWAYS BLOCK
-    - Add a bolded H2: "Key Takeaways"
-    - Provide 5 extremely concise bullet points summarizing the core thesis of the article.
+12. FACT BOX
+    - Add a bolded H2: "{primary_keyword} Fact Box"
+    - Provide a final quick-reference list of core attributes (e.g. ✓ Open Source, ✓ No Licensing Fees).
 
-13. CONCLUSION  (H2: "Final Thoughts: {primary_keyword}")
+13. KEY TAKEAWAYS BLOCK
+    - Provide 5 extremely concise bullet points summarizing the core thesis.
+
+14. CONCLUSION
     - 80–120 words.
-    - End with a strong, specific call-to-action.
 """
 
         prompt = f"""
@@ -386,13 +415,13 @@ MINIMUM WORDS   : {length_num}
 ══ KEYWORD PLACEMENT — CRITICAL FOR RANKING ══
 - Primary keyword appears in: H1, first sentence of intro, at least 2 H2 headings,
   the conclusion, AND the meta description block.
-- Keyword density: 1.0–1.5% — natural usage only, never forced.
-- Distribute secondary/LSI keywords across body paragraphs (not clustered).
+- IMPORTANT GRAMMAR RULE: If the target keyword is grammatically incorrect (e.g. "how linux is more better than windows ?"), DO NOT repeat the exact broken phrase. Use semantic variants (e.g., "Why Linux is Better Than Windows", "Linux vs Windows Comparison") instead.
+- Keyword density: 0.8%–1.5% — natural usage only, never forced. You MUST use semantic variants rather than exact-match stuffing.
 - Bold the primary keyword on FIRST occurrence in the body text only.
 - Use synonyms and related terms in H3 headings to build topical authority.
 
 ══ E-E-A-T SIGNALS (Google's quality framework) ══
-- Write as a clear subject-matter expert: explicitly cite highly authoritative sources (e.g., Gartner, HubSpot, Salesforce, Deloitte, McKinsey, World Economic Forum, or their industry equivalents).
+- Write as a clear subject-matter expert: explicitly cite highly authoritative sources (e.g., CNCF, Kubernetes, AWS, Google Cloud, Microsoft Azure, Stack Overflow Developer Survey, GitHub Octoverse, Gartner, McKinsey, Stanford AI Index).
 - Include original insights: Do not just explain; analyze. Include contrarian opinions, unique frameworks, and original observations (e.g., "The hidden weakness of...", "Why X might fail...", "When NOT to automate...").
 - Stronger Topical Authority: Dive deep into broad subtopics (e.g., CRM, Marketing, HR, Finance, AI, Workflow). Ensure the article covers the topic holistically. Do not just skim the surface.
 - Competitor Gap Coverage: Anticipate what top-ranking articles discuss and intentionally cover advanced subtopics they miss.
@@ -403,9 +432,9 @@ MINIMUM WORDS   : {length_num}
 - Include ONE paragraph directly below an H2 that answers "What is {primary_keyword}?"
   in 40–60 words in plain, declarative language — this targets the definition snippet.
 - The step-by-step section must use a clean numbered list — targets how-to snippets.
-- The FAQ section targets PAA (People Also Ask) snippets.
 
 {interlink_instructions}
+{external_link_instructions}
 
 ══ FORMATTING RULES ══
 - Use **bold** for key terms (first occurrence) and critical takeaways.
@@ -555,6 +584,95 @@ def generate_image_text(blog_text: str, topic: str) -> str:
     return topic
 
 
+def generate_backlink_analysis(topic: str, keywords: str, available_links: list) -> dict:
+    """
+    Acts as the Backlink Intelligence Layer.
+    Extracts entities, scores relevance against available database articles,
+    builds a topical cluster, and selects the top 3-5 links with anchor text.
+    """
+    if not available_links:
+        return {
+            "insertedLinks": [],
+            "suggestedLinks": [],
+            "topicalCluster": "General",
+            "authorityScore": 50
+        }
+
+    links_str = "\n".join([f'- Title: "{lnk["title"]}" | Link: {lnk["link"]}' for lnk in available_links])
+    
+    prompt = f"""
+You are an elite SEO Backlink Intelligence Agent.
+Your task is to analyze the following target topic and a database of existing articles to build a Topical Cluster and suggest the most powerful internal backlinks to boost EEAT and crawlability.
+CRITICAL: The links MUST be highly topically relevant to the specific subject's semantic core. Do NOT select generic/unrelated articles just to fill the quota.
+- If the topic is technical (e.g., Linux), link strictly to Cloud, Docker, Kubernetes.
+- If the topic is career/education (e.g., 'Degree vs Practical Skill'), prioritize links about 'Careers', 'Skills', 'Students', 'Portfolios', and 'Learning'.
+- Do NOT default to generic AI or marketing articles unless directly relevant.
+
+TARGET TOPIC: "{topic}"
+TARGET KEYWORDS: "{keywords}"
+
+AVAILABLE DATABASE ARTICLES:
+{links_str}
+
+Step 1: Extract core entities from the target topic.
+Step 2: Score the relevance of the available database articles against the target topic.
+Step 3: Select the 3-5 absolute best articles to be inserted as internal backlinks.
+Step 4: Identify 1-3 additional articles as "suggested" for future content silos.
+Step 5: Determine the primary Topical Cluster Category (e.g., "AI Infrastructure", "Real Estate Marketing").
+Step 6: Assign an Authority Score (0-100) based on how well the available articles support the target topic.
+Step 7: Search the web to identify 3-5 high-authority EXTERNAL URLs (e.g., Stanford AI Index, Gartner, McKinsey, etc.) related to this topic. Provide their real URLs and a recommended anchor text.
+WARNING FOR EXTERNAL LINKS: Do NOT hallucinate URLs. Deep links (e.g., /linux, /report-2026) often 404. If you cannot verify an exact active page URL, you MUST link only to the verified homepage of the authoritative organization (e.g., "https://www.linuxfoundation.org", "https://www.gartner.com").
+
+Return ONLY a valid JSON object in this exact format. No markdown blocks, no text before or after.
+{{
+    "insertedLinks": [
+        {{
+            "title": "Article Title",
+            "link": "https://...",
+            "relevanceScore": 95,
+            "recommendedAnchor": "naturally woven anchor text phrase"
+        }}
+    ],
+    "suggestedLinks": [
+        {{
+            "title": "Article Title",
+            "link": "https://..."
+        }}
+    ],
+    "externalLinks": [
+        {{
+            "title": "External Source Title",
+            "link": "https://actual-external-url.com",
+            "recommendedAnchor": "naturally woven anchor text phrase"
+        }}
+    ],
+    "topicalCluster": "Cluster Name",
+    "authorityScore": 85
+}}
+"""
+    system = "You are a programmatic SEO backlink agent. You output ONLY valid JSON."
+    
+    try:
+        raw = _perplexity_call(prompt, system, max_tokens=1500)
+        cleaned = raw.replace("```json", "").replace("```", "").strip()
+        return json.loads(cleaned)
+    except Exception as e:
+        print(f"Perplexity backlink analysis error: {e}")
+        try:
+            raw = _openai_chat_call(prompt, system, max_tokens=1500)
+            cleaned = raw.replace("```json", "").replace("```", "").strip()
+            return json.loads(cleaned)
+        except Exception as e2:
+            print(f"OpenAI backlink analysis error: {e2}")
+            # Safe fallback
+            return {
+                "insertedLinks": available_links[:3],
+                "suggestedLinks": available_links[3:5] if len(available_links) > 3 else [],
+                "topicalCluster": "Uncategorized",
+                "authorityScore": 50
+            }
+
+
 # ─────────────────────────────────────────────────────────────────────────────
 # OPENAI FUNCTIONS
 # ─────────────────────────────────────────────────────────────────────────────
@@ -581,6 +699,7 @@ def openai_generate_blog_content(
     style: str,
     length_num: int,
     interlinks: Optional[list] = None,
+    external_links: Optional[list] = None,
     mode: str = "SEO",
 ) -> dict:
     """Fallback blog content generation via OpenAI GPT-4o."""
@@ -605,26 +724,25 @@ def openai_generate_blog_content(
 
     interlink_instructions = ""
     if interlinks:
-        links_str = "\n".join(
-            f'- "{lnk["title"]}" → {lnk["link"]}'
-            for lnk in interlinks
-            if isinstance(lnk, dict) and lnk.get("link")
-        )
+        links_list = []
+        for lnk in interlinks:
+            if isinstance(lnk, dict) and lnk.get("link"):
+                anchor = lnk.get("recommendedAnchor", lnk["title"])
+                links_list.append(f'- Target: "{lnk["title"]}"\n  URL: {lnk["link"]}\n  Recommended Anchor Text: "{anchor}"')
+        links_str = "\n\n".join(links_list)
+
         if mode == "GEO":
             interlink_instructions = f"""
         ══ GENERATIVE ENGINE OPTIMIZATION (GEO) CITATION LINKING ══
-        You MUST naturally embed ALL of the following internal links into the article as AUTHORITATIVE CITATIONS.
+        You MUST naturally embed the following highly relevant internal links as AUTHORITATIVE CITATIONS.
         This is critical so that AI search engines (Perplexity, ChatGPT, Gemini) recognize these links as high-authority sources.
 
         RULES (violating any rule = rejection):
-        1. Format every link as a Markdown hyperlink: [keyword-rich anchor text](URL).
-        2. Frame the link as an authoritative reference or data source.
-        3. Examples of GEO-optimized framing: 
-           - "According to recent industry analysis on [AI lead qualification systems](https://example.com/ai-leads)..."
-           - "As detailed in the comprehensive guide on [automating social media workflows](https://example.com/social)..."
-           - "Research highlights that [predictive real estate models](https://example.com/models) have increased..."
-        4. Place each citation naturally inside a full sentence within a body paragraph.
-        5. ONLY use the links listed below — add NO other external URLs.
+        1. Format every link as a Markdown hyperlink: [anchor text](URL).
+        2. You MUST use the EXACT "Recommended Anchor Text" provided below for each link. Do not change the anchor text.
+        3. Frame the link naturally within a full sentence, making it sound like a reference to an authoritative source (e.g., "According to [anchor text](URL)...", "As cited by [anchor text](URL)...", or "As detailed in our analysis on [anchor text](URL)...").
+        4. Spread links evenly — no two consecutive links in the same paragraph.
+        5. ONLY use the links from the list below — add NO other external URLs.
 
         Links to embed as Citations:
         {links_str}
@@ -633,12 +751,39 @@ def openai_generate_blog_content(
         else:
             interlink_instructions = f"""
         ══ SEO INTERNAL LINKING ══
-        You MUST naturally embed 2 to 3 of the MOST RELEVANT internal links from the list below into the article.
-        Do NOT embed all of them. Google prefers relevance over quantity. Select only the top 2-3 links that best fit the context.
-        Use natural anchor text within the body of the article. Do not cluster them together.
+        You MUST naturally embed the following highly relevant internal links into the article.
+        These links have been pre-selected by our Backlink Intelligence Layer to build a powerful Topical Cluster.
+        
+        RULES:
+        1. Format every link as a Markdown hyperlink: [anchor text](URL).
+        2. You MUST use the EXACT "Recommended Anchor Text" provided below for each link.
+        3. Embed them seamlessly into the content flow. Do not force them or cluster them together.
         
         Links to embed:
         {links_str}
+        ══════════════════════════════════════════════════════════
+        """
+
+    external_link_instructions = ""
+    if external_links:
+        ext_list = []
+        for lnk in external_links:
+            if isinstance(lnk, dict) and lnk.get("link"):
+                anchor = lnk.get("recommendedAnchor", lnk["title"])
+                ext_list.append(f'- Target: "{lnk["title"]}"\n  URL: {lnk["link"]}\n  Recommended Anchor Text: "{anchor}"')
+        ext_str = "\n\n".join(ext_list)
+        
+        external_link_instructions = f"""
+        ══ EXTERNAL AUTHORITY CITATIONS ══
+        You MUST naturally embed the following high-authority EXTERNAL links as citations to build EEAT.
+        
+        RULES:
+        1. Format every link as a Markdown hyperlink: [anchor text](URL).
+        2. You MUST use the EXACT "Recommended Anchor Text" provided below.
+        3. Frame the link naturally within a sentence as an authoritative reference (e.g., "According to the recent report by [anchor text](URL)...").
+        
+        External Links to embed:
+        {ext_str}
         ══════════════════════════════════════════════════════════
         """
 
@@ -687,102 +832,109 @@ def openai_generate_blog_content(
             mandatory_structure = f"""
 1. H1 TITLE
    - Must contain the primary keyword within the first 4 words.
-   - Avoid unnatural or awkward phrasing like "How to utilize AI? 7 Ways".
-   - Use dynamic, natural, and highly compelling phrasing (e.g., "How AI Will Shape the New Era: 7 Practical Ways to Stay Ahead").
-   - 50–70 characters.
+   - Use dynamic, natural, and highly compelling phrasing.
 
-2. STATISTICS AT A GLANCE BLOCK
-   - Add a bolded H2: "{primary_keyword} Facts at a Glance" (or similar title adapted to the topic).
-   - Include 4-5 fast, scannable bullet points (•) with hard, highly technical facts (e.g., "Modern GPUs contain 20B+ transistors" or "AI workloads see 10–50x acceleration"). Do not scatter the statistics; keep them tightly clustered here.
-
-3. META DESCRIPTION BLOCK (immediately after H1, inside a Markdown blockquote >)
+2. META DESCRIPTION BLOCK (immediately after H1, inside a Markdown blockquote >)
    - 140–155 characters, includes primary keyword, states clear benefit.
    - Format: > **Meta:** <your meta description here>
 
-4. INTRODUCTION (120–160 words)
+3. QUICK DEFINITION & WHY IT MATTERS (Featured Snippet Candidate)
+   - Add a bolded H2: "What is {primary_keyword}?" (or highly relevant variant).
+   - Answer the question directly in 40–60 words in plain, declarative language. Example: "{primary_keyword} compares formal education with real-world ability to perform tasks, solve problems, and deliver measurable results. Modern employers increasingly value both, making a hybrid approach the strongest career strategy."
+   - Follow with a paragraph explaining "Why {primary_keyword} Matters Today".
    - First sentence MUST contain the primary keyword in bold: **{primary_keyword}**.
-   - Open with a striking statistic, question, or provocative statement.
-   - State exactly what the reader will learn and why it matters to them.
-   - End with a smooth transition into the Table of Contents.
 
-5. TABLE OF CONTENTS
+4. TABLE OF CONTENTS
    - Markdown bulleted list of every H2 section below (no H3s).
    - Format: - [Section Title](#anchor)
 
-6. MAIN BODY — 5 to 7 H2 SECTIONS
-   Each section MUST:
-   a) Open with a sentence that naturally contains a keyword variation or LSI term.
-   b) Deliver ONE clear, actionable insight — no generic observations.
-   c) Include at least ONE of: a numbered step list, a bullet list, a data point,
-      a comparison table, a real-world example, or a pro tip callout.
-   d) Use H3 subsections (2–3 per H2) for complex topics to create a clear hierarchy.
-   e) Paragraphs: 2–4 sentences max. No walls of text.
-   f) Bold the most important phrase or takeaway in each paragraph.
-   g) Strong Entity Coverage: You MUST explicitly mention major knowledge graph entities (e.g., OpenAI, Google DeepMind, Anthropic, NVIDIA, AWS) where relevant.
-   h) Deep Technical Citations & Expert Sources: You MUST cite highly authoritative sources, including research citations, technical reports, and specific architecture references (e.g., Stanford AI Index, Gartner, Deloitte, NVIDIA architecture whitepapers) to boost EEAT.
+5. FAST FACTS / STATISTICS BLOCK
+   - Add a bolded H2: "{primary_keyword} Fast Facts" (or similar title adapted to topic).
+   - Provide 4-6 fast, scannable facts using checkmarks (✓) and real statistics/data points. 
 
-   REQUIRED SECTIONS:
-   - Dynamic, Editorial Topic Sections: DO NOT use templated headings like "Benefits", "Challenges", "Mistakes", "Future Trends", or "Conclusion".
-   - Instead, create 5-7 highly specific, dynamic, editorial-style headings tailored precisely to the topic.
-   - Examples of good dynamic headings: "Why AI Matters Right Now", "The AI Opportunity Gap", "The 5-Step AI Adoption Framework", "When AI Becomes Dangerous", "What Happens By 2030".
-   - Ensure you cover contrarian viewpoints and deep analysis, avoiding generic surface-level observations.
+6. MAIN BODY — EDITORIAL, EXAMPLES & CONTRARIAN SECTIONS
+   - Do NOT use generic headings. Structure the body using exactly these types of editorial sections:
+      a. How {primary_keyword} Evolved
+      b. 7 Reasons Modern {primary_keyword} Works Better / Provides Better ROI
+      c. Industry-Specific Examples: Explicitly apply the topic to Healthcare, Finance, Cybersecurity, Mechanical Engineering, Startups, etc., to broaden topical coverage.
+      d. Real Benchmarks / Case Studies (Include exact numbers, workload comparisons, cost differences).
+      e. When Traditional/Older Options Still Make Sense (A Contrarian Section for balanced analysis).
+      f. Actionable Framework / Roadmap Block: Provide a step-by-step career, implementation, or technical roadmap (e.g. Student → Degree → Projects → Internships → Portfolio → Job).
+      g. Future of {primary_keyword}
+   - Strong Entity Coverage: Explicitly mention major knowledge graph entities relevant to the topic (e.g., NVIDIA, OpenAI, AWS, Stanford, Harvard, MIT, Coursera, Udemy, Gartner, McKinsey).
+   - Deep Technical Citations & Expert Sources: You MUST cite highly authoritative sources. Do NOT just say "According to vendors..." - be specific (e.g., "According to Stanford AI Index...").
 
-7. CONCLUSION  (H2: "Final Thoughts: [Primary Keyword]")
+7. MYTH VS FACT & DETAILED COMPARISON TABLE
+   - Include a highly detailed Markdown Comparison Table explicitly comparing core concepts (e.g., Factor | Degree | Practical Skill or Factor | Cloud | On-Premise). This table is critical for SEO rankings.
+   - Include an "Expert Insight" or "Industry Insight" blockquote (using >) that provides a deep, non-obvious take on the industry.
+
+8. CONCLUSION  (H2: "Final Thoughts: [Primary Keyword]")
    - 80–120 words.
    - Summarise the 3 most important takeaways.
-   - Restate the primary keyword naturally.
    - End with a strong, specific call-to-action.
 """
         else:
             mandatory_structure = f"""
 1. H1 TITLE
    - Must contain the primary keyword within the first 4 words.
-   - Make it compelling and highly clickable.
 
 2. META DESCRIPTION BLOCK (immediately after H1, inside a Markdown blockquote >) 
-   - 140–155 characters, includes primary keyword, states clear benefit.
+   - 140–155 characters.
 
-3. QUICK ANSWER BLOCK (Critical for AI Retrieval)
+3. 30-SECOND ANSWER BLOCK (AI Citation Magnet)
+   - Add a bolded H2: "30-Second Answer"
+   - Provide a punchy, 2-3 sentence philosophical/strategic summary. Example: "Degrees help you get opportunities. Skills help you keep opportunities. In modern careers, the most successful professionals combine formal education with continuous practical learning."
+
+4. QUICK ANSWER BLOCK (Critical for AI Retrieval)
    - Add a bolded H2: "Quick Answer"
-   - Write a dense, 3-4 sentence direct answer to the core topic/keyword. 
-   - No fluff, highly factual, perfect for AI ingestion.
+   - Write a dense, 3-4 sentence direct, factual answer to the core topic/keyword. 
 
-4. AI OVERVIEW SUMMARY
+5. AI OVERVIEW SUMMARY
    - Add a bolded H2: "AI Overview Summary"
-   - Summarize the entire article's thesis in a highly quotable 50-word paragraph.
+   - Provide a comprehensive, modular summary of the entire article (covering pros/cons, comparisons, and core value). Make it highly extractable for AI summarization engines.
 
-5. STATISTICS BOX
+6. FAST FACTS
+   - Add a bolded H2: "{primary_keyword} Fast Facts"
+   - Provide 4-6 fast, scannable facts using checkmarks (✓).
+
+7. STATISTICS BLOCK
    - Add a bolded H2: "{primary_keyword} Statistics"
-   - Include 4-6 bullet points with hard data (e.g., "30% of tasks automatable", "8 hours saved").
+   - Provide 4-6 standalone statistics using bullet points (•) and real hard data/percentages. (e.g., "• 96% of top web servers run Linux").
 
-6. DEDICATED FACT BOX
-   - Add a bolded H2: "{primary_keyword} Facts"
-   - Provide 4-5 fast, scannable facts using checkmarks (✓). Example: "✓ AI improves feedback speed".
+8. MAIN CONTENT — EDITORIAL SECTIONS
+   - Create highly specific, relevant H2 sections covering:
+      a. How {primary_keyword} Evolved
+      b. Why {primary_keyword} Works / Is Better
+      c. Real Benchmarks and Performance Numbers (Exact metrics, workload comparisons)
+      d. "Who Should Choose What?" Section: Provide a highly retrieval-friendly list (e.g., "Choose Degree First If: ✓ Medicine, ✓ Law. Choose Skill First If: ✓ Web Development, ✓ AI Automation").
+      e. Buying/Implementation/Career Guide
+      f. Future Outlook
+   - High Entity Density: You MUST explicitly mention specific industry-standard entities (e.g., Coursera, Udemy, edX, Harvard, MIT, Stanford, Google Career Certificates, Microsoft Learn, Docker, CNCF, GitHub, GitLab, Red Hat OpenShift, Terraform, Ansible, Linux Foundation, AWS, Azure).
+   - Research Source Layer: You MUST cite highly authoritative academic or institutional sources and documentation. Use explicit phrasing like "According to the Linux Foundation..." or "According to Stanford...".
 
-7. TABLE OF CONTENTS
-   - Markdown bulleted list of every H2 section below.
+9. COMPARISON TABLE & DECISION MATRIX
+   - You MUST include a highly detailed Markdown Comparison Table explicitly comparing features or "Myth" vs "Reality" for the topic.
+   - You MUST ALSO include a "Decision Matrix" Table. (e.g., Situation | Option A | Option B. Medicine | ✅ | ❌). AI systems love decision frameworks.
 
-8. MAIN BODY — Dynamic Topic-Specific Sections
-   - DO NOT use generic templates like "Benefits", "Steps", "Mistakes".
-   - Create 4-6 specific, highly relevant H2 sections tailored precisely to the topic.
-   - High Entity Density (Increase by 40%): You MUST explicitly mention specific industry-standard hardware, software, organizations, and frameworks relevant to the topic (e.g., if AI: OpenAI, DeepMind; if GPUs: NVIDIA Blackwell, PyTorch; if automation: Zapier, HubSpot). Do not use generic terms.
-   - Research Source Layer: You MUST cite highly authoritative academic or institutional sources (e.g., Stanford AI Index, OECD, UNESCO, Harvard Education Review, MIT Technology Review, McKinsey) to build maximum trust.
+10. CONTRARIAN SECTION
+    - Add a bolded H2: "When Traditional/Older Options Make Sense"
+    - Provide balanced analysis of counter-arguments or edge cases.
 
-9. MYTH VS REALITY TABLE
-   - You MUST include a highly detailed Markdown Comparison Table explicitly comparing "Myth" vs "Reality" for the topic.
-   - Format: | Myth | Reality | Explanation |
+11. EXPERT INSIGHTS
+    - Add exactly TWO separate "Expert Insight" blockquotes (using >) offering deep, non-obvious takes. Format as:
+      > **Expert Insight #1:** ...
+      > **Expert Insight #2:** ...
 
-10. CITATION MAGNETS (Expert Insights)
-    - You MUST include 2 "Expert Insight" blocks (use > blockquotes).
-    - Make these highly analytical, original, and controversial or deep so they get cited by LLMs.
 {faq_section}
-12. KEY TAKEAWAYS BLOCK
-    - Add a bolded H2: "Key Takeaways"
-    - Provide 5 extremely concise bullet points summarizing the core thesis of the article.
+13. FACT BOX
+    - Add a bolded H2: "{primary_keyword} Fact Box"
+    - Provide a final quick-reference list of core attributes (e.g. ✓ Open Source, ✓ No Licensing Fees).
 
-13. CONCLUSION  (H2: "Final Thoughts: {primary_keyword}")
+14. KEY TAKEAWAYS BLOCK
+    - Provide 5 extremely concise bullet points summarizing the core thesis.
+
+15. CONCLUSION
     - 80–120 words.
-    - End with a strong, specific call-to-action.
 """
 
         prompt = f"""
@@ -805,13 +957,13 @@ MINIMUM WORDS   : {length_num}
 ══ KEYWORD PLACEMENT — CRITICAL FOR RANKING ══
 - Primary keyword appears in: H1, first sentence of intro, at least 2 H2 headings,
   the conclusion, AND the meta description block.
-- Keyword density: 1.0–1.5% — natural usage only, never forced.
-- Distribute secondary/LSI keywords across body paragraphs (not clustered).
+- IMPORTANT GRAMMAR RULE: If the target keyword is grammatically incorrect (e.g. "how linux is more better than windows ?"), DO NOT repeat the exact broken phrase. Use semantic variants (e.g., "Why Linux is Better Than Windows", "Linux vs Windows Comparison") instead.
+- Keyword density: 0.8%–1.5% — natural usage only, never forced. You MUST use semantic variants rather than exact-match stuffing.
 - Bold the primary keyword on FIRST occurrence in the body text only.
 - Use synonyms and related terms in H3 headings to build topical authority.
 
 ══ E-E-A-T & CONTENT QUALITY SIGNALS ══
-- Experience & Expertise: Write as a clear subject-matter expert. Explicitly cite authoritative industry sources (e.g., Gartner, HubSpot, Salesforce, Deloitte, McKinsey, World Economic Forum, or their industry equivalents).
+- Experience & Expertise: Write as a clear subject-matter expert. Explicitly cite authoritative industry sources (e.g., CNCF, Kubernetes, AWS, Google Cloud, Microsoft Azure, Stack Overflow Developer Survey, GitHub Octoverse, Gartner, McKinsey).
 - Original Insights & Analysis: Google rewards unique observations. Do not just explain—analyze. Include contrarian opinions, unique frameworks, and expert critiques (e.g., "The hidden weakness of...", "When NOT to automate...").
 - Stronger Topical Authority: Dive deep into broad subtopics (e.g., CRM, Marketing, HR, Finance, AI, Workflow). Ensure the article covers the topic holistically. Do not just skim the surface with generic points.
 - Competitor Gap Coverage: Anticipate what top competitors will write and cover the gaps. Add depth that standard AI content completely misses.
@@ -822,9 +974,9 @@ MINIMUM WORDS   : {length_num}
 - Include ONE paragraph directly below an H2 that answers "What is {primary_keyword}?"
   in 40–60 words in plain, declarative language — targets the definition snippet.
 - The step-by-step section must use a clean numbered list — targets how-to snippets.
-- The FAQ section targets PAA (People Also Ask) snippets.
 
 {interlink_instructions}
+{external_link_instructions}
 
 {advanced_optimization}
 

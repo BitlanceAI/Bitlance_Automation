@@ -234,9 +234,29 @@ const PublicArticlePage = () => {
                     </h1>
 
                     <div className="flex flex-wrap items-center gap-6 text-[11px] text-gray-500 mb-10 tracking-widest uppercase font-bold" style={{ fontFamily: "'DM Mono', monospace" }}>
-                        <span className="flex items-center gap-2">
-                            <User size={14} />
-                            {article.author_name || (article.user_id === 'anonymous' ? 'AI Agent' : 'Bitlance Source')}
+                        <span className="flex items-center gap-3">
+                            {(() => {
+                                const profileImg = article.author?.profile_image || article.author_details?.profile_image || article.author_image_url;
+                                if (profileImg) {
+                                    return (
+                                        <img 
+                                            src={profileImg} 
+                                            alt={article.author_name || 'Author'} 
+                                            className="w-8 h-8 rounded-full object-cover border-2 border-[#26CECE]" 
+                                            onError={(e) => { e.target.style.display = 'none'; e.target.nextElementSibling.style.display = 'flex'; }}
+                                        />
+                                    );
+                                }
+                                return (
+                                    <div className="w-8 h-8 rounded-full flex items-center justify-center bg-gray-100 border border-gray-200 text-[#26CECE]">
+                                        <User size={14} />
+                                    </div>
+                                );
+                            })()}
+                            <div className="hidden w-8 h-8 rounded-full items-center justify-center bg-gray-100 border border-gray-200 text-[#26CECE]">
+                                <User size={14} />
+                            </div>
+                            <span className="text-[13px]">{article.author_name || (article.user_id === 'anonymous' ? 'AI Agent' : 'Bitlance Source')}</span>
                         </span>
                         <span className="flex items-center gap-2">
                             <Calendar size={14} />
