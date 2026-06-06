@@ -222,7 +222,6 @@ const SeoAgentPage = () => {
     // Admin check
     const ADMIN_ID = '0d396440-7d07-407c-89da-9cb93e353347';
     const [isCompanyBlog, setIsCompanyBlog] = useState(false);
-    const [sendPushNotification, setSendPushNotification] = useState(false);
 
     useEffect(() => {
         if (user?.id === ADMIN_ID) {
@@ -274,8 +273,7 @@ const SeoAgentPage = () => {
                 image_option: imageOption,
                 custom_image_url: customImageUrl,
                 // Admin Target Table (Prevent company blog save if WordPress is selected for a client)
-                target_table: (user?.id === ADMIN_ID && isCompanyBlog && sourceType !== 'wordpress') ? 'company_articles' : 'articles',
-                skip_notification: !sendPushNotification
+                target_table: (user?.id === ADMIN_ID && isCompanyBlog && sourceType !== 'wordpress') ? 'company_articles' : 'articles'
             };
 
             // Handle Profile Logic (Insert into payload)
@@ -1267,43 +1265,22 @@ const SeoAgentPage = () => {
                                         </div>
 
                                         {user?.id === ADMIN_ID && sourceType !== 'wordpress' && (
-                                            <div className="md:col-span-2 space-y-4">
-                                                <div className="flex items-start gap-4 p-5 bg-white rounded-[2px] border border-slate-200">
-                                                    <input
-                                                        type="checkbox"
-                                                        id="isCompanyBlog"
-                                                        checked={isCompanyBlog}
-                                                        onChange={(e) => setIsCompanyBlog(e.target.checked)}
-                                                        className="mt-0.5 h-4 w-4 bg-white border-slate-300 text-[#26cece] focus:ring-0 rounded-[2px]"
-                                                    />
-                                                    <div>
-                                                        <label htmlFor="isCompanyBlog" className="block text-[12px] font-mono tracking-widest uppercase text-[#26cece] font-bold cursor-pointer select-none">
-                                                            Generate as Company Blog Post (Public)
-                                                        </label>
-                                                        <p className="text-[10px] font-mono text-slate-400 mt-2">
-                                                            If checked, this article will be published to the main company blog. Uncheck to save as a personal client article.
-                                                        </p>
-                                                    </div>
+                                            <div className="md:col-span-2 flex items-start gap-4 p-5 bg-white rounded-[2px] border border-slate-200">
+                                                <input
+                                                    type="checkbox"
+                                                    id="isCompanyBlog"
+                                                    checked={isCompanyBlog}
+                                                    onChange={(e) => setIsCompanyBlog(e.target.checked)}
+                                                    className="mt-0.5 h-4 w-4 bg-white border-slate-300 text-[#26cece] focus:ring-0 rounded-[2px]"
+                                                />
+                                                <div>
+                                                    <label htmlFor="isCompanyBlog" className="block text-[12px] font-mono tracking-widest uppercase text-[#26cece] font-bold cursor-pointer select-none">
+                                                        Generate as Company Blog Post (Public)
+                                                    </label>
+                                                    <p className="text-[10px] font-mono text-slate-400 mt-2">
+                                                        If checked, this article will be published to the main company blog. Uncheck to save as a personal client article.
+                                                    </p>
                                                 </div>
-                                                {isCompanyBlog && (
-                                                    <div className="flex items-start gap-4 p-5 bg-white rounded-[2px] border border-slate-200">
-                                                        <input
-                                                            type="checkbox"
-                                                            id="sendPushNotification"
-                                                            checked={sendPushNotification}
-                                                            onChange={(e) => setSendPushNotification(e.target.checked)}
-                                                            className="mt-0.5 h-4 w-4 bg-white border-slate-300 text-[#26cece] focus:ring-0 rounded-[2px]"
-                                                        />
-                                                        <div>
-                                                            <label htmlFor="sendPushNotification" className="block text-[12px] font-mono tracking-widest uppercase text-[#26cece] font-bold cursor-pointer select-none">
-                                                                Send Push Notification
-                                                            </label>
-                                                            <p className="text-[10px] font-mono text-slate-400 mt-2">
-                                                                If checked, all subscribed users will receive a push notification alert when this blog is generated and published.
-                                                            </p>
-                                                        </div>
-                                                    </div>
-                                                )}
                                             </div>
                                         )}
                                     </div>

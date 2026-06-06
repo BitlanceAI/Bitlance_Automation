@@ -176,7 +176,7 @@ const HomePage = () => {
                                         onClick={() => { 
                                             trackAgentOpen(agent.title); 
                                             if (agent.path.startsWith('http')) {
-                                                window.location.href = agent.path;
+                                                window.open(agent.path, '_blank');
                                             } else {
                                                 navigate(agent.path); 
                                             }
