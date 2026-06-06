@@ -23,10 +23,27 @@ function avgWordsPerSentence(text) {
 
 function keywordDensity(text, keyword) {
     if (!keyword || !text) return 0;
-    const kw = keyword.toLowerCase();
-    const words = text.toLowerCase().split(/\s+/).filter(Boolean);
-    const matches = words.filter(w => w.includes(kw)).length;
-    return words.length ? ((matches / words.length) * 100) : 0;
+    
+    // Normalize text and keyword: lowercase, remove punctuation, collapse spaces
+    const normalize = (str) => str.toLowerCase().replace(/[.,/#!$%^&*;:{}=\-_`~()?"']/g, "").replace(/\s{2,}/g, " ").trim();
+    
+    const normalizedText = normalize(text);
+    const normalizedKeyword = normalize(keyword);
+    
+    if (!normalizedKeyword) return 0;
+
+    const totalWords = normalizedText.split(' ').filter(Boolean).length;
+    const keywordWordCount = normalizedKeyword.split(' ').filter(Boolean).length;
+    
+    // Count occurrences of the full phrase in the normalized text
+    // Pad with spaces to ensure we match whole words only, avoiding partial matches
+    const textWithSpaces = ` ${normalizedText} `;
+    const keywordWithSpaces = ` ${normalizedKeyword} `;
+    
+    const occurrences = textWithSpaces.split(keywordWithSpaces).length - 1;
+    const matchedWordsCount = occurrences * keywordWordCount;
+    
+    return totalWords ? ((matchedWordsCount / totalWords) * 100) : 0;
 }
 
 function computeSeoScore(formData) {

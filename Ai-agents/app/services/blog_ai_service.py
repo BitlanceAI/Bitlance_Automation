@@ -849,18 +849,18 @@ def openai_generate_blog_content(
    - Format: - [Section Title](#anchor)
 
 5. FAST FACTS / STATISTICS BLOCK
-   - Add a bolded H2: "{primary_keyword} Fast Facts" (or similar title adapted to topic).
+   - Add a bolded H2: "Fast Facts" or a natural variation like "Fast Facts About [Topic]". Do NOT just copy-paste the exact primary keyword if it's a clunky question.
    - Provide 4-6 fast, scannable facts using checkmarks (✓) and real statistics/data points. 
 
 6. MAIN BODY — EDITORIAL, EXAMPLES & CONTRARIAN SECTIONS
-   - Do NOT use generic headings. Structure the body using exactly these types of editorial sections:
-      a. How {primary_keyword} Evolved
-      b. 7 Reasons Modern {primary_keyword} Works Better / Provides Better ROI
+   - Do NOT use generic headings. Structure the body using exactly these types of editorial sections (Adapt the titles so they sound natural, do NOT force exact keywords if awkward):
+      a. How It Evolved / The Evolution of the Concept
+      b. 7 Reasons It Works Better / Provides Better ROI
       c. Industry-Specific Examples: Explicitly apply the topic to Healthcare, Finance, Cybersecurity, Mechanical Engineering, Startups, etc., to broaden topical coverage.
       d. Real Benchmarks / Case Studies (Include exact numbers, workload comparisons, cost differences).
       e. When Traditional/Older Options Still Make Sense (A Contrarian Section for balanced analysis).
       f. Actionable Framework / Roadmap Block: Provide a step-by-step career, implementation, or technical roadmap (e.g. Student → Degree → Projects → Internships → Portfolio → Job).
-      g. Future of {primary_keyword}
+      g. Future Outlook
    - Strong Entity Coverage: Explicitly mention major knowledge graph entities relevant to the topic (e.g., NVIDIA, OpenAI, AWS, Stanford, Harvard, MIT, Coursera, Udemy, Gartner, McKinsey).
    - Deep Technical Citations & Expert Sources: You MUST cite highly authoritative sources. Do NOT just say "According to vendors..." - be specific (e.g., "According to Stanford AI Index...").
 
@@ -894,17 +894,17 @@ def openai_generate_blog_content(
    - Provide a comprehensive, modular summary of the entire article (covering pros/cons, comparisons, and core value). Make it highly extractable for AI summarization engines.
 
 6. FAST FACTS
-   - Add a bolded H2: "{primary_keyword} Fast Facts"
+   - Add a bolded H2: "Fast Facts" (or a natural variation. Do NOT force the exact keyword).
    - Provide 4-6 fast, scannable facts using checkmarks (✓).
 
 7. STATISTICS BLOCK
-   - Add a bolded H2: "{primary_keyword} Statistics"
+   - Add a bolded H2: "Key Statistics" (or a natural variation).
    - Provide 4-6 standalone statistics using bullet points (•) and real hard data/percentages. (e.g., "• 96% of top web servers run Linux").
 
 8. MAIN CONTENT — EDITORIAL SECTIONS
-   - Create highly specific, relevant H2 sections covering:
-      a. How {primary_keyword} Evolved
-      b. Why {primary_keyword} Works / Is Better
+   - Create highly specific, relevant H2 sections covering (Adapt the titles so they sound natural, do NOT force exact keywords if awkward):
+      a. How It Evolved / The Evolution of the Concept
+      b. Why It Works / Is Better
       c. Real Benchmarks and Performance Numbers (Exact metrics, workload comparisons)
       d. "Who Should Choose What?" Section: Provide a highly retrieval-friendly list (e.g., "Choose Degree First If: ✓ Medicine, ✓ Law. Choose Skill First If: ✓ Web Development, ✓ AI Automation").
       e. Buying/Implementation/Career Guide
@@ -927,7 +927,7 @@ def openai_generate_blog_content(
 
 {faq_section}
 13. FACT BOX
-    - Add a bolded H2: "{primary_keyword} Fact Box"
+    - Add a bolded H2: "Fact Box" or "Key Facts Summary"
     - Provide a final quick-reference list of core attributes (e.g. ✓ Open Source, ✓ No Licensing Fees).
 
 14. KEY TAKEAWAYS BLOCK
