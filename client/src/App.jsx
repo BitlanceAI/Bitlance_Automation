@@ -26,7 +26,6 @@ const HomePage = lazy(() => import('./pages/dashboard/HomePage'));
 const SalesDashboard = lazy(() => import('./pages/dashboard/SalesDashboard'));
 const SocialDashboard = lazy(() => import('./pages/dashboard/SocialDashboard'));
 const AgentsPage = lazy(() => import('./pages/dashboard/AgentsPage'));
-const BroadcastPage = lazy(() => import('./pages/dashboard/BroadcastPage'));
 const SeoAgentPage = lazy(() => import('./pages/dashboard/SeoAgentPage'));
 const GraphicDesignerPage = lazy(() => import('./pages/dashboard/GraphicDesignerPage'));
 const MetaAdsPage = lazy(() => import('./pages/dashboard/MetaAdsPage'));
@@ -129,7 +128,7 @@ function App() {
   const handleAgentSelect = (agent) => {
     trackAgentOpen(agent.title);
     if (agent.title === 'WhatsApp Broadcasting Automation') {
-      navigate('/dashboard/agents/whatsapp');
+      window.open('https://wacrm.bitlancetechhub.com/', '_blank');
     } else if (agent.title === 'AI Voice Agent') {
       navigate('/dashboard/agents/voice');
     } else if (agent.title === 'GEO (Generative) AI Agent' || agent.title === 'SEO (Search Engine) AI Agent') {
@@ -218,11 +217,6 @@ function App() {
                 } />
                 <Route path="/agents" element={
                   <AgentsPage onAgentSelect={handleAgentSelect} />
-                } />
-                <Route path="/dashboard/agents/whatsapp" element={
-                  <AuthGuard>
-                    <BroadcastPage />
-                  </AuthGuard>
                 } />
                 <Route path="/SocialDashboard" element={
                   <AuthGuard>
