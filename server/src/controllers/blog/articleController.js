@@ -139,7 +139,7 @@ export const generateAndSaveArticleInternal = async ({
     userId, token, topic, industry, keywords, language, style, length, audience,
     image_option, custom_image_url, wp_url, wp_api_url, interlinks, author_name, author_bio, author_profile_id,
     author_details, category = 'Technology', tags = [], is_published = false,
-    custom_slug, target_table, optimization_mode = 'GEO'
+    custom_slug, target_table, optimization_mode = 'GEO', skip_notification = false
 }) => {
     const tableName = getTableName(userId, target_table);
 
@@ -236,7 +236,7 @@ export const generateAndSaveArticleInternal = async ({
     }
 
     // ── 6. Push notification — only for admin-published articles ─────────────
-    if (userId === ADMIN_ID && is_published) {
+    if (userId === ADMIN_ID && is_published && !skip_notification) {
         const articleUrl = `${process.env.APP_URL || 'https://www.bitlancetechhub.com'}/blogs/${slug}`;
         sendPushNotification(
             `New Article: ${finalTopic}`,
@@ -396,6 +396,7 @@ export const bulkGenerateArticles = async (req, res) => {
                         length: row.Length || 'Medium',
                         audience: row.Audience || 'General',
                         is_published: true,
+                        skip_notification: true, // Prevent notification spam during bulk generation
                     });
                     console.log(`[Bulk Gen ${i + 1}/${rows.length}] Success: "${topicLabel}"`);
                 } catch (error) {
