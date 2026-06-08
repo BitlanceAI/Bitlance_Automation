@@ -107,7 +107,8 @@ def generate_blog(request: Request, body: GenerateBlogRequest):
 
     # ── 1. Industry mode: auto-generate topic + keywords ──────────────────────
     if not topic and body.industry:
-        idea = ai.generate_title_and_keywords(body.industry)
+        mode_for_topic = body.optimization_mode.upper() if body.optimization_mode else "SEO"
+        idea = ai.generate_title_and_keywords(body.industry, mode=mode_for_topic)
         topic = idea["topic"]
         keywords = idea["keywords"]
 

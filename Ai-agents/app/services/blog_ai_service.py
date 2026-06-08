@@ -218,40 +218,83 @@ def _openai_chat_call(user_prompt: str, system_msg: str = "You are an expert.", 
 # PERPLEXITY FUNCTIONS
 # ─────────────────────────────────────────────────────────────────────────────
 
-def generate_title_and_keywords(industry: str) -> dict:
+def generate_title_and_keywords(industry: str, mode: str = "SEO") -> dict:
     """
     Auto-generate a blog topic + keyword list for a given industry.
-    Uses SerpAPI (real Google data) when SERP_API_KEY is set,
-    falls back to Perplexity sonar-pro otherwise.
-    Returns: {"topic": str, "keywords": str}
+    Uses a Topic Scoring Engine to evaluate 5 candidate topics based on Search Intent,
+    Commercial Intent, Competition, GEO Potential, Industry Relevance, and Internal Linking Potential.
+    Returns: {"topic": str, "keywords": str, "score": int, "scoring_breakdown": str}
     """
-    if _SERP_AVAILABLE:
-        try:
-            result = trending_topics_tool.run(industry)
-            # tool returns a dict; BaseTool.run may stringify it
-            if isinstance(result, str):
-                result = json.loads(result)
-            print(f"generate_title_and_keywords: used SerpAPI for '{industry}'")
-            return result
-        except Exception as e:
-            print(f"SerpAPI trending topics failed, falling back to Perplexity: {e}")
+    
+    geo_rules = ""
+    if mode == "GEO":
+        geo_rules = """
+LAYER 5: GEO OPTIMIZATION (CRITICAL FOR THIS REQUEST)
+These topics are designed for ChatGPT, Gemini, Claude, and Perplexity. They love:
+- Comparisons (e.g., 'GPT-5 vs Claude 4 for Enterprise Automation')
+- Frameworks (e.g., 'AI Agent Architecture for Customer Support Teams')
+- Playbooks (e.g., 'How We Built an AI Lead Qualification System Using OpenAI Agents')
+- Case Studies (e.g., 'How a Marketing Agency Reduced Response Time by 80% Using AI Agents')
+Ensure candidate topics lean heavily into these structures.
+"""
 
     prompt = (
-        f'Act as an SEO expert. For the industry "{industry}", suggest a high-potential, '
-        f'trending blog post Topic (Title) and a list of 5 relevant Keywords that would rank well.\n'
+        f'Act as an Elite Content Strategist and SEO/GEO Expert. '
+        f'Your task is to generate a highly competitive, long-tail blog topic for the "{industry}" industry.\n\n'
+        f'AVOID GENERIC TOPICS:\n'
+        f'Instead of: "AI Marketing Tools" or "AI Email Automation"\n'
+        f'Generate: "Best AI Marketing Tools for Real Estate Agencies in Dubai" or "How SaaS Companies Use AI Email Automation to Reduce Churn"\n'
+        f'Structure must generally be: Industry + Problem + Persona + Outcome.\n\n'
+        f'LAYER 1: COMPETITION CHECK\n'
+        f'Avoid extremely competitive short-tail keywords like: "AI tools", "SEO tools", "Marketing tools", "CRM software", "Chatbot software".\n\n'
+        f'LAYER 2: COMMERCIAL INTENT\n'
+        f'Prefer these formats: "How to", "Best for", "Case Study", "Workflow", "Implementation Guide", "Comparison", "Cost Analysis" over generic definitions.\n\n'
+        f'LAYER 3: INDUSTRY TARGETING\n'
+        f'Ensure the topic is deeply tailored to {industry} (e.g., Real Estate, Healthcare, Insurance, HR, Recruitment, E-commerce, SaaS, Marketing Agencies, Education, Legal Firms).\n\n'
+        f'LAYER 4: LONG-TAIL EXPANSION\n'
+        f'Convert generic concepts (e.g., "AI Agents") into hyper-specific use cases (e.g., "How AI Agents Qualify Real Estate Leads on WhatsApp").\n'
+        f'{geo_rules}\n'
+        f'TOPIC SCORING ENGINE:\n'
+        f'Internally generate 5 candidate topics and score them out of 100 based on this rubric:\n'
+        f'- Search Intent (25%)\n'
+        f'- Commercial Intent (20%)\n'
+        f'- Competition (20% - lower competition = higher score)\n'
+        f'- GEO Potential (15%)\n'
+        f'- Industry Relevance (10%)\n'
+        f'- Internal Linking Potential (10%)\n\n'
+        f'Select the BEST topic that scores 75 or higher.\n\n'
         f'Format exactly as JSON:\n'
-        f'{{"topic": "The exact title of the blog post", "keywords": "keyword1, keyword2, keyword3, keyword4, keyword5"}}'
+        f'{{\n'
+        f'    "topic": "The exact highest scoring title of the blog post",\n'
+        f'    "keywords": "keyword1, keyword2, keyword3, keyword4, keyword5",\n'
+        f'    "score": 85,\n'
+        f'    "scoring_breakdown": "Search Intent: 22/25, Commercial Intent: 18/20, ..."\n'
+        f'}}'
     )
+    
+    system = "You are an Elite SEO/GEO Content Strategist."
     try:
-        raw = _perplexity_call(prompt, "You are an SEO expert.", max_tokens=500)
+        raw = _perplexity_call(prompt, system, max_tokens=1500)
         cleaned = raw.replace("```json", "").replace("```", "").strip()
-        return json.loads(cleaned)
+        result = json.loads(cleaned)
+        print(f"generate_title_and_keywords: Scored {result.get('score')} - {result.get('topic')}")
+        return result
     except Exception as e:
-        print(f"Perplexity industry idea error: {e}")
-        return {
-            "topic": f"Top trends in {industry}",
-            "keywords": f"{industry}, trends, news, update, guide",
-        }
+        print(f"Perplexity topic generation error: {e}")
+        try:
+            raw = _openai_chat_call(prompt, system, max_tokens=1500)
+            cleaned = raw.replace("```json", "").replace("```", "").strip()
+            result = json.loads(cleaned)
+            print(f"generate_title_and_keywords (fallback): Scored {result.get('score')} - {result.get('topic')}")
+            return result
+        except Exception as e2:
+            print(f"OpenAI fallback error: {e2}")
+            return {
+                "topic": f"Advanced {industry} Strategy Guide: Implementation and Workflows",
+                "keywords": f"{industry} workflow, {industry} implementation guide, best practices for {industry}",
+                "score": 75,
+                "scoring_breakdown": "Fallback generation"
+            }
 
 
 def generate_keywords(topic: str) -> str:
@@ -269,8 +312,9 @@ def generate_keywords(topic: str) -> str:
             print(f"SerpAPI keyword research failed, falling back to Perplexity: {e}")
 
     prompt = (
-        f'You are an SEO keyword research expert. For the topic "{topic}", generate 8–12 high-value keywords.\n'
-        f'Include: 1 primary keyword (exact match), 3–4 long-tail variations (3+ words), 2–3 LSI/semantic keywords, 1–2 question-based keywords (e.g. "how to...", "what is...").\n'
+        f'You are an SEO keyword research expert. For the topic "{topic}", generate 8–12 hyper-niche, long-tail, zero-volume keywords.\n'
+        f'These keywords MUST be highly specific (4+ words), targeting specific industries, locations, or use cases (e.g., "How to automate WhatsApp lead follow-ups for Dubai real estate agencies").\n'
+        f'Include: 1 primary hyper-niche keyword (exact match), 4–5 long-tail variations, 2–3 LSI/semantic keywords, 2 question-based keywords.\n'
         f'Return ONLY a comma-separated list of keywords. No explanations, no numbering, no headers.'
     )
     return _perplexity_call(prompt, "You are an SEO expert.", max_tokens=200)
@@ -711,7 +755,7 @@ def generate_backlink_analysis(topic: str, keywords: str, available_links: list)
     """
     Acts as the Backlink Intelligence Layer.
     Extracts entities, scores relevance against available database articles,
-    builds a topical cluster, and selects the top 3-5 links with anchor text.
+    builds a topical cluster, and selects the top 8-15 links with anchor text.
     """
     if not available_links:
         return {
@@ -739,11 +783,12 @@ AVAILABLE DATABASE ARTICLES:
 
 Step 1: Extract core entities from the target topic.
 Step 2: Score the relevance of the available database articles against the target topic.
-Step 3: Select the 3-5 absolute best articles to be inserted as internal backlinks.
-Step 4: Identify 1-3 additional articles as "suggested" for future content silos.
+Step 3: Select exactly 13 absolute best articles to be inserted as internal backlinks.
+Step 4: Identify 2-4 additional articles as "suggested" for future content silos.
 Step 5: Determine the primary Topical Cluster Category (e.g., "AI Infrastructure", "Real Estate Marketing").
 Step 6: Assign an Authority Score (0-100) based on how well the available articles support the target topic.
-Step 7: Search the web to identify 3-5 high-authority EXTERNAL URLs (e.g., Stanford AI Index, Gartner, McKinsey, etc.) related to this topic. Provide their real URLs and a recommended anchor text.
+Step 7: Search the web to identify exactly 7 high-authority EXTERNAL URLs (e.g., Stanford AI Index, Gartner, McKinsey, etc.) related to this topic. Provide their real URLs and a recommended anchor text.
+CRITICAL RATIO RULE: You MUST enforce a strict ratio of 65% Internal Links (13) to 35% External Links (7) in your final output.
 WARNING FOR EXTERNAL LINKS: Do NOT hallucinate URLs. Deep links (e.g., /linux, /report-2026) often 404. If you cannot verify an exact active page URL, you MUST link only to the verified homepage of the authoritative organization (e.g., "https://www.linuxfoundation.org", "https://www.gartner.com").
 
 Return ONLY a valid JSON object in this exact format. No markdown blocks, no text before or after.
@@ -803,8 +848,9 @@ Return ONLY a valid JSON object in this exact format. No markdown blocks, no tex
 def openai_generate_keywords(topic: str) -> str:
     """Fallback keyword generation via OpenAI GPT-4o."""
     prompt = (
-        f'You are an SEO keyword research expert. For the topic "{topic}", generate 8–12 high-value keywords.\n'
-        f'Include: 1 primary keyword (exact match), 3–4 long-tail variations (3+ words), 2–3 LSI/semantic keywords, 1–2 question-based keywords (e.g. "how to...", "what is...").\n'
+        f'You are an SEO keyword research expert. For the topic "{topic}", generate 8–12 hyper-niche, long-tail, zero-volume keywords.\n'
+        f'These keywords MUST be highly specific (4+ words), targeting specific industries, locations, or use cases (e.g., "How to automate WhatsApp lead follow-ups for Dubai real estate agencies").\n'
+        f'Include: 1 primary hyper-niche keyword (exact match), 4–5 long-tail variations, 2–3 LSI/semantic keywords, 2 question-based keywords.\n'
         f'Return ONLY a comma-separated list of keywords. No explanations, no numbering, no headers.'
     )
     try:
@@ -1150,7 +1196,7 @@ def generate_image(topic: str, image_text: str) -> str:
             "model": "gpt-image-2",
             "prompt": prompt,
             "n": 1,
-            "size": "1792x1024"
+            "size": "256x256"
         }
         print(f"Generating image with gpt-image-2 for topic: '{topic}'")
         res = requests.post("https://api.openai.com/v1/images/generations", headers=headers, json=payload, timeout=120)

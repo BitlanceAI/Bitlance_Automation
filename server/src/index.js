@@ -182,6 +182,9 @@ const serveFrontend = process.env.SERVE_FRONTEND === 'true';
 
 if (serveFrontend) {
     const distPath = path.join(__dirname, '../../client/dist');
+    // Prerender.io middleware for SEO (bots will get fully rendered HTML)
+    app.use(require('prerender-node').set('prerenderToken', process.env.PRERENDER_TOKEN));
+    
     app.use(express.static(distPath));
     app.use('/assets', express.static(path.join(distPath, 'assets')));
 
