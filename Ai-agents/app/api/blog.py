@@ -15,7 +15,7 @@ env_path = Path(__file__).resolve().parent.parent.parent / ".env"
 load_dotenv(dotenv_path=env_path)
 
 import requests as _requests
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Request
 from pydantic import BaseModel, Field
 
 from app.services import blog_ai_service as ai
@@ -43,6 +43,7 @@ class GenerateBlogRequest(BaseModel):
     optimization_mode: Optional[str] = Field(default="SEO", description="SEO or GEO mode")
     author_name: Optional[str] = None
     author_image_url: Optional[str] = None
+    brand_context_id: Optional[str] = None
 
     model_config = {
         "json_schema_extra": {
@@ -74,13 +75,35 @@ LENGTH_MAPPING = {
 # ─────────────────────────────────────────────────────────────────────────────
 
 @router.post("/generate")
-def generate_blog(body: GenerateBlogRequest):
+def generate_blog(request: Request, body: GenerateBlogRequest):
     """
     Runs the full AI generation pipeline and returns JSON.
     Auth is handled upstream by Node.js. This endpoint is internal-only.
     """
     topic = body.topic
     keywords = body.keywords or ""
+
+    # Fetch dynamic brand context if possible
+    brand_context = None
+    try:
+        auth_header = request.headers.get("Authorization")
+        if auth_header and auth_header.startswith("Bearer "):
+            token = auth_header.split(" ")[1]
+            from supabase import create_client
+            sup_url = os.getenv("SUPABASE_URL")
+            sup_key = os.getenv("SUPABASE_SERVICE_ROLE_KEY") or os.getenv("SUPABASE_KEY")
+            if sup_url and sup_key and body.brand_context_id:
+                sup = create_client(sup_url, sup_key)
+                user_resp = sup.auth.get_user(token)
+                if user_resp and user_resp.user:
+                    user_id = user_resp.user.id
+                    ctx_res = sup.table("brand_contexts").select("*").eq("id", body.brand_context_id).eq("user_id", user_id).execute()
+                    if ctx_res.data:
+                        brand_context = ctx_res.data[0]
+                        print(f"Loaded specific brand context for user {user_id}")
+    except Exception as e:
+        print(f"Notice: Could not load dynamic brand context: {e}")
+
 
     # ── 1. Industry mode: auto-generate topic + keywords ──────────────────────
     if not topic and body.industry:
@@ -167,13 +190,13 @@ def generate_blog(body: GenerateBlogRequest):
     try:
         content_result = ai.generate_blog_content(
             topic, keywords, body.language, body.audience, body.style,
-            length_num, interlinks, external_links, mode=mode
+            length_num, interlinks, external_links, mode=mode, brand_context=brand_context
         )
     except Exception as e:
         print(f"Content gen failed, falling back to OpenAI: {e}")
         content_result = ai.openai_generate_blog_content(
             topic, keywords, body.language, body.audience, body.style,
-            length_num, interlinks, external_links, mode=mode
+            length_num, interlinks, external_links, mode=mode, brand_context=brand_context
         )
 
     blog_text = content_result["blogText"]

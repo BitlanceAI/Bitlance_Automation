@@ -34,6 +34,7 @@ import API_BASE_URL from '../../config.js';
 import SeoAgentTour from '../../components/seo/SeoAgentTour';
 import ProfileSelection from '../../components/dashboard/ProfileSelection';
 import WordPressProfileSelection from '../../components/dashboard/WordPressProfileSelection';
+import BrandProfileSelection from '../../components/dashboard/BrandProfileSelection';
 
 // Panel components for tabs
 import PushNotificationPanel from '../../components/seo/PushNotificationPanel';
@@ -135,6 +136,9 @@ const SeoAgentPage = () => {
     // WordPress Integration State
     const [selectedWpProfile, setSelectedWpProfile] = useState(null);
     const [interlinkUrl, setInterlinkUrl] = useState('');
+
+    // Brand Profile State
+    const [brandContextId, setBrandContextId] = useState(null);
 
     // ── Google Sheets State ─────────────────────────────────────────────────
     const [sheetId, setSheetId] = useState('');
@@ -269,6 +273,7 @@ const SeoAgentPage = () => {
                 wp_api_url: interlinkUrl || null,  // custom interlinking URL — Python fetches existing posts from here
                 wp_username: '',
                 wp_password: '',
+                brand_context_id: brandContextId,
                 // Image
                 image_option: imageOption,
                 custom_image_url: customImageUrl,
@@ -859,6 +864,9 @@ const SeoAgentPage = () => {
                                     {sourceType === 'wordpress' && (
                                         <WordPressProfileSelection onProfileSelect={handleWpProfileSelect} />
                                     )}
+
+                                    {/* Brand Profile Selection */}
+                                    <BrandProfileSelection onSelect={setBrandContextId} />
 
                                     {/* ── Google Sheets Panel ──────────────────────────────── */}
                                     {sourceType === 'sheets' && (

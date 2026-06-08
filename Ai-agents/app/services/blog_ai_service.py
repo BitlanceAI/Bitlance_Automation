@@ -43,6 +43,126 @@ except Exception as _serp_import_err:  # pragma: no cover
 PERPLEXITY_BASE_URL = "https://api.perplexity.ai/chat/completions"
 OPENAI_CHAT_URL     = "https://api.openai.com/v1/chat/completions"
 
+def get_post_generation_enhancement_layer(brand_context=None):
+    if not brand_context:
+        brand_context = {
+            "company_name": "Bitlance Automation (Bitlance Tech Hub)",
+            "services": "Custom AI Agent Development, AI Voice Bot Implementation, Business Process Automation, Enterprise Web App Development, Digital Marketing Pipelines",
+            "products": "GEO & SEO AI Blog Engine, Meta Ads Automation Platform, Bitlance Email Agent, Social Media & Graphics AI, Real Estate Reel Generator, HR Bitlance, WhatsApp Automation CRM",
+            "target_audience": "Digital Marketing Agencies, B2B SaaS, Real Estate Firms, HR Teams, Professional Services",
+            "industries": "Technology, Real Estate, Healthcare, Education, Local Services",
+            "usp": "We build 2026-standard elite AI automation pipelines that eliminate manual workflows."
+        }
+    
+    return f"""
+══ POST-GENERATION ENHANCEMENT LAYER ══
+Before finalizing any article, ensure the following layers are deeply integrated into the content:
+
+1. BRAND AUTHORITY CHECK
+Include:
+* Real implementation examples
+* Workflow examples
+* Industry-specific applications
+* Customer pain points
+* Service relevance
+
+You MUST include at least ONE "Mini-Case Study" explicitly formatted as:
+> **Case Study**
+> **Challenge:** [Description]
+> **Solution:** [{brand_context.get('company_name', 'Bitlance')} deployed...]
+> **Outcome:** [Measurable result]
+
+Use the following BRAND_CONTEXT to avoid generic examples:
+Company Name: {brand_context.get('company_name', '')}
+Services: {brand_context.get('services', '')}
+Products: {brand_context.get('products', '')}
+Target Audience: {brand_context.get('target_audience', '')}
+Industries: {brand_context.get('industries', '')}
+Unique Selling Proposition: {brand_context.get('usp', '')}
+
+2. REVENUE ALIGNMENT CHECK
+Classify the keyword intent silently and adapt the structure:
+* If informational: Pivot to B2B decision-makers. Add an "Enterprise Readiness Framework", "Governance Checklist", or "How Businesses Can Assess Risk". Do NOT just write for students.
+* If commercial: Add a "Buyer's Guide" section.
+* If transactional: Add a "Solution Comparison" and a "Natural CTA".
+
+3. UNIQUENESS CHECK
+Ensure the article contains:
+* Original insights
+* Contrarian viewpoints
+* Industry observations
+* Future predictions
+Avoid reproducing common competitor structures.
+
+4. REWRITE READINESS & QUALITY FLAG
+If the generated content has fewer than:
+- 5 entities
+- 3 authority references
+- 1 statistics block
+- 1 FAQ section
+append this exact text at the very bottom of the article:
+`SEO_AUDIT_REQUIRED = TRUE`
+
+5. AI VISIBILITY OPTIMIZATION
+Ensure the article explicitly contains:
+* AI Overview: A standalone block right after the intro (titled "AI OVERVIEW") with a 2-3 sentence dense summary.
+* Quick Answer (Direct answer block)
+* Statistics Block: MUST contain real numbers (e.g., 75%, 2.3 billion, 4x faster) in a dedicated bullet list. Underneath each bullet, you MUST use the exact format: `Source: [Name of Report/Index]`.
+* Comparison Table: MUST include a strict Markdown table (e.g., Risk | Today | 2030 or Option A | Option B).
+* Expert Insight
+* FAQ
+* Fact Box
+
+6. KNOWLEDGE GRAPH EXPANSION
+Automatically identify and include 5-15 specific entities from:
+* Companies
+* Products
+* Frameworks
+* Research Organizations
+* Standards
+* Industry Reports
+* Open Source Projects
+
+7. BUSINESS CONVERSION LAYER
+Include:
+* Practical implementation section
+* Solution recommendations
+* Natural CTA (without aggressive selling)
+
+8. TOPICAL AUTHORITY LAYER
+At the very end of the article, output a Markdown comment block (`<!-- ... -->`) containing:
+* Parent Topic
+* Cluster Category
+* Related Articles
+* Suggested Internal Links
+* Supporting Content Opportunities
+
+9. AUTHORITY SOURCE LAYER & PROPRIETARY DATA
+Include explicit references and citations from highly authoritative sources when relevant (e.g., OpenAI, Google, Gartner, McKinsey, Stanford).
+
+When mentioning statistics, research findings, industry trends, or benchmarks, attribute the source directly underneath the bullet point like this:
+- [Statistic]
+  *Source: Stanford AI Index 2025*
+- [Statistic]
+  *Source: WEF Future of Jobs Report*
+
+Crucially, you MUST invent or structure at least ONE proprietary data point formatted as:
+*Source: {brand_context.get('company_name', 'Bitlance')} Internal Benchmark*
+OR
+*Source: {brand_context.get('company_name', 'Bitlance')} Customer Analysis*
+
+10. TITLE & LINKING RULES (CRITICAL)
+* H1 Title: Must be highly clickable, avoid awkward/academic phrasing (e.g., "the mankind"), and include the year where relevant (e.g., "Risks, Facts & Future Outlook (2026)").
+* Internal Linking: NEVER use forced, exact-match keyword anchors. Integrate links using natural, partial-match, or semantic phrasing that flows conversationally.
+
+11. AUTHOR BYLINE (EEAT REQUIREMENT)
+At the very bottom of the article, you MUST append this exact author box, replacing the company name:
+***
+**Author:** Rahul Saini  
+**Reviewed By:** {brand_context.get('company_name', 'Bitlance Automation')} Team  
+**Last Updated:** June 2026  
+***
+"""
 
 # ─────────────────────────────────────────────────────────────────────────────
 # INTERNAL HELPERS
@@ -167,6 +287,7 @@ def generate_blog_content(
     external_links: Optional[list] = None,
     max_attempts: int = 1,
     mode: str = "SEO",
+    brand_context: dict = None,
 ) -> dict:
     """
     Generate full blog content using Perplexity sonar-pro.
@@ -436,6 +557,8 @@ MINIMUM WORDS   : {length_num}
 {interlink_instructions}
 {external_link_instructions}
 
+{get_post_generation_enhancement_layer(brand_context=brand_context)}
+
 ══ FORMATTING RULES ══
 - Use **bold** for key terms (first occurrence) and critical takeaways.
 - Use *italic* for emphasis only — sparingly (max 3 per section).
@@ -701,6 +824,7 @@ def openai_generate_blog_content(
     interlinks: Optional[list] = None,
     external_links: Optional[list] = None,
     mode: str = "SEO",
+    brand_context: dict = None,
 ) -> dict:
     """Fallback blog content generation via OpenAI GPT-4o."""
     interlinks = interlinks or []
@@ -980,6 +1104,8 @@ MINIMUM WORDS   : {length_num}
 
 {advanced_optimization}
 
+{get_post_generation_enhancement_layer(brand_context=brand_context)}
+
 ══ FORMATTING RULES ══
 - Use **bold** for key terms (first occurrence) and critical takeaways.
 - Use *italic* for emphasis only — sparingly (max 3 per section).
@@ -1024,13 +1150,21 @@ def generate_image(topic: str, image_text: str) -> str:
             "model": "gpt-image-2",
             "prompt": prompt,
             "n": 1,
-            "size": "1792x1024",
-            "quality": "auto",
+            "size": "1792x1024"
         }
         print(f"Generating image with gpt-image-2 for topic: '{topic}'")
         res = requests.post("https://api.openai.com/v1/images/generations", headers=headers, json=payload, timeout=120)
         res.raise_for_status()
-        b64_data = res.json()["data"][0].get("b64_json", "")
+        
+        # gpt-image-2 returns a URL. We must download it and convert to base64.
+        image_url = res.json()["data"][0].get("url", "")
+        if not image_url:
+            return ""
+            
+        img_res = requests.get(image_url, timeout=60)
+        img_res.raise_for_status()
+        import base64
+        b64_data = base64.b64encode(img_res.content).decode("utf-8")
         return f"data:image/png;base64,{b64_data}"
     except Exception as e:
         print(f"Error generating image with gpt-image-2: {e}")
