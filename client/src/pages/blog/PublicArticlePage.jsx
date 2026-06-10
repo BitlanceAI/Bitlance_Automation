@@ -286,11 +286,11 @@ const PublicArticlePage = () => {
                     </div>
 
                     {article.image_url && (
-                        <div className="w-full mt-10 mb-6 flex justify-center">
+                        <div className="w-full mt-10 mb-6 overflow-hidden border border-gray-200" style={{ borderRadius: 2 }}>
                             <img
                                 src={article.image_url}
                                 alt={article.seo_title || article.topic}
-                                className="max-w-full max-h-[400px] object-contain rounded-sm border border-gray-200"
+                                className="w-full h-[420px] md:h-[520px] object-cover"
                                 onError={(e) => e.target.style.display = 'none'}
                             />
                         </div>

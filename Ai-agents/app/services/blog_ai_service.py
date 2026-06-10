@@ -43,7 +43,7 @@ except Exception as _serp_import_err:  # pragma: no cover
 PERPLEXITY_BASE_URL = "https://api.perplexity.ai/chat/completions"
 OPENAI_CHAT_URL     = "https://api.openai.com/v1/chat/completions"
 
-def get_post_generation_enhancement_layer(brand_context=None, mode="SEO", interlinks=None):
+def get_post_generation_enhancement_layer(brand_context=None, mode="SEO", interlinks=None, author_name=None):
     if not brand_context:
         brand_context = {
             "company_name": "Bitlance Automation (Bitlance Tech Hub)",
@@ -53,9 +53,19 @@ def get_post_generation_enhancement_layer(brand_context=None, mode="SEO", interl
             "industries": "Technology, Real Estate, Healthcare, Education, Local Services",
             "usp": "We build 2026-standard elite AI automation pipelines that eliminate manual workflows."
         }
+    
+    company_name = brand_context.get("company_name", "Bitlance Automation")
+    short_name = company_name.split(" ")[0] if company_name else "Bitlance"
         
     faq_rule = "\n- 1 FAQ section" if mode == "GEO" else ""
     faq_item = "* FAQ\n" if mode == "GEO" else ""
+    
+    other_details = []
+    for k, v in brand_context.items():
+        if k not in ['company_name', 'services', 'target_audience', 'industries', 'usp', 'products']:
+            other_details.append(f"{k.replace('_', ' ').title()}: {v}")
+    
+    other_details_str = (" | " + " | ".join(other_details)) if other_details else ""
     
     cluster_links_rule = ""
     if mode == "SEO":
@@ -92,13 +102,14 @@ At the very end of the article, output a Markdown comment block (`<!-- ... -->`)
 
     return f"""
 ══ ENHANCEMENT LAYER ══
-BRAND: {brand_context.get('company_name','Bitlance')} | Services: {brand_context.get('services','')} | USP: {brand_context.get('usp','')}
+BRAND: {brand_context.get('company_name','Bitlance')} | Services: {brand_context.get('services','')} | USP: {brand_context.get('usp','')}{other_details_str}
 
 [A] BRAND SECTION (H2 — min 300 words)
 - Dedicated section: how {brand_context.get('company_name','Bitlance')} solves this topic.
 - MUST include one formatted case study:
   Client: [Industry] | Problem: [Pain Point] | Solution: [{short_name} tool/workflow] | Result: [Hard numbers]
 - Audience: {brand_context.get('target_audience','')} | Industries: {brand_context.get('industries','')}
+- Ensure any specific products, services, or custom facts from the brand context above are naturally woven into the article.
 
 [B] INTENT ALIGNMENT
 - Informational → add Enterprise Readiness Framework or Governance Checklist
@@ -125,7 +136,7 @@ BRAND: {brand_context.get('company_name','Bitlance')} | Services: {brand_context
 
 [F] AUTHOR BYLINE (end of article — before Related Guides)
 ---
-**Author:** Rahul Saini | **Reviewed By:** {brand_context.get('company_name','Bitlance Automation')} Team | **Last Updated:** June 2026
+**Author:** {author_name or 'Industry Expert'} | **Reviewed By:** {brand_context.get('company_name','Bitlance Automation')} Team | **Last Updated:** June 2026
 ---
 
 ⚠️ QUALITY GATE: If missing 5+ entities OR 3+ citations OR stats block{faq_rule}, append: `SEO_AUDIT_REQUIRED = TRUE`
@@ -353,6 +364,7 @@ def generate_blog_content(
     max_attempts: int = 1,
     mode: str = "SEO",
     brand_context: dict = None,
+    author_name: str = None,
 ) -> dict:
     """
     Generate full blog content using Perplexity sonar-pro.
@@ -632,7 +644,7 @@ MINIMUM WORDS   : {length_num}
 {interlink_instructions}
 {external_link_instructions}
 
-{get_post_generation_enhancement_layer(brand_context=brand_context, mode=mode, interlinks=interlinks)}
+{get_post_generation_enhancement_layer(brand_context=brand_context, mode=mode, interlinks=interlinks, author_name=author_name)}
 
 ══ FORMATTING RULES ══
 - Use **bold** for key terms (first occurrence) and critical takeaways.
@@ -907,6 +919,7 @@ def openai_generate_blog_content(
     external_links: Optional[list] = None,
     mode: str = "SEO",
     brand_context: dict = None,
+    author_name: str = None,
 ) -> dict:
     """Fallback blog content generation via OpenAI GPT-4o."""
     interlinks = interlinks or []
@@ -1038,8 +1051,8 @@ def openai_generate_blog_content(
 - Build "Learn More" blocks after every 2-3 major sections using provided internal links.
 """
 
-        if mode == "SEO":
-            mandatory_structure = f"""
+    if mode == "SEO":
+        mandatory_structure = f"""
 SEO ARTICLE STRUCTURE (follow in order — SEO=70%, GEO=30%):
 
 1. H1 — Compelling, keyword-near-front, no stuffing.
@@ -1061,8 +1074,8 @@ SEO ARTICLE STRUCTURE (follow in order — SEO=70%, GEO=30%):
 
 RULES: No AI Overview/Fact Box at top. Semantic variants. Inline citations only.
 """
-        else:
-            mandatory_structure = f"""
+    else:
+        mandatory_structure = f"""
 GEO ARTICLE STRUCTURE — Built for AI Citations (Perplexity, ChatGPT, Gemini, Claude)
 Weighting: GEO=70%, SEO=30%
 
@@ -1075,24 +1088,24 @@ SECTION ORDER (follow exactly):
 5. ## Why This Matters in 2026
    - Cover 3 specific recent developments that changed the landscape.
    - Format: Three developments changed this market in 2025–2026:
-     1. [Development 1]: What happened + business impact.
-     2. [Development 2]: What changed + why businesses care.
-     3. [Development 3]: New capabilities + what this unlocks.
+ 1. [Development 1]: What happened + business impact.
+ 2. [Development 2]: What changed + why businesses care.
+ 3. [Development 3]: New capabilities + what this unlocks.
 6. ## {primary_keyword} Fast Facts — 4-6 checkmark (✓) facts.
 7. ## Key Statistics & Benchmarks
    - 4-6 real stats. EVERY stat must include source URL:
-     • [Real statistic with number]
-       *Source: [Full Report Name, Year](https://real-url.org)*
+ • [Real statistic with number]
+   *Source: [Full Report Name, Year](https://real-url.org)*
    - Include EXACTLY 3 {short_name} proprietary benchmarks:
-     • [{short_name} finding with hard number]
-       *Source: {short_name} Internal Benchmark, 2025*
+ • [{short_name} finding with hard number]
+   *Source: {short_name} Internal Benchmark, 2025*
 8. ## NAMED FRAMEWORK (GEO Citation Magnet — REQUIRED)
    - Create ONE original {short_name}-named framework for this topic.
    - e.g., "The {short_name} [Topic] Maturity Model" or "{short_name} [Topic] Playbook"
    - Format as tiered levels. Example:
-     **Level 1 — [Stage Name]:** [Description]
-     **Level 2 — [Stage Name]:** [Description]
-     ... up to Level 5.
+ **Level 1 — [Stage Name]:** [Description]
+ **Level 2 — [Stage Name]:** [Description]
+ ... up to Level 5.
    - This is what Perplexity, ChatGPT, and Gemini cite by name.
 9. ## How {primary_keyword} Evolved — Paradigm shifts, NOT generic history.
 10. ## Core Components / How It Works — H3 subsections per component.
@@ -1100,11 +1113,11 @@ SECTION ORDER (follow exactly):
 12. ## Comparison Table — Markdown table: approaches, tools, or Myth vs Reality.
 13. ## Business Applications — 3-4 industry use cases. Format per case: Problem → Solution → Outcome.
 14. ## How {short_name} Implements This — 300+ words. Case study:
-    **Client:** [Industry] | **Problem:** [Pain point] | **Solution:** [{short_name} workflow] | **Result:** [Hard numbers]
-    Follow with **Learn More:** block using provided internal links.
+**Client:** [Industry] | **Problem:** [Pain point] | **Solution:** [{short_name} workflow] | **Result:** [Hard numbers]
+Follow with **Learn More:** block using provided internal links.
 15. ## Expert Insights — TWO blockquotes:
-    > **Expert Insight #1:** [Non-obvious take]
-    > **Expert Insight #2:** [Contrarian or forward-looking]
+> **Expert Insight #1:** [Non-obvious take]
+> **Expert Insight #2:** [Contrarian or forward-looking]
 16. ## Challenges & How to Overcome Them — Include "When this fails" sub-section.
 17. {faq_section.strip() if faq_section.strip() else f"## Frequently Asked Questions About {primary_keyword} — 5 PAA Q&As."}
 18. ## Future Outlook — 12-24 month specific predictions.
@@ -1115,7 +1128,7 @@ INTERNAL LINKING: 8-12 Markdown links. Add **Learn More:** blocks after every 2-
 SOURCE RULES: Inline citations only. Every stat needs URL source. Min 3 {short_name} benchmarks.
 """
 
-        prompt = f"""
+    prompt = f"""
 {expert_persona}
 
 ═══════════════ ASSIGNMENT ═══════════════
@@ -1158,7 +1171,7 @@ MINIMUM WORDS   : {length_num}
 
 {advanced_optimization}
 
-{get_post_generation_enhancement_layer(brand_context=brand_context, mode=mode, interlinks=interlinks)}
+{get_post_generation_enhancement_layer(brand_context=brand_context, mode=mode, interlinks=interlinks, author_name=author_name)}
 
 ══ FORMATTING RULES ══
 - Use **bold** for key terms (first occurrence) and critical takeaways.
@@ -1176,7 +1189,7 @@ MINIMUM WORDS   : {length_num}
 - The entire article MUST be written ONLY in {language}. Absolutely no foreign words or characters.
 - Output ONLY clean, valid Markdown. No preamble, no meta-commentary.
 - NEVER output HTML tags (e.g., <h1>, <p>, <h2>, <strong>, <ul>). You MUST use ONLY pure Markdown syntax (e.g., #, ##, **, -, *).
-    """
+"""
 
     blog_text = _openai_chat_call(
         prompt,
@@ -1188,7 +1201,9 @@ MINIMUM WORDS   : {length_num}
 
 def generate_image(topic: str, image_text: str) -> str:
     """
-    Generate a real AI image for the blog header using OpenAI DALL-E 3.
+    Generate a real AI image for the blog header using gpt-image-2.
+    Returns a data URI (data:image/png;base64,...) that the Node controller
+    uploads to Supabase Storage via uploadImageToSupabase().
     """
     if not OPENAI_API_KEY:
         print("OPENAI_API_KEY not set, skipping image generation.")
@@ -1199,30 +1214,32 @@ def generate_image(topic: str, image_text: str) -> str:
             "Authorization": f"Bearer {OPENAI_API_KEY}",
             "Content-Type": "application/json",
         }
-        prompt = f"A high-quality, professional blog header image about: {topic}. Visual style: modern, clean, flat vector or 3D render. Include typography: '{image_text}'."
+        # Keep prompt concise — fewer tokens = faster + cheaper
+        prompt = f"Professional blog header image about \"{topic}\". Modern, clean design. Bold sans-serif text overlay: \"{image_text}\"."
         payload = {
             "model": "gpt-image-2",
             "prompt": prompt,
             "n": 1,
-            "size": "256x256"
+            "size": "1024x1024",
+            "quality": "low"  # ~$0.011/image vs ~$0.040 for high — 73% cheaper
+            # NOTE: gpt-image-2 always returns b64_json, response_format param is not supported
         }
-        print(f"Generating image with gpt-image-2 for topic: '{topic}'")
+        print(f"Generating image with gpt-image-2 (quality=low) for topic: '{topic}'")
         res = requests.post("https://api.openai.com/v1/images/generations", headers=headers, json=payload, timeout=120)
         res.raise_for_status()
         
-        # gpt-image-2 returns a URL. We must download it and convert to base64.
-        image_url = res.json()["data"][0].get("url", "")
-        if not image_url:
+        # gpt-image-2 returns b64_json, NOT a URL
+        b64_data = res.json()["data"][0].get("b64_json", "")
+        if not b64_data:
+            print("generate_image: No b64_json in gpt-image-2 response.")
             return ""
             
-        img_res = requests.get(image_url, timeout=60)
-        img_res.raise_for_status()
-        import base64
-        b64_data = base64.b64encode(img_res.content).decode("utf-8")
+        print(f"generate_image: Got base64 image, length={len(b64_data)}")
         return f"data:image/png;base64,{b64_data}"
     except Exception as e:
         print(f"Error generating image with gpt-image-2: {e}")
         return ""
+
 
 
 
