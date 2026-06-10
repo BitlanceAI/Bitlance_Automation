@@ -139,7 +139,7 @@ export const generateAndSaveArticleInternal = async ({
     userId, token, topic, industry, keywords, language, style, length, audience,
     image_option, custom_image_url, wp_url, wp_api_url, interlinks, author_name, author_bio, author_profile_id,
     author_details, category = 'Technology', tags = [], is_published = false,
-    custom_slug, target_table, optimization_mode = 'GEO', skip_notification = false
+    custom_slug, target_table, optimization_mode = 'GEO', skip_notification = false, brand_context_id = null
 }) => {
     const tableName = getTableName(userId, target_table);
 

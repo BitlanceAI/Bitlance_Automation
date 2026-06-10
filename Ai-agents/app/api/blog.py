@@ -44,6 +44,7 @@ class GenerateBlogRequest(BaseModel):
     author_name: Optional[str] = None
     author_image_url: Optional[str] = None
     brand_context_id: Optional[str] = None
+    company_name: Optional[str] = Field(default=None, description="Provide your company name for white-labeled dynamic generation")
 
     model_config = {
         "json_schema_extra": {
@@ -83,24 +84,40 @@ def generate_blog(request: Request, body: GenerateBlogRequest):
     topic = body.topic
     keywords = body.keywords or ""
 
+    auth_type = getattr(request.state, "auth_type", "jwt")
+    user_id = getattr(request.state, "user_id", None)
+
+    # ── 0. Credit Check for API Key Users ─────────────────────────────────────
+    if auth_type == "api_key" and user_id:
+        from app.services.blog_storage_service import validate_credits
+        try:
+            credit_check = validate_credits(user_id, "blog", 1)
+            if not credit_check["hasEnough"]:
+                raise HTTPException(status_code=402, detail="Payment Required: Insufficient credits. Please purchase more credits on your dashboard.")
+        except HTTPException:
+            raise
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"Credit validation failed: {str(e)}")
+
     # Fetch dynamic brand context if possible
     brand_context = None
     try:
-        auth_header = request.headers.get("Authorization")
-        if auth_header and auth_header.startswith("Bearer "):
-            token = auth_header.split(" ")[1]
+        user_id = getattr(request.state, "user_id", None)
+        
+        # If company_name is explicitly passed via API, create an ephemeral brand context
+        if body.company_name:
+            brand_context = {"company_name": body.company_name}
+        # Otherwise, try to fetch the saved brand_context_id from the dashboard DB
+        elif user_id and body.brand_context_id:
             from supabase import create_client
             sup_url = os.getenv("SUPABASE_URL")
             sup_key = os.getenv("SUPABASE_SERVICE_ROLE_KEY") or os.getenv("SUPABASE_KEY")
-            if sup_url and sup_key and body.brand_context_id:
+            if sup_url and sup_key:
                 sup = create_client(sup_url, sup_key)
-                user_resp = sup.auth.get_user(token)
-                if user_resp and user_resp.user:
-                    user_id = user_resp.user.id
-                    ctx_res = sup.table("brand_contexts").select("*").eq("id", body.brand_context_id).eq("user_id", user_id).execute()
-                    if ctx_res.data:
-                        brand_context = ctx_res.data[0]
-                        print(f"Loaded specific brand context for user {user_id}")
+                ctx_res = sup.table("brand_contexts").select("*").eq("id", body.brand_context_id).eq("user_id", user_id).execute()
+                if ctx_res.data:
+                    brand_context = ctx_res.data[0]
+                    print(f"Loaded specific brand context for user {user_id}")
     except Exception as e:
         print(f"Notice: Could not load dynamic brand context: {e}")
 
@@ -185,6 +202,16 @@ def generate_blog(request: Request, body: GenerateBlogRequest):
         print(f"Backlink Intelligence Layer failed: {e}")
         backlink_analysis = None
 
+    # ── 3.6 Enforce 70:30 internal:external link ratio ────────────────────────
+    # Hard cap: max 7 internal, max 3 external — regardless of what AI returned.
+    # If fewer than 7 internals exist, allow up to 4 externals to fill the gap
+    # but never exceed 10 total links or flip the majority to externals.
+    MAX_INTERNAL = 7
+    MAX_EXTERNAL = 3
+    interlinks    = interlinks[:MAX_INTERNAL]
+    external_links = external_links[:MAX_EXTERNAL]
+    print(f"[Link Ratio] Internal: {len(interlinks)} | External: {len(external_links)} (target 7:3)")
+
     # ── 4. Content generation ─────────────────────────────────────────────────
     length_num = LENGTH_MAPPING.get(body.length, 500)
     mode = body.optimization_mode.upper() if body.optimization_mode else "SEO"
@@ -249,6 +276,39 @@ def generate_blog(request: Request, body: GenerateBlogRequest):
         print("Successfully saved blog output to outputs/ directory")
     except Exception as e:
         print(f"Failed to save to outputs directory: {e}")
+
+    # ── 11. Deduct Credits for API Key Users ───────────────────────────────────
+    if auth_type == "api_key" and user_id:
+        from app.services.blog_storage_service import deduct_credits, get_admin_supabase, generate_slug
+        import time, math
+        try:
+            admin_sb = get_admin_supabase()
+            slug = f"{generate_slug(seo_title)}-api-{int(time.time())}"
+            # Save a copy to their dashboard so reference_id exists
+            payload = {
+                "user_id": user_id,
+                "topic": topic,
+                "content": blog_html,
+                "seo_title": seo_title,
+                "slug": slug,
+                "word_count": word_count,
+                "is_published": False,
+                "estimated_read_time": math.ceil(word_count/200)
+            }
+            # Always use 'articles' table for standard users
+            saved = admin_sb.table("articles").insert(payload).select("id").single().execute()
+            
+            if saved.data:
+                deduct_credits(
+                    user_id=user_id,
+                    agent_type="blog",
+                    reference_id=saved.data["id"],
+                    reference_table="articles",
+                    usage_quantity=1,
+                    metadata={"source": "api_key_public", "topic": topic}
+                )
+        except Exception as e:
+            print(f"Failed to deduct credits for API key user {user_id}: {e}")
 
     return result_data
 
