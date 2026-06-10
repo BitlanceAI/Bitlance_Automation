@@ -191,13 +191,13 @@ def generate_blog(request: Request, body: GenerateBlogRequest):
     try:
         content_result = ai.generate_blog_content(
             topic, keywords, body.language, body.audience, body.style,
-            length_num, interlinks, external_links, mode=mode, brand_context=brand_context
+            length_num, interlinks, external_links, mode=mode, brand_context=brand_context, author_name=body.author_name
         )
     except Exception as e:
         print(f"Content gen failed, falling back to OpenAI: {e}")
         content_result = ai.openai_generate_blog_content(
             topic, keywords, body.language, body.audience, body.style,
-            length_num, interlinks, external_links, mode=mode, brand_context=brand_context
+            length_num, interlinks, external_links, mode=mode, brand_context=brand_context, author_name=body.author_name
         )
 
     blog_text = content_result["blogText"]

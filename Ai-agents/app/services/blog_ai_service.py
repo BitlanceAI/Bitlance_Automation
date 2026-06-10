@@ -43,7 +43,7 @@ except Exception as _serp_import_err:  # pragma: no cover
 PERPLEXITY_BASE_URL = "https://api.perplexity.ai/chat/completions"
 OPENAI_CHAT_URL     = "https://api.openai.com/v1/chat/completions"
 
-def get_post_generation_enhancement_layer(brand_context=None):
+def get_post_generation_enhancement_layer(brand_context=None, author_name=None):
     if not brand_context:
         brand_context = {
             "company_name": "Bitlance Automation (Bitlance Tech Hub)",
@@ -158,7 +158,7 @@ OR
 11. AUTHOR BYLINE (EEAT REQUIREMENT)
 At the very bottom of the article, you MUST append this exact author box, replacing the company name:
 ***
-**Author:** Rahul Saini  
+**Author:** {author_name or 'Rahul Saini'}  
 **Reviewed By:** {brand_context.get('company_name', 'Bitlance Automation')} Team  
 **Last Updated:** June 2026  
 ***
@@ -332,6 +332,7 @@ def generate_blog_content(
     max_attempts: int = 1,
     mode: str = "SEO",
     brand_context: dict = None,
+    author_name: str = None,
 ) -> dict:
     """
     Generate full blog content using Perplexity sonar-pro.
@@ -601,7 +602,7 @@ MINIMUM WORDS   : {length_num}
 {interlink_instructions}
 {external_link_instructions}
 
-{get_post_generation_enhancement_layer(brand_context=brand_context)}
+{get_post_generation_enhancement_layer(brand_context=brand_context, author_name=author_name)}
 
 ══ FORMATTING RULES ══
 - Use **bold** for key terms (first occurrence) and critical takeaways.
@@ -871,6 +872,7 @@ def openai_generate_blog_content(
     external_links: Optional[list] = None,
     mode: str = "SEO",
     brand_context: dict = None,
+    author_name: str = None,
 ) -> dict:
     """Fallback blog content generation via OpenAI GPT-4o."""
     interlinks = interlinks or []
@@ -1150,7 +1152,7 @@ MINIMUM WORDS   : {length_num}
 
 {advanced_optimization}
 
-{get_post_generation_enhancement_layer(brand_context=brand_context)}
+{get_post_generation_enhancement_layer(brand_context=brand_context, author_name=author_name)}
 
 ══ FORMATTING RULES ══
 - Use **bold** for key terms (first occurrence) and critical takeaways.
