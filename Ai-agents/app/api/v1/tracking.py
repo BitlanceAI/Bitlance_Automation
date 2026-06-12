@@ -3,7 +3,7 @@ import requests
 from typing import List
 from fastapi import APIRouter, Depends, HTTPException, Request
 from pydantic import BaseModel
-from app.api.auth_middleware import require_auth
+
 from app.api.v1.schemas import AddTrackedKeywordRequest, TrackedKeywordResponse, AIVisibilityCheckRequest, AIVisibilityResponse
 from supabase import create_client
 

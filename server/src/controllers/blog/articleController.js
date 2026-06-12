@@ -223,9 +223,10 @@ export const generateAndSaveArticleInternal = async ({
     // ── 5. Deduct credits ─────────────────────────────────────────────────────
     let ledgerResult = {};
     try {
+        const agentTypeForCost = optimization_mode?.toUpperCase() === 'GEO' ? 'geo_blog_dashboard' : 'seo_blog';
         ledgerResult = await CreditLedgerService.deductCreditsWithLedger({
             userId,
-            agentType: 'blog',
+            agentType: agentTypeForCost,
             referenceId: savedArticle.id,
             referenceTable: 'articles', // Force to 'articles' to satisfy DB constraint
             usageQuantity: 1,
@@ -277,7 +278,9 @@ export const generateArticle = async (req, res) => {
 
     // ── 1. Credit pre-flight ──────────────────────────────────────────────────
     try {
-        const check = await CreditLedgerService.validateCreditsAvailable(userId, 'blog', 1);
+        const optMode = req.body.optimization_mode?.toUpperCase() === 'GEO' ? 'GEO' : 'SEO';
+        const agentTypeForCost = optMode === 'GEO' ? 'geo_blog_dashboard' : 'seo_blog';
+        const check = await CreditLedgerService.validateCreditsAvailable(userId, agentTypeForCost, 1);
         if (!check.hasEnough) {
             return res.status(402).json({
                 success: false,
@@ -358,7 +361,9 @@ export const bulkGenerateArticles = async (req, res) => {
         }
 
         // Credit check for bulk
-        const check = await CreditLedgerService.validateCreditsAvailable(userId, 'blog', rows.length);
+        // Assume mixed bulk will average out, or we can just use seo_blog cost as baseline.
+        // Since bulk doesn't explicitly have optimization_mode per row easily, we'll use 'seo_blog'.
+        const check = await CreditLedgerService.validateCreditsAvailable(userId, 'seo_blog', rows.length);
         if (!check.hasEnough) {
             return res.status(402).json({
                 success: false,
@@ -543,7 +548,6 @@ export const deleteArticle = async (req, res) => {
     res.json({ success: true, message: 'Deleted' });
 };
 
-// Public endpoints (no auth needed)
 export const publicListBlogs = async (req, res) => {
     if (!supabaseAdmin) {
         console.error('publicListBlogs: supabaseAdmin is null — SUPABASE_SERVICE_ROLE_KEY is missing from .env');
@@ -554,28 +558,46 @@ export const publicListBlogs = async (req, res) => {
     const offset = (parseInt(page) - 1) * parseInt(limit);
 
     try {
-        const { data, error, count } = await supabaseAdmin
-            .from('company_articles')
-            .select('id, topic, seo_title, seo_description, image_url, featured_image, slug, category, tags, author_name, publish_date, created_at, estimated_read_time, word_count, optimization_mode', { count: 'exact' })
-            .eq('is_published', true)
-            .order(sort, { ascending: order === 'asc' })
-            .range(offset, offset + parseInt(limit) - 1);
+        const selectFields = 'id, topic, seo_title, seo_description, image_url, featured_image, slug, category, tags, author_name, publish_date, created_at, estimated_read_time, word_count, optimization_mode';
 
-        if (error) {
-            const isConnectivity = error.message?.includes('fetch') || error.message?.includes('ECONNREFUSED') || error.message?.includes('timeout');
-            console.error('publicListBlogs Supabase error:', error.message);
-            return res.status(isConnectivity ? 503 : 500).json({
-                success: false,
-                error: isConnectivity
-                    ? 'Database temporarily unavailable — Supabase project may be paused. Visit supabase.com/dashboard to restore it.'
-                    : error.message
-            });
+        // Fetch from company_articles and client articles in parallel
+        const [companyRes, clientRes] = await Promise.all([
+            supabaseAdmin.from('company_articles').select(selectFields).eq('is_published', true),
+            supabaseAdmin.from('articles').select(selectFields).eq('is_published', true)
+        ]);
+
+        if (companyRes.error) {
+            console.error('publicListBlogs company error:', companyRes.error.message);
+        }
+        if (clientRes.error) {
+            console.error('publicListBlogs client error:', clientRes.error.message);
         }
 
+        let combined = [];
+        if (companyRes.data) combined.push(...companyRes.data);
+        if (clientRes.data) combined.push(...clientRes.data);
+
+        // Sort combined array
+        combined.sort((a, b) => {
+            const dateA = new Date(a[sort] || a.created_at);
+            const dateB = new Date(b[sort] || b.created_at);
+            return order === 'asc' ? dateA - dateB : dateB - dateA;
+        });
+
+        const count = combined.length;
         const totalPages = Math.ceil(count / parseInt(limit));
+        const paginatedData = combined.slice(offset, offset + parseInt(limit));
+
         res.json({
-            success: true, articles: data,
-            pagination: { currentPage: parseInt(page), totalPages, hasNextPage: parseInt(page) < totalPages, hasPrevPage: parseInt(page) > 1, total: count }
+            success: true,
+            articles: paginatedData,
+            pagination: {
+                currentPage: parseInt(page),
+                totalPages,
+                hasNextPage: parseInt(page) < totalPages,
+                hasPrevPage: parseInt(page) > 1,
+                total: count
+            }
         });
     } catch (err) {
         console.error('publicListBlogs unexpected error:', err.message);

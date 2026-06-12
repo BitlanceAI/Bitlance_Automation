@@ -64,3 +64,174 @@ def get_analytics_overview(user_id: str = Depends(require_admin)):
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# API KEY MANAGEMENT
+# ─────────────────────────────────────────────────────────────────────────────
+
+import secrets
+import string
+from typing import Optional
+from pydantic import BaseModel
+
+VALID_PLANS = {"starter", "growth", "agency", "enterprise"}
+
+class CreateAPIKeyRequest(BaseModel):
+    """
+    Provide either `client_email` (Bitlance looks up the user) or `user_id` directly.
+    `label` is a human-readable name, e.g. 'Lotlite Edu - Growth Plan'.
+    `expires_at` is an ISO 8601 datetime string or null for no expiry.
+    """
+    client_email: Optional[str] = None
+    user_id: Optional[str] = None
+    plan: str = "starter"
+    label: Optional[str] = None
+    expires_at: Optional[str] = None
+
+class RevokeAPIKeyRequest(BaseModel):
+    api_key: Optional[str] = None   # full sk_live_* string
+    key_id: Optional[str] = None    # UUID from the list endpoint
+
+def _generate_key() -> str:
+    """Generate a secure API key in the same format as create_api_key.py CLI script."""
+    alphabet = string.ascii_letters + string.digits
+    random_str = "".join(secrets.choice(alphabet) for _ in range(48))
+    return f"sk_live_{random_str}"
+
+def _resolve_user_id(sb, client_email: Optional[str], user_id: Optional[str]) -> str:
+    """Resolve to a Supabase user_id from either an email lookup or a direct UUID."""
+    if user_id:
+        return user_id
+
+    if not client_email:
+        raise HTTPException(
+            status_code=400,
+            detail="Provide either 'client_email' or 'user_id'."
+        )
+
+    # Look up via Supabase Admin Auth
+    try:
+        users_resp = sb.auth.admin.list_users()
+        for u in users_resp:
+            if u.email and u.email.lower() == client_email.lower():
+                return u.id
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to look up users: {e}")
+
+    raise HTTPException(
+        status_code=404,
+        detail=f"No Supabase user found with email '{client_email}'. Create their account first."
+    )
+
+
+@router.post("/api-keys/create", summary="Provision API Key for a Client")
+def create_api_key(
+    body: CreateAPIKeyRequest,
+    user_id: str = Depends(require_admin)
+):
+    """
+    Generate a new `sk_live_*` API key and store it in the `api_keys` table.
+
+    - Pass `client_email` to auto-resolve the Supabase user (same as create_api_key.py CLI).
+    - Or pass `user_id` directly if you already have it.
+    - Plans: **starter** (10/min) | **growth** (30/min) | **agency** (60/min) | **enterprise** (120/min)
+
+    Returns the plain-text key — store it safely, it is not retrievable again.
+    """
+    if body.plan not in VALID_PLANS:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Invalid plan '{body.plan}'. Choose from: {sorted(VALID_PLANS)}"
+        )
+
+    sb = get_admin_supabase()
+    target_user_id = _resolve_user_id(sb, body.client_email, body.user_id)
+    new_key = _generate_key()
+
+    try:
+        result = sb.table("api_keys").insert({
+            "user_id": target_user_id,
+            "api_key": new_key,
+            "plan": body.plan,
+            "status": "active",
+            "label": body.label,
+            "expires_at": body.expires_at,
+        }).execute()
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to save API key: {e}")
+
+    if not result.data:
+        raise HTTPException(status_code=500, detail="Key insert returned no data.")
+
+    rate_limits = {"starter": 10, "growth": 30, "agency": 60, "enterprise": 120}
+    return {
+        "success": True,
+        "api_key": new_key,
+        "user_id": target_user_id,
+        "plan": body.plan,
+        "rate_limit": f"{rate_limits[body.plan]} requests/min",
+        "label": body.label,
+        "expires_at": body.expires_at,
+        "message": (
+            f"Key provisioned successfully. "
+            f"Send to client in Authorization header: 'Bearer {new_key}'"
+        )
+    }
+
+
+@router.get("/api-keys/list", summary="List All Provisioned API Keys")
+def list_api_keys(user_id: str = Depends(require_admin)):
+    """
+    Return all API keys in the system — useful to see which clients are active,
+    their plans, and when their keys expire.
+    The actual key value is masked (only the prefix is shown).
+    """
+    sb = get_admin_supabase()
+    try:
+        result = sb.table("api_keys").select(
+            "id, user_id, plan, status, label, expires_at, created_at"
+        ).order("created_at", desc=True).execute()
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+    return {
+        "success": True,
+        "total": len(result.data or []),
+        "keys": result.data or []
+    }
+
+
+@router.post("/api-keys/revoke", summary="Revoke a Client's API Key")
+def revoke_api_key(
+    body: RevokeAPIKeyRequest,
+    user_id: str = Depends(require_admin)
+):
+    """
+    Set the key's status to 'revoked'. The client will immediately receive 403 errors.
+    Pass either the full `sk_live_*` key string as `api_key`, or the row UUID as `key_id`.
+    """
+    if not body.api_key and not body.key_id:
+        raise HTTPException(status_code=400, detail="Provide either 'api_key' or 'key_id'.")
+
+    sb = get_admin_supabase()
+    try:
+        query = sb.table("api_keys").update({"status": "revoked"})
+        if body.key_id:
+            query = query.eq("id", body.key_id)
+        else:
+            query = query.eq("api_key", body.api_key)
+        result = query.execute()
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+    if not result.data:
+        raise HTTPException(status_code=404, detail="API key not found.")
+
+    revoked_key = result.data[0]
+    return {
+        "success": True,
+        "message": "Key revoked. Client access is now blocked.",
+        "revoked_key_id": revoked_key.get("id"),
+        "revoked_key_prefix": (body.api_key or "")[:16] + "..." if body.api_key else revoked_key.get("id")
+    }

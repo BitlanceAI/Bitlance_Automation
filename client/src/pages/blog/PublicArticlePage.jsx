@@ -286,12 +286,12 @@ const PublicArticlePage = () => {
                     </div>
 
                     {article.image_url && (
-                        <div className="w-full mt-10 mb-6 overflow-hidden border border-gray-200" style={{ borderRadius: 2 }}>
+                        <div className="w-full max-w-5xl mx-auto mt-10 mb-6 overflow-hidden rounded-[2px] shadow-sm border border-gray-200">
                             <img
                                 src={article.image_url}
                                 alt={article.seo_title || article.topic}
-                                className="w-full h-[420px] md:h-[520px] object-cover"
-                                onError={(e) => e.target.style.display = 'none'}
+                                className="w-full h-[350px] md:h-[450px] object-cover object-center"
+                                onError={(e) => e.target.parentElement.style.display = 'none'}
                             />
                         </div>
                     )}

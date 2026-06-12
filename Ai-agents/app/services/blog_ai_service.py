@@ -136,7 +136,7 @@ BRAND: {brand_context.get('company_name','Bitlance')} | Services: {brand_context
 
 [F] AUTHOR BYLINE (end of article — before Related Guides)
 ---
-**Author:** {author_name or 'Industry Expert'} | **Reviewed By:** {brand_context.get('company_name','Bitlance Automation')} Team | **Last Updated:** June 2026
+**Author:** {author_name or (brand_context.get('company_name','Bitlance') + ' Editorial Team')} | **Reviewed By:** {brand_context.get('company_name','Bitlance Automation')} Team | **Last Updated:** June 2026
 ---
 
 ⚠️ QUALITY GATE: If missing 5+ entities OR 3+ citations OR stats block{faq_rule}, append: `SEO_AUDIT_REQUIRED = TRUE`
@@ -526,6 +526,15 @@ KEY RULES:
 - Use semantic keyword variants throughout. Primary keyword density: 0.8–1.5%.
 - Cite authoritatively inline: "According to Gartner...", "McKinsey reports..."
 - Bold primary keyword on FIRST body occurrence only.
+
+SUBHEADING QUALITY RULES (H2 & H3) — CRITICAL:
+- H2 subheadings MUST be informative, benefit-driven, and specific. NEVER generic.
+  ✗ BAD: "Introduction", "Overview", "Details", "More Information"
+  ✓ GOOD: "Why {primary_keyword} Cuts Operational Costs by 40% in 2026"
+- H3 subheadings must add distinct, specific value under each H2. No filler.
+- Use power words: "Proven", "Step-by-Step", "Complete", "2026", "How to", "Why", "Ultimate".
+- Each H2/H3 must make the reader think "I need to read this section."
+- Avoid repeating the exact H1 keyword phrase in every subheading — use semantic variants.
 """
         else:
             mandatory_structure = f"""
@@ -587,6 +596,15 @@ SECTION ORDER (follow exactly):
 18. ## Future Outlook — Predictions. What changes in 12-24 months. Specific, not vague.
 19. ## Key Takeaways — 5 concise bullets.
 20. ## Conclusion — 80-120 words + natural CTA.
+
+SUBHEADING QUALITY RULES (H2 & H3) — CRITICAL FOR GEO CITATIONS:
+- H2 subheadings MUST be precise, informative, and AI-citation-ready. LLMs quote specific, named sections.
+  ✗ BAD: "Introduction", "Overview", "How It Works", "Details"
+  ✓ GOOD: "The 5 Paradigm Shifts That Redefined {primary_keyword} in 2026"
+- H3 subheadings must be granular, topic-specific, and self-explanatory when extracted out of context.
+- Use concrete language: numbers, outcomes, named concepts, year references.
+- Each H2 must function as a standalone, citable knowledge unit when extracted by an AI engine.
+- Avoid vague H2s — if a heading could apply to ANY article, rewrite it to be specific to THIS topic.
 
 INTERNAL LINKING RULES (CRITICAL — violations = rejection):
 - Target: 8-12 Markdown hyperlinks embedded naturally throughout the article.
@@ -1073,6 +1091,15 @@ SEO ARTICLE STRUCTURE (follow in order — SEO=70%, GEO=30%):
 16. ## Final Thoughts — 80-120 words, 3 takeaways, natural CTA.
 
 RULES: No AI Overview/Fact Box at top. Semantic variants. Inline citations only.
+
+SUBHEADING QUALITY RULES (H2 & H3) — CRITICAL:
+- H2 subheadings MUST be informative, benefit-driven, and specific. NEVER generic.
+  ✗ BAD: "Introduction", "Overview", "Details", "More Information"
+  ✓ GOOD: "Why {primary_keyword} Cuts Operational Costs by 40% in 2026"
+- H3 subheadings must add distinct, specific value under each H2. No filler.
+- Use power words: "Proven", "Step-by-Step", "Complete", "2026", "How to", "Why", "Ultimate".
+- Each H2/H3 must make the reader think "I need to read this section."
+- Avoid repeating the exact H1 keyword phrase in every subheading — use semantic variants.
 """
     else:
         mandatory_structure = f"""
@@ -1123,6 +1150,15 @@ Follow with **Learn More:** block using provided internal links.
 18. ## Future Outlook — 12-24 month specific predictions.
 19. ## Key Takeaways — 5 concise bullets.
 20. ## Conclusion — 80-120 words + natural CTA.
+
+SUBHEADING QUALITY RULES (H2 & H3) — CRITICAL FOR GEO CITATIONS:
+- H2 subheadings MUST be precise, informative, and AI-citation-ready. LLMs quote specific, named sections.
+  ✗ BAD: "Introduction", "Overview", "How It Works", "Details"
+  ✓ GOOD: "The 5 Paradigm Shifts That Redefined {primary_keyword} in 2026"
+- H3 subheadings must be granular, topic-specific, and self-explanatory when extracted out of context.
+- Use concrete language: numbers, outcomes, named concepts, year references.
+- Each H2 must function as a standalone, citable knowledge unit when extracted by an AI engine.
+- Avoid vague H2s — if a heading could apply to ANY article, rewrite it to be specific to THIS topic.
 
 INTERNAL LINKING: 8-12 Markdown links. Add **Learn More:** blocks after every 2-3 H2s. ONLY use provided URLs. NEVER invent links.
 SOURCE RULES: Inline citations only. Every stat needs URL source. Min 3 {short_name} benchmarks.
@@ -1214,8 +1250,10 @@ def generate_image(topic: str, image_text: str) -> str:
             "Authorization": f"Bearer {OPENAI_API_KEY}",
             "Content-Type": "application/json",
         }
+        # Keep image_text to max 3 words to prevent text overflow/clipping in the image
+        safe_image_text = ' '.join(image_text.split()[:3])
         # Keep prompt concise — fewer tokens = faster + cheaper
-        prompt = f"Professional blog header image about \"{topic}\". Modern, clean design. Bold sans-serif text overlay: \"{image_text}\"."
+        prompt = f"Professional blog header image for the topic \"{topic}\". Modern, clean, minimal design with a wide open area for text. Large bold sans-serif white text centered in the image: \"{safe_image_text}\". Ensure all text is fully visible and not cropped. No extra text or logos."
         payload = {
             "model": "gpt-image-2",
             "prompt": prompt,
