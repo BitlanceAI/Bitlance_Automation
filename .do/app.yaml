@@ -1,0 +1,78 @@
+name: bitlance-automation
+region: sgp   # Singapore — closest to India
+
+services:
+
+  # ─── Node.js Express Backend ───────────────────────────────────────────────
+  - name: bitlance-backend
+    source_dir: /server
+    dockerfile_path: server/Dockerfile
+    github:
+      repo: codexuttam/Bitlance_Automation
+      branch: main
+      deploy_on_push: true
+    instance_count: 1
+    instance_size_slug: professional-xs   # 1 vCPU, 512MB RAM
+    http_port: 3001
+    health_check:
+      http_path: /health
+    envs:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: "3001"
+      - key: PYTHON_API_URL
+        value: ${bitlance-ai-agent.PRIVATE_URL}   # internal service URL
+      - key: GRAPHIC_AGENT_URL
+        value: ${bitlance-ai-agent.PRIVATE_URL}
+      # ── Add your real secrets below ──
+      - key: SUPABASE_URL
+        value: "REPLACE_WITH_YOUR_VALUE"
+        type: SECRET
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        value: "REPLACE_WITH_YOUR_VALUE"
+        type: SECRET
+      - key: OPENAI_API_KEY
+        value: "REPLACE_WITH_YOUR_VALUE"
+        type: SECRET
+      - key: PERPLEXITY_API_KEY
+        value: "REPLACE_WITH_YOUR_VALUE"
+        type: SECRET
+
+  # ─── Python FastAPI AI Agent ────────────────────────────────────────────────
+  - name: bitlance-ai-agent
+    source_dir: /Ai-agents
+    dockerfile_path: Ai-agents/Dockerfile
+    github:
+      repo: BitlanceAI/Bitlance_Automation
+      branch: uttam
+      deploy_on_push: true
+    instance_count: 1
+    instance_size_slug: professional-s    # 1 vCPU, 1GB RAM (AI needs more)
+    http_port: 8000
+    health_check:
+      http_path: /
+    envs:
+      - key: PORT
+        value: "8000"
+      - key: OPENAI_API_KEY
+        value: "REPLACE_WITH_YOUR_VALUE"
+        type: SECRET
+      - key: PERPLEXITY_API_KEY
+        value: "REPLACE_WITH_YOUR_VALUE"
+        type: SECRET
+      - key: GEMINI_API_KEY
+        value: "REPLACE_WITH_YOUR_VALUE"
+        type: SECRET
+      - key: SERP_API_KEY
+        value: "REPLACE_WITH_YOUR_VALUE"
+        type: SECRET
+      - key: SUPABASE_URL
+        value: "REPLACE_WITH_YOUR_VALUE"
+        type: SECRET
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        value: "REPLACE_WITH_YOUR_VALUE"
+        type: SECRET
+      - key: SUPABASE_KEY
+        value: "REPLACE_WITH_YOUR_VALUE"
+        type: SECRET

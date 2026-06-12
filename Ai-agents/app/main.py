@@ -1,7 +1,16 @@
 import os
 import logging
+from pathlib import Path
+from dotenv import load_dotenv
 
-from fastapi import FastAPI
+# Load main .env file from the Ai-agents directory
+env_path = Path(__file__).resolve().parent.parent / ".env"
+load_dotenv(dotenv_path=env_path)
+
+from fastapi import FastAPI, Request
+from fastapi.responses import JSONResponse
+from fastapi.openapi.docs import get_swagger_ui_html
+from fastapi.openapi.utils import get_openapi
 from fastapi.middleware.cors import CORSMiddleware
 
 # ==================================================
@@ -34,15 +43,13 @@ app = FastAPI(
     title="Bitlance SEO/GEO API",
     description="Enterprise-grade Generative Engine Optimization (GEO) and SEO content generation platform.",
     version="1.0.0",
-    docs_url="/docs",
-    redoc_url="/redoc"
+    docs_url=None,
+    openapi_url=None,
+    redoc_url=None
 )
 
-from fastapi.openapi.utils import get_openapi
-
-def custom_openapi():
-    if app.openapi_schema:
-        return app.openapi_schema
+@app.get("/openapi.json", include_in_schema=False)
+def custom_openapi(req: Request):
     openapi_schema = get_openapi(
         title="Bitlance SEO/GEO API",
         version="1.0.0",
@@ -72,37 +79,60 @@ Rate limits are enforced strictly based on your plan:
         routes=app.routes,
     )
     
-    # Add Bearer Auth to Swagger UI
-    openapi_schema["components"]["securitySchemes"] = {
-        "BearerAuth": {
-            "type": "http",
-            "scheme": "bearer",
-            "bearerFormat": "JWT",
-            "description": "Enter your Bitlance API Key."
-        }
+    if "components" not in openapi_schema:
+        openapi_schema["components"] = {}
+    if "securitySchemes" not in openapi_schema["components"]:
+        openapi_schema["components"]["securitySchemes"] = {}
+        
+    openapi_schema["components"]["securitySchemes"]["BearerAuth"] = {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "description": "Enter your Bitlance API Key."
     }
     
-    # Apply security globally to all paths except the root health check
     for path in openapi_schema.get("paths", {}):
         if path not in ["/", "/api/blog/generate"]:
             for method in openapi_schema["paths"][path]:
                 openapi_schema["paths"][path][method]["security"] = [{"BearerAuth": []}]
+
+    # Hide Admin and internal endpoints from public Swagger unless universal key is provided
+    dev_key = req.query_params.get("key")
+    if dev_key != "bitlance":
+        paths_to_remove = []
+        for path in openapi_schema["paths"]:
+            methods_to_remove = []
+            for method in openapi_schema["paths"][path]:
+                tags = openapi_schema["paths"][path][method].get("tags", [])
+                if any(t in tags for t in ["Admin", "Admin API", "Tracking & Visibility", "Tracking API"]) or path.startswith("/api/v1/admin") or path.startswith("/api/geo-tracker") or path.startswith("/api/blog"):
+                    methods_to_remove.append(method)
+            for m in methods_to_remove:
+                del openapi_schema["paths"][path][m]
+            if not openapi_schema["paths"][path]:
+                paths_to_remove.append(path)
                 
-    app.openapi_schema = openapi_schema
-    return app.openapi_schema
+        for p in paths_to_remove:
+            del openapi_schema["paths"][p]
+            
+    return JSONResponse(openapi_schema)
 
-app.openapi = custom_openapi
-
-from app.api.auth_middleware import APIKeyAuthMiddleware
-
-# Add API Key Authentication Middleware first (so it's an inner layer compared to CORS)
-app.add_middleware(APIKeyAuthMiddleware)
+@app.get("/docs", include_in_schema=False)
+def custom_swagger_ui_html(req: Request):
+    key = req.query_params.get("key", "")
+    openapi_url = f"/openapi.json?key={key}" if key else "/openapi.json"
+    return get_swagger_ui_html(
+        openapi_url=openapi_url,
+        title="Bitlance SEO/GEO API Docs",
+    )
 
 # ==================================================
 # CORS (frontend access)
 # ==================================================
 
-# CORSMiddleware must be added last so it becomes the outermost layer
+from app.api.auth_middleware import APIKeyAuthMiddleware
+
+app.add_middleware(APIKeyAuthMiddleware)
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],          # restrict later in prod
