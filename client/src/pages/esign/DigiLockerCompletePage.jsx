@@ -167,7 +167,7 @@ export default function DigiLockerCompletePage() {
                                 {[
                                     ['Name', savedFields.name || '—'],
                                     ['Identity', 'DigiLocker · Aadhaar ✓'],
-                                    ['Plan', `SEO AI Agent — ${planName}`],
+                                    ['Plan', `GEO (Generative) AI Agent — ${planName}`],
                                     ['Amount', `₹${planAmount.toLocaleString('en-IN')}`],
                                 ].map(([k, v]) => (
                                     <div key={k} className="flex justify-between gap-4">

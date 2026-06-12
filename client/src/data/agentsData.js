@@ -7,23 +7,35 @@ import {
   Shield,
   Palette,
   MessageCircle,
-  MessageSquare
+  MessageSquare,
+  Globe
 } from 'lucide-react';
 
 export const agents = [
   {
     icon: Brain,
-    title: "SEO AI Agent",
+    title: "GEO (Generative) AI Agent",
     description: "Automates keyword research and content optimization.",
     features: [
       "Automated keyword research",
       "Content optimization",
       "SERP monitoring",
+      "GEO audits"
+    ],
+    status: "Available"
+  },
+  {
+    icon: Globe,
+    title: "SEO (Search Engine) AI Agent",
+    description: "Automates blog generation and content scaling on Google Search Engines.",
+    features: [
+      "Automated keyword research",
+      "Search Engine Optimization",
+      "Dynamic HTML rendering",
       "SEO audits"
     ],
     status: "Available"
   },
-
   {
     icon: Palette,
     title: "Graphic Designer AI",
@@ -74,7 +86,31 @@ export const agents = [
     ],
     status: "Coming Soon"
   },
+  {
+    icon: Target,
+    title: "Email Automation AI",
+    description: "AI-powered personalized bulk emailing to targeted audiences, extracting contacts based on genre.",
+    features: [
+      "Targeted lead scraping",
+      "AI personalized copy",
+      "Bulk dispatching",
+      "Auto-reply handling"
+    ],
+    status: "Available"
+  },
 
+  {
+    icon: Video,
+    title: "Real Estate Reel AI Agent",
+    description: "Convert a reference YouTube video style and property details into a cinematic real estate reel with an AI avatar presenter.",
+    features: [
+      "YouTube style analysis",
+      "AI script generation",
+      "Voice & avatar synthesis",
+      "Cinematic scene matching"
+    ],
+    status: "Available"
+  },
   {
     icon: Video,
     title: "UGC Video AI Agent",

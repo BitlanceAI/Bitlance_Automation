@@ -538,7 +538,7 @@ const AdminAutoBlog = () => {
                                 🔗 Website URL for Interlinking
                             </h4>
                             <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
-                                The AI will automatically link to recent blog posts from this site to boost SEO.
+                                The AI will automatically link to recent blog posts from this site to boost GEO.
                             </p>
                             <input
                                 type="url"

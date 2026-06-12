@@ -23,10 +23,27 @@ function avgWordsPerSentence(text) {
 
 function keywordDensity(text, keyword) {
     if (!keyword || !text) return 0;
-    const kw = keyword.toLowerCase();
-    const words = text.toLowerCase().split(/\s+/).filter(Boolean);
-    const matches = words.filter(w => w.includes(kw)).length;
-    return words.length ? ((matches / words.length) * 100) : 0;
+    
+    // Normalize text and keyword: lowercase, remove punctuation, collapse spaces
+    const normalize = (str) => str.toLowerCase().replace(/[.,/#!$%^&*;:{}=\-_`~()?"']/g, "").replace(/\s{2,}/g, " ").trim();
+    
+    const normalizedText = normalize(text);
+    const normalizedKeyword = normalize(keyword);
+    
+    if (!normalizedKeyword) return 0;
+
+    const totalWords = normalizedText.split(' ').filter(Boolean).length;
+    const keywordWordCount = normalizedKeyword.split(' ').filter(Boolean).length;
+    
+    // Count occurrences of the full phrase in the normalized text
+    // Pad with spaces to ensure we match whole words only, avoiding partial matches
+    const textWithSpaces = ` ${normalizedText} `;
+    const keywordWithSpaces = ` ${normalizedKeyword} `;
+    
+    const occurrences = textWithSpaces.split(keywordWithSpaces).length - 1;
+    const matchedWordsCount = occurrences * keywordWordCount;
+    
+    return totalWords ? ((matchedWordsCount / totalWords) * 100) : 0;
 }
 
 function computeSeoScore(formData) {
@@ -49,7 +66,7 @@ function computeSeoScore(formData) {
             earned: titleLen >= 50 && titleLen <= 60 ? 15 : titleLen >= 30 ? 8 : 0,
         },
         {
-            label: 'SEO title set',
+            label: 'SEO / GEO title set',
             pass: seoTitleLen >= 10,
             warn: false,
             detail: seoTitleLen ? `${seoTitleLen} chars` : 'Missing',
@@ -126,7 +143,7 @@ function SeoScorePanel({ formData }) {
         <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm p-6 border border-gray-100 dark:border-slate-700">
             <h2 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white flex items-center gap-2">
                 <BarChart2 className="w-5 h-5" />
-                SEO Score
+                SEO / GEO Score
             </h2>
 
             {/* Score ring */}
@@ -326,7 +343,7 @@ const BlogEditorPage = () => {
     return (
         <div className="min-h-screen bg-gray-50 dark:bg-slate-900 pb-12">
             <Navbar />
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-28 pb-10">
                 <div className="flex items-center gap-4 mb-8">
                     <Link to="/blog-manager" className="p-2 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-lg text-gray-500">
                         <ArrowLeft className="w-5 h-5" />
@@ -392,15 +409,15 @@ const BlogEditorPage = () => {
                             </div>
                         </div>
 
-                        {/* SEO Settings */}
+                        {/* GEO Settings */}
                         <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm p-6 border border-gray-100 dark:border-slate-700">
                             <h2 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white flex items-center gap-2">
                                 <FileText className="w-5 h-5" />
-                                SEO Metadata
+                                SEO / GEO Metadata
                             </h2>
                             <div className="space-y-4">
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">SEO Title</label>
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">SEO / GEO Title</label>
                                     <input
                                         type="text"
                                         name="seo_title"
@@ -425,7 +442,7 @@ const BlogEditorPage = () => {
 
                     {/* Sidebar */}
                     <div className="space-y-6">
-                        {/* SEO Score Panel */}
+                        {/* GEO Score Panel */}
                         <SeoScorePanel formData={formData} />
 
                         {/* Admin Options */}

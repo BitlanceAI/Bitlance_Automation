@@ -16,7 +16,8 @@ class BlogService {
                 style: articleData.style,
                 length: articleData.length,
                 audience: articleData.audience,
-                user_id: articleData.userId || 'anonymous'
+                user_id: articleData.userId || 'anonymous',
+                optimization_mode: articleData.optimization_mode || 'GEO'
             };
 
             const { data, error } = await supabase
@@ -74,7 +75,8 @@ class BlogService {
                 audience: article.audience,
                 userId: article.user_id,
                 createdAt: article.created_at,
-                updatedAt: article.updated_at
+                updatedAt: article.updated_at,
+                optimization_mode: article.optimization_mode
             }));
 
             console.log('BlogService: Fetched', articles.length, 'articles');

@@ -39,11 +39,11 @@ export default function Footer() {
               </div>
               <div>
                 <span className="text-white font-bold">Bitlance</span>
-                <span className="text-brand font-bold"> SEO AI Agent</span>
+                <span className="text-brand font-bold"> GEO (Generative) AI Agent</span>
               </div>
             </a>
             <p className="text-white/40 text-sm leading-relaxed max-w-xs">
-              AI-powered SEO content generation and auto-publishing. Rank higher, drive traffic, and grow your business — on autopilot.
+              AI-powered GEO content generation and auto-publishing. Rank higher, drive traffic, and grow your business — on autopilot.
             </p>
             <div className="flex gap-3 mt-5">
               {[

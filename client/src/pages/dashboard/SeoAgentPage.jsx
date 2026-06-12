@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { supabase } from '../../services/supabaseClient';
 import {
@@ -34,6 +34,7 @@ import API_BASE_URL from '../../config.js';
 import SeoAgentTour from '../../components/seo/SeoAgentTour';
 import ProfileSelection from '../../components/dashboard/ProfileSelection';
 import WordPressProfileSelection from '../../components/dashboard/WordPressProfileSelection';
+import BrandProfileSelection from '../../components/dashboard/BrandProfileSelection';
 
 // Panel components for tabs
 import PushNotificationPanel from '../../components/seo/PushNotificationPanel';
@@ -42,9 +43,11 @@ import BlogManagerPanel from '../../components/seo/BlogManagerPanel';
 import SEOHead from '../../components/layout/SEOHead';
 import WpAutoQueuePanel from '../../components/seo/WpAutoQueuePanel';
 import RankTrackerPanel from '../../components/seo/RankTrackerPanel';
+import GeoRankTrackerPanel from '../../components/seo/GeoRankTrackerPanel';
 
 const SeoAgentPage = () => {
     const navigate = useNavigate();
+    const location = useLocation();
     const { user, credits, isAdmin, refreshCredits } = useAuth();
 
     // Tour state
@@ -53,15 +56,19 @@ const SeoAgentPage = () => {
     // Tab State
     const [activeTab, setActiveTab] = useState('generate');
 
+    // Mode State
+    const [optimizationMode, setOptimizationMode] = useState(() => {
+        if (location.pathname.includes('/agents/seo')) return 'SEO';
+        if (location.pathname.includes('/agents/geo')) return 'GEO';
+        return location.state?.defaultMode || 'GEO';
+    });
+
     const tabs = [
         { id: 'generate', label: 'Generate', icon: Zap },
         { id: 'blogs', label: 'Blog Manager', icon: FileText },
         { id: 'queue', label: 'Auto Queue', icon: Clock },
-        { id: 'ranks', label: 'Rank Tracker', icon: TrendingUp },
-
+        { id: 'ranks', label: optimizationMode === 'GEO' ? 'GEO Tracker' : 'Rank Tracker', icon: TrendingUp },
     ];
-
-    // Mode State — removed (now always auto-research mode)
 
     // Form State
     const [topic, setTopic] = useState('');
@@ -90,12 +97,48 @@ const SeoAgentPage = () => {
     const [imageOption, setImageOption] = useState('auto'); // 'auto', 'custom', 'none'
     const [customImageUrl, setCustomImageUrl] = useState('');
 
+    // Quick Author Image State
+    const [quickAuthorImage, setQuickAuthorImage] = useState('');
+    const [isUploadingQuickAuthor, setIsUploadingQuickAuthor] = useState(false);
+
+    const handleQuickAuthorUpload = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        setIsUploadingQuickAuthor(true);
+        try {
+            const fileExt = file.name.split('.').pop();
+            const fileName = `author-${Math.random()}.${fileExt}`;
+            const filePath = `profiles/${fileName}`;
+
+            const { error: uploadError } = await supabase.storage
+                .from('blog-images')
+                .upload(filePath, file);
+
+            if (uploadError) throw uploadError;
+
+            const { data } = supabase.storage
+                .from('blog-images')
+                .getPublicUrl(filePath);
+
+            setQuickAuthorImage(data.publicUrl);
+        } catch (error) {
+            console.error('Error uploading author image:', error);
+            alert('Failed to upload image. Please try again.');
+        } finally {
+            setIsUploadingQuickAuthor(false);
+        }
+    };
+
     // Source Type State
     const [sourceType, setSourceType] = useState('manual'); // 'manual', 'wordpress', or 'sheets'
 
     // WordPress Integration State
     const [selectedWpProfile, setSelectedWpProfile] = useState(null);
     const [interlinkUrl, setInterlinkUrl] = useState('');
+
+    // Brand Profile State
+    const [brandContextId, setBrandContextId] = useState(null);
 
     // ── Google Sheets State ─────────────────────────────────────────────────
     const [sheetId, setSheetId] = useState('');
@@ -224,11 +267,13 @@ const SeoAgentPage = () => {
                 category,
                 tags: tags.split(',').map(t => t.trim()).filter(Boolean),
                 source_type: sourceType,
+                optimization_mode: optimizationMode,
                 // WordPress
                 wp_url: sourceType === 'wordpress' && selectedWpProfile ? selectedWpProfile.profileData?.wp_url : '',
                 wp_api_url: interlinkUrl || null,  // custom interlinking URL — Python fetches existing posts from here
                 wp_username: '',
                 wp_password: '',
+                brand_context_id: brandContextId,
                 // Image
                 image_option: imageOption,
                 custom_image_url: customImageUrl,
@@ -246,10 +291,12 @@ const SeoAgentPage = () => {
                     // Override author_name with the profile's name to ensure consistency
                     payload.author_name = selectedProfile.profileData?.name;
                     payload.author_bio = selectedProfile.profileData?.bio; // Add bio if supported by API
+                    payload.author_image_url = selectedProfile.profileData?.profile_image;
                 } else if (selectedProfile.type === 'manual') {
                     authorDetails = selectedProfile.profileData;
                     payload.author_name = authorDetails.name;
                     payload.author_bio = authorDetails.bio;
+                    payload.author_image_url = authorDetails.profile_image;
 
                     if (selectedProfile.saveAsNew) {
                         const { data: { session } } = await supabase.auth.getSession();
@@ -271,6 +318,16 @@ const SeoAgentPage = () => {
                             console.error('Failed to create profile:', err);
                         }
                     }
+                }
+            }
+
+            // Override author image with quick upload/url if provided
+            if (quickAuthorImage) {
+                payload.author_image_url = quickAuthorImage;
+                if (authorDetails) {
+                    authorDetails.profile_image = quickAuthorImage;
+                } else {
+                    authorDetails = { profile_image: quickAuthorImage };
                 }
             }
 
@@ -466,7 +523,7 @@ const SeoAgentPage = () => {
 
     /**
      * POST /api/google-sheets/run-seo
-     * Read titles from inputCol, generate SEO, write to outputCol.
+     * Read titles from inputCol, generate GEO, write to outputCol.
      */
     const handleRunSEOSheet = async () => {
         if (!sheetId.trim()) {
@@ -497,7 +554,7 @@ const SeoAgentPage = () => {
             if (data.success) {
                 setSheetResults(data);
             } else {
-                setSheetError(data.error || 'SEO pipeline failed');
+                setSheetError(data.error || 'GEO pipeline failed');
             }
         } catch (err) {
             setSheetError(err.message);
@@ -637,7 +694,7 @@ const SeoAgentPage = () => {
                         <div className="flex items-center gap-2">
                             <Bot className="text-[#26cece]" size={24} />
                             <h1 className="text-xl font-bold text-[#26cece] font-['Space_Grotesk'] tracking-tight">
-                                SEO AutoGen
+                                {optimizationMode} AutoGen
                             </h1>
                         </div>
                     </div>
@@ -654,7 +711,7 @@ const SeoAgentPage = () => {
                             {agentStats && (
                                 <div className="absolute top-full mt-2 right-0 bg-white border border-slate-200 rounded-[2px] p-4 shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 w-56 z-20">
                                     <div className="text-xs space-y-2 font-mono">
-                                        <div className="font-bold text-[#26cece] mb-3 uppercase tracking-widest text-[10px]">SEO Agent Stats</div>
+                                        <div className="font-bold text-[#26cece] mb-3 uppercase tracking-widest text-[10px]">GEO Agent Stats</div>
                                         <div className="flex justify-between items-center bg-slate-50 p-2 rounded-[2px] border border-slate-200">
                                             <span className="text-slate-500 uppercase text-[10px]">Total Used:</span>
                                             <span className="text-[#26cece] font-bold">{agentStats.totalCreditsUsed.toLocaleString()}</span>
@@ -731,12 +788,16 @@ const SeoAgentPage = () => {
             )}
 
             {/* Main Content */}
-            <main className="max-w-7xl mx-auto p-6 md:p-8">
+            <main className="max-w-7xl mx-auto p-6 md:p-8 pt-28 md:pt-32">
 
                 {/* Non-generate tab content */}
-                {activeTab === 'blogs' && <BlogManagerPanel />}
-                {activeTab === 'queue' && <WpAutoQueuePanel />}
-                {activeTab === 'ranks' && <RankTrackerPanel />}
+                {activeTab === 'blogs' && <BlogManagerPanel optimizationMode={optimizationMode} />}
+                {activeTab === 'queue' && <WpAutoQueuePanel optimizationMode={optimizationMode} />}
+                {activeTab === 'ranks' && optimizationMode === 'GEO' ? (
+                    <GeoRankTrackerPanel />
+                ) : activeTab === 'ranks' ? (
+                    <RankTrackerPanel optimizationMode={optimizationMode} />
+                ) : null}
                 {activeTab === 'push' && <PushNotificationPanel />}
 
 
@@ -749,16 +810,18 @@ const SeoAgentPage = () => {
                             <div className="bg-slate-50 rounded-[2px] border border-slate-200 p-6 md:p-8">
                                 <h2 className="text-2xl font-bold mb-6 text-slate-900 flex items-center gap-3 font-['Space_Grotesk'] tracking-tight">
                                     <Bot className="text-[#26cece]" size={24} />
-                                    AI SEO Article Generator
+                                    AI {optimizationMode} Article Generator
                                 </h2>
                                 <div className="mb-6 flex items-start gap-3 p-4 bg-white rounded-[2px] border border-slate-200">
                                     <Bot className="w-5 h-5 mt-0.5 text-[#26cece] shrink-0" />
                                     <p className="text-[13px] text-slate-500 leading-relaxed font-sans">
-                                        Just enter a title — our AI automatically researches the best <strong>industry positioning</strong>, <strong>SEO keywords</strong>, and <strong className="text-slate-900">content strategy</strong> using AI SEO best practices (E-E-A-T, authority signals, structured content for AI citation).
+                                        Just enter a title — our AI automatically researches the best <strong>industry positioning</strong>, <strong>GEO keywords</strong>, and <strong className="text-slate-900">content strategy</strong> using AI GEO best practices (E-E-A-T, authority signals, structured content for AI citation).
                                     </p>
                                 </div>
 
                                 <div className="space-y-6">
+                                    {/* Optimization Mode Selector Removed per user request */}
+
                                     {/* Source Type Selector */}
                                     <div data-tour="source-type">
                                         <label className="block text-[10px] font-mono tracking-widest uppercase text-slate-500 mb-3">Source Type *</label>
@@ -802,6 +865,9 @@ const SeoAgentPage = () => {
                                         <WordPressProfileSelection onProfileSelect={handleWpProfileSelect} />
                                     )}
 
+                                    {/* Brand Profile Selection */}
+                                    <BrandProfileSelection onSelect={setBrandContextId} />
+
                                     {/* ── Google Sheets Panel ──────────────────────────────── */}
                                     {sourceType === 'sheets' && (
                                         <div className="space-y-5 p-5 bg-white rounded-[2px] border border-[#26cece]/30">
@@ -810,7 +876,7 @@ const SeoAgentPage = () => {
                                                 <div className="flex items-center gap-2">
                                                     <TableProperties className="text-[#26cece]" size={18} />
                                                     <span className="text-[11px] font-mono tracking-widest uppercase text-[#26cece] font-bold">
-                                                        Google Sheets SEO Pipeline
+                                                        Google Sheets GEO Pipeline
                                                     </span>
                                                 </div>
                                                 {/* Connect / Status badge */}
@@ -830,7 +896,7 @@ const SeoAgentPage = () => {
                                             </div>
 
                                             <p className="text-[11px] text-slate-500 font-mono leading-relaxed">
-                                                Reads titles from column <strong className="text-slate-900">{sheetInputCol || 'A'}</strong>, runs AI SEO on each, and writes results to column <strong className="text-slate-900">{sheetOutputCol || 'B'}</strong>.
+                                                Reads titles from column <strong className="text-slate-900">{sheetInputCol || 'A'}</strong>, runs AI GEO on each, and writes results to column <strong className="text-slate-900">{sheetOutputCol || 'B'}</strong>.
                                                 Empty rows are automatically skipped.
                                             </p>
 
@@ -868,7 +934,7 @@ const SeoAgentPage = () => {
                                                 </div>
                                                 <div className="space-y-2">
                                                     <label className="block text-[10px] font-mono tracking-widest uppercase text-slate-500">
-                                                        Output Column (SEO Result)
+                                                        Output Column (GEO Result)
                                                     </label>
                                                     <input
                                                         type="text"
@@ -896,7 +962,7 @@ const SeoAgentPage = () => {
                                                             }`}
                                                     >
                                                         <span className="text-[11px] font-bold tracking-widest uppercase flex items-center gap-1.5">
-                                                            <Zap size={11} /> SEO Titles
+                                                            <Zap size={11} /> GEO Titles
                                                         </span>
                                                         <span className="text-[10px] text-slate-500 font-normal">~1–3s per row</span>
                                                     </button>
@@ -946,7 +1012,7 @@ const SeoAgentPage = () => {
                                                 ) : sheetPipelineMode === 'blog' ? (
                                                     <><Bot size={14} /> Auto Blog from Sheet</>
                                                 ) : (
-                                                    <><Play size={14} fill="currentColor" /> Run SEO on Sheet</>
+                                                    <><Play size={14} fill="currentColor" /> Run GEO on Sheet</>
                                                 )}
                                             </button>
 
@@ -1123,6 +1189,7 @@ const SeoAgentPage = () => {
                                                     🚫 None
                                                 </button>
                                             </div>
+
                                             {imageOption === 'custom' && (
                                                 <div className="mt-3">
                                                     <input
@@ -1139,6 +1206,48 @@ const SeoAgentPage = () => {
                                         {/* New Fields: Author & Category */}
                                         <div className="space-y-3" data-tour="profile-select">
                                             <ProfileSelection onProfileSelect={handleProfileSelect} />
+                                            
+                                            <div className="mt-4 p-3 bg-slate-50 border border-slate-200 rounded-[2px]">
+                                                <label className="block text-[10px] font-mono tracking-widest uppercase text-slate-500 mb-2">Author Circular Image (Optional)</label>
+                                                <p className="text-[10px] text-slate-400 font-mono mb-3 leading-relaxed">
+                                                    Overrides the profile image. Upload from machine or paste a URL.
+                                                </p>
+                                                
+                                                <div className="flex flex-col gap-3">
+                                                    <div className="flex gap-3">
+                                                        <label className="flex-1 px-3 py-2 bg-white border border-slate-200 hover:border-[#26cece] rounded-[2px] cursor-pointer transition-colors flex items-center justify-center gap-2">
+                                                            {isUploadingQuickAuthor ? (
+                                                                <RefreshCw size={14} className="text-[#26cece] animate-spin" />
+                                                            ) : (
+                                                                <User size={14} className="text-slate-500" />
+                                                            )}
+                                                            <span className="text-[11px] font-mono uppercase font-bold text-slate-600">
+                                                                {isUploadingQuickAuthor ? 'Uploading...' : 'Upload Image'}
+                                                            </span>
+                                                            <input 
+                                                                type="file" 
+                                                                className="hidden" 
+                                                                accept="image/*"
+                                                                onChange={handleQuickAuthorUpload}
+                                                                disabled={isUploadingQuickAuthor}
+                                                            />
+                                                        </label>
+                                                    </div>
+                                                    <input
+                                                        type="url"
+                                                        value={quickAuthorImage}
+                                                        onChange={(e) => setQuickAuthorImage(e.target.value)}
+                                                        placeholder="Or paste image URL here..."
+                                                        className="w-full px-3 py-2 rounded-[2px] bg-white border border-slate-200 focus:ring-0 focus:border-[#26cece] outline-none transition-all text-slate-900 font-mono text-[12px] placeholder-slate-400"
+                                                    />
+                                                    {quickAuthorImage && (
+                                                        <div className="flex items-center gap-3 mt-2 p-2 bg-white border border-emerald-200 rounded-[2px]">
+                                                            <img src={quickAuthorImage} alt="Author Preview" className="w-8 h-8 rounded-full object-cover border border-[#26cece]" />
+                                                            <span className="text-[10px] font-mono text-emerald-600 font-bold uppercase tracking-widest">Image Ready</span>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </div>
                                         </div>
 
                                         <div className="space-y-3">
@@ -1210,7 +1319,7 @@ const SeoAgentPage = () => {
                                         ) : (
                                             <>
                                                 <Zap fill="currentColor" size={24} />
-                                                Generate SEO Content
+                                                Generate {optimizationMode} Content
                                                 <span className="text-[12px] font-mono ml-2 opacity-70 border-l border-white/30 pl-2">
                                                     Cost 10 credits
                                                 </span>
@@ -1230,18 +1339,20 @@ const SeoAgentPage = () => {
 
                                     {currentSeoTitle && (
                                         <div className="mb-6 p-5 bg-slate-50 border border-slate-200 rounded-[2px]">
-                                            <strong className="text-slate-500 uppercase tracking-widest text-[10px] block mb-1 font-mono">SEO Optimized Title (H1)</strong>
+                                            <strong className="text-slate-500 uppercase tracking-widest text-[10px] block mb-1 font-mono">GEO Optimized Title (H1)</strong>
                                             <p className="text-slate-900 font-mono text-[14px]">{currentSeoTitle}</p>
                                         </div>
                                     )}
 
                                     {currentImageUrl && (
-                                        <img
-                                            src={currentImageUrl}
-                                            alt="Blog featured image"
-                                            className="mb-6 w-full rounded-[2px] border border-slate-200"
-                                            onError={(e) => e.target.style.display = 'none'}
-                                        />
+                                        <div className="w-full mb-8 flex justify-center">
+                                            <img
+                                                src={currentImageUrl}
+                                                alt="Blog featured image"
+                                                className="w-full max-w-4xl h-auto object-contain rounded-sm border border-slate-200"
+                                                onError={(e) => e.target.style.display = 'none'}
+                                            />
+                                        </div>
                                     )}
 
                                     <div
@@ -1298,7 +1409,14 @@ const SeoAgentPage = () => {
                                         </div>
                                     ) : (
                                         <div className="space-y-3">
-                                            {articles.slice(0, 10).map((article) => (
+                                            {articles.filter(a => {
+                                                if (a.optimization_mode === 'SEO' || a.optimization_mode === 'GEO') {
+                                                    return a.optimization_mode === optimizationMode;
+                                                }
+                                                const contentStr = (a.content || '').toLowerCase();
+                                                const hasFaq = contentStr.includes('faq') || contentStr.includes('frequently asked questions');
+                                                return optimizationMode === 'GEO' ? hasFaq : !hasFaq;
+                                            }).map((article) => (
                                                 <div
                                                     key={article.id}
                                                     className="p-3 rounded-[2px] border border-slate-200 hover:border-[#26cece] bg-slate-50 transition-all cursor-pointer group"

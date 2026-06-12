@@ -68,6 +68,7 @@ import linkedinRoutes from './routes/social/linkedinRoutes.js';
 import articleRoutes from './routes/blog/articleRoutes.js';
 import geminiRoutes from './routes/seo/gemini.js';
 
+
 // Mount routes
 app.use('/api/auth', authRoutes);
 
@@ -93,6 +94,7 @@ app.use('/api/meta', metaRoutes);
 
 app.use('/api', articleRoutes); // blog generation + CRUD + public blog routes
 app.use('/api/gemini', geminiRoutes); // Gemini AI endpoints
+
 
 // Meta Webhooks (no /api prefix as Meta expects direct path)
 import webhookRoutes from './routes/social/webhookRoutes.js';
@@ -137,6 +139,9 @@ app.use('/api/digilocker', digiLockerRoutes);
 import paymentRoutes from './routes/payments/paymentRoutes.js';
 app.use('/api/payment', paymentRoutes);
 
+import videoRoutes from './routes/video/videoRoutes.js';
+app.use('/api/video', videoRoutes);
+
 import sitemapRoutes from './routes/seo/sitemapRoutes.js';
 app.use('/', sitemapRoutes);
 
@@ -177,6 +182,9 @@ const serveFrontend = process.env.SERVE_FRONTEND === 'true';
 
 if (serveFrontend) {
     const distPath = path.join(__dirname, '../../client/dist');
+    // Prerender.io middleware for SEO (bots will get fully rendered HTML)
+    app.use(require('prerender-node').set('prerenderToken', process.env.PRERENDER_TOKEN));
+    
     app.use(express.static(distPath));
     app.use('/assets', express.static(path.join(distPath, 'assets')));
 

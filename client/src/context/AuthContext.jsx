@@ -19,10 +19,12 @@ export const AuthProvider = ({ children }) => {
         // Get session on mount
         const getSession = async () => {
             const { data: { session: currentSession } } = await supabase.auth.getSession();
-            setSession(currentSession);
-            setUser(currentSession?.user ?? null);
-            if (currentSession?.user) {
-                fetchCredits(currentSession.user.id);
+            let finalSession = currentSession;
+
+            setSession(finalSession);
+            setUser(finalSession?.user ?? null);
+            if (finalSession?.user) {
+                fetchCredits(finalSession.user.id);
             }
             setLoading(false);
         };
@@ -31,10 +33,12 @@ export const AuthProvider = ({ children }) => {
 
         // Listen for auth changes
         const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, currentSession) => {
-            setSession(currentSession);
-            setUser(currentSession?.user ?? null);
-            if (currentSession?.user) {
-                fetchCredits(currentSession.user.id);
+            let finalSession = currentSession;
+
+            setSession(finalSession);
+            setUser(finalSession?.user ?? null);
+            if (finalSession?.user) {
+                fetchCredits(finalSession.user.id);
             } else {
                 setCredits(0);
             }
@@ -79,7 +83,23 @@ export const AuthProvider = ({ children }) => {
         refreshCredits,
         signUp: (data) => supabase.auth.signUp(data),
         signIn: (data) => supabase.auth.signInWithPassword(data),
-        signOut: () => supabase.auth.signOut(),
+        signOut: async () => {
+            try {
+                await supabase.auth.signOut();
+            } catch (e) {
+                console.error("SignOut error:", e);
+            } finally {
+                // Force clear local storage to prevent trapping the user if token is expired
+                Object.keys(localStorage).forEach(key => {
+                    if (key.startsWith('sb-')) {
+                        localStorage.removeItem(key);
+                    }
+                });
+                setUser(null);
+                setSession(null);
+                window.location.href = '/login';
+            }
+        },
         token: session?.access_token || null,
     };
 

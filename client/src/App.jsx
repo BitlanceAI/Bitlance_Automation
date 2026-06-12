@@ -16,6 +16,9 @@ const LandingPage = lazy(() => import('./pages/landing/LandingPage'));
 const SeoLandingPage = lazy(() => import('./pages/landing/SeoLandingPage'));
 const QuizLandingPage = lazy(() => import('./pages/landing/QuizLandingPage'));
 const ThankYouPage = lazy(() => import('./pages/landing/ThankYouPage'));
+const PartnerPortal = lazy(() => import('./pages/PartnerPortal'));
+const PartnerTestLab = lazy(() => import('./pages/PartnerTestLab'));
+const AdminApiKeys = lazy(() => import('./pages/AdminApiKeys'));
 
 // Auth
 const LoginPage = lazy(() => import('./pages/auth/LoginPage'));
@@ -26,11 +29,12 @@ const HomePage = lazy(() => import('./pages/dashboard/HomePage'));
 const SalesDashboard = lazy(() => import('./pages/dashboard/SalesDashboard'));
 const SocialDashboard = lazy(() => import('./pages/dashboard/SocialDashboard'));
 const AgentsPage = lazy(() => import('./pages/dashboard/AgentsPage'));
-const BroadcastPage = lazy(() => import('./pages/dashboard/BroadcastPage'));
 const SeoAgentPage = lazy(() => import('./pages/dashboard/SeoAgentPage'));
 const GraphicDesignerPage = lazy(() => import('./pages/dashboard/GraphicDesignerPage'));
 const MetaAdsPage = lazy(() => import('./pages/dashboard/MetaAdsPage'));
 const EmailAutomationPage = lazy(() => import('./pages/dashboard/EmailAutomationPage'));
+const RealEstateReelPage = lazy(() => import('./pages/dashboard/RealEstateReelPage'));
+
 
 // Admin (heavy: jspdf, xlsx)
 const AdminDashboard = lazy(() => import('./pages/admin/AdminDashboard'));
@@ -127,15 +131,20 @@ function App() {
   const handleAgentSelect = (agent) => {
     trackAgentOpen(agent.title);
     if (agent.title === 'WhatsApp Broadcasting Automation') {
-      navigate('/dashboard/agents/whatsapp');
+      window.open('https://wacrm.bitlancetechhub.com/', '_blank');
     } else if (agent.title === 'AI Voice Agent') {
       navigate('/dashboard/agents/voice');
-    } else if (agent.title === 'SEO AI Agent') {
-      navigate('/dashboard/agents/seo');
+    } else if (agent.title === 'GEO (Generative) AI Agent' || agent.title === 'SEO (Search Engine) AI Agent') {
+      const isSeo = agent.title === 'SEO (Search Engine) AI Agent';
+      navigate(isSeo ? '/dashboard/agents/seo' : '/dashboard/agents/geo', { state: { defaultMode: isSeo ? 'SEO' : 'GEO' } });
     } else if (agent.title === 'Graphic Designer AI') {
       navigate('/dashboard/agents/design');
     } else if (agent.title === 'Meta Ads Automation AI') {
       navigate('/dashboard/agents/meta');
+    } else if (agent.title === 'Real Estate Reel AI Agent') {
+      navigate('/dashboard/agents/video');
+    } else if (agent.title === 'Email Automation AI') {
+      navigate('/dashboard/email-automation');
     }
   };
 
@@ -151,7 +160,7 @@ function App() {
     normalizedPath.startsWith('/l/') ||
     normalizedPath.includes('/apply/audit') ||
     normalizedPath.includes('/apply') || // Hide Main Nav for Landing Pages and Audit Funnel
-    normalizedPath === '/seo'; // SEO landing has its own NavBar
+    normalizedPath === '/seo'; // GEO landing has its own NavBar
 
   return (
     <ThemeProvider>
@@ -180,6 +189,8 @@ function App() {
                 <Route path="/blogs" element={<PublicBlogListPage />} />
 
                 <Route path="/blogs/:id" element={<PublicArticlePage />} />
+                <Route path="/api-portal" element={<PartnerPortal />} />
+                <Route path="/api-test-lab" element={<PartnerTestLab />} />
                 <Route path="/login" element={
                   <PublicRoute>
                     <LoginPage />
@@ -212,11 +223,6 @@ function App() {
                 <Route path="/agents" element={
                   <AgentsPage onAgentSelect={handleAgentSelect} />
                 } />
-                <Route path="/dashboard/agents/whatsapp" element={
-                  <AuthGuard>
-                    <BroadcastPage />
-                  </AuthGuard>
-                } />
                 <Route path="/SocialDashboard" element={
                   <AuthGuard>
                     <SocialDashboard />
@@ -232,6 +238,11 @@ function App() {
                     <SeoAgentPage />
                   </AuthGuard>
                 } />
+                <Route path="/dashboard/agents/geo" element={
+                  <AuthGuard>
+                    <SeoAgentPage />
+                  </AuthGuard>
+                } />
                 <Route path="/dashboard/agents/blog" element={
                   <AuthGuard>
                     <BlogPage />
@@ -240,6 +251,11 @@ function App() {
                 <Route path="/dashboard/agents/design" element={
                   <AuthGuard>
                     <GraphicDesignerPage />
+                  </AuthGuard>
+                } />
+                <Route path="/dashboard/agents/video" element={
+                  <AuthGuard>
+                    <RealEstateReelPage />
                   </AuthGuard>
                 } />
                 <Route path="/dashboard/agents/meta" element={
@@ -261,6 +277,11 @@ function App() {
                   // TODO: Add AdminGuard
                   <AuthGuard>
                     <AdminDashboard />
+                  </AuthGuard>
+                } />
+                <Route path="/admin/api-keys" element={
+                  <AuthGuard>
+                    <AdminApiKeys />
                   </AuthGuard>
                 } />
                 <Route path="/admin/email-automation" element={

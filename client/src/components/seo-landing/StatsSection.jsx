@@ -21,7 +21,7 @@ function useCountUp(target, duration = 1800, inView = false) {
 const stats = [
   { value: 500, suffix: '+', label: 'Articles Generated', desc: 'and counting' },
   { value: 10, suffix: 'x', label: 'Faster Than Manual', desc: 'average time saved' },
-  { value: 94, suffix: '%', label: 'Avg SEO Score', desc: 'across all articles' },
+  { value: 94, suffix: '%', label: 'Avg GEO Score', desc: 'across all articles' },
   { value: 3, suffix: ' min', label: 'Per Article', desc: 'from keyword to publish' },
 ];
 

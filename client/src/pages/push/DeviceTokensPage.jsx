@@ -84,7 +84,7 @@ const DeviceTokensPage = () => {
     return (
         <div className="min-h-screen bg-gray-50 dark:bg-slate-900 pb-12">
             <Navbar />
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-28 pb-10">
                 <div className="text-center mb-10">
                     <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Device Tokens</h1>
                     <p className="mt-2 text-gray-600 dark:text-gray-400">Manage registered devices for push notifications</p>

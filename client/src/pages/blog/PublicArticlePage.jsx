@@ -4,6 +4,9 @@ import SEOHead from '../../components/layout/SEOHead';
 import { Loader2, ArrowLeft, Calendar, User, Clock, Share2, Tag, Facebook, Twitter, Linkedin, Globe, Mail, Phone, MessageSquare, Send, ArrowRight } from 'lucide-react';
 import API_BASE_URL from '../../config.js';
 import { trackBlogRead, trackDemoClick } from '../../lib/analytics';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+import rehypeRaw from 'rehype-raw';
 
 const TEAL = '#26CECE';
 
@@ -231,9 +234,29 @@ const PublicArticlePage = () => {
                     </h1>
 
                     <div className="flex flex-wrap items-center gap-6 text-[11px] text-gray-500 mb-10 tracking-widest uppercase font-bold" style={{ fontFamily: "'DM Mono', monospace" }}>
-                        <span className="flex items-center gap-2">
-                            <User size={14} />
-                            {article.author_name || (article.user_id === 'anonymous' ? 'AI Agent' : 'Bitlance Source')}
+                        <span className="flex items-center gap-3">
+                            {(() => {
+                                const profileImg = article.author?.profile_image || article.author_details?.profile_image || article.author_image_url;
+                                if (profileImg) {
+                                    return (
+                                        <img 
+                                            src={profileImg} 
+                                            alt={article.author_name || 'Author'} 
+                                            className="w-8 h-8 rounded-full object-cover border-2 border-[#26CECE]" 
+                                            onError={(e) => { e.target.style.display = 'none'; e.target.nextElementSibling.style.display = 'flex'; }}
+                                        />
+                                    );
+                                }
+                                return (
+                                    <div className="w-8 h-8 rounded-full flex items-center justify-center bg-gray-100 border border-gray-200 text-[#26CECE]">
+                                        <User size={14} />
+                                    </div>
+                                );
+                            })()}
+                            <div className="hidden w-8 h-8 rounded-full items-center justify-center bg-gray-100 border border-gray-200 text-[#26CECE]">
+                                <User size={14} />
+                            </div>
+                            <span className="text-[13px]">{article.author_name || (article.user_id === 'anonymous' ? 'AI Agent' : 'Bitlance Source')}</span>
                         </span>
                         <span className="flex items-center gap-2">
                             <Calendar size={14} />
@@ -263,12 +286,12 @@ const PublicArticlePage = () => {
                     </div>
 
                     {article.image_url && (
-                        <div className="w-full mt-10 p-2" style={{ background: '#f9fafb', border: '1px solid #e5e7eb' }}>
+                        <div className="w-full max-w-5xl mx-auto mt-10 mb-6 overflow-hidden rounded-[2px] shadow-sm border border-gray-200">
                             <img
                                 src={article.image_url}
                                 alt={article.seo_title || article.topic}
-                                className="w-full h-auto object-cover max-h-[600px] transition-all duration-700"
-                                onError={(e) => e.target.style.display = 'none'}
+                                className="w-full h-[350px] md:h-[450px] object-cover object-center"
+                                onError={(e) => e.target.parentElement.style.display = 'none'}
                             />
                         </div>
                     )}
@@ -281,10 +304,16 @@ const PublicArticlePage = () => {
                 {/* Article Content */}
                 <article className="flex-1 max-w-3xl">
                     <div
-                        className="prose prose-lg max-w-none prose-headings:font-extrabold prose-headings:text-black prose-headings:uppercase prose-headings:tracking-tight prose-a:no-underline hover:prose-a:underline prose-img:border prose-img:border-gray-200 prose-img:p-1 prose-img:bg-gray-50 text-gray-700 whitespace-pre-wrap leading-relaxed marker:text-[#26CECE]"
+                        className="prose prose-lg max-w-none prose-headings:font-extrabold prose-headings:text-black prose-headings:uppercase prose-headings:tracking-tight prose-a:no-underline hover:prose-a:underline prose-img:border prose-img:border-gray-200 prose-img:p-1 prose-img:bg-gray-50 text-gray-700 leading-relaxed marker:text-[#26CECE] prose-table:border-collapse prose-th:border prose-th:border-gray-300 prose-th:bg-gray-100 prose-th:p-3 prose-td:border prose-td:border-gray-300 prose-td:p-3"
                         style={{ fontFamily: "'Space Grotesk', sans-serif" }}
-                        dangerouslySetInnerHTML={{ __html: article.content }}
-                    />
+                    >
+                        <ReactMarkdown 
+                            remarkPlugins={[remarkGfm]}
+                            rehypePlugins={[rehypeRaw]}
+                        >
+                            {article.content}
+                        </ReactMarkdown>
+                    </div>
                     
                     {/* Inject teal color for prose links manually or via custom tag class */}
                     <style dangerouslySetInnerHTML={{__html: `

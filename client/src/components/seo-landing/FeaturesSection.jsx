@@ -101,7 +101,7 @@ export default function FeaturesSection() {
           transition={{ delay: 0.1 }}
           className="text-3xl sm:text-5xl font-black text-white leading-tight"
         >
-          The Complete <span className="gradient-text">SEO Stack</span>
+          The Complete <span className="gradient-text">GEO Stack</span>
         </motion.h2>
         <motion.p
           initial={{ opacity: 0, y: 20 }}
@@ -110,7 +110,7 @@ export default function FeaturesSection() {
           transition={{ delay: 0.2 }}
           className="mt-4 text-[#A0A0A0] text-base sm:text-lg max-w-2xl mx-auto"
         >
-          Everything a growing business needs to dominate organic search — no SEO agency required.
+          Everything a growing business needs to dominate organic search — no GEO agency required.
         </motion.p>
       </div>
 

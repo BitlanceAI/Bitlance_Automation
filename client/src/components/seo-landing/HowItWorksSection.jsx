@@ -15,7 +15,7 @@ const steps = [
     icon: <Microscope size={24} className="text-white" />,
     title: 'AI Researches the Topic',
     desc: 'SerpAPI fetches the top-ranking content. The AI identifies gaps, outlines the article, and gathers supporting data.',
-    detail: 'Uses GPT-4o with a custom SEO-tuned prompt for maximum relevance and depth.',
+    detail: 'Uses GPT-4o with a custom GEO-tuned prompt for maximum relevance and depth.',
   },
   {
     number: '03',

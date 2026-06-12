@@ -1,5 +1,5 @@
-import { useRef, useState, useEffect } from 'react';
-import { motion, useInView, AnimatePresence } from 'framer-motion';
+import { useRef } from 'react';
+import { motion as Motion, useInView, AnimatePresence } from 'framer-motion';
 
 const testimonials = [
   {
@@ -7,7 +7,7 @@ const testimonials = [
     role: 'Founder',
     avatar: '/testimonals/akshay_lakde.jpeg',
     rating: 5,
-    text: 'We went from 0 to 3,400 monthly organic visitors in 60 days using Bitlance SEO. The auto-publish feature alone saves us 15 hours a week.',
+    text: 'We went from 0 to 3,400 monthly organic visitors in 60 days using Bitlance GEO. The auto-publish feature alone saves us 15 hours a week.',
     metric: '+3,400 organic/month',
     metricLabel: 'in 60 days',
   },
@@ -40,7 +40,7 @@ const testimonials = [
   },
   {
     name: 'Tejaunsh Nyati',
-    role: 'SEO Consultant',
+    role: 'GEO Consultant',
     avatar: '/testimonals/tejaunsh_nyati.jpeg',
     rating: 5,
     text: "I use Bitlance for all my client sites. The keyword research + auto-publish saves me 3 hours per article. My clients see page-1 rankings within weeks.",
@@ -54,7 +54,7 @@ function TestimonialCard({ t, index, inView }) {
   const color = colors[index % colors.length];
 
   return (
-    <motion.div
+    <Motion.div
       initial={{ opacity: 0, y: 30 }}
       animate={inView ? { opacity: 1, y: 0 } : {}}
       transition={{ delay: index * 0.07 + 0.2, duration: 0.6 }}
@@ -95,7 +95,7 @@ function TestimonialCard({ t, index, inView }) {
           <div className="text-[#A0A0A0] text-xs">{t.role}</div>
         </div>
       </div>
-    </motion.div>
+    </Motion.div>
   );
 }
 
@@ -110,7 +110,7 @@ export default function TestimonialsSection() {
 
       <div className="max-w-7xl mx-auto relative z-10">
         {/* Header */}
-        <motion.div
+        <Motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={inView ? { opacity: 1, y: 0 } : {}}
           className="text-center mb-14"
@@ -120,9 +120,9 @@ export default function TestimonialsSection() {
             Loved by <span className="gradient-text">200+ Businesses</span>
           </h2>
           <p className="mt-4 text-[#A0A0A0] text-base sm:text-lg max-w-xl mx-auto">
-            Real results from real customers who let our SEO AI Agent do the heavy lifting.
+            Real results from real customers who let our GEO (Generative) AI Agent do the heavy lifting.
           </p>
-        </motion.div>
+        </Motion.div>
 
         {/* Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
@@ -132,7 +132,7 @@ export default function TestimonialsSection() {
         </div>
 
         {/* Overall rating */}
-        <motion.div
+        <Motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={inView ? { opacity: 1, y: 0 } : {}}
           transition={{ delay: 0.8 }}
@@ -158,7 +158,7 @@ export default function TestimonialsSection() {
             <div className="text-white font-semibold">500+ articles published</div>
             <div className="text-white/40 text-sm">and counting this month</div>
           </div>
-        </motion.div>
+        </Motion.div>
       </div>
     </section>
   );

@@ -53,7 +53,7 @@ function DropAlert({ drops }) {
     );
 }
 
-export default function RankTrackerPanel() {
+export default function RankTrackerPanel({ optimizationMode = 'SEO' }) {
     const { token, user } = useAuth();
 
     const [siteUrl, setSiteUrl]   = useState(() => localStorage.getItem(STORAGE_KEY) || '');
@@ -127,7 +127,9 @@ export default function RankTrackerPanel() {
             {/* Header */}
             <div className="flex items-start justify-between">
                 <div>
-                    <h2 className="text-xl font-bold text-slate-900 font-mono tracking-tight uppercase">Rank Tracker</h2>
+                    <h2 className="text-xl font-bold text-slate-900 font-mono tracking-tight uppercase">
+                        {optimizationMode === 'GEO' ? 'GEO Rank Tracker (via Google)' : 'SEO Rank Tracker'}
+                    </h2>
                     <p className="text-xs text-slate-500 mt-1 font-mono">
                         Powered by Google Search Console · detects position drops automatically
                     </p>

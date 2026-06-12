@@ -1,0 +1,14 @@
+pandas
+openpyxl
+requests
+beautifulsoup4
+playwright
+selenium
+webdriver-manager
+python-dotenv
+yagmail
+imapclient
+google-generativeai
+python-docx
+validators
+googlesearch-python

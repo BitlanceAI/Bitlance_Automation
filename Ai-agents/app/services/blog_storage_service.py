@@ -17,7 +17,7 @@ from supabase import create_client, Client
 
 SUPABASE_URL = os.getenv("SUPABASE_URL")
 SUPABASE_KEY = os.getenv("SUPABASE_KEY")          # anon key  (for scoped/user clients)
-SUPABASE_SERVICE_KEY = os.getenv("SUPABASE_SERVICE_KEY")  # service-role key (for admin RPCs)
+SUPABASE_SERVICE_KEY = os.getenv("SUPABASE_SERVICE_ROLE_KEY") or os.getenv("SUPABASE_SERVICE_KEY")  # service-role key (for admin RPCs)
 
 ADMIN_ID = "0d396440-7d07-407c-89da-9cb93e353347"
 
@@ -163,9 +163,15 @@ def upload_image_to_supabase(image_url: str, scoped_supabase: Client) -> str:
     Falls back to original URL on any error.
     """
     try:
-        img_res = requests.get(image_url, timeout=30)
-        img_res.raise_for_status()
-        file_bytes = img_res.content
+        import base64
+        if image_url.startswith("data:image"):
+            # Format: data:image/png;base64,iVBORw0KGgo...
+            header, encoded = image_url.split(",", 1)
+            file_bytes = base64.b64decode(encoded)
+        else:
+            img_res = requests.get(image_url, timeout=30)
+            img_res.raise_for_status()
+            file_bytes = img_res.content
         file_name = f"blog-{int(time.time())}-{random.randint(0, 999)}.png"
 
         scoped_supabase.storage.from_("blog-images").upload(
@@ -191,12 +197,11 @@ def save_article(payload: dict, scoped_supabase: Client, table_name: str) -> dic
         scoped_supabase.table(table_name)
         .insert(payload)
         .select("*")
-        .single()
         .execute()
     )
-    if result.data is None:
+    if not result.data:
         raise RuntimeError("Failed to save article to Supabase")
-    return result.data
+    return result.data[0]
 
 
 def get_posts(scoped_supabase: Client, table_name: str, page: int = 1, limit: int = 10, status: Optional[str] = None) -> dict:
@@ -265,12 +270,11 @@ def create_post(scoped_supabase: Client, table_name: str, user_id: str, body: di
         scoped_supabase.table(table_name)
         .insert(post_data)
         .select("*")
-        .single()
         .execute()
     )
-    if result.data is None:
+    if not result.data:
         raise RuntimeError("Failed to create post")
-    return result.data
+    return result.data[0]
 
 
 def update_post(scoped_supabase: Client, table_name: str, post_id: str, updates: dict) -> dict:
@@ -291,12 +295,11 @@ def update_post(scoped_supabase: Client, table_name: str, post_id: str, updates:
         .update(updates)
         .eq("id", post_id)
         .select("*")
-        .single()
         .execute()
     )
-    if result.data is None:
+    if not result.data:
         raise RuntimeError(f"Failed to update post {post_id}")
-    return result.data
+    return result.data[0]
 
 
 def delete_post(scoped_supabase: Client, table_name: str, post_id: str) -> None:

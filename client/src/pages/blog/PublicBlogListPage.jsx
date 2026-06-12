@@ -52,14 +52,14 @@ const PublicBlogListPage = () => {
         <div className="min-h-screen bg-white pb-20">
             <SEOHead
                 title="AI & Automation Blog — Expert Insights by Bitlance Tech Hub"
-                description="Expert guides on AI voice agents, automated SEO content, and business automation. Learn how companies use AI to scale lead generation, reduce costs, and automate repetitive workflows."
+                description="Expert guides on AI voice agents, automated GEO content, and business automation. Learn how companies use AI to scale lead generation, reduce costs, and automate repetitive workflows."
                 canonicalUrl={`${window.location.origin}/blog`}
-                keywords="AI automation blog, AI voice agent guide, SEO automation, business AI tools, AI agent tutorials"
+                keywords="AI automation blog, AI voice agent guide, GEO automation, business AI tools, AI agent tutorials"
                 structuredData={{
                     "@context": "https://schema.org",
                     "@type": "Blog",
                     "name": "Bitlance Tech Hub Blog",
-                    "description": "Expert articles on AI voice agents, automated SEO content generation, and AI-driven business automation from the Bitlance Tech Hub team.",
+                    "description": "Expert articles on AI voice agents, automated GEO content generation, and AI-driven business automation from the Bitlance Tech Hub team.",
                     "url": `${window.location.origin}/blog`,
                     "publisher": {
                         "@type": "Organization",
@@ -77,7 +77,7 @@ const PublicBlogListPage = () => {
                         AI &amp; Automation <span style={{ color: TEAL }}>Blog</span>
                     </h1>
                     <p className="text-lg md:text-xl text-gray-600 max-w-2xl mx-auto leading-relaxed">
-                        Expert guides on AI voice agents, automated SEO content, and business automation — written by the Bitlance Tech Hub team to help you scale smarter.
+                        Expert guides on AI voice agents, automated GEO content, and business automation — written by the Bitlance Tech Hub team to help you scale smarter.
                     </p>
                 </div>
             </div>

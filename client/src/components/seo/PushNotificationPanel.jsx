@@ -65,7 +65,7 @@ const PushNotificationPanel = () => {
                         <label className="block text-[10px] font-mono tracking-widest uppercase text-gray-500 mb-2">Body</label>
                         <textarea name="body" rows="3" value={formData.body} onChange={handleChange} required
                             className="w-full px-4 py-3 rounded-[2px] border border-[#333] bg-[#070707] text-white focus:outline-none focus:border-[#26cece] focus:ring-0 transition-all font-mono text-[14px] resize-none"
-                            placeholder="We just published a guide on SEO..." />
+                            placeholder="We just published a guide on GEO..." />
                     </div>
                     <div className="grid grid-cols-2 gap-5">
                         <div>

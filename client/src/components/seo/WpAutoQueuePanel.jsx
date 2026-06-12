@@ -425,7 +425,7 @@ export default function WpAutoQueuePanel() {
                                 required
                                 value={bulkTopics}
                                 onChange={e => setBulkTopics(e.target.value)}
-                                placeholder={"One title per line:\nHow AI is Changing Real Estate\n10 Best SEO Tips for 2025\nWhy Content Marketing Matters"}
+                                placeholder={"One title per line:\nHow AI is Changing Real Estate\n10 Best GEO Tips for 2025\nWhy Content Marketing Matters"}
                                 rows={7}
                                 className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 focus:border-[#26cece] outline-none rounded-[2px] text-slate-900 font-mono text-[12px] placeholder-slate-400 resize-none transition-colors"
                             />

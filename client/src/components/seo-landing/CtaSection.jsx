@@ -1,9 +1,9 @@
 import { useRef } from 'react';
-import { motion, useInView } from 'framer-motion';
+import { motion as Motion, useInView } from 'framer-motion';
 import { ArrowRight, MessageCircle, Check } from 'lucide-react';
 
 const APP_URL = 'https://www.bitlancetechhub.com';
-const WA_URL = 'https://wa.me/917697762374?text=Hi%20Bitlance!%20I%27d%20like%20to%20know%20more%20about%20the%20SEO%20AI%20Agent.';
+const WA_URL = 'https://wa.me/917697762374?text=Hi%20Bitlance!%20I%27d%20like%20to%20know%20more%20about%20the%20GEO%20(Generative)%20AI%20Agent.';
 
 export default function CtaSection() {
   const ref = useRef(null);
@@ -18,7 +18,7 @@ export default function CtaSection() {
 
       <div className="max-w-4xl mx-auto relative z-10 text-center">
         {/* Floating badge */}
-        <motion.div
+        <Motion.div
           initial={{ opacity: 0, y: 20, scale: 0.9 }}
           animate={inView ? { opacity: 1, y: 0, scale: 1 } : {}}
           transition={{ duration: 0.5 }}
@@ -26,28 +26,28 @@ export default function CtaSection() {
         >
           <div className="w-2 h-2 rounded-full bg-brand animate-pulse" />
           <span className="text-brand text-sm font-bold">7-Day Free Trial Available</span>
-        </motion.div>
+        </Motion.div>
 
-        <motion.h2
+        <Motion.h2
           initial={{ opacity: 0, y: 30 }}
           animate={inView ? { opacity: 1, y: 0 } : {}}
           transition={{ delay: 0.1, duration: 0.6 }}
           className="text-3xl sm:text-5xl md:text-6xl font-black text-white leading-tight mb-6"
         >
           Ready to Rank <span className="gradient-text">#1 on Google</span>?
-        </motion.h2>
+        </Motion.h2>
 
-        <motion.p
+        <Motion.p
           initial={{ opacity: 0, y: 20 }}
           animate={inView ? { opacity: 1, y: 0 } : {}}
           transition={{ delay: 0.2, duration: 0.6 }}
           className="text-white/50 text-sm sm:text-lg md:text-xl mb-10 max-w-2xl mx-auto leading-relaxed"
         >
-          Join 200+ businesses using Bitlance SEO AI Agent to drive organic traffic on autopilot.
+          Join 200+ businesses using Bitlance GEO (Generative) AI Agent to drive organic traffic on autopilot.
           No agency fees. No manual work. Just rankings.
-        </motion.p>
+        </Motion.p>
 
-        <motion.div
+        <Motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={inView ? { opacity: 1, y: 0 } : {}}
           transition={{ delay: 0.3 }}
@@ -69,10 +69,10 @@ export default function CtaSection() {
             <MessageCircle size={18} />
             Chat on WhatsApp
           </a>
-        </motion.div>
+        </Motion.div>
 
         {/* Trust badges */}
-        <motion.div
+        <Motion.div
           initial={{ opacity: 0 }}
           animate={inView ? { opacity: 1 } : {}}
           transition={{ delay: 0.5 }}
@@ -89,7 +89,7 @@ export default function CtaSection() {
               {item}
             </span>
           ))}
-        </motion.div>
+        </Motion.div>
       </div>
     </section>
   );

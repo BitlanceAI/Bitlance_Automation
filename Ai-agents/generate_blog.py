@@ -78,6 +78,7 @@ class PerplexityService:
             ⚠️ Important: 
             - Do not use [1], [2] citation numbers. 
             - STRICT RULE: Do NOT add any external links, citations, or references to outside websites. No external URLs are permitted anywhere in the content.
+            - STRICT RULE: The entire article MUST be written ONLY in {language}. Absolutely no foreign words or characters.
             - {"Continue strictly from previous text: " + blog_text[-100:] if blog_text else "Start from the beginning."}
             """
             
@@ -152,6 +153,7 @@ class OpenAIService:
         ⚠️ Important: 
         - Do not use [1], [2] citation numbers. 
         - STRICT RULE: Do NOT add any external links, citations, or references to outside websites. No external URLs are permitted anywhere in the content.
+        - STRICT RULE: The entire article MUST be written ONLY in {language}. Absolutely no foreign words or characters.
         """
         blog_text = self._call_chat(prompt, "You are an expert content writer.")
         word_count = len(blog_text.split())
@@ -159,33 +161,24 @@ class OpenAIService:
 
     def generate_image(self, topic, image_text):
         if not self.api_key:
-            raise Exception("OPENAI_API_KEY is not set")
-
-        prompt = f"""Create a professional, text-free blog header image about: {topic}.
-
-VISUAL REQUIREMENTS:
-- High-quality, modern design with relevant visual elements
-- Blog header format (landscape orientation, 16:9 ratio)
-- Clean, professional appearance suitable for publication
-
-CRITICAL CONSTRAINT: 
-- Do NOT include ANY text, words, letters, watermarks, signs, logos, or typography anywhere in the image.
-- The image must be 100% text-free."""
-
+            raise Exception("OPENAI_API_KEY is not set for image generation")
+            
         headers = {
             "Authorization": f"Bearer {self.api_key}",
             "Content-Type": "application/json"
         }
+        prompt = f"A high-quality, professional blog header image about: {topic}. Visual style: modern, clean, flat vector or 3D render. Include typography: '{image_text}'."
         payload = {
-            "model": "dall-e-3",
+            "model": "gpt-image-2",
             "prompt": prompt,
             "n": 1,
-            "size": "1024x1024",
-            "response_format": "url"
+            "size": "1792x1024",
+            "quality": "auto"
         }
-        res = requests.post(self.image_url, headers=headers, json=payload)
+        res = requests.post(self.image_url, headers=headers, json=payload, timeout=120)
         res.raise_for_status()
-        return res.json().get("data", [{}])[0].get("url", "")
+        b64_data = res.json()["data"][0].get("b64_json", "")
+        return f"data:image/png;base64,{b64_data}"
 
 def format_html(text):
     import re

@@ -28,7 +28,7 @@ const BlogAgentSection = ({ onOpenBooking }) => {
             icon: <Wand2 className="w-8 h-8" style={{ color: TEAL }} />,
             title: "Content Generation",
             badge: "Perplexity AI",
-            desc: "Injects SERP-sourced topic and keywords into a writing prompt to craft a fully SEO-optimized article.",
+            desc: "Injects SERP-sourced topic and keywords into a writing prompt to craft a fully GEO-optimized article.",
             delay: 0.5
         },
         {
@@ -42,7 +42,7 @@ const BlogAgentSection = ({ onOpenBooking }) => {
             icon: <Globe className="w-8 h-8" style={{ color: TEAL }} />,
             title: "Auto-Publish",
             badge: "WordPress",
-            desc: "Posts directly to your website with images, SEO title, and tags — fully hands-free.",
+            desc: "Posts directly to your website with images, GEO title, and tags — fully hands-free.",
             delay: 0.8
         }
     ];
@@ -83,7 +83,7 @@ const BlogAgentSection = ({ onOpenBooking }) => {
                         className="text-4xl md:text-5xl lg:text-5xl font-black tracking-tight mb-6 leading-[1.08] text-black"
                         style={{ fontFamily: "'Space Grotesk', sans-serif", letterSpacing: '-0.03em' }}
                     >
-                        Automate Your SEO with the<br />
+                        Automate Your GEO with the<br />
                         <span style={{ color: TEAL }}>
                             Blog AI Agent
                         </span>
@@ -96,7 +96,7 @@ const BlogAgentSection = ({ onOpenBooking }) => {
                         className="text-base md:text-lg font-medium text-black mx-auto max-w-xl leading-relaxed"
                     >
                         Stop writing manually. Our autonomous agent takes your keywords and turns them into
-                        fully-formatted, SEO-optimized blog posts published straight to your website.
+                        fully-formatted, GEO-optimized blog posts published straight to your website.
                     </motion.p>
                 </div>
 
@@ -191,7 +191,7 @@ const BlogAgentSection = ({ onOpenBooking }) => {
                     className="mt-16 flex flex-col sm:flex-row justify-center items-center gap-4"
                 >
                     <button
-                        onClick={() => navigate('/dashboard/agents/seo')}
+                        onClick={() => navigate('/dashboard/agents/geo')}
                         className="group inline-flex items-center gap-3 font-extrabold text-base transition-all"
                         style={{
                             background: TEAL,
@@ -204,7 +204,7 @@ const BlogAgentSection = ({ onOpenBooking }) => {
                             fontFamily: "'Space Grotesk', sans-serif",
                         }}
                     >
-                        Try the SEO AI Agent <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
+                        Try the GEO (Generative) AI Agent <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
                     </button>
 
                     <button

@@ -453,15 +453,15 @@ export const REENGAGEMENT_EMAIL_TEMPLATES = [
 export const REENGAGEMENT_DELAYS = [0, 4, 9, 14];
 
 // ── SEO MARKETING SEQUENCE (5 emails · 14 days) ──────────────────────────────
-// Special sequence for importing leads interested in SEO AI Agent services
+// Special sequence for importing leads interested in GEO (Generative) AI Agent services
 export const SEO_MARKETING_EMAIL_TEMPLATES = [
     // Step 0 — Immediate
     {
-        subject: `Your AI SEO Agent is Ready 🚀`,
-        preview: `Generate SEO-optimized articles in minutes, not days.`,
+        subject: `Your AI GEO Agent is Ready 🚀`,
+        preview: `Generate GEO-optimized articles in minutes, not days.`,
         html: (name) => emailLayout(`
             ${p(`Hey ${name || 'there'},`)}
-            ${p(`Welcome to the Bitlance SEO AI Agent — the fastest way to generate SEO-optimized content at scale.`)}
+            ${p(`Welcome to the Bitlance GEO (Generative) AI Agent — the fastest way to generate GEO-optimized content at scale.`)}
             ${p(`In just <strong>minutes</strong>, you can:`)}
             <ul style="font-size:15px;color:#333;line-height:2;padding-left:20px;margin:0 0 16px;">
               <li>Generate fully-researched blog posts optimized for Google</li>
@@ -470,7 +470,7 @@ export const SEO_MARKETING_EMAIL_TEMPLATES = [
               <li>Get SEO-optimized content without hiring writers</li>
             </ul>
             ${p(`Let me show you how it works.`)}
-            ${btn('See SEO Agent in Action', `${BASE_URL}/features/seo-agent`)}
+            ${btn('See GEO Agent in Action', `${BASE_URL}/features/seo-agent`)}
             ${p(`— Team Bitlance`)}
         `)
     },
@@ -488,7 +488,7 @@ export const SEO_MARKETING_EMAIL_TEMPLATES = [
               <li><strong>Publishing automated:</strong> Content goes live with internal links and formatting</li>
               <li><strong>Rankings improve faster:</strong> More topical authority = faster SERP gains</li>
             </ul>
-            ${p(`The Bitlance SEO Agent does all of this. You just pick a topic.`)}
+            ${p(`The Bitlance GEO Agent does all of this. You just pick a topic.`)}
             ${btn('Try It Free', `${BASE_URL}/dashboard/agents/seo`)}
             ${p(`— Team Bitlance`)}
         `)
@@ -505,7 +505,7 @@ export const SEO_MARKETING_EMAIL_TEMPLATES = [
               <li><strong>Publishing to WordPress:</strong> 30 minutes (formatting, SEO tags, internal links)</li>
               <li><strong>Total per article:</strong> 5–7 hours</li>
             </ul>
-            ${p(`With the SEO Agent:`)}
+            ${p(`With the GEO Agent:`)}
             <ul style="font-size:15px;color:#333;line-height:2;padding-left:20px;margin:0 0 16px;">
               <li><strong>AI generates article:</strong> 2 minutes</li>
               <li><strong>Auto-publishes:</strong> 1 minute</li>
@@ -529,7 +529,7 @@ export const SEO_MARKETING_EMAIL_TEMPLATES = [
               <li><strong>Authority:</strong> Citations and links from trusted sources</li>
               <li><strong>Trustworthiness:</strong> Transparent, fact-checked information</li>
             </ul>
-            ${p(`The Bitlance SEO Agent builds in E-E-A-T signals automatically:`)}
+            ${p(`The Bitlance GEO Agent builds in E-E-A-T signals automatically:`)}
             <ul style="font-size:15px;color:#333;line-height:2;padding-left:20px;margin:0 0 16px;">
               <li>Research-backed claims with sources</li>
               <li>Internal linking to establish topical authority</li>
@@ -547,15 +547,15 @@ export const SEO_MARKETING_EMAIL_TEMPLATES = [
         preview: `The time to start was yesterday. Today works too.`,
         html: (name) => emailLayout(`
             ${p(`Hey ${name || 'there'},`)}
-            ${p(`You've spent two weeks learning about the SEO Agent.`)}
+            ${p(`You've spent two weeks learning about the GEO Agent.`)}
             ${p(`Time to go from learning to doing.`)}
             ${p(`You have two options:`)}
             <ul style="font-size:15px;color:#333;line-height:2;padding-left:20px;margin:0 0 16px;">
               <li><strong>Option A:</strong> Keep writing 5 articles a month manually, spending 40 hours on content</li>
-              <li><strong>Option B:</strong> Use the SEO Agent to generate 50 articles per month in 2.5 hours</li>
+              <li><strong>Option B:</strong> Use the GEO Agent to generate 50 articles per month in 2.5 hours</li>
             </ul>
-            ${p(`The difference over a year? 480 extra hours. 45 extra SEO articles ranking for you.`)}
-            ${btn('Upgrade to SEO Premium', `${BASE_URL}/pricing`)}
+            ${p(`The difference over a year? 480 extra hours. 45 extra GEO articles ranking for you.`)}
+            ${btn('Upgrade to GEO Premium', `${BASE_URL}/pricing`)}
             ${p(`Questions? Reply to this email — a real person will answer.`)}
             ${p(`— Team Bitlance`)}
         `)

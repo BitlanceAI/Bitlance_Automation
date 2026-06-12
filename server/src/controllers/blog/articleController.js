@@ -139,7 +139,7 @@ export const generateAndSaveArticleInternal = async ({
     userId, token, topic, industry, keywords, language, style, length, audience,
     image_option, custom_image_url, wp_url, wp_api_url, interlinks, author_name, author_bio, author_profile_id,
     author_details, category = 'Technology', tags = [], is_published = false,
-    custom_slug, target_table
+    custom_slug, target_table, optimization_mode = 'GEO', skip_notification = false, brand_context_id = null
 }) => {
     const tableName = getTableName(userId, target_table);
 
@@ -152,9 +152,9 @@ export const generateAndSaveArticleInternal = async ({
         const genRes = await axios.post(
             `${PYTHON_API_URL}/api/blog/generate`,
             {
-                topic, industry, keywords, language, style, length, audience, image_option, custom_image_url, wp_url, wp_api_url, interlinks
+                topic, industry, keywords, language, style, length, audience, image_option, custom_image_url, wp_url, wp_api_url, interlinks, optimization_mode, brand_context_id
             },
-            { headers: { Authorization: `Bearer ${token}` }, timeout: 300000 }
+            { headers: { Authorization: `Bearer ${token}` }, timeout: 600000 }
         );
         genData = genRes.data;
         if (!genData.success) throw new Error(genData.error || 'Generation failed');
@@ -206,6 +206,7 @@ export const generateAndSaveArticleInternal = async ({
         estimated_read_time: readTime,
         social_share_enabled: true,
         comments_enabled: true,
+        optimization_mode: optimization_mode,
     };
 
     const { data: savedArticle, error: saveError } = await (tableName === 'company_articles' ? supabaseAdmin : scoped)
@@ -222,9 +223,10 @@ export const generateAndSaveArticleInternal = async ({
     // ── 5. Deduct credits ─────────────────────────────────────────────────────
     let ledgerResult = {};
     try {
+        const agentTypeForCost = optimization_mode?.toUpperCase() === 'GEO' ? 'geo_blog_dashboard' : 'seo_blog';
         ledgerResult = await CreditLedgerService.deductCreditsWithLedger({
             userId,
-            agentType: 'blog',
+            agentType: agentTypeForCost,
             referenceId: savedArticle.id,
             referenceTable: 'articles', // Force to 'articles' to satisfy DB constraint
             usageQuantity: 1,
@@ -235,7 +237,7 @@ export const generateAndSaveArticleInternal = async ({
     }
 
     // ── 6. Push notification — only for admin-published articles ─────────────
-    if (userId === ADMIN_ID && is_published) {
+    if (userId === ADMIN_ID && is_published && !skip_notification) {
         const articleUrl = `${process.env.APP_URL || 'https://www.bitlancetechhub.com'}/blogs/${slug}`;
         sendPushNotification(
             `New Article: ${finalTopic}`,
@@ -276,7 +278,9 @@ export const generateArticle = async (req, res) => {
 
     // ── 1. Credit pre-flight ──────────────────────────────────────────────────
     try {
-        const check = await CreditLedgerService.validateCredits(userId, 'blog', 1);
+        const optMode = req.body.optimization_mode?.toUpperCase() === 'GEO' ? 'GEO' : 'SEO';
+        const agentTypeForCost = optMode === 'GEO' ? 'geo_blog_dashboard' : 'seo_blog';
+        const check = await CreditLedgerService.validateCreditsAvailable(userId, agentTypeForCost, 1);
         if (!check.hasEnough) {
             return res.status(402).json({
                 success: false,
@@ -357,7 +361,9 @@ export const bulkGenerateArticles = async (req, res) => {
         }
 
         // Credit check for bulk
-        const check = await CreditLedgerService.validateCredits(userId, 'blog', rows.length);
+        // Assume mixed bulk will average out, or we can just use seo_blog cost as baseline.
+        // Since bulk doesn't explicitly have optimization_mode per row easily, we'll use 'seo_blog'.
+        const check = await CreditLedgerService.validateCreditsAvailable(userId, 'seo_blog', rows.length);
         if (!check.hasEnough) {
             return res.status(402).json({
                 success: false,
@@ -395,6 +401,7 @@ export const bulkGenerateArticles = async (req, res) => {
                         length: row.Length || 'Medium',
                         audience: row.Audience || 'General',
                         is_published: true,
+                        skip_notification: true, // Prevent notification spam during bulk generation
                     });
                     console.log(`[Bulk Gen ${i + 1}/${rows.length}] Success: "${topicLabel}"`);
                 } catch (error) {
@@ -541,7 +548,6 @@ export const deleteArticle = async (req, res) => {
     res.json({ success: true, message: 'Deleted' });
 };
 
-// Public endpoints (no auth needed)
 export const publicListBlogs = async (req, res) => {
     if (!supabaseAdmin) {
         console.error('publicListBlogs: supabaseAdmin is null — SUPABASE_SERVICE_ROLE_KEY is missing from .env');
@@ -552,28 +558,46 @@ export const publicListBlogs = async (req, res) => {
     const offset = (parseInt(page) - 1) * parseInt(limit);
 
     try {
-        const { data, error, count } = await supabaseAdmin
-            .from('company_articles')
-            .select('id, topic, seo_title, seo_description, image_url, featured_image, slug, category, tags, author_name, publish_date, created_at, estimated_read_time, word_count', { count: 'exact' })
-            .eq('is_published', true)
-            .order(sort, { ascending: order === 'asc' })
-            .range(offset, offset + parseInt(limit) - 1);
+        const selectFields = 'id, topic, seo_title, seo_description, image_url, featured_image, slug, category, tags, author_name, publish_date, created_at, estimated_read_time, word_count, optimization_mode';
 
-        if (error) {
-            const isConnectivity = error.message?.includes('fetch') || error.message?.includes('ECONNREFUSED') || error.message?.includes('timeout');
-            console.error('publicListBlogs Supabase error:', error.message);
-            return res.status(isConnectivity ? 503 : 500).json({
-                success: false,
-                error: isConnectivity
-                    ? 'Database temporarily unavailable — Supabase project may be paused. Visit supabase.com/dashboard to restore it.'
-                    : error.message
-            });
+        // Fetch from company_articles and client articles in parallel
+        const [companyRes, clientRes] = await Promise.all([
+            supabaseAdmin.from('company_articles').select(selectFields).eq('is_published', true),
+            supabaseAdmin.from('articles').select(selectFields).eq('is_published', true)
+        ]);
+
+        if (companyRes.error) {
+            console.error('publicListBlogs company error:', companyRes.error.message);
+        }
+        if (clientRes.error) {
+            console.error('publicListBlogs client error:', clientRes.error.message);
         }
 
+        let combined = [];
+        if (companyRes.data) combined.push(...companyRes.data);
+        if (clientRes.data) combined.push(...clientRes.data);
+
+        // Sort combined array
+        combined.sort((a, b) => {
+            const dateA = new Date(a[sort] || a.created_at);
+            const dateB = new Date(b[sort] || b.created_at);
+            return order === 'asc' ? dateA - dateB : dateB - dateA;
+        });
+
+        const count = combined.length;
         const totalPages = Math.ceil(count / parseInt(limit));
+        const paginatedData = combined.slice(offset, offset + parseInt(limit));
+
         res.json({
-            success: true, articles: data,
-            pagination: { currentPage: parseInt(page), totalPages, hasNextPage: parseInt(page) < totalPages, hasPrevPage: parseInt(page) > 1, total: count }
+            success: true,
+            articles: paginatedData,
+            pagination: {
+                currentPage: parseInt(page),
+                totalPages,
+                hasNextPage: parseInt(page) < totalPages,
+                hasPrevPage: parseInt(page) > 1,
+                total: count
+            }
         });
     } catch (err) {
         console.error('publicListBlogs unexpected error:', err.message);
@@ -590,7 +614,16 @@ export const publicGetBlog = async (req, res) => {
 
     try {
         const query = supabaseAdmin.from('company_articles').select('*').eq('is_published', true);
-        const { data, error } = await (isUuid ? query.eq('id', identifier) : query.eq('slug', identifier)).single();
+        let { data, error } = await (isUuid ? query.eq('id', identifier) : query.eq('slug', identifier)).single();
+        
+        // If not found in company_articles, check regular articles table
+        if (error || !data) {
+            const query2 = supabaseAdmin.from('articles').select('*');
+            const res2 = await (isUuid ? query2.eq('id', identifier) : query2.eq('slug', identifier)).single();
+            data = res2.data;
+            error = res2.error;
+        }
+
         if (error || !data) return res.status(404).json({ success: false, error: 'Article not found' });
         res.json({ success: true, article: data });
     } catch (err) {
@@ -615,11 +648,23 @@ export const publicGetComments = async (req, res) => {
         // First resolve the article_id if it's a slug
         let articleId = identifier;
         if (!isUuid) {
-            const { data: art, error: artErr } = await supabaseAdmin
+            let { data: art, error: artErr } = await supabaseAdmin
                 .from('company_articles')
                 .select('id')
                 .eq('slug', identifier)
                 .single();
+                
+            if (artErr || !art) {
+                // Fallback to regular articles table
+                const res2 = await supabaseAdmin
+                    .from('articles')
+                    .select('id')
+                    .eq('slug', identifier)
+                    .single();
+                art = res2.data;
+                artErr = res2.error;
+            }
+                
             if (artErr || !art) return res.status(404).json({ success: false, error: 'Article not found' });
             articleId = art.id;
         }
@@ -633,7 +678,7 @@ export const publicGetComments = async (req, res) => {
 
         if (error) {
             // Ignore if table doesn't exist yet, just return empty array instead of failing
-            if (error.code === '42P01') {
+            if (error.code === '42P01' || (error.message && error.message.includes('schema cache'))) {
                 return res.json({ success: true, comments: [] });
             }
             throw error;
@@ -660,11 +705,23 @@ export const publicPostComment = async (req, res) => {
         // First resolve the article_id if it's a slug
         let articleId = identifier;
         if (!isUuid) {
-            const { data: art, error: artErr } = await supabaseAdmin
+            let { data: art, error: artErr } = await supabaseAdmin
                 .from('company_articles')
                 .select('id')
                 .eq('slug', identifier)
                 .single();
+                
+            if (artErr || !art) {
+                // Fallback to regular articles table
+                const res2 = await supabaseAdmin
+                    .from('articles')
+                    .select('id')
+                    .eq('slug', identifier)
+                    .single();
+                art = res2.data;
+                artErr = res2.error;
+            }
+                
             if (artErr || !art) return res.status(404).json({ success: false, error: 'Article not found' });
             articleId = art.id;
         }
@@ -681,7 +738,7 @@ export const publicPostComment = async (req, res) => {
             .single();
 
         if (error) {
-            if (error.code === '42P01') {
+            if (error.code === '42P01' || (error.message && error.message.includes('schema cache'))) {
                 return res.status(400).json({ success: false, error: 'Comments table has not been created in Supabase yet.' });
             }
             throw error;
