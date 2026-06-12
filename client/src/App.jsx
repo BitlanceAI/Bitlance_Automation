@@ -16,6 +16,9 @@ const LandingPage = lazy(() => import('./pages/landing/LandingPage'));
 const SeoLandingPage = lazy(() => import('./pages/landing/SeoLandingPage'));
 const QuizLandingPage = lazy(() => import('./pages/landing/QuizLandingPage'));
 const ThankYouPage = lazy(() => import('./pages/landing/ThankYouPage'));
+const PartnerPortal = lazy(() => import('./pages/PartnerPortal'));
+const PartnerTestLab = lazy(() => import('./pages/PartnerTestLab'));
+const AdminApiKeys = lazy(() => import('./pages/AdminApiKeys'));
 
 // Auth
 const LoginPage = lazy(() => import('./pages/auth/LoginPage'));
@@ -186,6 +189,8 @@ function App() {
                 <Route path="/blogs" element={<PublicBlogListPage />} />
 
                 <Route path="/blogs/:id" element={<PublicArticlePage />} />
+                <Route path="/api-portal" element={<PartnerPortal />} />
+                <Route path="/api-test-lab" element={<PartnerTestLab />} />
                 <Route path="/login" element={
                   <PublicRoute>
                     <LoginPage />
@@ -272,6 +277,11 @@ function App() {
                   // TODO: Add AdminGuard
                   <AuthGuard>
                     <AdminDashboard />
+                  </AuthGuard>
+                } />
+                <Route path="/admin/api-keys" element={
+                  <AuthGuard>
+                    <AdminApiKeys />
                   </AuthGuard>
                 } />
                 <Route path="/admin/email-automation" element={

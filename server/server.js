@@ -289,6 +289,44 @@ function formatBlogToHTML(blogText) {
         .concat('</p>');
 }
 
+// Helper to call AI with Perplexity -> OpenAI fallback
+async function callAI(systemPrompt, userPrompt, maxTokens = 4000) {
+    try {
+        const response = await axios.post(
+            "https://api.perplexity.ai/chat/completions",
+            {
+                model: "sonar-pro",
+                messages: [
+                    { role: "system", content: systemPrompt },
+                    { role: "user", content: userPrompt },
+                ],
+                max_tokens: maxTokens,
+                n: 1,
+            },
+            {
+                headers: {
+                    Authorization: `Bearer ${process.env.PERPLEXITY_API_KEY}`,
+                    "Content-Type": "application/json",
+                },
+                timeout: 60000
+            }
+        );
+        return response.data.choices?.[0]?.message?.content;
+    } catch (err) {
+        console.error("Perplexity API failed, falling back to OpenAI:", err.message);
+        const fallbackResponse = await openai.chat.completions.create({
+            model: "gpt-4o",
+            messages: [
+                { role: "system", content: systemPrompt },
+                { role: "user", content: userPrompt },
+            ],
+            max_tokens: maxTokens,
+            n: 1,
+        });
+        return fallbackResponse.choices[0].message.content;
+    }
+}
+
 // Endpoint to generate SEO Article
 app.post('/api/articles/generate', async (req, res) => {
     try {
@@ -341,26 +379,14 @@ app.post('/api/articles/generate', async (req, res) => {
                 
                 Return ONLY the topic title, nothing else.`;
 
-                const topicResponse = await axios.post(
-                    "https://api.perplexity.ai/chat/completions",
-                    {
-                        model: "sonar-pro",
-                        messages: [
-                            { role: "system", content: "You are a professional content strategist." },
-                            { role: "user", content: topicPrompt },
-                        ],
-                        max_tokens: 100,
-                        n: 1,
-                    },
-                    {
-                        headers: {
-                            Authorization: `Bearer ${process.env.PERPLEXITY_API_KEY}`,
-                            "Content-Type": "application/json",
-                        },
-                    }
+                const topicResponseText = await callAI(
+                    "You are a professional content strategist.",
+                    topicPrompt,
+                    100
                 );
-                topic = topicResponse.data.choices?.[0]?.message?.content?.trim();
-                topic = topic.replace(/^["']|["']$/g, '');
+                
+                topic = topicResponseText?.trim();
+                if (topic) topic = topic.replace(/^["']|["']$/g, '');
                 console.log(`Generated topic: ${topic}`);
             } catch (err) {
                 console.error("Topic generation failed:", err);
@@ -371,26 +397,17 @@ app.post('/api/articles/generate', async (req, res) => {
         // --------- KEYWORD RESEARCH ---------
         let generatedKeywords = keywords;
         if (!keywords.trim()) {
-            const keywordPrompt = `Generate relevant keywords for "${topic}" as comma-separated list.`;
-            const keywordResponse = await axios.post(
-                "https://api.perplexity.ai/chat/completions",
-                {
-                    model: "sonar-pro",
-                    messages: [
-                        { role: "system", content: "You are an SEO expert." },
-                        { role: "user", content: keywordPrompt },
-                    ],
-                    max_tokens: 500,
-                    n: 1,
-                },
-                {
-                    headers: {
-                        Authorization: `Bearer ${process.env.PERPLEXITY_API_KEY}`,
-                        "Content-Type": "application/json",
-                    },
-                }
-            );
-            generatedKeywords = keywordResponse.data.choices?.[0]?.message?.content || "";
+            try {
+                const keywordPrompt = `Generate relevant keywords for "${topic}" as comma-separated list.`;
+                const keywordResponseText = await callAI(
+                    "You are an SEO expert.",
+                    keywordPrompt,
+                    500
+                );
+                generatedKeywords = keywordResponseText || "";
+            } catch (err) {
+                console.error("Keyword generation failed:", err.message);
+            }
         }
 
         // --------- BLOG GENERATION ---------
@@ -411,26 +428,22 @@ FORMATTING RULES:
 - Do NOT use [1], [2] citations. Insert valid external references as clickable HTML links (<a href="..." target="_blank">text</a>).
 
 Content:`;
-            const blogResponse = await axios.post(
-                "https://api.perplexity.ai/chat/completions",
-                {
-                    model: "sonar-pro",
-                    messages: [
-                        { role: "system", content: "You are an expert content writer. Always use Markdown headers (##, ###) for structure." },
-                        { role: "user", content: prompt },
-                    ],
-                    max_tokens: 4000,
-                },
-                {
-                    headers: {
-                        Authorization: `Bearer ${process.env.PERPLEXITY_API_KEY}`,
-                        "Content-Type": "application/json",
-                    },
-                }
-            );
+            try {
+                const blogResponseText = await callAI(
+                    "You are an expert content writer. Always use Markdown headers (##, ###) for structure.",
+                    prompt,
+                    4000
+                );
 
-            blogText += "\n\n" + (blogResponse.data.choices?.[0]?.message?.content || "");
-            wordCount = blogText.split(/\s+/).length;
+                blogText += "\n\n" + (blogResponseText || "");
+                wordCount = blogText.split(/\s+/).length;
+            } catch (err) {
+                console.error("Blog generation attempt failed:", err.message);
+            }
+        }
+
+        if (!blogText.trim()) {
+             return res.status(500).json({ error: "Failed to generate blog content after multiple attempts." });
         }
 
         // --------- AI SEO TITLE GENERATION ---------
@@ -444,26 +457,14 @@ Content:`;
 
   Return only the title, nothing else.`;
 
-            const titleResponse = await axios.post(
-                "https://api.perplexity.ai/chat/completions",
-                {
-                    model: "sonar-pro",
-                    messages: [
-                        { role: "system", content: "You are an expert SEO copywriter." },
-                        { role: "user", content: titlePrompt },
-                    ],
-                    max_tokens: 50,
-                    n: 1,
-                },
-                {
-                    headers: {
-                        Authorization: `Bearer ${process.env.PERPLEXITY_API_KEY}`,
-                        "Content-Type": "application/json",
-                    },
-                }
+            const titleResponseText = await callAI(
+                "You are an expert SEO copywriter.",
+                titlePrompt,
+                50
             );
 
-            seoTitle = titleResponse.data.choices?.[0]?.message?.content?.trim() || topic;
+            seoTitle = titleResponseText?.trim() || topic;
+            if (seoTitle) seoTitle = seoTitle.replace(/^["']|["']$/g, '');
 
         } catch (err) {
             console.error("SEO title generation failed:", err.message);
@@ -471,30 +472,23 @@ Content:`;
         }
 
         // --------- PLAGIARISM CHECK ---------
-        let plagiarismPrompt = `Check for plagiarism in this article. Reply "No plagiarism detected" if original, otherwise summarize detected parts:\n\n${blogText}`;
-        let plagiarismResponse = await axios.post(
-            "https://api.perplexity.ai/chat/completions",
-            {
-                model: "sonar-pro",
-                messages: [
-                    { role: "system", content: "You are a plagiarism checker." },
-                    { role: "user", content: plagiarismPrompt },
-                ],
-                max_tokens: 500,
-                n: 1,
-            },
-            {
-                headers: {
-                    Authorization: `Bearer ${process.env.PERPLEXITY_API_KEY}`,
-                    "Content-Type": "application/json",
-                },
+        let plagiarismResult = "No plagiarism detected";
+        try {
+            let plagiarismPrompt = `Check for plagiarism in this article. Reply "No plagiarism detected" if original, otherwise summarize detected parts:\n\n${blogText}`;
+            const plagiarismResponseText = await callAI(
+                "You are a plagiarism checker.",
+                plagiarismPrompt,
+                500
+            );
+
+            plagiarismResult = plagiarismResponseText || "No plagiarism detected";
+
+            if (!plagiarismResult.toLowerCase().includes("no plagiarism")) {
+                plagiarismResult += " ⚠️ Could not fully eliminate plagiarism, but the article is returned to user.";
             }
-        );
-
-        let plagiarismResult = plagiarismResponse.data.choices?.[0]?.message?.content || "No plagiarism detected";
-
-        if (!plagiarismResult.toLowerCase().includes("no plagiarism")) {
-            plagiarismResult += " ⚠️ Could not fully eliminate plagiarism, but the article is returned to user.";
+        } catch (err) {
+            console.error("Plagiarism check failed:", err.message);
+            plagiarismResult = "Plagiarism check unavailable ⚠️";
         }
 
         // --------- IMAGE GENERATION ---------
@@ -514,53 +508,29 @@ Topic: ${topic}
 
 Return only the headline text, nothing else.`;
 
-                const textResponse = await axios.post(
-                    "https://api.perplexity.ai/chat/completions",
-                    {
-                        model: "sonar-pro",
-                        messages: [
-                            { role: "system", content: "You are a marketing copywriter expert at creating catchy headlines." },
-                            { role: "user", content: textPrompt },
-                        ],
-                        max_tokens: 100,
-                        n: 1,
-                    },
-                    {
-                        headers: {
-                            Authorization: `Bearer ${process.env.PERPLEXITY_API_KEY}`,
-                            "Content-Type": "application/json",
-                        },
-                    }
+                const textResponseText = await callAI(
+                    "You are a marketing copywriter expert at creating catchy headlines.",
+                    textPrompt,
+                    100
                 );
 
-                imageText = textResponse.data.choices?.[0]?.message?.content?.trim() || topic;
+                imageText = textResponseText?.trim() || topic;
 
                 // Clean up the generated text (remove quotes, extra punctuation)
                 imageText = imageText.replace(/^["']|["']$/g, '').replace(/[^\w\s-]/g, '').trim();
 
                 console.log("AI-generated image text:", imageText);
-                const backgroundPrompt = `Create a professional blog header image about: ${topic}.
-
-VISUAL REQUIREMENTS:
-- High-quality, modern design with relevant visual elements
-- Blog header format (landscape orientation, 16:9 ratio)
-- Clean, professional appearance suitable for publication
-
-TEXT OVERLAY REQUIREMENTS:
-- Include the exact text: "${imageText}"
-- Text must be spelled EXACTLY as written above, character by character
-- Place text prominently, readable, and well-positioned on the image
-- Use clean, modern typography (sans-serif font recommended)
-
-CRITICAL: The text "${imageText}" must appear exactly as written, with perfect spelling and clear visibility.`;
+                // Keep prompt concise — fewer tokens = faster + cheaper generation
+                const backgroundPrompt = `Professional blog header image about "${topic}". Modern, clean design. Bold sans-serif text overlay: "${imageText}".`;
                 const imageResponse = await axios.post(
                     "https://api.openai.com/v1/images/generations",
                     {
-                        model: "dall-e-3",
+                        model: "gpt-image-2",
                         prompt: backgroundPrompt,
                         n: 1,
-                        size: "1792x1024",
-                        response_format: "url"
+                        size: "1024x1024",
+                        quality: "low"  // ~$0.011/image vs ~$0.040 for high — 73% cheaper
+                        // NOTE: gpt-image-2 always returns b64_json — response_format is not supported
                     },
                     {
                         headers: {
@@ -570,21 +540,29 @@ CRITICAL: The text "${imageText}" must appear exactly as written, with perfect s
                     }
                 );
 
-                const backgroundUrl = imageResponse.data.data[0]?.url;
+                const b64Image = imageResponse.data.data[0]?.b64_json;
 
-                if (backgroundUrl) {
-                    imageUrl = backgroundUrl;
+                if (b64Image) {
+                    // Upload base64 image to Supabase Storage and get a public URL
+                    const uploadedUrl = await uploadDesignImage(b64Image, `blog_${Date.now()}`);
+                    if (uploadedUrl) {
+                        imageUrl = uploadedUrl;
+                    } else {
+                        throw new Error("Supabase image upload failed after generation");
+                    }
                 } else {
-                    throw new Error("No background image generated");
+                    throw new Error("No image data returned from gpt-image-2");
                 }
 
             } catch (error) {
                 console.error("AI text/image generation failed:", error.message);
 
-                // Fallback: use topic as text and generate simple image
-                imageText = topic;
-                const encodedText = encodeURIComponent(imageText.substring(0, 50));
-                imageUrl = `https://via.placeholder.com/1792x1024/2563eb/ffffff?text=${encodedText}`;
+                // Fallback: loremflickr stock photo based on topic keywords
+                const topicWords = topic.replace(/[^a-zA-Z0-9\s]/g, '').split(' ')
+                    .filter(w => !['the','a','an','of','and','in','to','for','on','with','is','how','what','why'].includes(w.toLowerCase()))
+                    .slice(0, 2);
+                const query = topicWords.length > 0 ? topicWords.join('-') : 'technology';
+                imageUrl = `https://loremflickr.com/1024/576/${query},business/all`;
             }
         }
 
