@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../../services/supabaseClient';
-import { Building2, Plus, Check, Loader2 } from 'lucide-react';
+import { Building2, Plus, Check, Loader2, Trash2 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
 export default function BrandProfileSelection({ onSelect }) {
@@ -55,6 +55,35 @@ export default function BrandProfileSelection({ onSelect }) {
     const handleSelect = (id) => {
         setSelectedId(id);
         onSelect(id);
+    };
+
+    const handleDelete = async (e, id) => {
+        e.stopPropagation();
+        if (!window.confirm("Are you sure you want to remove this brand profile?")) return;
+
+        try {
+            const { error } = await supabase
+                .from('brand_contexts')
+                .delete()
+                .eq('id', id);
+
+            if (error) throw error;
+
+            const remaining = profiles.filter(p => p.id !== id);
+            setProfiles(remaining);
+            if (selectedId === id) {
+                if (remaining.length > 0) {
+                    setSelectedId(remaining[0].id);
+                    onSelect(remaining[0].id);
+                } else {
+                    setSelectedId(null);
+                    onSelect(null);
+                }
+            }
+        } catch (error) {
+            console.error("Error deleting profile:", error);
+            alert("Failed to delete brand profile.");
+        }
     };
 
     const handleSaveNew = async (e) => {
@@ -164,9 +193,19 @@ export default function BrandProfileSelection({ onSelect }) {
                                         <div className="font-mono text-xs font-bold text-slate-900 truncate">
                                             {profile.company_name}
                                         </div>
-                                        {selectedId === profile.id && (
-                                            <Check className="w-3.5 h-3.5 text-[#26cece] flex-shrink-0" />
-                                        )}
+                                        <div className="flex items-center gap-2">
+                                            {selectedId === profile.id && (
+                                                <Check className="w-3.5 h-3.5 text-[#26cece] flex-shrink-0" />
+                                            )}
+                                            <button
+                                                type="button"
+                                                onClick={(e) => handleDelete(e, profile.id)}
+                                                className="text-slate-400 hover:text-red-500 transition-colors"
+                                                title="Remove Brand"
+                                            >
+                                                <Trash2 className="w-3.5 h-3.5" />
+                                            </button>
+                                        </div>
                                     </div>
                                     <div className="text-[10px] text-slate-500 font-mono mt-1 truncate">
                                         {profile.industries}

@@ -190,15 +190,20 @@ def list_api_keys(user_id: str = Depends(require_admin)):
     sb = get_admin_supabase()
     try:
         result = sb.table("api_keys").select(
-            "id, user_id, plan, status, label, expires_at, created_at"
+            "id, user_id, plan, status, label, expires_at, created_at, api_key"
         ).order("created_at", desc=True).execute()
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+    keys = result.data or []
+    for k in keys:
+        if "api_key" in k and k["api_key"]:
+            k["prefix"] = k["api_key"][:16]
+
     return {
         "success": True,
-        "total": len(result.data or []),
-        "keys": result.data or []
+        "total": len(keys),
+        "keys": keys
     }
 
 

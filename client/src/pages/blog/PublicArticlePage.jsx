@@ -174,6 +174,25 @@ const PublicArticlePage = () => {
     const wordCount = article.word_count || article.content?.split(/\s+/).length || 0;
     const readingTime = Math.ceil(wordCount / 200);
 
+    let formattedContent = article.content || '';
+    // Fix privacy error: convert absolute bitlancetechhub.com links to relative links
+    formattedContent = formattedContent.replace(/https?:\/\/(www\.)?bitlancetechhub\.com/gi, '');
+    
+    // Extract footer for formal display
+    const footerRegex = /^(?:###\s*)?\*?\*?author:\s*\*?\*?\s*(.*?)\s*\|\s*\*?\*?reviewed by:\s*\*?\*?\s*(.*?)\s*\|\s*\*?\*?last updated:\s*\*?\*?\s*(.*)$/im;
+    const footerMatch = formattedContent.match(footerRegex);
+    let extractedFooter = null;
+
+    if (footerMatch) {
+        extractedFooter = {
+            author: footerMatch[1].replace(/\*|_|#/g, '').trim(),
+            reviewedBy: footerMatch[2].replace(/\*|_|#/g, '').trim(),
+            lastUpdated: footerMatch[3].replace(/\*|_|#/g, '').trim()
+        };
+        // Remove it from the markdown content
+        formattedContent = formattedContent.replace(footerRegex, '');
+    }
+
 
 
     return (
@@ -311,7 +330,7 @@ const PublicArticlePage = () => {
                             remarkPlugins={[remarkGfm]}
                             rehypePlugins={[rehypeRaw]}
                         >
-                            {article.content}
+                            {formattedContent}
                         </ReactMarkdown>
                     </div>
                     
@@ -323,6 +342,24 @@ const PublicArticlePage = () => {
                         .prose code { color: ${TEAL}; background: #f9fafb; padding: 0.2rem 0.4rem; border: 1px solid #e5e7eb; }
                         .prose pre { background: #ffffff; border: 1px solid #e5e7eb; }
                     `}} />
+
+                    {/* Formal Extracted Footer */}
+                    {extractedFooter && (
+                        <div className="mt-16 p-8 bg-slate-50 border-l-4 border-[#26CECE] shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-4 text-[12px] font-medium text-slate-600 font-mono">
+                            <div className="flex items-center gap-3">
+                                <span className="text-slate-400">AUTHOR:</span>
+                                <span className="text-slate-900 font-bold uppercase">{extractedFooter.author}</span>
+                            </div>
+                            <div className="flex items-center gap-3">
+                                <span className="text-slate-400">REVIEWED BY:</span>
+                                <span className="text-slate-900 font-bold uppercase">{extractedFooter.reviewedBy}</span>
+                            </div>
+                            <div className="flex items-center gap-3">
+                                <span className="text-slate-400">UPDATED:</span>
+                                <span className="text-slate-900 uppercase">{extractedFooter.lastUpdated}</span>
+                            </div>
+                        </div>
+                    )}
 
                     {/* Tags Section */}
                     {article.tags && article.tags.length > 0 && (
