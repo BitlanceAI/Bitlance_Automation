@@ -14,7 +14,7 @@ import whatsappRoutes from './src/routes/whatsappRoutes.js';
 import articleRoutes from './src/routes/articleRoutes.js';
 import wordpressRoutes from './src/routes/wordpressRoutes.js';
 
-// Load environment variables
+// Load environment variables from .env file
 dotenv.config();
 
 const __filename = fileURLToPath(import.meta.url);
