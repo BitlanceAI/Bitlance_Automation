@@ -1,18 +1,10 @@
 name: bitlance-automation
 region: sgp   # Singapore — closest to India
 
-ingress:
-  rules:
-    - component:
-        name: bitlance-backend
-      match:
-        path:
-          prefix: /
-
 services:
 
-  # ─── Node.js Express Backend ───────────────────────────────────────────────
-  - name: bitlance-backend
+  # ─── Node.js Express Backend (Public Service) ──────────────────────────────
+  - name: bitlance-automation
     source_dir: /server
     dockerfile_path: server/Dockerfile
     github:
@@ -30,7 +22,7 @@ services:
       - key: PORT
         value: "3001"
       - key: PYTHON_API_URL
-        value: ${bitlance-ai-agent.PRIVATE_URL}   # internal service URL
+        value: ${bitlance-ai-agent.PRIVATE_URL}
       - key: GRAPHIC_AGENT_URL
         value: ${bitlance-ai-agent.PRIVATE_URL}
       - key: SUPABASE_URL
@@ -64,7 +56,7 @@ services:
         value: "REPLACE_WITH_YOUR_VALUE"
         type: SECRET
 
-  # ─── Python FastAPI AI Agent ────────────────────────────────────────────────
+  # ─── Python FastAPI AI Agent (Private Internal Service) ────────────────────
   - name: bitlance-ai-agent
     source_dir: /Ai-agents
     dockerfile_path: Ai-agents/Dockerfile
@@ -73,8 +65,9 @@ services:
       branch: main
       deploy_on_push: true
     instance_count: 1
-    instance_size_slug: professional-s    # 1 vCPU, 1GB RAM (AI needs more)
-    http_port: 8001
+    instance_size_slug: professional-s    # 1 vCPU, 1GB RAM ($12/mo)
+    internal_ports:                       # Makes the service private/internal
+      - 8001
     health_check:
       http_path: /
     envs:
