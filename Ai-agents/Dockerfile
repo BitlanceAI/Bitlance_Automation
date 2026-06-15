@@ -25,8 +25,8 @@ RUN mkdir -p outputs
 
 # Azure App Service sends PORT env var (usually 8000 or 80)
 # Default to 8000 if not set
-ENV PORT=8000
-EXPOSE 8000
+ENV PORT=8001
+EXPOSE 8001
 
 # Health check for Azure — app must respond at / within timeout
 HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
