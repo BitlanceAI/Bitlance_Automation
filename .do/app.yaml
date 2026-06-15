@@ -45,7 +45,7 @@ services:
     dockerfile_path: Ai-agents/Dockerfile
     github:
       repo: BitlanceAI/Bitlance_Automation
-      branch: uttam
+      branch: main
       deploy_on_push: true
     instance_count: 1
     instance_size_slug: professional-s    # 1 vCPU, 1GB RAM (AI needs more)
