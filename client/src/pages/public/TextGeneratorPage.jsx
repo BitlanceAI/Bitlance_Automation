@@ -63,7 +63,7 @@ const TextGeneratorPage = () => {
     return (
         <div className="min-h-screen bg-gray-50 dark:bg-slate-900 pt-24 pb-12 px-4 sm:px-6 lg:px-8 transition-colors duration-300">
             <SEOHead canonicalUrl="https://www.bitlancetechhub.com/text-generator" title="AI Text Generator" description="Generate high-quality paragraphs, bullet points, and content with our AI Text Generator." />
-            
+
             <div className="max-w-4xl mx-auto">
                 <div className="text-center mb-10">
                     <div className="inline-flex justify-center items-center p-3 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 shadow-xl shadow-indigo-500/20 mb-6 mt-4">
@@ -168,7 +168,7 @@ const TextGeneratorPage = () => {
                                     </button>
                                 )}
                             </div>
-                            
+
                             <div className={`flex-1 min-h-[300px] p-5 rounded-2xl border ${result ? 'border-indigo-100 dark:border-indigo-900/50 bg-indigo-50/30 dark:bg-indigo-900/10' : 'border-dashed border-gray-200 dark:border-slate-700 bg-gray-50/50 dark:bg-slate-800/50 flex items-center justify-center'}`}>
                                 {loading ? (
                                     <div className="flex flex-col items-center text-gray-400 dark:text-gray-500">

@@ -20,11 +20,11 @@ const Footer = () => {
                             Empowering businesses with intelligent automation. 24/7 engagement, instant qualification, and seamless scheduling.
                         </p>
                         <div className="flex gap-3">
-                            <a href="https://www.linkedin.com/company/bitlance-tech-hub-pvt-ltd/" 
-                               target="_blank" rel="noopener noreferrer"
-                               aria-label="Visit our LinkedIn page"
-                               className="w-8 h-8 flex items-center justify-center transition-all group hover:border-[#26CECE]"
-                               style={{ background: '#ffffff', border: '1px solid #e5e7eb', borderRadius: 2 }}
+                            <a href="https://www.linkedin.com/company/bitlance-tech-hub-pvt-ltd/"
+                                target="_blank" rel="noopener noreferrer"
+                                aria-label="Visit our LinkedIn page"
+                                className="w-8 h-8 flex items-center justify-center transition-all group hover:border-[#26CECE]"
+                                style={{ background: '#ffffff', border: '1px solid #e5e7eb', borderRadius: 2 }}
                             >
                                 <Linkedin size={15} className="font-medium text-black group-hover:text-[#26CECE] transition-colors" />
                             </a>
@@ -46,7 +46,7 @@ const Footer = () => {
                         <h4 className="text-black font-extrabold mb-3 text-xs uppercase tracking-widest" style={{ fontFamily: "'DM Mono',monospace" }}>Address</h4>
                         <div className="flex items-start gap-2 group">
                             <div className="mt-0.5 w-6 h-6 flex items-center justify-center shrink-0 transition-all"
-                                 style={{ background: '#ffffff', border: '1px solid #e5e7eb', borderRadius: 2 }}>
+                                style={{ background: '#ffffff', border: '1px solid #e5e7eb', borderRadius: 2 }}>
                                 <MapPin size={13} style={{ color: TEAL }} />
                             </div>
                             <p className="text-xs leading-relaxed text-gray-700">
@@ -64,7 +64,7 @@ const Footer = () => {
                         <ul className="space-y-3 text-xs">
                             <li className="flex items-center gap-2 group">
                                 <div className="w-6 h-6 flex items-center justify-center shrink-0 transition-all group-hover:border-[#26CECE]"
-                                     style={{ background: '#ffffff', border: '1px solid #e5e7eb', borderRadius: 2 }}>
+                                    style={{ background: '#ffffff', border: '1px solid #e5e7eb', borderRadius: 2 }}>
                                     <Mail size={13} className="text-gray-600 group-hover:text-[#26CECE] transition-colors" />
                                 </div>
                                 <a href="mailto:ceo@bitlancetechhub.com" className="text-gray-700 group-hover:text-black transition-colors break-all">
@@ -73,7 +73,7 @@ const Footer = () => {
                             </li>
                             <li className="flex items-center gap-2 group">
                                 <div className="w-6 h-6 flex items-center justify-center shrink-0 transition-all group-hover:border-[#26CECE]"
-                                     style={{ background: '#ffffff', border: '1px solid #e5e7eb', borderRadius: 2 }}>
+                                    style={{ background: '#ffffff', border: '1px solid #e5e7eb', borderRadius: 2 }}>
                                     <Phone size={13} className="text-gray-600 group-hover:text-[#26CECE] transition-colors" />
                                 </div>
                                 <a href="tel:+917391025059" className="text-gray-700 group-hover:text-black transition-colors">

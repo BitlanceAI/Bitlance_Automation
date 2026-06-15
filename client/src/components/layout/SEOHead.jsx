@@ -16,7 +16,7 @@ const SEOHead = ({
 }) => {
     const siteName = 'Bitlance Tech Hub';
     const fullTitle = title ? `${title} | ${siteName}` : siteName;
-    
+
     // Normalize canonical URL: strip query params/hashes, and force primary HTTPS WWW domain
     let currentUrl = canonicalUrl;
     if (!currentUrl && typeof window !== 'undefined') {
@@ -25,7 +25,7 @@ const SEOHead = ({
     } else if (!currentUrl) {
         currentUrl = 'https://www.bitlancetechhub.com/';
     }
-    
+
     const defaultImage = '/og-image.jpg';
     const image = ogImage || defaultImage;
 

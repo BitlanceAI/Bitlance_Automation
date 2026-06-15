@@ -491,7 +491,7 @@ def generate_blog_content(
         faq_section = ""
         if mode == "GEO":
             faq_section = f"""
-11. FAQ SECTION  (H2: "Frequently Asked Questions About {primary_keyword}")
+## Frequently Asked Questions About {primary_keyword}
    - Add EXACTLY 5 Q&A pairs directly related to '{primary_keyword}'.
    - {paa_instructions if paa_instructions else f"Generate 5 highly relevant 'People Also Ask' style questions specifically about {primary_keyword}."}
    - Format:
@@ -1040,7 +1040,7 @@ def openai_generate_blog_content(
     faq_section = ""
     if mode == "GEO":
         faq_section = f"""
-11. FAQ SECTION  (H2: "Frequently Asked Questions About {primary_keyword}")
+## Frequently Asked Questions About {primary_keyword}
    - Add EXACTLY 5 Q&A pairs directly related to '{primary_keyword}'.
    - {paa_instructions if paa_instructions else f"Generate 5 highly relevant 'People Also Ask' style questions specifically about {primary_keyword}."}
    - Format:
@@ -1253,7 +1253,7 @@ def generate_image(topic: str, image_text: str) -> str:
         # Keep image_text to max 3 words to prevent text overflow/clipping in the image
         safe_image_text = ' '.join(image_text.split()[:3])
         # Keep prompt concise — fewer tokens = faster + cheaper
-        prompt = f"Professional blog header image for the topic \"{topic}\". Modern, clean, minimal design with a wide open area for text. Large bold sans-serif white text centered in the image: \"{safe_image_text}\". Ensure all text is fully visible and not cropped. No extra text or logos."
+        prompt = f"Professional blog header image for the topic \"{topic}\". Modern, clean, minimal design with a wide open area for text. Large bold sans-serif white text perfectly centered in the image: \"{safe_image_text}\". Keep the text well within the margins and ensure all text is fully visible, properly rendered, and not cut off or cropped at the edges. No extra text or logos."
         payload = {
             "model": "gpt-image-2",
             "prompt": prompt,

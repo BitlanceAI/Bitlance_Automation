@@ -269,8 +269,8 @@ const BlogAgentFeaturesPage = () => {
                                         VIDEO_URL.includes('youtube.com/watch')
                                             ? VIDEO_URL.replace('watch?v=', 'embed/')
                                             : VIDEO_URL.includes('youtu.be/')
-                                            ? VIDEO_URL.replace('youtu.be/', 'www.youtube.com/embed/')
-                                            : VIDEO_URL
+                                                ? VIDEO_URL.replace('youtu.be/', 'www.youtube.com/embed/')
+                                                : VIDEO_URL
                                     }
                                     title="GEO (Generative) AI Agent Demo"
                                     className="absolute inset-0 w-full h-full"

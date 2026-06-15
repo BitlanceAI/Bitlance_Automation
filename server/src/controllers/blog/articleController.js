@@ -615,7 +615,7 @@ export const publicGetBlog = async (req, res) => {
     try {
         const query = supabaseAdmin.from('company_articles').select('*').eq('is_published', true);
         let { data, error } = await (isUuid ? query.eq('id', identifier) : query.eq('slug', identifier)).single();
-        
+
         // If not found in company_articles, check regular articles table
         if (error || !data) {
             const query2 = supabaseAdmin.from('articles').select('*');
@@ -653,7 +653,7 @@ export const publicGetComments = async (req, res) => {
                 .select('id')
                 .eq('slug', identifier)
                 .single();
-                
+
             if (artErr || !art) {
                 // Fallback to regular articles table
                 const res2 = await supabaseAdmin
@@ -664,7 +664,7 @@ export const publicGetComments = async (req, res) => {
                 art = res2.data;
                 artErr = res2.error;
             }
-                
+
             if (artErr || !art) return res.status(404).json({ success: false, error: 'Article not found' });
             articleId = art.id;
         }
@@ -710,7 +710,7 @@ export const publicPostComment = async (req, res) => {
                 .select('id')
                 .eq('slug', identifier)
                 .single();
-                
+
             if (artErr || !art) {
                 // Fallback to regular articles table
                 const res2 = await supabaseAdmin
@@ -721,7 +721,7 @@ export const publicPostComment = async (req, res) => {
                 art = res2.data;
                 artErr = res2.error;
             }
-                
+
             if (artErr || !art) return res.status(404).json({ success: false, error: 'Article not found' });
             articleId = art.id;
         }

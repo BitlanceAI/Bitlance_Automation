@@ -142,7 +142,7 @@ def generate_blog(request: Request, body: GenerateBlogRequest):
         # Determine dynamic author
         if not body.author_name:
             if "lotlite" in company_name_str.lower() or (brand_context and any("lotlite" in str(v).lower() for v in brand_context.values() if isinstance(v, str))):
-                body.author_name = "Alok Kumar"
+                body.author_name = "Anurag Dhole"
             else:
                 body.author_name = f"{company_name_str} Editorial Team"
         # ── 1. Industry mode: auto-generate topic + keywords ──────────────────────
