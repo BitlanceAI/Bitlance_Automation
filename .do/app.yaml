@@ -1,6 +1,14 @@
 name: bitlance-automation
 region: sgp   # Singapore — closest to India
 
+ingress:
+  rules:
+    - component:
+        name: bitlance-backend
+      match:
+        path:
+          prefix: /
+
 services:
 
   # ─── Node.js Express Backend ───────────────────────────────────────────────
@@ -8,11 +16,11 @@ services:
     source_dir: /server
     dockerfile_path: server/Dockerfile
     github:
-      repo: codexuttam/Bitlance_Automation
+      repo: BitlanceAI/Bitlance_Automation
       branch: main
       deploy_on_push: true
     instance_count: 1
-    instance_size_slug: professional-xs   # 1 vCPU, 512MB RAM
+    instance_size_slug: professional-xs   # 1 vCPU, 512MB RAM ($12/mo)
     http_port: 3001
     health_check:
       http_path: /health
@@ -25,17 +33,34 @@ services:
         value: ${bitlance-ai-agent.PRIVATE_URL}   # internal service URL
       - key: GRAPHIC_AGENT_URL
         value: ${bitlance-ai-agent.PRIVATE_URL}
-      # ── Add your real secrets below ──
       - key: SUPABASE_URL
         value: "REPLACE_WITH_YOUR_VALUE"
         type: SECRET
       - key: SUPABASE_SERVICE_ROLE_KEY
         value: "REPLACE_WITH_YOUR_VALUE"
         type: SECRET
+      - key: SUPABASE_KEY
+        value: "REPLACE_WITH_YOUR_VALUE"
+        type: SECRET
+      - key: SUPABASE_JWT_SECRET
+        value: "REPLACE_WITH_YOUR_VALUE"
+        type: SECRET
       - key: OPENAI_API_KEY
         value: "REPLACE_WITH_YOUR_VALUE"
         type: SECRET
       - key: PERPLEXITY_API_KEY
+        value: "REPLACE_WITH_YOUR_VALUE"
+        type: SECRET
+      - key: ENCRYPTION_KEY
+        value: "REPLACE_WITH_YOUR_VALUE"
+        type: SECRET
+      - key: ONESIGNAL_APP_ID
+        value: "REPLACE_WITH_YOUR_VALUE"
+        type: SECRET
+      - key: ONESIGNAL_REST_API_KEY
+        value: "REPLACE_WITH_YOUR_VALUE"
+        type: SECRET
+      - key: CALENDLY_PERSONAL_TOKEN
         value: "REPLACE_WITH_YOUR_VALUE"
         type: SECRET
 
