@@ -11,11 +11,10 @@ const staticUrls = [
     { loc: '/features/voice-bot',    changefreq: 'monthly', priority: '0.9' },
     { loc: '/features/blog-agent',   changefreq: 'monthly', priority: '0.9' },
     { loc: '/apply',                 changefreq: 'monthly', priority: '0.8' },
-    { loc: '/apply/real-estate',     changefreq: 'monthly', priority: '0.8' },
     { loc: '/blogs',                 changefreq: 'daily',   priority: '0.8' },
     { loc: '/contact',               changefreq: 'yearly',  priority: '0.5' },
-    { loc: '/privacy',               changefreq: 'yearly',  priority: '0.3' },
-    { loc: '/terms',                 changefreq: 'yearly',  priority: '0.3' },
+    { loc: '/privacy-policy',        changefreq: 'yearly',  priority: '0.3' },
+    { loc: '/terms-policy',          changefreq: 'yearly',  priority: '0.3' },
 ];
 
 // ── Helper: fetch all published blog articles from Supabase ───────────────────

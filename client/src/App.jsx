@@ -59,6 +59,7 @@ const PrivacyPolicy = lazy(() => import('./pages/public/PrivacyPolicy'));
 const TermsPage = lazy(() => import('./pages/public/TermsPage'));
 const TextGeneratorPage = lazy(() => import('./pages/public/TextGeneratorPage'));
 const EmailGeneratorPage = lazy(() => import('./pages/public/EmailGeneratorPage'));
+const NotFoundPage = lazy(() => import('./pages/public/NotFoundPage'));
 
 // Push notifications
 const PushNotificationPage = lazy(() => import('./pages/push/PushNotificationPage'));
@@ -306,6 +307,7 @@ function App() {
                 } />
 
                 <Route path="/apply" element={<QuizLandingPage />} />
+                <Route path="/apply/real-estate" element={<Navigate to="/apply" replace />} />
                 <Route path="/thank-you" element={<ThankYouPage />} />
 
                 {/* <Route path="/testimonial-demo" element={<TestimonialDemo />} /> */}
@@ -342,6 +344,9 @@ function App() {
                     <BlogEditorPage />
                   </AuthGuard>
                 } />
+
+                {/* Fallback Wildcard 404 Route */}
+                <Route path="*" element={<NotFoundPage />} />
               </Routes>
             </Suspense>
             {!isDashboard && location.pathname !== '/' && <Footer />}

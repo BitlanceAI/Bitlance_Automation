@@ -79,7 +79,7 @@ const VoiceBotFeaturesPage = () => {
                 "applicationCategory": "BusinessApplication",
                 "operatingSystem": "Web",
                 "description": "An autonomous AI voice agent that handles inbound and outbound calls, qualifies leads, books meetings, and syncs data to your CRM 24/7 without human intervention.",
-                "offers": { "@type": "Offer", "url": "https://www.bitlancetechhub.com/apply/real-estate" },
+                "offers": { "@type": "Offer", "url": "https://www.bitlancetechhub.com/apply" },
                 "featureList": [
                     "Human-like natural language conversations",
                     "Inbound and outbound calling",
@@ -142,7 +142,7 @@ const VoiceBotFeaturesPage = () => {
                         Bitlance<span className="text-violet-500">AI</span>
                     </div>
                     <button
-                        onClick={() => navigate('/apply/real-estate')}
+                        onClick={() => navigate('/apply')}
                         className="btn-primary px-6 py-2.5 font-semibold rounded-full transition-colors text-sm"
                     >
                         Book Demo
@@ -314,7 +314,7 @@ const VoiceBotFeaturesPage = () => {
                     <h2 className="text-4xl md:text-6xl font-bold mb-6">Ready to hire your new <br /><span className="text-transparent bg-clip-text bg-gradient-to-r from-violet-400 to-indigo-400">superstar SDR?</span></h2>
                     <p className="text-xl text-white/60 mb-10">Stop losing leads to missed calls and slow follow-ups. See the Bitlance AI Voice Bot in action today.</p>
                     <button
-                        onClick={() => navigate('/apply/real-estate')}
+                        onClick={() => navigate('/apply')}
                         className="btn-primary inline-flex items-center gap-2 px-10 py-4 rounded-full font-bold text-lg hover:scale-105 transition-transform"
                     >
                         Book Your Live Demo <ArrowLeft size={20} className="rotate-180" />
