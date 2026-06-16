@@ -625,9 +625,23 @@ SECTION ORDER (follow exactly):
     Min 6 steps. Targets how-to featured snippets.
 
 13. ## How {short_name} Uses {primary_keyword}
-    Min 200 words. Case study:
-    **Client:** [Industry] | **Problem:** [Pain point] | **Solution:** [{short_name} workflow] | **Result:** [Hard numbers]
-    Follow with 2–3 sentences on what made the approach effective.
+    Min 250 words. Case study in this EXACT multi-line format (do NOT use pipe | separators):
+
+    **Client Industry:** [Industry name]
+
+    **The Problem:**
+    [2–3 sentences. Specific pain point this client faced, not generic.]
+
+    **Our Solution:**
+    [2–3 sentences. Exact workflow, tools, or system {short_name} built for them.]
+
+    **The Result:**
+    [Hard measurable numbers: e.g. "23% higher conversion rate", "41% less manual time", "115 blogs in 60 days"]
+
+    **Key Takeaway:**
+    [1–2 sentences on what made this approach effective and repeatable.]
+
+    Follow with 2–3 sentences analysing the broader pattern this reveals.
 
 14. ## Common Mistakes to Avoid
     4–6 mistakes. Each:
@@ -735,11 +749,32 @@ SECTION ORDER (follow exactly):
     Markdown table. Traditional vs Modern OR Myth vs Reality.
 
 12. ## Real-World Applications
-    2–3 industry use cases. Per case: Problem → Solution → Outcome.
+    2–3 industry use cases. Per case, use this EXACT multi-line format:
+
+    ### [Industry Name]
+    **The Problem:** [2–3 sentences describing the specific challenge this industry faces]
+    **The Solution:** [2–3 sentences on exactly how {primary_keyword} was applied]
+    **The Outcome:** [Hard numbers: e.g. "42% reduction in X", "3x improvement in Y", "$240K saved annually"]
+    **Why It Worked:** [1–2 sentences on the key insight or differentiator]
 
 13. ## How {short_name} Implements This
-    150–250 words. Case study:
-    **Client:** [Industry] | **Problem:** [...] | **Solution:** [...] | **Result:** [Hard numbers]
+    Min 250 words. Case study in this EXACT multi-line format (do NOT use pipe | separators):
+
+    **Client Industry:** [Industry name]
+
+    **The Problem:**
+    [2–3 sentences. Specific pain point, not generic.]
+
+    **Our Solution:**
+    [2–3 sentences. Exact workflow, tools, or system {short_name} built.]
+
+    **The Result:**
+    [Hard measurable numbers: e.g. "23% higher conversion rate", "41% less manual time", "115 blogs in 60 days"]
+
+    **Key Takeaway from This Engagement:**
+    [1–2 sentences on what made this approach uniquely effective and replicable.]
+
+    After the case study, add 2–3 follow-up sentences analysing the broader pattern.
 
 14. ## Expert Insights
     > **Expert Insight #1:** [Non-obvious strategic take]
@@ -776,9 +811,25 @@ SECTION ORDER (follow exactly):
 
 SUBHEADING RULES:
 - H2 must be AI-citation-ready. LLMs quote specific named sections.
-  ✗ BAD: "Overview", "How It Works"
-  ✓ GOOD: "The 5 Paradigm Shifts That Redefined {primary_keyword} in 2026"
+  BAD: "Overview", "How It Works"
+  GOOD: "The 5 Paradigm Shifts That Redefined {primary_keyword} in 2026"
 - Each H2 must function as a standalone citable knowledge unit.
+- Use numbers, outcomes, and year references in headings where natural.
+
+DEPTH REQUIREMENTS (CRITICAL — GEO articles must be comprehensive, not brief):
+- ## Quick Answer: 80–120 words — a dense paragraph, not a one-liner.
+- ## AI Overview Summary: 200–280 words. Cover: definition, importance, key benefits, who it's for, one future trend.
+- ## Why This Matters in 2026: Each of the 3 developments gets 3–5 sentences of explanation, not just a label.
+- ## Key Facts: 8–10 facts. Each is a complete sentence with context, not just a data point.
+- ## Key Statistics: Each stat block includes the stat, source URL, AND a "Why It Matters" sentence.
+- ## Maturity Model: Each of the 5 levels gets 3–4 sentences — who is at this level, what they do, what they need to advance.
+- ## How It Works: Minimum 400 words. Each H3 subsection gets a full explanation paragraph (not a bullet list).
+- ## Implementation Guide: Minimum 8 steps. Each step: 3–5 sentences covering what, why, and expected outcome.
+- ## Real-World Applications: Each use case gets a full ### sub-section (Problem / Solution / Outcome / Why It Worked).
+- ## Expert Insights: Each blockquote is 2–3 specific, non-generic sentences.
+- ## People Also Ask: Each answer is 80–120 words — a full, standalone explanation.
+- ## Future Outlook: Each time horizon (Short/Medium/Long-Term) gets 3–5 sentences with specific predictions.
+- ## Conclusion: 200–250 words minimum. Do not rush or abbreviate it.
 
 SOURCE CITATION RULES:
 - NEVER use [1][2][3] numbered references.
@@ -847,7 +898,7 @@ MINIMUM WORDS   : {length_num}
 - Do NOT include [1], [2], or any academic-style citation numbers.
 - Do NOT use filler phrases: "In conclusion, as we have seen", "It goes without saying",
   "In today's fast-paced world", "In the digital age", "Without further ado".
-- {"ONLY use the internal links listed above — add NO other external URLs anywhere." if interlinks else "Do NOT add any external links or URLs anywhere in the content."}
+- {"ONLY use the internal links listed above — add NO other URLs, hyperlinks, or links anywhere in the article." if interlinks else "Do NOT add ANY hyperlinks, internal links, or external URLs anywhere in the content. Do NOT invent URLs. Do NOT link to example.com, placeholder domains, or any fabricated addresses. If you want to reference another article or guide, mention it in plain text only — never as a hyperlink."}
 - NEVER output: AUTHOR_ID, COMM_LOGS, PAYLOAD, USER_ID, SESSION_ID, DATABASE_FIELDS, DEBUG_DATA, SYSTEM_PROMPT, RAW_METADATA, INTERNAL_NOTES.
 - NEVER output HTML tags (e.g., <h1>, <p>, <strong>). Use ONLY pure Markdown.
 - The entire article MUST be written ONLY in {language}. Absolutely no foreign words or characters.
