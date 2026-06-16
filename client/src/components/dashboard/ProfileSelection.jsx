@@ -59,11 +59,28 @@ const ProfileSelection = ({ onProfileSelect }) => {
             });
             const data = await response.json();
             if (data.success) {
-                setProfiles(data.profiles);
-                if (data.profiles.length > 0) {
-                    setSelectedProfileId(data.profiles[0].id);
+                let fetchedProfiles = data.profiles || [];
+                const hasAnurag = fetchedProfiles.some(p => p.name && p.name.toLowerCase().includes('anurag dhole'));
+                if (!hasAnurag) {
+                    fetchedProfiles = [
+                        {
+                            id: 'seed-anurag-dhole',
+                            name: 'Anurag Dhole',
+                            role: 'CEO & Founder',
+                            bio: 'Anurag Dhole is the CEO and Founder of Bitlance, specializing in AI-driven automation, business process optimization, and enterprise agentic workflows.',
+                            profile_image: '',
+                            social_links: { linkedin: 'https://www.linkedin.com/in/anuragdhole' }
+                        },
+                        ...fetchedProfiles
+                    ];
+                }
+                setProfiles(fetchedProfiles);
+                if (fetchedProfiles.length > 0) {
+                    const defaultProfile = fetchedProfiles.find(p => p.id === 'seed-anurag-dhole') || fetchedProfiles[0];
+                    setSelectedProfileId(defaultProfile.id);
+                    setMode('existing');
                 } else {
-                    setMode('manual'); // Default to manual if no profiles
+                    setMode('manual');
                 }
             }
         } catch (error) {

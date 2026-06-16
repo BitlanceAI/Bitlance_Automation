@@ -42,6 +42,9 @@ class GenerateBlogRequest(BaseModel):
     interlinks: Optional[list] = None       # pre-built interlinks from Node.js [{title, link}]
     optimization_mode: Optional[str] = Field(default="SEO", description="SEO or GEO mode")
     author_name: Optional[str] = None
+    author_bio: Optional[str] = None
+    author_profile_id: Optional[str] = None
+    author_details: Optional[dict] = None
     author_image_url: Optional[str] = None
     brand_context_id: Optional[str] = None
     company_name: Optional[str] = Field(default=None, description="Provide your company name for white-labeled dynamic generation")
@@ -66,9 +69,9 @@ class GenerateBlogRequest(BaseModel):
 
 
 LENGTH_MAPPING = {
-    "Short (300-500 words)": 300,
-    "Medium (500-1000 words)": 500,
-    "Long (1000-2000 words)": 1000,
+    "Short (300-500 words)": 600,
+    "Medium (500-1000 words)": 1200,
+    "Long (1000-2000 words)": 2000,
 }
 
 
@@ -246,19 +249,37 @@ def generate_blog(request: Request, body: GenerateBlogRequest):
         external_links = external_links[:MAX_EXTERNAL]
         print(f"[Link Ratio] Internal: {len(interlinks)} | External: {len(external_links)} (target 7:3)")
     
+        # Build author metadata dictionary
+        author_meta = {}
+        if body.author_details:
+            author_meta = {
+                "author_name": body.author_details.get("name") or body.author_name,
+                "author_title": body.author_details.get("role") or "Content Specialist",
+                "author_company": company_name_str,
+                "author_bio": body.author_details.get("bio") or body.author_bio,
+                "author_linkedin": (body.author_details.get("social_links") or {}).get("linkedin", "") if isinstance(body.author_details.get("social_links"), dict) else ""
+            }
+        else:
+            author_meta = {
+                "author_name": body.author_name,
+                "author_bio": body.author_bio
+            }
+
         # ── 4. Content generation ─────────────────────────────────────────────────
         length_num = LENGTH_MAPPING.get(body.length, 500)
         mode = body.optimization_mode.upper() if body.optimization_mode else "SEO"
         try:
             content_result = ai.generate_blog_content(
                 topic, keywords, body.language, body.audience, body.style,
-                length_num, interlinks, external_links, mode=mode, brand_context=brand_context, author_name=body.author_name
+                length_num, interlinks, external_links, mode=mode, brand_context=brand_context,
+                author_name=body.author_name, author_metadata=author_meta
             )
         except Exception as e:
             print(f"Content gen failed, falling back to OpenAI: {e}")
             content_result = ai.openai_generate_blog_content(
                 topic, keywords, body.language, body.audience, body.style,
-                length_num, interlinks, external_links, mode=mode, brand_context=brand_context, author_name=body.author_name
+                length_num, interlinks, external_links, mode=mode, brand_context=brand_context,
+                author_name=body.author_name, author_metadata=author_meta
             )
     
         blog_text = content_result["blogText"]

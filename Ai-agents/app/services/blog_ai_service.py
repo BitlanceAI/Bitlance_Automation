@@ -106,13 +106,25 @@ At the very end of the article, output a Markdown comment block (`<!-- ... -->`)
         footer_text = f"**Content Attribution:** {author_name or (brand_context.get('company_name','Bitlance') + ' Editorial Team')} | **Authority & Verification:** Published by {brand_context.get('company_name','Bitlance Automation')} | **Last Updated:** June 2026"
 
     # Multi-tenant author block
+    KNOWN_AUTHORS = {
+        "anurag dhole": {
+            "author_title": "CEO & Founder",
+            "author_company": "Bitlance",
+            "author_bio": "Anurag Dhole is the CEO and Founder of Bitlance, specializing in AI-driven automation, business process optimization, and enterprise agentic workflows.",
+            "author_linkedin": "https://www.linkedin.com/in/anuragdhole"
+        }
+    }
+
     meta = author_metadata or {}
+    name_key = (meta.get("author_name") or author_name or "").strip().lower()
+    known_meta = KNOWN_AUTHORS.get(name_key, {})
+
     if meta.get("author_name") or author_name:
         _aname  = meta.get("author_name") or author_name
-        _atitle = meta.get("author_title", "Content Specialist")
-        _acomp  = meta.get("author_company") or brand_context.get("company_name", "Bitlance Automation")
-        _abio   = meta.get("author_bio", f"{_aname} is a subject-matter expert at {_acomp} specializing in AI automation and digital publishing.")
-        _ali    = meta.get("author_linkedin", "")
+        _atitle = meta.get("author_title") or known_meta.get("author_title") or "Content Specialist"
+        _acomp  = meta.get("author_company") or known_meta.get("author_company") or brand_context.get("company_name", "Bitlance Automation")
+        _abio   = meta.get("author_bio") or known_meta.get("author_bio") or f"{_aname} is a subject-matter expert at {_acomp} specializing in AI automation and digital publishing."
+        _ali    = meta.get("author_linkedin") or known_meta.get("author_linkedin") or ""
         _linkedin_line = f"\n[LinkedIn Profile]({_ali})" if _ali else ""
         author_block = f"""## About the Author
 
@@ -612,10 +624,14 @@ SECTION ORDER (follow exactly):
 
 11. ## Real-World Use Cases
     3–4 industry use cases (SaaS, Real Estate, HR, E-commerce, Healthcare).
-    Per use case:
+    Per use case, you MUST use this EXACT format with blank lines between elements to ensure they render on separate lines:
+
     ### [Industry Name]
+
     **The Problem:** [specific pain point]
+
     **The Solution:** [how {primary_keyword} addresses it]
+
     **The Outcome:** [measurable result or improvement]
 
 12. ## Step-by-Step Implementation Guide
@@ -749,12 +765,16 @@ SECTION ORDER (follow exactly):
     Markdown table. Traditional vs Modern OR Myth vs Reality.
 
 12. ## Real-World Applications
-    2–3 industry use cases. Per case, use this EXACT multi-line format:
+    2–3 industry use cases. Per case, you MUST use this EXACT format with blank lines between elements to ensure they render on separate lines:
 
     ### [Industry Name]
+
     **The Problem:** [2–3 sentences describing the specific challenge this industry faces]
+
     **The Solution:** [2–3 sentences on exactly how {primary_keyword} was applied]
+
     **The Outcome:** [Hard numbers: e.g. "42% reduction in X", "3x improvement in Y", "$240K saved annually"]
+
     **Why It Worked:** [1–2 sentences on the key insight or differentiator]
 
 13. ## How {short_name} Implements This
@@ -916,13 +936,47 @@ MINIMUM WORDS   : {length_num}
         word_count = len(blog_text.split())
 
     # ── Completion validation & repair ────────────────────────────────────────
-    REQUIRED_SECTIONS = ["## Conclusion", "## Frequently Asked Questions", "## About the"]
+    if mode == "SEO":
+        REQUIRED_SECTIONS = ["## Conclusion", "## About the"]
+    else:
+        REQUIRED_SECTIONS = ["## Conclusion", "## Frequently Asked Questions", "## About the"]
     missing = [s for s in REQUIRED_SECTIONS if s.lower() not in blog_text.lower()]
 
     if missing:
         print(f"[completion-repair] Missing sections detected: {missing}")
         company_name  = brand_context.get("company_name", "Bitlance Automation") if brand_context else "Bitlance Automation"
-        author_label  = author_name or (company_name + " Editorial Team")
+        
+        # Build dynamic author/publisher block for repair
+        KNOWN_AUTHORS = {
+            "anurag dhole": {
+                "author_title": "CEO & Founder",
+                "author_company": "Bitlance",
+                "author_bio": "Anurag Dhole is the CEO and Founder of Bitlance, specializing in AI-driven automation, business process optimization, and enterprise agentic workflows.",
+                "author_linkedin": "https://www.linkedin.com/in/anuragdhole"
+            }
+        }
+        
+        author_meta_dict = author_metadata or {}
+        name_key = (author_meta_dict.get("author_name") or author_name or "").strip().lower()
+        known_meta = KNOWN_AUTHORS.get(name_key, {})
+        
+        if author_meta_dict.get("author_name") or author_name:
+            _aname  = author_meta_dict.get("author_name") or author_name
+            _atitle = author_meta_dict.get("author_title") or known_meta.get("author_title") or "Content Specialist"
+            _acomp  = author_meta_dict.get("author_company") or known_meta.get("author_company") or company_name
+            _abio   = author_meta_dict.get("author_bio") or known_meta.get("author_bio") or f"{_aname} is a subject-matter expert at {_acomp} specializing in AI automation and digital publishing."
+            _ali    = author_meta_dict.get("author_linkedin") or known_meta.get("author_linkedin") or ""
+            _linkedin_line = f"\n[LinkedIn Profile]({_ali})" if _ali else ""
+            author_block = f"## About the Author\n\n**{_aname}** — *{_atitle}* at **{_acomp}**\n\n{_abio}{_linkedin_line}"
+        else:
+            author_block = f"## About the Publisher\n\nThis article was researched, written, and editorially reviewed by the content team at **{company_name}**. All claims are fact-checked against publicly available sources and proprietary internal benchmarks."
+
+        # Dynamically build the footer
+        if mode == "SEO":
+            footer_text = f"**Written By:** {author_name or (company_name + ' Expert Editorial Board')} | **Fact-Checked & Reviewed By:** The Technical Content Team at {company_name} | **Last Updated:** June 2026"
+        else:
+            footer_text = f"**Content Attribution:** {author_name or (company_name + ' Editorial Team')} | **Authority & Verification:** Published by {company_name} | **Last Updated:** June 2026"
+
         missing_prompt = (
             f"The following article is INCOMPLETE. It was cut off before finishing.\n"
             f"You MUST now write ONLY the missing sections listed below — nothing else.\n"
@@ -930,12 +984,37 @@ MINIMUM WORDS   : {length_num}
             f"MISSING SECTIONS TO WRITE NOW:\n" +
             "\n".join(f"- {s.lstrip('#').strip()}" for s in missing) +
             f"\n\nFor the Conclusion: 120–200 words, summarize key ideas, reinforce value, end naturally.\n"
-            f"For Frequently Asked Questions: 5 FAQs using ### H3, each 50–100 word answer.\n"
-            f"For About the Author: Use this block exactly:\n"
-            f"## About the Publisher\n\n"
-            f"This article was researched and reviewed by the editorial team at **{company_name}**. "
-            f"All claims are verified against publicly available sources and proprietary internal benchmarks.\n\n"
-            f"ARTICLE SO FAR (last 600 chars for context):\n{blog_text[-600:]}\n\n"
+        )
+        if "## Frequently Asked Questions" in missing:
+            missing_prompt += "For Frequently Asked Questions: 5 FAQs using ### H3, each 50–100 word answer.\n"
+            
+        if "## About the" in missing:
+            missing_prompt += f"For the Author/Publisher section: Output this EXACT block (do not modify it):\n{author_block}\n\n"
+            
+        # If SEO mode, let's also append the footer and Related Guides at the end
+        if mode == "SEO" and "## About the" in missing:
+            real_guide_lines = []
+            if interlinks:
+                for lnk in interlinks[:6]:
+                    if isinstance(lnk, dict) and lnk.get("link") and lnk.get("title"):
+                        anchor = lnk.get("recommendedAnchor") or lnk["title"]
+                        real_guide_lines.append(f'- [{anchor}]({lnk["link"]})')
+            if real_guide_lines:
+                guides_block = "\n".join(real_guide_lines)
+                missing_prompt += (
+                    f"At the very end, after the About the Author/Publisher section, add the footer and related guides:\n"
+                    f"{footer_text}\n\n"
+                    f"## Related Guides\n"
+                    f"{guides_block}\n\n"
+                    f"Do NOT invent new links, copy these EXACT related guides."
+                )
+            else:
+                missing_prompt += f"\nAt the very end, append this footer line:\n{footer_text}\n"
+        elif "## About the" in missing:
+            missing_prompt += f"\nAt the very end, append this footer line:\n{footer_text}\n"
+
+        missing_prompt += (
+            f"\nARTICLE SO FAR (last 600 chars for context):\n{blog_text[-600:]}\n\n"
             f"Output ONLY the missing sections in clean Markdown. No preamble."
         )
         try:
@@ -1195,6 +1274,7 @@ def openai_generate_blog_content(
     mode: str = "SEO",
     brand_context: dict = None,
     author_name: str = None,
+    author_metadata: Optional[dict] = None,
 ) -> dict:
     """Fallback blog content generation via OpenAI GPT-4o."""
     interlinks = interlinks or []
@@ -1464,7 +1544,7 @@ MINIMUM WORDS   : {length_num}
 
 {advanced_optimization}
 
-{get_post_generation_enhancement_layer(brand_context=brand_context, mode=mode, interlinks=interlinks, author_name=author_name)}
+{get_post_generation_enhancement_layer(brand_context=brand_context, mode=mode, interlinks=interlinks, author_name=author_name, author_metadata=author_metadata)}
 
 ══ FORMATTING RULES ══
 - Use **bold** for key terms (first occurrence) and critical takeaways.
@@ -1489,7 +1569,101 @@ MINIMUM WORDS   : {length_num}
         "You are a world-class SEO content strategist. Follow the brief exactly.",
         max_tokens=5500,
     )
-    return {"blogText": blog_text.strip(), "wordCount": len(blog_text.split())}
+
+    # ── Completion validation & repair ────────────────────────────────────────
+    if mode == "SEO":
+        REQUIRED_SECTIONS = ["## Conclusion", "## About the"]
+    else:
+        REQUIRED_SECTIONS = ["## Conclusion", "## Frequently Asked Questions", "## About the"]
+    missing = [s for s in REQUIRED_SECTIONS if s.lower() not in blog_text.lower()]
+
+    if missing:
+        print(f"[completion-repair-openai] Missing sections detected: {missing}")
+        company_name  = brand_context.get("company_name", "Bitlance Automation") if brand_context else "Bitlance Automation"
+        
+        # Build dynamic author/publisher block for repair
+        KNOWN_AUTHORS = {
+            "anurag dhole": {
+                "author_title": "CEO & Founder",
+                "author_company": "Bitlance",
+                "author_bio": "Anurag Dhole is the CEO and Founder of Bitlance, specializing in AI-driven automation, business process optimization, and enterprise agentic workflows.",
+                "author_linkedin": "https://www.linkedin.com/in/anuragdhole"
+            }
+        }
+        
+        author_meta_dict = author_metadata or {}
+        name_key = (author_meta_dict.get("author_name") or author_name or "").strip().lower()
+        known_meta = KNOWN_AUTHORS.get(name_key, {})
+        
+        if author_meta_dict.get("author_name") or author_name:
+            _aname  = author_meta_dict.get("author_name") or author_name
+            _atitle = author_meta_dict.get("author_title") or known_meta.get("author_title") or "Content Specialist"
+            _acomp  = author_meta_dict.get("author_company") or known_meta.get("author_company") or company_name
+            _abio   = author_meta_dict.get("author_bio") or known_meta.get("author_bio") or f"{_aname} is a subject-matter expert at {_acomp} specializing in AI automation and digital publishing."
+            _ali    = author_meta_dict.get("author_linkedin") or known_meta.get("author_linkedin") or ""
+            _linkedin_line = f"\n[LinkedIn Profile]({_ali})" if _ali else ""
+            author_block = f"## About the Author\n\n**{_aname}** — *{_atitle}* at **{_acomp}**\n\n{_abio}{_linkedin_line}"
+        else:
+            author_block = f"## About the Publisher\n\nThis article was researched, written, and editorially reviewed by the content team at **{company_name}**. All claims are fact-checked against publicly available sources and proprietary internal benchmarks."
+
+        # Dynamically build the footer
+        if mode == "SEO":
+            footer_text = f"**Written By:** {author_name or (company_name + ' Expert Editorial Board')} | **Fact-Checked & Reviewed By:** The Technical Content Team at {company_name} | **Last Updated:** June 2026"
+        else:
+            footer_text = f"**Content Attribution:** {author_name or (company_name + ' Editorial Team')} | **Authority & Verification:** Published by {company_name} | **Last Updated:** June 2026"
+
+        missing_prompt = (
+            f"The following article is INCOMPLETE. It was cut off before finishing.\n"
+            f"You MUST now write ONLY the missing sections listed below — nothing else.\n"
+            f"Pick up seamlessly where the article left off. Use the same topic and tone.\n\n"
+            f"MISSING SECTIONS TO WRITE NOW:\n" +
+            "\n".join(f"- {s.lstrip('#').strip()}" for s in missing) +
+            f"\n\nFor the Conclusion: 120–200 words, summarize key ideas, reinforce value, end naturally.\n"
+        )
+        if "## Frequently Asked Questions" in missing:
+            missing_prompt += "For Frequently Asked Questions: 5 FAQs using ### H3, each 50–100 word answer.\n"
+            
+        if "## About the" in missing:
+            missing_prompt += f"For the Author/Publisher section: Output this EXACT block (do not modify it):\n{author_block}\n\n"
+            
+        # If SEO mode, let's also append the footer and Related Guides at the end
+        if mode == "SEO" and "## About the" in missing:
+            real_guide_lines = []
+            if interlinks:
+                for lnk in interlinks[:6]:
+                    if isinstance(lnk, dict) and lnk.get("link") and lnk.get("title"):
+                        anchor = lnk.get("recommendedAnchor") or lnk["title"]
+                        real_guide_lines.append(f'- [{anchor}]({lnk["link"]})')
+            if real_guide_lines:
+                guides_block = "\n".join(real_guide_lines)
+                missing_prompt += (
+                    f"At the very end, after the About the Author/Publisher section, add the footer and related guides:\n"
+                    f"{footer_text}\n\n"
+                    f"## Related Guides\n"
+                    f"{guides_block}\n\n"
+                    f"Do NOT invent new links, copy these EXACT related guides."
+                )
+            else:
+                missing_prompt += f"\nAt the very end, append this footer line:\n{footer_text}\n"
+        elif "## About the" in missing:
+            missing_prompt += f"\nAt the very end, append this footer line:\n{footer_text}\n"
+
+        missing_prompt += (
+            f"\nARTICLE SO FAR (last 600 chars for context):\n{blog_text[-600:]}\n\n"
+            f"Output ONLY the missing sections in clean Markdown. No preamble."
+        )
+        try:
+            repair_content = _openai_chat_call(
+                missing_prompt,
+                "You are a completion specialist. Output only the missing article sections in clean Markdown.",
+                max_tokens=3000,
+            )
+            blog_text += "\n\n" + repair_content
+            print(f"[completion-repair-openai] Repair pass complete. Added {len(repair_content.split())} words.")
+        except Exception as repair_err:
+            print(f"[completion-repair-openai] Repair pass failed: {repair_err}")
+
+    return {"blogText": clean_blog_output(blog_text.strip()), "wordCount": len(blog_text.split())}
 
 
 def generate_image(topic: str, image_text: str) -> str:

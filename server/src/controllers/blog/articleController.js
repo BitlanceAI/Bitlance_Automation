@@ -152,7 +152,9 @@ export const generateAndSaveArticleInternal = async ({
         const genRes = await axios.post(
             `${PYTHON_API_URL}/api/blog/generate`,
             {
-                topic, industry, keywords, language, style, length, audience, image_option, custom_image_url, wp_url, wp_api_url, interlinks, optimization_mode, brand_context_id
+                topic, industry, keywords, language, style, length, audience, image_option, custom_image_url,
+                wp_url, wp_api_url, interlinks, optimization_mode, brand_context_id,
+                author_name, author_bio, author_profile_id, author_details
             },
             { headers: { Authorization: `Bearer ${token}` }, timeout: 600000 }
         );
@@ -301,6 +303,8 @@ export const generateArticle = async (req, res) => {
                 .from('company_articles')
                 .select('seo_title, slug')
                 .eq('is_published', true)
+                .not('slug', 'is', null)
+                .neq('slug', '')
                 .order('created_at', { ascending: false })
                 .limit(10);
             if (articles && articles.length > 0) {

@@ -179,7 +179,7 @@ const PublicArticlePage = () => {
     formattedContent = formattedContent.replace(/https?:\/\/(www\.)?bitlancetechhub\.com/gi, '');
 
     // Extract footer for formal display
-    const footerRegex = /^(?:###\s*)?\*?\*?author:\s*\*?\*?\s*(.*?)\s*\|\s*\*?\*?reviewed by:\s*\*?\*?\s*(.*?)\s*\|\s*\*?\*?last updated:\s*\*?\*?\s*(.*)$/im;
+    const footerRegex = /^(?:###\s*)?\*?\*?(?:author|written by|content attribution):\s*\*?\*?\s*(.*?)\s*\|\s*\*?\*?(?:reviewed by|fact-checked & reviewed by|authority & verification):\s*\*?\*?\s*(.*?)\s*\|\s*\*?\*?(?:last updated|updated):\s*\*?\*?\s*(.*)$/im;
     const footerMatch = formattedContent.match(footerRegex);
     let extractedFooter = null;
 
