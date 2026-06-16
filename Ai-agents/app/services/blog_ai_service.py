@@ -551,82 +551,135 @@ SEO ARTICLE STRUCTURE — Human-First Reading Flow (SEO=80%, GEO=20%)
 Target: Google Search, Google Featured Snippets, Human Readers
 
 TOKEN BUDGET RULE: If you are approaching your output limit, immediately skip to and
-complete: FAQ → Conclusion → About the Author. Never stop mid-article. Shorten body
-sections if needed, but ALWAYS finish with those three.
+complete: Key Takeaways -> Conclusion -> About the Author. Never stop mid-article.
+Shorten body sections if needed, but ALWAYS finish with those three.
 
 SECTION ORDER (follow exactly):
 
-1.  Meta Title: [50–60 chars, keyword-near-front]
-    Meta Description: [140–160 chars, keyword + benefit]
-    URL Slug: [url-slug-here]
-    Reading Time: [X min read] | Last Updated: June 2026
+1.  ARTICLE METADATA BLOCK — Output as a highlighted Markdown blockquote at the very top:
+    > 📌 **Meta Title:** [50–60 chars, primary keyword near front, high-CTR]
+    > 📝 **Meta Description:** [140–160 chars, primary keyword + clear benefit + action word]
+    > 🔗 **URL Slug:** `[url-slug-here]`
+    > ⏱ **Reading Time:** [X min read]  |  📅 **Last Updated:** June 2026
 
-2.  # H1 — Compelling title, keyword near front, no stuffing.
+2.  # H1 — Compelling title. Primary keyword within first 3 words. No stuffing.
 
 3.  **Introduction** (150–200 words)
-    First sentence bolds **{primary_keyword}**. Hook + why this matters now + what the
-    reader will learn. No generic filler.
+    - First sentence bolds **{primary_keyword}**.
+    - Hook: open with a surprising stat, real problem, or bold claim — no generic openers.
+    - Briefly preview what the reader will learn (implicit promise).
+    - End with a smooth transition into the first section.
 
-4.  ## What Is {primary_keyword}?
-    40–60 word plain-language definition (featured-snippet target). Then one "Why It
-    Matters" paragraph with business context.
+4.  ## Table of Contents
+    Bulleted Markdown links to every H2 in the article.
+    Example: - [What Is {primary_keyword}?](#what-is)
+    Improves dwell time, UX, and Google sitelinks eligibility.
 
-5.  ## How {primary_keyword} Works
-    Step-by-step or component breakdown. Use H3 subsections. Explain the mechanics
-    clearly for a non-expert reader.
+5.  ## What Is {primary_keyword}?
+    - 40–60 word plain-language definition (featured-snippet target).
+    - Follow with: **Why It Matters in 2026** — 2–3 sentences of business relevance.
+    - Cite one authoritative source inline: "According to [Source]..."
 
-6.  ## Key Benefits of {primary_keyword}
-    4–6 benefit bullets. Each: bold benefit name + 1–2 sentence explanation.
-    Include ONE real statistic per bullet where available (inline source).
+6.  ## How {primary_keyword} Works
+    - Core mechanics explained clearly for a non-expert reader.
+    - H3 subsections for each major component or stage.
+    - Numbered process list or flow description where helpful.
+    - No unexplained jargon.
 
-7.  ## {primary_keyword} vs Traditional Alternatives
-    Markdown comparison table. Min 4 rows. Columns: Feature | {primary_keyword} | Traditional.
+7.  ## Key Statistics & Data Points
+    4–6 real, verifiable statistics. Format each as a blockquote:
+    > **[Stat with specific number]**
+    > *Source: [Full Report or Organisation Name](https://real-url.org)*
+    Include ONE {short_name} internal data point:
+    > *"{short_name} clients achieved [specific measurable result]" — {short_name} Internal Data, 2025*
+    NEVER invent statistics. Omit any you cannot verify.
 
-8.  ## Popular Tools & Platforms
-    Compare 3–5 real tools. Markdown table: Tool | Best For | Pricing | Standout Feature.
+8.  ## Key Benefits of {primary_keyword}
+    4–6 benefit bullets. Format:
+    **[Benefit Name]:** [1–2 sentence explanation + real-world impact]
+    At least 2 bullets must include an inline source reference.
+    Order from most impactful to least.
 
-9.  ## Real-World Use Cases
+9.  ## {primary_keyword} vs Traditional Alternatives
+    Markdown comparison table. Minimum 5 rows.
+    Columns: Feature | {primary_keyword} | Traditional Approach | Winner
+    Cover: Speed, Cost, Scalability, Accuracy, Implementation Complexity.
+
+10. ## Popular Tools & Platforms for {primary_keyword}
+    Compare 4–5 real tools. Markdown table:
+    Tool | Best For | Pricing Model | Key Strength | Limitation
+    Follow with 2–3 sentences on how to pick the right tool.
+
+11. ## Real-World Use Cases
     3–4 industry use cases (SaaS, Real Estate, HR, E-commerce, Healthcare).
-    Per case: **Industry** — Problem → Solution → Outcome.
+    Per use case:
+    ### [Industry Name]
+    **The Problem:** [specific pain point]
+    **The Solution:** [how {primary_keyword} addresses it]
+    **The Outcome:** [measurable result or improvement]
 
-10. ## Step-by-Step Implementation Guide
-    Numbered steps. Each step: **Action** + why it matters + expected outcome.
-    Target how-to featured snippet.
+12. ## Step-by-Step Implementation Guide
+    Numbered steps. Each step format:
+    **Step N: [Action Title]**
+    [What to do] — [Why it matters] — [Expected outcome]
+    Min 6 steps. Targets how-to featured snippets.
 
-11. ## How {short_name} Uses {primary_keyword}
-    Min 200 words. Real case study format:
+13. ## How {short_name} Uses {primary_keyword}
+    Min 200 words. Case study:
     **Client:** [Industry] | **Problem:** [Pain point] | **Solution:** [{short_name} workflow] | **Result:** [Hard numbers]
+    Follow with 2–3 sentences on what made the approach effective.
 
-12. ## Challenges and Limitations
-    Honest, balanced. 3–5 challenges. Per challenge: problem + practical solution.
-    Include a "When NOT to use this" subsection.
+14. ## Common Mistakes to Avoid
+    4–6 mistakes. Each:
+    ### Mistake N: [Mistake Title]
+    **Why it happens:** [brief explanation]
+    **How to fix it:** [specific corrective action]
+    This section consistently ranks for PAA and long-tail search queries.
 
-13. ## Best Practices
-    5–8 actionable numbered best practices. Specific, not generic.
+15. ## Challenges and Limitations
+    3–4 real challenges. Per challenge: **Challenge** — practical workaround or mitigation.
+    Include: ### When NOT to Use {primary_keyword}
 
-14. ## Future Trends
-    3–4 forward-looking predictions for the next 1–3 years. Specific and evidence-based.
+16. ## Best Practices
+    5–7 actionable best practices, numbered.
+    Each: **[Practice Name]** — [explanation + evidence or source].
 
-15. ## Frequently Asked Questions
-    5–7 FAQs. Each uses ### H3. Answer in 50–100 words. Direct and complete.
-    {paa_instructions if paa_instructions else f'Use real People Also Ask questions for "{primary_keyword}".'}
+17. ## Expert Insights
+    Two blockquotes:
+    > **Expert Insight #1:** [Deep, non-obvious strategic take on {primary_keyword}]
+    > **Expert Insight #2:** [Contrarian view or forward-looking prediction]
+    Must be specific — no generic advice.
 
-16. ## Conclusion
-    120–200 words. Summarize key points. Reinforce practical value. Natural CTA:
-    e.g. "Explore how {short_name} can help you implement this" or "Book a strategy call".
+18. ## Future Trends in {primary_keyword}
+    3–4 predictions for the next 1–3 years.
+    Each: **[Trend Name]** — [what's changing + why it matters + business impact].
+    Ground in real signals: research findings, industry moves, technology shifts.
+
+19. ## Key Takeaways
+    5–7 standalone bullet points summarising the whole article.
+    Each must be: actionable, self-contained, readable without context.
+    Bold the core insight in each bullet.
+
+20. ## Conclusion
+    150–200 words. Cover:
+    - The 3 most important points from the article.
+    - Practical value for the reader.
+    - Natural contextual CTA (e.g. "See how {short_name} can help" or "Book a strategy session").
     NEVER end abruptly. NEVER leave this section incomplete.
 
-17. ## About the Author / About the Publisher
-    [Enhancement layer will inject this — do not skip it]
+21. ## About the Author / About the Publisher
+    [Enhancement layer will inject this automatically — do not skip it]
 
 SUBHEADING RULES:
-- Every H2 must be specific and benefit-driven. NEVER generic.
-  ✗ BAD: "Overview", "Details", "Introduction"
-  ✓ GOOD: "Why {primary_keyword} Reduces Data Retrieval Time by 10x"
-- H3s add granular detail under each H2. No filler headings.
-- Primary keyword density: 0.8–1.5%. Bold on FIRST occurrence ONLY.
-- Cite inline: "According to Gartner...", "McKinsey reports..."
-- NO [1][2][3] numbered references.
+- Every H2 must be specific, benefit-driven, and scannable. NEVER generic.
+  BAD: "Overview", "Details", "More Information", "Introduction"
+  GOOD: "Why {primary_keyword} Reduces Processing Time by 10x in Enterprise Workflows"
+- H3s add granular, specific value under each H2. No filler headings.
+- Use power words where natural: "Proven", "Step-by-Step", "Complete", "2026", "Ultimate".
+- Avoid repeating the exact H1 phrase in sub-headings — use semantic variants.
+- Primary keyword density: 0.8–1.5%. Bold on FIRST body occurrence ONLY.
+- Cite inline: "According to Gartner...", "McKinsey reports...", "Stanford AI Index found..."
+- NO [1][2][3] numbered references anywhere.
 """
         else:
             mandatory_structure = f"""
