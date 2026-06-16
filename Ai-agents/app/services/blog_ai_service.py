@@ -68,37 +68,26 @@ def get_post_generation_enhancement_layer(brand_context=None, mode="SEO", interl
     other_details_str = (" | " + " | ".join(other_details)) if other_details else ""
     
     cluster_links_rule = ""
-    if mode == "SEO":
-        # Build the Related Guides block from REAL provided links only
-        if interlinks:
-            real_guide_lines = []
-            for lnk in interlinks[:6]:  # cap at 6 for token budget
-                if isinstance(lnk, dict) and lnk.get("link") and lnk.get("title"):
-                    anchor = lnk.get("recommendedAnchor") or lnk["title"]
-                    real_guide_lines.append(f'- [{anchor}]({lnk["link"]})')
-            if real_guide_lines:
-                guides_block = "\n".join(real_guide_lines)
-                cluster_links_rule = f"""
+    # Build the Related Guides block from REAL provided links only for both SEO and GEO
+    if interlinks:
+        real_guide_lines = []
+        for lnk in interlinks[:15]:  # cap at 15 for token budget
+            if isinstance(lnk, dict) and lnk.get("link") and lnk.get("title"):
+                anchor = lnk.get("recommendedAnchor") or lnk["title"]
+                real_guide_lines.append(f'- [{anchor}]({lnk["link"]})')
+        if real_guide_lines:
+            guides_block = "\n".join(real_guide_lines)
+            cluster_links_rule = f"""
 8. TOPICAL AUTHORITY LAYER & CLUSTER LINKS
 At the VERY END of the article, add an H2: ## Related Guides
 Copy these EXACT Markdown links below — do NOT change the URLs or anchor text:
 {guides_block}
 Do NOT invent new links. Use ONLY the links listed above.
 """
-            else:
-                cluster_links_rule = ""
         else:
             cluster_links_rule = ""
     else:
-        cluster_links_rule = """
-8. TOPICAL AUTHORITY LAYER
-At the very end of the article, output a Markdown comment block (`<!-- ... -->`) containing:
-* Parent Topic
-* Cluster Category
-* Related Articles
-* Suggested Internal Links
-* Supporting Content Opportunities
-"""
+        cluster_links_rule = ""
 
     if mode == "SEO":
         footer_text = f"**Written By:** {author_name or (brand_context.get('company_name','Bitlance') + ' Expert Editorial Board')} | **Fact-Checked & Reviewed By:** The Technical Content Team at {brand_context.get('company_name','Bitlance Automation')} | **Last Updated:** June 2026"
@@ -470,7 +459,7 @@ def generate_blog_content(
         6. Do not mention related articles without linking them. Spread links evenly.
 
         Links to embed as Citations:
-        {{links_str}}
+        {links_str}
         ══════════════════════════════════════════════════════════
         """
         else:
@@ -488,7 +477,7 @@ def generate_blog_content(
         6. Do not mention related articles without linking them.
         
         Links to embed:
-        {{links_str}}
+        {links_str}
         ══════════════════════════════════════════════════════════
         """
 
@@ -998,11 +987,11 @@ MINIMUM WORDS   : {length_num}
         if "## About the" in missing:
             missing_prompt += f"For the Author/Publisher section: Output this EXACT block (do not modify it):\n{author_block}\n\n"
             
-        # If SEO mode, let's also append the footer and Related Guides at the end
-        if mode == "SEO" and "## About the" in missing:
+        # Let's also append the footer and Related Guides at the end for both SEO and GEO
+        if "## About the" in missing:
             real_guide_lines = []
             if interlinks:
-                for lnk in interlinks[:6]:
+                for lnk in interlinks[:15]:
                     if isinstance(lnk, dict) and lnk.get("link") and lnk.get("title"):
                         anchor = lnk.get("recommendedAnchor") or lnk["title"]
                         real_guide_lines.append(f'- [{anchor}]({lnk["link"]})')
@@ -1017,8 +1006,6 @@ MINIMUM WORDS   : {length_num}
                 )
             else:
                 missing_prompt += f"\nAt the very end, append this footer line:\n{footer_text}\n"
-        elif "## About the" in missing:
-            missing_prompt += f"\nAt the very end, append this footer line:\n{footer_text}\n"
 
         missing_prompt += (
             f"\nARTICLE SO FAR (last 600 chars for context):\n{blog_text[-600:]}\n\n"
@@ -1637,11 +1624,11 @@ MINIMUM WORDS   : {length_num}
         if "## About the" in missing:
             missing_prompt += f"For the Author/Publisher section: Output this EXACT block (do not modify it):\n{author_block}\n\n"
             
-        # If SEO mode, let's also append the footer and Related Guides at the end
-        if mode == "SEO" and "## About the" in missing:
+        # Let's also append the footer and Related Guides at the end for both SEO and GEO
+        if "## About the" in missing:
             real_guide_lines = []
             if interlinks:
-                for lnk in interlinks[:6]:
+                for lnk in interlinks[:15]:
                     if isinstance(lnk, dict) and lnk.get("link") and lnk.get("title"):
                         anchor = lnk.get("recommendedAnchor") or lnk["title"]
                         real_guide_lines.append(f'- [{anchor}]({lnk["link"]})')
@@ -1656,8 +1643,6 @@ MINIMUM WORDS   : {length_num}
                 )
             else:
                 missing_prompt += f"\nAt the very end, append this footer line:\n{footer_text}\n"
-        elif "## About the" in missing:
-            missing_prompt += f"\nAt the very end, append this footer line:\n{footer_text}\n"
 
         missing_prompt += (
             f"\nARTICLE SO FAR (last 600 chars for context):\n{blog_text[-600:]}\n\n"
