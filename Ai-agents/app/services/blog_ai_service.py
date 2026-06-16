@@ -975,10 +975,11 @@ MINIMUM WORDS   : {length_num}
             footer_text = f"**Content Attribution:** {author_name or (company_name + ' Editorial Team')} | **Authority & Verification:** Published by {company_name} | **Last Updated:** June 2026"
 
         missing_prompt = (
-            f"The following article is INCOMPLETE. It was cut off before finishing.\n"
-            f"You MUST now write ONLY the missing sections listed below — nothing else.\n"
-            f"Pick up seamlessly where the article left off. Use the same topic and tone.\n\n"
-            f"MISSING SECTIONS TO WRITE NOW:\n" +
+            f"The following article is INCOMPLETE. It was cut off mid-sentence or mid-section.\n"
+            f"FIRST, you MUST seamlessly finish the exact sentence, paragraph, and section where the article left off.\n"
+            f"THEN, you MUST write the missing sections listed below to complete the article.\n"
+            f"Pick up seamlessly where the article left off. Do NOT repeat the last words, just continue the text.\n\n"
+            f"MISSING SECTIONS TO WRITE AFTER FINISHING THE CURRENT SECTION:\n" +
             "\n".join(f"- {s.lstrip('#').strip()}" for s in missing)
         )
         if "## Conclusion" in missing:
@@ -1011,7 +1012,7 @@ MINIMUM WORDS   : {length_num}
 
         missing_prompt += (
             f"\nARTICLE SO FAR (last 600 chars for context):\n{blog_text[-600:]}\n\n"
-            f"Output ONLY the missing sections in clean Markdown. No preamble."
+            f"Finish the current incomplete section seamlessly, then output the missing sections in clean Markdown. No preamble."
         )
         try:
             repair_content = _perplexity_call(
@@ -1614,10 +1615,11 @@ MINIMUM WORDS   : {length_num}
             footer_text = f"**Content Attribution:** {author_name or (company_name + ' Editorial Team')} | **Authority & Verification:** Published by {company_name} | **Last Updated:** June 2026"
 
         missing_prompt = (
-            f"The following article is INCOMPLETE. It was cut off before finishing.\n"
-            f"You MUST now write ONLY the missing sections listed below — nothing else.\n"
-            f"Pick up seamlessly where the article left off. Use the same topic and tone.\n\n"
-            f"MISSING SECTIONS TO WRITE NOW:\n" +
+            f"The following article is INCOMPLETE. It was cut off mid-sentence or mid-section.\n"
+            f"FIRST, you MUST seamlessly finish the exact sentence, paragraph, and section where the article left off.\n"
+            f"THEN, you MUST write the missing sections listed below to complete the article.\n"
+            f"Pick up seamlessly where the article left off. Do NOT repeat the last words, just continue the text.\n\n"
+            f"MISSING SECTIONS TO WRITE AFTER FINISHING THE CURRENT SECTION:\n" +
             "\n".join(f"- {s.lstrip('#').strip()}" for s in missing)
         )
         if "## Conclusion" in missing:
@@ -1650,7 +1652,7 @@ MINIMUM WORDS   : {length_num}
 
         missing_prompt += (
             f"\nARTICLE SO FAR (last 600 chars for context):\n{blog_text[-600:]}\n\n"
-            f"Output ONLY the missing sections in clean Markdown. No preamble."
+            f"Finish the current incomplete section seamlessly, then output the missing sections in clean Markdown. No preamble."
         )
         try:
             repair_content = _openai_chat_call(
