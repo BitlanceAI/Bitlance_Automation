@@ -692,80 +692,85 @@ needed, but ALWAYS write those four sections before stopping.
 
 SECTION ORDER (follow exactly):
 
-1.  # H1 — Primary keyword near front. Compelling. No keyword stuffing.
-    Meta Description: [140–155 chars] | URL Slug: [url-slug] | Reading Time: [X min] | Last Updated: June 2026
+1.  ARTICLE METADATA BLOCK — Output as a highlighted Markdown blockquote at the very top:
+    > 📌 **Meta Title:** [50–60 chars, primary keyword near front, high-CTR]
+    > 📝 **Meta Description:** [140–155 chars, primary keyword + clear benefit + action word]
+    > 🔗 **URL Slug:** `[url-slug-here]`
+    > ⏱ **Reading Time:** [X min read]  |  📅 **Last Updated:** June 2026
 
-2.  ## Quick Answer
+2.  # H1 — Primary keyword near front. Compelling. No keyword stuffing.
+
+3.  ## Quick Answer
     50–100 words. Direct. Independently understandable. AI retrieval magnet.
 
-3.  ## AI Overview Summary
+4.  ## AI Overview Summary
     150–200 words. Define topic + why it matters + key benefits + who it's for.
 
-4.  ## Why This Matters in 2026
+5.  ## Why This Matters in 2026
     Three developments changed this landscape in 2025–2026:
     1. [Development 1 + business impact]
     2. [Development 2 + why businesses care]
     3. [Development 3 + what this unlocks]
 
-5.  ## {primary_keyword} Key Facts
+6.  ## {primary_keyword} Key Facts
     5–8 ✓ checkmark facts. Self-contained. Citation-friendly.
 
-6.  ## Key Statistics & Benchmarks
+7.  ## Key Statistics & Benchmarks
     4–5 real stats. Format: • [Stat] *Source: [Name](URL)*
     Include 2 {short_name} proprietary benchmarks: *Source: {short_name} Internal Benchmark, 2025*
     NEVER invent statistics.
 
-7.  ## The {short_name} {primary_keyword} Maturity Model
+8.  ## The {short_name} {primary_keyword} Maturity Model
     ONE original named framework. 5 levels (Level 1 → Level 5).
     Each level: **Level N — [Name]:** [1–2 sentence description]
     This is exactly what Perplexity, ChatGPT, and Gemini extract and cite.
 
-8.  ## How {primary_keyword} Works
+9.  ## How {primary_keyword} Works
     Core components with H3 subsections. Structured for AI extraction.
 
-9.  ## Implementation Guide
+10. ## Implementation Guide
     Numbered steps. Each: What to do + Why + Expected outcome.
 
-10. ## Comparison Table
+11. ## Comparison Table
     Markdown table. Traditional vs Modern OR Myth vs Reality.
 
-11. ## Real-World Applications
+12. ## Real-World Applications
     2–3 industry use cases. Per case: Problem → Solution → Outcome.
 
-12. ## How {short_name} Implements This
+13. ## How {short_name} Implements This
     150–250 words. Case study:
     **Client:** [Industry] | **Problem:** [...] | **Solution:** [...] | **Result:** [Hard numbers]
 
-13. ## Expert Insights
+14. ## Expert Insights
     > **Expert Insight #1:** [Non-obvious strategic take]
     > **Expert Insight #2:** [Contrarian or forward-looking take]
 
-14. ## People Also Ask
+15. ## People Also Ask
     {paa_instructions if paa_instructions else f'Generate 5 People Also Ask questions for "{primary_keyword}".'}
     Each question uses ### H3. Answer in 50–80 words. No question without an answer.
 
-15. ## Future Outlook
+16. ## Future Outlook
     **Short-Term (6–12 months):** [...]
     **Medium-Term (1–2 years):** [...]
     **Long-Term (3–5 years):** [...]
 
-16. ## Key Takeaways
+17. ## Key Takeaways
     5–7 standalone bullet points. Each actionable and self-contained.
 
-17. ## Conclusion
+18. ## Conclusion
     120–200 words. Summarize key ideas. Reinforce value. Natural CTA. NEVER truncate.
 
-18. ## Frequently Asked Questions
+19. ## Frequently Asked Questions
     5 FAQs using ### H3. Each answer 50–100 words. AI-retrieval optimized.
 
-19. ## Sources & References
+20. ## Sources & References
     List real sources only (McKinsey, Gartner, WEF, IDC, Stanford AI Index, etc.).
     Do NOT fabricate. Do NOT invent reports.
 
-20. ## Related Topics
+21. ## Related Topics
     5–7 topic suggestions for internal linking (no invented URLs).
 
-21. ## Take the Next Step
+22. ## Take the Next Step
     Contextual, professional CTA. Prefer: "Assess your readiness", "Schedule a strategy session".
     AVOID: "Contact us now".
 
@@ -774,7 +779,12 @@ SUBHEADING RULES:
   ✗ BAD: "Overview", "How It Works"
   ✓ GOOD: "The 5 Paradigm Shifts That Redefined {primary_keyword} in 2026"
 - Each H2 must function as a standalone citable knowledge unit.
-- NEVER use [1][2][3] references. Cite inline.
+
+SOURCE CITATION RULES:
+- NEVER use [1][2][3] numbered references.
+- Cite inline: "According to McKinsey's State of AI 2025..."
+- Every statistic MUST have `*Source: [Full Report Name](URL)*` on the next line.
+- Minimum 3 {short_name} proprietary benchmarks with `*Source: {short_name} Internal Benchmark, 2025*`
 """
 
         prompt = f"""
