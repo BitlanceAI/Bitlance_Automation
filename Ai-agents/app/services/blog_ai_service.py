@@ -547,152 +547,181 @@ def generate_blog_content(
 
         if mode == "SEO":
             mandatory_structure = f"""
-SEO ARTICLE STRUCTURE — Publication-Ready (SEO=70%, GEO=30%)
-Target Platforms: Google Search, Google AI Overviews, ChatGPT, Claude, Gemini, Perplexity, Copilot, RAG Systems
+SEO ARTICLE STRUCTURE — Human-First Reading Flow (SEO=80%, GEO=20%)
+Target: Google Search, Google Featured Snippets, Human Readers
 
-COMPLETION MANDATE: You MUST write EVERY section below completely. Never end abruptly. Never truncate.
+TOKEN BUDGET RULE: If you are approaching your output limit, immediately skip to and
+complete: FAQ → Conclusion → About the Author. Never stop mid-article. Shorten body
+sections if needed, but ALWAYS finish with those three.
 
 SECTION ORDER (follow exactly):
 
-1.  H1 — Compelling, keyword-near-front, no stuffing. Semantic variant of primary keyword.
-2.  > **Meta Description:** 140–160 chars. Keyword + clear benefit. Reading time. Last updated date.
-    > **URL Slug:** [url-slug-here]
-3.  ## Quick Answer — 50–100 words. Independently understandable. AI extraction optimized.
-4.  ## AI Overview Summary — 150–250 words. Define topic, why it matters, key benefits, future trends.
-5.  ## Why {primary_keyword} Matters in 2026
-    - Cover 3 specific recent developments that changed the landscape.
-6.  ## {primary_keyword} Key Facts — 5–10 self-contained, citation-friendly bullet points (checkmarks ✓).
-7.  ## Key Statistics & Benchmarks
-    - 4–6 real statistics. Format each as:
-      • [Stat with real number]
-        *Source: [Full Report Name, Year](https://real-url.org)* | *Why It Matters: [one sentence]*
-    - Include 2 {short_name} proprietary benchmarks: `*Source: {short_name} Internal Benchmark, 2025*`
-    - NEVER invent statistics. Omit any stat you cannot verify.
-8.  ## What Is {primary_keyword}? — 40–60 word featured-snippet definition. Then "Why It Matters" paragraph.
-9.  ## Core Concepts & How It Works — H3 subsections per component.
-10. ## The {short_name} {primary_keyword} Maturity Model (Named Framework — GEO Citation Magnet)
-    - Create ONE original named framework. Format as Level 1 → Level 5 stages.
-    - This is what AI engines extract and quote by name.
-11. ## Step-by-Step Implementation Guide — Numbered steps. Each step: What to do + Why it matters + Expected outcome.
-12. ## Comparison Table — Markdown table. Traditional vs Modern OR Manual vs Automated OR Myth vs Reality.
-13. ## Tools & Platforms — Compare 3–5 real tools. Markdown table.
-14. ## Business Applications — 3–4 industry use cases (SaaS, Agencies, HR, B2B). Per use case: Problem → Solution → Outcome.
-15. ## How {short_name} Implements This — Min 300 words. Case study:
-    **Client:** [Industry] | **Problem:** [Pain point] | **Solution:** [{short_name} workflow] | **Result:** [Hard numbers]
-16. ## Expert Insights
-    > **Expert Insight #1:** [Strategic, non-obvious observation]
-    > **Expert Insight #2:** [Emerging trend or contrarian take]
-17. ## Challenges & How to Overcome Them — Balanced. Include "When This Approach Fails" subsection.
-18. ## Common Mistakes to Avoid — 4–6 bullet points with corrective action.
-19. ## People Also Ask
-    - Generate 5–10 questions. Each question MUST include a direct 50–150 word answer. Do NOT output only questions.
-20. ## Future Outlook
-    **Short-Term (6–12 months):** ...
-    **Medium-Term (1–2 years):** ...
-    **Long-Term (3–5 years):** ...
-21. ## Key Takeaways — 5–10 standalone, actionable bullet points summarizing the article.
-22. ## Conclusion — 150–300 words. Summarize key ideas. Reinforce practical value. Highlight future implications. End naturally.
-23. ## Frequently Asked Questions
-    - 5–10 FAQs. Each uses H3 heading. Direct answer 50–150 words. Optimized for AI retrieval.
-24. ## Sources & References
-    - List real sources used (McKinsey, Gartner, WEF, IDC, Stanford AI Index, OECD, World Bank, etc.).
-    - Do NOT fabricate citations. Do NOT create fake reports.
-25. ## Related Topics
-    - 5–10 relevant internal-link topic suggestions (no invented URLs).
-26. ## Take the Next Step (CTA)
-    - Contextual, professional, non-spammy CTA relevant to the article topic.
-    - Example: "Assess your AI automation readiness", "Schedule a strategy session", "Download the implementation checklist".
-    - AVOID generic: "Contact us now".
+1.  Meta Title: [50–60 chars, keyword-near-front]
+    Meta Description: [140–160 chars, keyword + benefit]
+    URL Slug: [url-slug-here]
+    Reading Time: [X min read] | Last Updated: June 2026
 
-KEY RULES:
-- DO NOT start with AI Overview or Quick Answer as the very first block — H1 comes first.
-- Primary keyword density: 0.8–1.5%. Use semantic variants, not exact-match repeats.
-- Bold primary keyword on FIRST body occurrence ONLY.
+2.  # H1 — Compelling title, keyword near front, no stuffing.
+
+3.  **Introduction** (150–200 words)
+    First sentence bolds **{primary_keyword}**. Hook + why this matters now + what the
+    reader will learn. No generic filler.
+
+4.  ## What Is {primary_keyword}?
+    40–60 word plain-language definition (featured-snippet target). Then one "Why It
+    Matters" paragraph with business context.
+
+5.  ## How {primary_keyword} Works
+    Step-by-step or component breakdown. Use H3 subsections. Explain the mechanics
+    clearly for a non-expert reader.
+
+6.  ## Key Benefits of {primary_keyword}
+    4–6 benefit bullets. Each: bold benefit name + 1–2 sentence explanation.
+    Include ONE real statistic per bullet where available (inline source).
+
+7.  ## {primary_keyword} vs Traditional Alternatives
+    Markdown comparison table. Min 4 rows. Columns: Feature | {primary_keyword} | Traditional.
+
+8.  ## Popular Tools & Platforms
+    Compare 3–5 real tools. Markdown table: Tool | Best For | Pricing | Standout Feature.
+
+9.  ## Real-World Use Cases
+    3–4 industry use cases (SaaS, Real Estate, HR, E-commerce, Healthcare).
+    Per case: **Industry** — Problem → Solution → Outcome.
+
+10. ## Step-by-Step Implementation Guide
+    Numbered steps. Each step: **Action** + why it matters + expected outcome.
+    Target how-to featured snippet.
+
+11. ## How {short_name} Uses {primary_keyword}
+    Min 200 words. Real case study format:
+    **Client:** [Industry] | **Problem:** [Pain point] | **Solution:** [{short_name} workflow] | **Result:** [Hard numbers]
+
+12. ## Challenges and Limitations
+    Honest, balanced. 3–5 challenges. Per challenge: problem + practical solution.
+    Include a "When NOT to use this" subsection.
+
+13. ## Best Practices
+    5–8 actionable numbered best practices. Specific, not generic.
+
+14. ## Future Trends
+    3–4 forward-looking predictions for the next 1–3 years. Specific and evidence-based.
+
+15. ## Frequently Asked Questions
+    5–7 FAQs. Each uses ### H3. Answer in 50–100 words. Direct and complete.
+    {paa_instructions if paa_instructions else f'Use real People Also Ask questions for "{primary_keyword}".'}
+
+16. ## Conclusion
+    120–200 words. Summarize key points. Reinforce practical value. Natural CTA:
+    e.g. "Explore how {short_name} can help you implement this" or "Book a strategy call".
+    NEVER end abruptly. NEVER leave this section incomplete.
+
+17. ## About the Author / About the Publisher
+    [Enhancement layer will inject this — do not skip it]
+
+SUBHEADING RULES:
+- Every H2 must be specific and benefit-driven. NEVER generic.
+  ✗ BAD: "Overview", "Details", "Introduction"
+  ✓ GOOD: "Why {primary_keyword} Reduces Data Retrieval Time by 10x"
+- H3s add granular detail under each H2. No filler headings.
+- Primary keyword density: 0.8–1.5%. Bold on FIRST occurrence ONLY.
 - Cite inline: "According to Gartner...", "McKinsey reports..."
-- H2 subheadings MUST be informative and benefit-driven. NEVER generic.
-  ✗ BAD: "Introduction", "Overview", "Details"
-  ✓ GOOD: "Why {primary_keyword} Cuts Operational Costs by 40% in 2026"
+- NO [1][2][3] numbered references.
 """
         else:
             mandatory_structure = f"""
 GEO ARTICLE STRUCTURE — Built for AI Citations (Perplexity, ChatGPT, Gemini, Claude, Copilot)
-Target Platforms: Google AI Overviews, Perplexity, ChatGPT, Gemini, Claude, Copilot, Enterprise RAG Systems
 Weighting: GEO=70%, SEO=30%
 
-COMPLETION MANDATE: You MUST write EVERY section below completely. Never end abruptly. Never truncate.
+TOKEN BUDGET RULE: If you are approaching your output limit, immediately skip to and
+complete: FAQ → Conclusion → Sources → About the Author. Shorten body sections if
+needed, but ALWAYS write those four sections before stopping.
 
 SECTION ORDER (follow exactly):
 
-1.  H1 — Primary keyword near front. Compelling. No keyword stuffing.
-2.  > **Meta Description:** 140–155 chars. Primary keyword + clear benefit. Reading time. Last updated.
-    > **URL Slug:** [url-slug-here]
-3.  ## Quick Answer — 50–100 words. Direct. Independently understandable. AI retrieval magnet.
-4.  ## AI Overview Summary — 150–250 words. Define topic, why it matters, key benefits, who it's for, future trends.
-5.  ## Why This Matters in 2026
+1.  # H1 — Primary keyword near front. Compelling. No keyword stuffing.
+    Meta Description: [140–155 chars] | URL Slug: [url-slug] | Reading Time: [X min] | Last Updated: June 2026
+
+2.  ## Quick Answer
+    50–100 words. Direct. Independently understandable. AI retrieval magnet.
+
+3.  ## AI Overview Summary
+    150–200 words. Define topic + why it matters + key benefits + who it's for.
+
+4.  ## Why This Matters in 2026
     Three developments changed this landscape in 2025–2026:
-    1. [Development 1]: What happened + business impact.
-    2. [Development 2]: What changed + why businesses care.
-    3. [Development 3]: New capabilities + what this unlocks.
-6.  ## {primary_keyword} Key Facts — 5–10 self-contained ✓ checkmark facts. Scannable. Citation-friendly.
-7.  ## Key Statistics & Benchmarks
-    - 4–6 real statistics. Format:
-      • [Stat with real number]
-        *Source: [Full Report Name, Year](https://real-url.org)* | *Why It Matters: [one sentence]*
-    - Include EXACTLY 3 {short_name} proprietary benchmarks:
-      • [{short_name} finding with specific number]
-        *Source: {short_name} Internal Benchmark, 2025*
-    - NEVER invent statistics. Omit any you cannot verify.
-8.  ## What Is {primary_keyword}? — 40–60 word featured-snippet definition.
-9.  ## The {short_name} {primary_keyword} Maturity Model (Named Framework — REQUIRED)
-    - Create ONE original named framework. Name it after {short_name}.
-    - Format as 5 levels (Level 1 → Level 5). Each level: name + 1–2 sentence description.
-    - This is exactly what Perplexity, ChatGPT, and Gemini extract and quote by name.
-10. ## How {primary_keyword} Evolved — Editorial paradigm-shift analysis. NOT generic history.
-11. ## Core Components & How It Works — H3 subsections per component.
-12. ## Step-by-Step Implementation Guide — Numbered steps. Each: What to do + Why + Expected outcome.
-13. ## Comparison Table — Markdown table. Traditional vs Modern OR Manual vs Automated OR Myth vs Reality.
-14. ## Business Applications — 3–4 industry use cases. Per case: Problem → Solution → Outcome.
-15. ## How {short_name} Implements This — Min 300 words. Case study:
-    **Client:** [Industry] | **Problem:** [Pain point] | **Solution:** [{short_name} workflow] | **Result:** [Hard numbers]
-    After case study, add Learn More block:
-    **Learn More:** [Link 1](URL1) | [Link 2](URL2)
-16. ## Expert Insights
-    > **Expert Insight #1:** [Deep, non-obvious strategic take]
+    1. [Development 1 + business impact]
+    2. [Development 2 + why businesses care]
+    3. [Development 3 + what this unlocks]
+
+5.  ## {primary_keyword} Key Facts
+    5–8 ✓ checkmark facts. Self-contained. Citation-friendly.
+
+6.  ## Key Statistics & Benchmarks
+    4–5 real stats. Format: • [Stat] *Source: [Name](URL)*
+    Include 2 {short_name} proprietary benchmarks: *Source: {short_name} Internal Benchmark, 2025*
+    NEVER invent statistics.
+
+7.  ## The {short_name} {primary_keyword} Maturity Model
+    ONE original named framework. 5 levels (Level 1 → Level 5).
+    Each level: **Level N — [Name]:** [1–2 sentence description]
+    This is exactly what Perplexity, ChatGPT, and Gemini extract and cite.
+
+8.  ## How {primary_keyword} Works
+    Core components with H3 subsections. Structured for AI extraction.
+
+9.  ## Implementation Guide
+    Numbered steps. Each: What to do + Why + Expected outcome.
+
+10. ## Comparison Table
+    Markdown table. Traditional vs Modern OR Myth vs Reality.
+
+11. ## Real-World Applications
+    2–3 industry use cases. Per case: Problem → Solution → Outcome.
+
+12. ## How {short_name} Implements This
+    150–250 words. Case study:
+    **Client:** [Industry] | **Problem:** [...] | **Solution:** [...] | **Result:** [Hard numbers]
+
+13. ## Expert Insights
+    > **Expert Insight #1:** [Non-obvious strategic take]
     > **Expert Insight #2:** [Contrarian or forward-looking take]
-17. ## Challenges & How to Overcome Them — Include "When This Approach Fails" subsection.
-18. ## Common Mistakes to Avoid — 4–6 bullets with corrective action.
-19. ## People Also Ask
-    {paa_instructions if paa_instructions else f'Generate 5–10 highly relevant People Also Ask questions for {primary_keyword}.'}
-    - Each question MUST include a direct 50–150 word answer. Do NOT output questions without answers.
-20. ## Future Outlook
-    **Short-Term (6–12 months):** [Specific prediction]
-    **Medium-Term (1–2 years):** [Market/tech evolution]
-    **Long-Term (3–5 years):** [Strategic transformation]
-21. ## Key Takeaways — 5–10 standalone, actionable bullets summarizing the article.
-22. ## Conclusion — 150–300 words. Summarize. Reinforce value. Highlight future implications. End naturally. Never truncate.
-23. ## Frequently Asked Questions
-    - 5–10 FAQs. Each uses H3 heading. Answer in 50–150 words. AI retrieval optimized.
-24. ## Sources & References
-    - List real sources (McKinsey, Gartner, WEF, IDC, Stanford AI Index, OECD, World Bank, etc.).
-    - Do NOT fabricate. Do NOT invent reports.
-25. ## Related Topics — 5–10 relevant topic suggestions for internal linking.
-26. ## Take the Next Step (CTA)
-    - Contextual, professional, non-spammy CTA. Relevant to the article topic.
-    - Prefer: "Assess your readiness", "Schedule a strategy session", "Download the implementation checklist".
-    - AVOID: "Contact us now".
 
-SUBHEADING QUALITY RULES — CRITICAL FOR GEO CITATIONS:
-- H2 MUST be precise, informative, AI-citation-ready. LLMs quote specific named sections.
-  ✗ BAD: "Introduction", "Overview", "How It Works"
+14. ## People Also Ask
+    {paa_instructions if paa_instructions else f'Generate 5 People Also Ask questions for "{primary_keyword}".'}
+    Each question uses ### H3. Answer in 50–80 words. No question without an answer.
+
+15. ## Future Outlook
+    **Short-Term (6–12 months):** [...]
+    **Medium-Term (1–2 years):** [...]
+    **Long-Term (3–5 years):** [...]
+
+16. ## Key Takeaways
+    5–7 standalone bullet points. Each actionable and self-contained.
+
+17. ## Conclusion
+    120–200 words. Summarize key ideas. Reinforce value. Natural CTA. NEVER truncate.
+
+18. ## Frequently Asked Questions
+    5 FAQs using ### H3. Each answer 50–100 words. AI-retrieval optimized.
+
+19. ## Sources & References
+    List real sources only (McKinsey, Gartner, WEF, IDC, Stanford AI Index, etc.).
+    Do NOT fabricate. Do NOT invent reports.
+
+20. ## Related Topics
+    5–7 topic suggestions for internal linking (no invented URLs).
+
+21. ## Take the Next Step
+    Contextual, professional CTA. Prefer: "Assess your readiness", "Schedule a strategy session".
+    AVOID: "Contact us now".
+
+SUBHEADING RULES:
+- H2 must be AI-citation-ready. LLMs quote specific named sections.
+  ✗ BAD: "Overview", "How It Works"
   ✓ GOOD: "The 5 Paradigm Shifts That Redefined {primary_keyword} in 2026"
-- H3 must be granular and self-explanatory when extracted out of context.
 - Each H2 must function as a standalone citable knowledge unit.
-
-SOURCE CITATION RULES:
-- NEVER use [1][2][3] numbered references.
-- Cite inline: "According to McKinsey's State of AI 2025..."
-- Every statistic MUST have `*Source: [Full Report Name](URL)*` on the next line.
-- Minimum 3 {short_name} proprietary benchmarks with `*Source: {short_name} Internal Benchmark, 2025*`
+- NEVER use [1][2][3] references. Cite inline.
 """
 
         prompt = f"""
@@ -765,14 +794,48 @@ MINIMUM WORDS   : {length_num}
 
         new_content = _perplexity_call(
             prompt,
-            "You are a world-class SEO content strategist. Follow the brief exactly.",
-            max_tokens=5500,
+            "You are a world-class content strategist and editorial publishing specialist. Follow the brief exactly. NEVER stop before completing the Conclusion, FAQs, Sources, and Author sections.",
+            max_tokens=7000,
         )
 
         blog_text += "\n\n" + new_content
         word_count = len(blog_text.split())
 
-    return {"blogText": clean_blog_output(blog_text.strip()), "wordCount": word_count}
+    # ── Completion validation & repair ────────────────────────────────────────
+    REQUIRED_SECTIONS = ["## Conclusion", "## Frequently Asked Questions", "## About the"]
+    missing = [s for s in REQUIRED_SECTIONS if s.lower() not in blog_text.lower()]
+
+    if missing:
+        print(f"[completion-repair] Missing sections detected: {missing}")
+        company_name  = brand_context.get("company_name", "Bitlance Automation") if brand_context else "Bitlance Automation"
+        author_label  = author_name or (company_name + " Editorial Team")
+        missing_prompt = (
+            f"The following article is INCOMPLETE. It was cut off before finishing.\n"
+            f"You MUST now write ONLY the missing sections listed below — nothing else.\n"
+            f"Pick up seamlessly where the article left off. Use the same topic and tone.\n\n"
+            f"MISSING SECTIONS TO WRITE NOW:\n" +
+            "\n".join(f"- {s.lstrip('#').strip()}" for s in missing) +
+            f"\n\nFor the Conclusion: 120–200 words, summarize key ideas, reinforce value, end naturally.\n"
+            f"For Frequently Asked Questions: 5 FAQs using ### H3, each 50–100 word answer.\n"
+            f"For About the Author: Use this block exactly:\n"
+            f"## About the Publisher\n\n"
+            f"This article was researched and reviewed by the editorial team at **{company_name}**. "
+            f"All claims are verified against publicly available sources and proprietary internal benchmarks.\n\n"
+            f"ARTICLE SO FAR (last 600 chars for context):\n{blog_text[-600:]}\n\n"
+            f"Output ONLY the missing sections in clean Markdown. No preamble."
+        )
+        try:
+            repair_content = _perplexity_call(
+                missing_prompt,
+                "You are a completion specialist. Output only the missing article sections in clean Markdown.",
+                max_tokens=3000,
+            )
+            blog_text += "\n\n" + repair_content
+            print(f"[completion-repair] Repair pass complete. Added {len(repair_content.split())} words.")
+        except Exception as repair_err:
+            print(f"[completion-repair] Repair pass failed: {repair_err}")
+
+    return {"blogText": clean_blog_output(blog_text.strip()), "wordCount": len(blog_text.split())}
 
 
 def _clean_title(raw: str, topic: str) -> str:
