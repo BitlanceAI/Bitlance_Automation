@@ -540,7 +540,7 @@ def generate_blog_content(
         faq_section = ""
         if mode == "GEO":
             faq_section = f"""
-## Frequently Asked Questions About {primary_keyword}
+## Frequently Asked Questions About [Topic] (adapt phrasing)
    - Add EXACTLY 5 Q&A pairs directly related to '{primary_keyword}'.
    - {paa_instructions if paa_instructions else f"Generate 5 highly relevant 'People Also Ask' style questions specifically about {primary_keyword}."}
    - Format:
@@ -576,15 +576,15 @@ SECTION ORDER (follow exactly):
 
 4.  ## Table of Contents
     Bulleted Markdown links to every H2 in the article.
-    Example: - [What Is {primary_keyword}?](#what-is)
+    Example: - [What Is [Topic]?](#what-is)
     Improves dwell time, UX, and Google sitelinks eligibility.
 
-5.  ## What Is {primary_keyword}?
+5.  ## What Is [Topic]? (adapt phrasing naturally for long-tail keywords)
     - 40–60 word plain-language definition (featured-snippet target).
     - Follow with: **Why It Matters in 2026** — 2–3 sentences of business relevance.
     - Cite one authoritative source inline: "According to [Source]..."
 
-6.  ## How {primary_keyword} Works
+6.  ## How [Topic] Works (adapt phrasing naturally)
     - Core mechanics explained clearly for a non-expert reader.
     - H3 subsections for each major component or stage.
     - Numbered process list or flow description where helpful.
@@ -598,18 +598,18 @@ SECTION ORDER (follow exactly):
     > *"{short_name} clients achieved [specific measurable result]" — {short_name} Internal Data, 2025*
     NEVER invent statistics. Omit any you cannot verify.
 
-8.  ## Key Benefits of {primary_keyword}
+8.  ## Key Benefits of [Topic]
     4–6 benefit bullets. Format:
     **[Benefit Name]:** [1–2 sentence explanation + real-world impact]
     At least 2 bullets must include an inline source reference.
     Order from most impactful to least.
 
-9.  ## {primary_keyword} vs Traditional Alternatives
+9.  ## [Topic] vs Traditional Alternatives (or Similar Approaches)
     Markdown comparison table. Minimum 5 rows.
-    Columns: Feature | {primary_keyword} | Traditional Approach | Winner
+    Columns: Feature | Modern Approach | Traditional Approach | Winner
     Cover: Speed, Cost, Scalability, Accuracy, Implementation Complexity.
 
-10. ## Popular Tools & Platforms for {primary_keyword}
+10. ## Popular Tools & Platforms for [Topic]
     Compare 4–5 real tools. Markdown table:
     Tool | Best For | Pricing Model | Key Strength | Limitation
     Follow with 2–3 sentences on how to pick the right tool.
@@ -632,7 +632,7 @@ SECTION ORDER (follow exactly):
     [What to do] — [Why it matters] — [Expected outcome]
     Min 6 steps. Targets how-to featured snippets.
 
-13. ## How {short_name} Uses {primary_keyword}
+13. ## How {short_name} Approaches [Topic]
     Min 250 words. Case study in this EXACT multi-line format (do NOT use pipe | separators):
 
     **Client Industry:** [Industry name]
@@ -660,7 +660,7 @@ SECTION ORDER (follow exactly):
 
 15. ## Challenges and Limitations
     3–4 real challenges. Per challenge: **Challenge** — practical workaround or mitigation.
-    Include: ### When NOT to Use {primary_keyword}
+    Include: ### When NOT to Use [Topic]
 
 16. ## Best Practices
     5–7 actionable best practices, numbered.
@@ -672,7 +672,7 @@ SECTION ORDER (follow exactly):
     > **Expert Insight #2:** [Contrarian view or forward-looking prediction]
     Must be specific — no generic advice.
 
-18. ## Future Trends in {primary_keyword}
+18. ## Future Trends in [Topic]
     3–4 predictions for the next 1–3 years.
     Each: **[Trend Name]** — [what's changing + why it matters + business impact].
     Ground in real signals: research findings, industry moves, technology shifts.
@@ -695,10 +695,11 @@ SECTION ORDER (follow exactly):
 SUBHEADING RULES:
 - Every H2 must be specific, benefit-driven, and scannable. NEVER generic.
   BAD: "Overview", "Details", "More Information", "Introduction"
-  GOOD: "Why {primary_keyword} Reduces Processing Time by 10x in Enterprise Workflows"
+  GOOD: "Why [Topic] Reduces Processing Time by 10x in Enterprise Workflows"
 - H3s add granular, specific value under each H2. No filler headings.
 - Use power words where natural: "Proven", "Step-by-Step", "Complete", "2026", "Ultimate".
 - Avoid repeating the exact H1 phrase in sub-headings — use semantic variants.
+- CRITICAL: Adapt headings naturally for long-tail keywords to ensure grammatically correct phrasing. NEVER generate nonsensical headings like "How Why Location Data Is the New Oil Works".
 - Primary keyword density: 0.8–1.5%. Bold on FIRST body occurrence ONLY.
 - Cite inline: "According to Gartner...", "McKinsey reports...", "Stanford AI Index found..."
 - NO [1][2][3] numbered references anywhere.
@@ -734,7 +735,7 @@ SECTION ORDER (follow exactly):
     2. [Development 2 + why businesses care]
     3. [Development 3 + what this unlocks]
 
-6.  ## {primary_keyword} Key Facts
+6.  ## Key Facts about [Topic]
     5–8 ✓ checkmark facts. Self-contained. Citation-friendly.
 
 7.  ## Key Statistics & Benchmarks
@@ -742,12 +743,12 @@ SECTION ORDER (follow exactly):
     Include 2 {short_name} proprietary benchmarks: *Source: {short_name} Internal Benchmark, 2025*
     NEVER invent statistics.
 
-8.  ## The {short_name} {primary_keyword} Maturity Model
+8.  ## The {short_name} Maturity Model for [Topic]
     ONE original named framework. 5 levels (Level 1 → Level 5).
     Each level: **Level N — [Name]:** [1–2 sentence description]
     This is exactly what Perplexity, ChatGPT, and Gemini extract and cite.
 
-9.  ## How {primary_keyword} Works
+9.  ## How [Topic] Works (adapt phrasing naturally)
     Core components with H3 subsections. Structured for AI extraction.
 
 10. ## Implementation Guide
@@ -824,9 +825,10 @@ SECTION ORDER (follow exactly):
 SUBHEADING RULES:
 - H2 must be AI-citation-ready. LLMs quote specific named sections.
   BAD: "Overview", "How It Works"
-  GOOD: "The 5 Paradigm Shifts That Redefined {primary_keyword} in 2026"
+  GOOD: "The 5 Paradigm Shifts That Redefined [Topic] in 2026"
 - Each H2 must function as a standalone citable knowledge unit.
 - Use numbers, outcomes, and year references in headings where natural.
+- CRITICAL: Adapt headings naturally for long-tail keywords to ensure grammatically correct phrasing. NEVER generate nonsensical headings like "How Why Location Data Is the New Oil Works".
 
 DEPTH REQUIREMENTS (CRITICAL — GEO articles must be comprehensive, not brief):
 - ## Quick Answer: 80–120 words — a dense paragraph, not a one-liner.
@@ -884,7 +886,7 @@ MINIMUM WORDS   : {length_num}
 - Demonstrate depth: go beyond surface-level explanations into the "why" and "how".
 
 ══ FEATURED SNIPPET OPTIMISATION ══
-- Include ONE paragraph directly below an H2 that answers "What is {primary_keyword}?"
+- Include ONE paragraph directly below an H2 that answers "What is [Topic]?"
   in 40–60 words in plain, declarative language — this targets the definition snippet.
 - The step-by-step section must use a clean numbered list — targets how-to snippets.
 
@@ -1371,7 +1373,7 @@ def openai_generate_blog_content(
     faq_section = ""
     if mode == "GEO":
         faq_section = f"""
-## Frequently Asked Questions About {primary_keyword}
+## Frequently Asked Questions About [Topic] (adapt phrasing)
    - Add EXACTLY 5 Q&A pairs directly related to '{primary_keyword}'.
    - {paa_instructions if paa_instructions else f"Generate 5 highly relevant 'People Also Ask' style questions specifically about {primary_keyword}."}
    - Format:
@@ -1407,10 +1409,10 @@ SEO ARTICLE STRUCTURE (follow in order — SEO=70%, GEO=30%):
 1. H1 — Compelling, keyword-near-front, no stuffing.
 2. > **Meta:** 140–160 chars. Keyword + benefit. (Markdown blockquote)
 3. Introduction — **{primary_keyword}** bolded first use. Hook + business relevance.
-4. ## What Is {primary_keyword}? — 40-60 word snippet answer + Why It Matters 2026.
+4. ## What Is [Topic]? (adapt phrasing naturally) — 40-60 word snippet answer + Why It Matters 2026.
 5. Table of Contents — Bulleted Markdown H2 links.
 6. ## Key Statistics — 4-6 bullet stats, real numbers, `Source:` under each.
-7. ## How {primary_keyword} Evolved — Editorial, NOT generic history.
+7. ## How [Topic] Evolved — Editorial, NOT generic history.
 8. ## Why It Works — 5+ scannable business-focused reasons.
 9. ## Step-by-Step Guide — Numbered list (how-to snippet target).
 10. ## Tools & Platforms — Compare 3-5 real tools, Markdown table.
@@ -1426,11 +1428,12 @@ RULES: No AI Overview/Fact Box at top. Semantic variants. Inline citations only.
 SUBHEADING QUALITY RULES (H2 & H3) — CRITICAL:
 - H2 subheadings MUST be informative, benefit-driven, and specific. NEVER generic.
   ✗ BAD: "Introduction", "Overview", "Details", "More Information"
-  ✓ GOOD: "Why {primary_keyword} Cuts Operational Costs by 40% in 2026"
+  ✓ GOOD: "Why [Topic] Cuts Operational Costs by 40% in 2026"
 - H3 subheadings must add distinct, specific value under each H2. No filler.
 - Use power words: "Proven", "Step-by-Step", "Complete", "2026", "How to", "Why", "Ultimate".
 - Each H2/H3 must make the reader think "I need to read this section."
 - Avoid repeating the exact H1 keyword phrase in every subheading — use semantic variants.
+- CRITICAL: Adapt headings naturally for long-tail keywords to ensure grammatically correct phrasing. NEVER generate nonsensical headings like "How Why Location Data Is the New Oil Works".
 """
     else:
         mandatory_structure = f"""
@@ -1449,7 +1452,7 @@ SECTION ORDER (follow exactly):
  1. [Development 1]: What happened + business impact.
  2. [Development 2]: What changed + why businesses care.
  3. [Development 3]: New capabilities + what this unlocks.
-6. ## {primary_keyword} Fast Facts — 4-6 checkmark (✓) facts.
+6. ## Fast Facts about [Topic] — 4-6 checkmark (✓) facts.
 7. ## Key Statistics & Benchmarks
    - 4-6 real stats. EVERY stat must include source URL:
  • [Real statistic with number]
@@ -1465,7 +1468,7 @@ SECTION ORDER (follow exactly):
  **Level 2 — [Stage Name]:** [Description]
  ... up to Level 5.
    - This is what Perplexity, ChatGPT, and Gemini cite by name.
-9. ## How {primary_keyword} Evolved — Paradigm shifts, NOT generic history.
+9. ## How [Topic] Evolved — Paradigm shifts, NOT generic history.
 10. ## Core Components / How It Works — H3 subsections per component.
 11. ## Implementation Guide — Numbered steps. How-to format.
 12. ## Comparison Table — Markdown table: approaches, tools, or Myth vs Reality.
@@ -1477,7 +1480,7 @@ Follow with **Learn More:** block using provided internal links.
 > **Expert Insight #1:** [Non-obvious take]
 > **Expert Insight #2:** [Contrarian or forward-looking]
 16. ## Challenges & How to Overcome Them — Include "When this fails" sub-section.
-17. {faq_section.strip() if faq_section.strip() else f"## Frequently Asked Questions About {primary_keyword} — 5 PAA Q&As."}
+17. {faq_section.strip() if faq_section.strip() else f"## Frequently Asked Questions About [Topic] — 5 PAA Q&As."}
 18. ## Future Outlook — 12-24 month specific predictions.
 19. ## Key Takeaways — 5 concise bullets.
 20. ## Conclusion — 80-120 words + natural CTA.
@@ -1485,9 +1488,10 @@ Follow with **Learn More:** block using provided internal links.
 SUBHEADING QUALITY RULES (H2 & H3) — CRITICAL FOR GEO CITATIONS:
 - H2 subheadings MUST be precise, informative, and AI-citation-ready. LLMs quote specific, named sections.
   ✗ BAD: "Introduction", "Overview", "How It Works", "Details"
-  ✓ GOOD: "The 5 Paradigm Shifts That Redefined {primary_keyword} in 2026"
+  ✓ GOOD: "The 5 Paradigm Shifts That Redefined [Topic] in 2026"
 - H3 subheadings must be granular, topic-specific, and self-explanatory when extracted out of context.
 - Use concrete language: numbers, outcomes, named concepts, year references.
+- CRITICAL: Adapt headings naturally for long-tail keywords to ensure grammatically correct phrasing. NEVER generate nonsensical headings like "How Why Location Data Is the New Oil Works".
 - Each H2 must function as a standalone, citable knowledge unit when extracted by an AI engine.
 - Avoid vague H2s — if a heading could apply to ANY article, rewrite it to be specific to THIS topic.
 
@@ -1529,7 +1533,7 @@ MINIMUM WORDS   : {length_num}
 - Clarity & Actionability: Every paragraph must be clear and actionable. Add comparison tables (in Markdown) where beneficial to highlight differences.
 
 ══ FEATURED SNIPPET OPTIMISATION ══
-- Include ONE paragraph directly below an H2 that answers "What is {primary_keyword}?"
+- Include ONE paragraph directly below an H2 that answers "What is [Topic]?"
   in 40–60 words in plain, declarative language — targets the definition snippet.
 - The step-by-step section must use a clean numbered list — targets how-to snippets.
 
