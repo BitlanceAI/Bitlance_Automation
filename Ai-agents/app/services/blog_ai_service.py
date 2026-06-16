@@ -100,6 +100,11 @@ At the very end of the article, output a Markdown comment block (`<!-- ... -->`)
 * Supporting Content Opportunities
 """
 
+    if mode == "SEO":
+        footer_text = f"**Written By:** {author_name or (brand_context.get('company_name','Bitlance') + ' Expert Editorial Board')} | **Fact-Checked & Reviewed By:** The Technical Content Team at {brand_context.get('company_name','Bitlance Automation')} | **Last Updated:** June 2026"
+    else:
+        footer_text = f"**Content Attribution:** {author_name or (brand_context.get('company_name','Bitlance') + ' Editorial Team')} | **Authority & Verification:** Published by {brand_context.get('company_name','Bitlance Automation')} | **Last Updated:** June 2026"
+
     return f"""
 ══ ENHANCEMENT LAYER ══
 BRAND: {brand_context.get('company_name','Bitlance')} | Services: {brand_context.get('services','')} | USP: {brand_context.get('usp','')}{other_details_str}
@@ -136,7 +141,7 @@ BRAND: {brand_context.get('company_name','Bitlance')} | Services: {brand_context
 
 [F] AUTHOR BYLINE (end of article — before Related Guides)
 ---
-**Author:** {author_name or (brand_context.get('company_name','Bitlance') + ' Editorial Team')} | **Reviewed By:** {brand_context.get('company_name','Bitlance Automation')} Team | **Last Updated:** June 2026
+{footer_text}
 ---
 
 ⚠️ QUALITY GATE: If missing 5+ entities OR 3+ citations OR stats block{faq_rule}, append: `SEO_AUDIT_REQUIRED = TRUE`

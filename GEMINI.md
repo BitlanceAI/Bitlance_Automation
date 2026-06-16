@@ -15,7 +15,7 @@ scanning cannot.
 - **Finding relationships**: `query_graph` with callers_of/callees_of/imports_of/tests_for
 - **Architecture questions**: `get_architecture_overview` + `list_communities`
 
-Fall back to Grep/Glob/Read **only** when the graph doesn't .
+Fall back to Grep/Glob/Read **only** when the graph doesn't provide the necessary information or relationships.
 
 ### Key Tools
 
