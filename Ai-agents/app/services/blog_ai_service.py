@@ -111,7 +111,7 @@ At the very end of the article, output a Markdown comment block (`<!-- ... -->`)
             "author_title": "CEO & Founder",
             "author_company": "Bitlance",
             "author_bio": "Anurag Dhole is the CEO and Founder of Bitlance, specializing in AI-driven automation, business process optimization, and enterprise agentic workflows.",
-            "author_linkedin": "https://www.linkedin.com/in/anuragdhole"
+            "author_linkedin": "https://www.linkedin.com/in/anurag-dhole-532046124/"
         }
     }
 
@@ -164,7 +164,10 @@ BRAND: {brand_context.get('company_name','Bitlance')} | Services: {brand_context
 
 [D] CITATION RULES
 - NO [1][2][3] numbered references. Cite inline: "According to McKinsey...", "Gartner reports..."
-- Every source MUST include a real URL: `Source: [Report Name](https://real-url.org)`
+- Every source citation, statistical reference, report reference, or database fact MUST be placed on a separate, brand new line (separated by a blank line or double newline), NEVER appended to the end of a sentence or paragraph on the same line.
+  ✗ BAD: "...routing. Source: Stanford AI Index 2024"
+  ✓ GOOD: "...routing.\n\nSource: [Stanford AI Index 2024](https://aiindex.stanford.edu/report/)"
+- Every source MUST include a real URL format: `Source: [Report Name](https://real-url.org)`
 {cluster_links_rule}
 [E] TITLE & LINKS
 - H1: Clickable, no keyword stuffing. Use semantic variants, not exact-match repeats.
@@ -854,8 +857,8 @@ DEPTH REQUIREMENTS (CRITICAL — GEO articles must be comprehensive, not brief):
 SOURCE CITATION RULES:
 - NEVER use [1][2][3] numbered references.
 - Cite inline: "According to McKinsey's State of AI 2025..."
-- Every statistic MUST have `*Source: [Full Report Name](URL)*` on the next line.
-- Minimum 3 {short_name} proprietary benchmarks with `*Source: {short_name} Internal Benchmark, 2025*`
+- Every statistic, database fact, or report reference MUST have `*Source: [Full Report Name](URL)*` on a separate, brand new line (never on the same line or end of sentence).
+- Minimum 3 {short_name} proprietary benchmarks with `*Source: {short_name} Internal Benchmark, 2025*` on a separate, brand new line.
 """
 
         prompt = f"""
@@ -936,10 +939,13 @@ MINIMUM WORDS   : {length_num}
         word_count = len(blog_text.split())
 
     # ── Completion validation & repair ────────────────────────────────────────
+    has_conclusion = ("## conclusion" in blog_text.lower()) or ("## final thoughts" in blog_text.lower())
     if mode == "SEO":
-        REQUIRED_SECTIONS = ["## Conclusion", "## About the"]
+        REQUIRED_SECTIONS = [] if has_conclusion else ["## Conclusion"]
+        REQUIRED_SECTIONS.append("## About the")
     else:
-        REQUIRED_SECTIONS = ["## Conclusion", "## Frequently Asked Questions", "## About the"]
+        REQUIRED_SECTIONS = [] if has_conclusion else ["## Conclusion"]
+        REQUIRED_SECTIONS.extend(["## Frequently Asked Questions", "## About the"])
     missing = [s for s in REQUIRED_SECTIONS if s.lower() not in blog_text.lower()]
 
     if missing:
@@ -952,7 +958,7 @@ MINIMUM WORDS   : {length_num}
                 "author_title": "CEO & Founder",
                 "author_company": "Bitlance",
                 "author_bio": "Anurag Dhole is the CEO and Founder of Bitlance, specializing in AI-driven automation, business process optimization, and enterprise agentic workflows.",
-                "author_linkedin": "https://www.linkedin.com/in/anuragdhole"
+                "author_linkedin": "https://www.linkedin.com/in/anurag-dhole-532046124/"
             }
         }
         
@@ -982,9 +988,10 @@ MINIMUM WORDS   : {length_num}
             f"You MUST now write ONLY the missing sections listed below — nothing else.\n"
             f"Pick up seamlessly where the article left off. Use the same topic and tone.\n\n"
             f"MISSING SECTIONS TO WRITE NOW:\n" +
-            "\n".join(f"- {s.lstrip('#').strip()}" for s in missing) +
-            f"\n\nFor the Conclusion: 120–200 words, summarize key ideas, reinforce value, end naturally.\n"
+            "\n".join(f"- {s.lstrip('#').strip()}" for s in missing)
         )
+        if "## Conclusion" in missing:
+            missing_prompt += f"\n\nFor the Conclusion: 120–200 words, summarize key ideas, reinforce value, end naturally.\n"
         if "## Frequently Asked Questions" in missing:
             missing_prompt += "For Frequently Asked Questions: 5 FAQs using ### H3, each 50–100 word answer.\n"
             
@@ -1571,10 +1578,13 @@ MINIMUM WORDS   : {length_num}
     )
 
     # ── Completion validation & repair ────────────────────────────────────────
+    has_conclusion = ("## conclusion" in blog_text.lower()) or ("## final thoughts" in blog_text.lower())
     if mode == "SEO":
-        REQUIRED_SECTIONS = ["## Conclusion", "## About the"]
+        REQUIRED_SECTIONS = [] if has_conclusion else ["## Conclusion"]
+        REQUIRED_SECTIONS.append("## About the")
     else:
-        REQUIRED_SECTIONS = ["## Conclusion", "## Frequently Asked Questions", "## About the"]
+        REQUIRED_SECTIONS = [] if has_conclusion else ["## Conclusion"]
+        REQUIRED_SECTIONS.extend(["## Frequently Asked Questions", "## About the"])
     missing = [s for s in REQUIRED_SECTIONS if s.lower() not in blog_text.lower()]
 
     if missing:
@@ -1587,7 +1597,7 @@ MINIMUM WORDS   : {length_num}
                 "author_title": "CEO & Founder",
                 "author_company": "Bitlance",
                 "author_bio": "Anurag Dhole is the CEO and Founder of Bitlance, specializing in AI-driven automation, business process optimization, and enterprise agentic workflows.",
-                "author_linkedin": "https://www.linkedin.com/in/anuragdhole"
+                "author_linkedin": "https://www.linkedin.com/in/anurag-dhole-532046124/"
             }
         }
         
@@ -1617,9 +1627,10 @@ MINIMUM WORDS   : {length_num}
             f"You MUST now write ONLY the missing sections listed below — nothing else.\n"
             f"Pick up seamlessly where the article left off. Use the same topic and tone.\n\n"
             f"MISSING SECTIONS TO WRITE NOW:\n" +
-            "\n".join(f"- {s.lstrip('#').strip()}" for s in missing) +
-            f"\n\nFor the Conclusion: 120–200 words, summarize key ideas, reinforce value, end naturally.\n"
+            "\n".join(f"- {s.lstrip('#').strip()}" for s in missing)
         )
+        if "## Conclusion" in missing:
+            missing_prompt += f"\n\nFor the Conclusion: 120–200 words, summarize key ideas, reinforce value, end naturally.\n"
         if "## Frequently Asked Questions" in missing:
             missing_prompt += "For Frequently Asked Questions: 5 FAQs using ### H3, each 50–100 word answer.\n"
             

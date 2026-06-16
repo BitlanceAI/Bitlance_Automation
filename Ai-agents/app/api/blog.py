@@ -240,14 +240,14 @@ def generate_blog(request: Request, body: GenerateBlogRequest):
             backlink_analysis = None
     
         # ── 3.6 Enforce 70:30 internal:external link ratio ────────────────────────
-        # Hard cap: max 7 internal, max 3 external — regardless of what AI returned.
-        # If fewer than 7 internals exist, allow up to 4 externals to fill the gap
-        # but never exceed 10 total links or flip the majority to externals.
-        MAX_INTERNAL = 7
-        MAX_EXTERNAL = 3
+        # Hard cap: max 15 internal, max 5 external — regardless of what AI returned.
+        # If fewer than 15 internals exist, allow up to 6 externals to fill the gap
+        # but never exceed 20 total links or flip the majority to externals.
+        MAX_INTERNAL = 15
+        MAX_EXTERNAL = 5
         interlinks    = interlinks[:MAX_INTERNAL]
         external_links = external_links[:MAX_EXTERNAL]
-        print(f"[Link Ratio] Internal: {len(interlinks)} | External: {len(external_links)} (target 7:3)")
+        print(f"[Link Ratio] Internal: {len(interlinks)} | External: {len(external_links)} (target 15:5)")
     
         # Build author metadata dictionary
         author_meta = {}

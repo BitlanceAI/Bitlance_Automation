@@ -69,7 +69,7 @@ const ProfileSelection = ({ onProfileSelect }) => {
                             role: 'CEO & Founder',
                             bio: 'Anurag Dhole is the CEO and Founder of Bitlance, specializing in AI-driven automation, business process optimization, and enterprise agentic workflows.',
                             profile_image: '',
-                            social_links: { linkedin: 'https://www.linkedin.com/in/anuragdhole' }
+                            social_links: { linkedin: 'https://www.linkedin.com/in/anurag-dhole-532046124/' }
                         },
                         ...fetchedProfiles
                     ];

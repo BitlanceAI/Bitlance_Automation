@@ -306,7 +306,7 @@ export const generateArticle = async (req, res) => {
                 .not('slug', 'is', null)
                 .neq('slug', '')
                 .order('created_at', { ascending: false })
-                .limit(10);
+                .limit(20);
             if (articles && articles.length > 0) {
                 interlinks = articles.map(a => ({
                     title: a.seo_title || a.slug,
