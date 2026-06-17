@@ -261,6 +261,7 @@ const LandingPage = () => {
                     <UseCasesSection />
                     <HowItWorksSection />
                     <SocialProofSection />
+                    <AgentPricingSection />
                     <FinalCtaSection onOpenBooking={handleOpenBooking} />
                     <Footer />
                 </Suspense>

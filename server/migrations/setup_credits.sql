@@ -1,7 +1,7 @@
 -- 1. Create user_credits table (Safe if exists)
 CREATE TABLE IF NOT EXISTS public.user_credits (
   user_id UUID REFERENCES auth.users NOT NULL PRIMARY KEY,
-  balance INTEGER DEFAULT 100,
+  balance INTEGER DEFAULT 500,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
@@ -20,7 +20,7 @@ CREATE OR REPLACE FUNCTION public.handle_new_user_credits()
 RETURNS TRIGGER AS $$
 BEGIN
   INSERT INTO public.user_credits (user_id, balance)
-  VALUES (new.id, 100);
+  VALUES (new.id, 500);
   RETURN new;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;

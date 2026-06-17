@@ -14,6 +14,7 @@ import { Toaster } from 'react-hot-toast';
 // Public / Landing
 const LandingPage = lazy(() => import('./pages/landing/LandingPage'));
 const SeoLandingPage = lazy(() => import('./pages/landing/SeoLandingPage'));
+const AgentPricingSection = lazy(() => import('./components/landing/AgentPricingSection'));
 const QuizLandingPage = lazy(() => import('./pages/landing/QuizLandingPage'));
 const ThankYouPage = lazy(() => import('./pages/landing/ThankYouPage'));
 const PartnerPortal = lazy(() => import('./pages/PartnerPortal'));
@@ -181,6 +182,7 @@ function App() {
                 {/* Public Routes */}
                 <Route path="/" element={<RootRedirect />} />
                 <Route path="/seo" element={<SeoLandingPage />} />
+                <Route path="/pricing" element={<div className="pt-24 bg-white"><AgentPricingSection /></div>} />
                 <Route path="/privacy-policy" element={<PrivacyPolicy />} />
                 <Route path="/terms-policy" element={<TermsPage />} />
                 <Route path="/contact" element={<ContactPage />} />
