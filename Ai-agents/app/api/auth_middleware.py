@@ -73,6 +73,8 @@ class APIKeyAuthMiddleware(BaseHTTPMiddleware):
                 max_requests = 120 # per minute
             elif plan == "agency":
                 max_requests = 60
+            elif plan == "pro":
+                max_requests = 45
             elif plan == "growth":
                 max_requests = 30
             else:

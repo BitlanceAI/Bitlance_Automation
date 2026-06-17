@@ -8,6 +8,7 @@ import Footer from './components/landing/Footer';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { WorkspaceProvider } from './context/WorkspaceContext';
 import AuthGuard from './components/auth/AuthGuard';
+import AdminGuard from './components/auth/AdminGuard';
 import { Toaster } from 'react-hot-toast';
 
 // ─── Lazy-loaded pages (route-level code splitting) ───────────────────────────
@@ -277,35 +278,34 @@ function App() {
                   </AuthGuard>
                 } />
                 <Route path="/admin" element={
-                  // TODO: Add AdminGuard
-                  <AuthGuard>
+                  <AdminGuard>
                     <AdminDashboard />
-                  </AuthGuard>
+                  </AdminGuard>
                 } />
                 <Route path="/admin/api-keys" element={
-                  <AuthGuard>
+                  <AdminGuard>
                     <AdminApiKeys />
-                  </AuthGuard>
+                  </AdminGuard>
                 } />
                 <Route path="/admin/email-automation" element={
-                  <AuthGuard>
+                  <AdminGuard>
                     <EmailAutomationPage />
-                  </AuthGuard>
+                  </AdminGuard>
                 } />
                 <Route path="/admin/client/:id" element={
-                  <AuthGuard>
+                  <AdminGuard>
                     <ClientHistoryPage />
-                  </AuthGuard>
+                  </AdminGuard>
                 } />
                 <Route path="/admin/campaigns" element={
-                  <AuthGuard>
+                  <AdminGuard>
                     <CampaignManagerPage />
-                  </AuthGuard>
+                  </AdminGuard>
                 } />
                 <Route path="/admin/campaigns/new" element={
-                  <AuthGuard>
+                  <AdminGuard>
                     <CampaignWizard />
-                  </AuthGuard>
+                  </AdminGuard>
                 } />
 
                 <Route path="/apply" element={<QuizLandingPage />} />
