@@ -163,7 +163,7 @@ async function initiateRazorpayCheckout({ session, plan, onSuccess, onError }) {
 }
 
 // ─── Plan Card ────────────────────────────────────────────────────────────────
-function PlanCard({ plan, idx, onBuy, isBuying }) {
+function PlanCard({ plan, idx, onBuy, isBuying, disabled }) {
     return (
         <motion.div
             initial={{ opacity: 0, y: 24 }}
@@ -232,7 +232,7 @@ function PlanCard({ plan, idx, onBuy, isBuying }) {
 
             <button
                 onClick={() => onBuy(plan)}
-                disabled={isBuying}
+                disabled={isBuying || disabled}
                 className="w-full py-3 rounded text-[11px] font-extrabold uppercase tracking-widest flex items-center justify-center gap-2 transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed"
                 style={plan.popular
                     ? { background: T, color: '#000' }
@@ -344,7 +344,7 @@ function BenchmarkTable({ open, onToggle }) {
 const AgentPricingSection = () => {
     const { session } = useAuth();
     const [tab, setTab] = useState('seo_geo');       // 'seo_geo' | 'email'
-    const [isBuying, setIsBuying] = useState(false);
+    const [buyingPlan, setBuyingPlan] = useState(null); // "planName_planType" or null
     const [statusMsg, setStatusMsg] = useState(null); // { type: 'success'|'error', text: string }
     const [creditTableOpen, setCreditTableOpen] = useState(false);
     const [benchmarkOpen, setBenchmarkOpen] = useState(false);
@@ -379,19 +379,20 @@ const AgentPricingSection = () => {
             }
         }
 
-        setIsBuying(true);
+        const planKey = `${plan.name}_${plan.planType}`;
+        setBuyingPlan(planKey);
         await initiateRazorpayCheckout({
             session,
             plan,
             onSuccess: (data) => {
-                setIsBuying(false);
+                setBuyingPlan(null);
                 setStatusMsg({
                     type: 'success',
                     text: `✅ Payment successful! ${data.creditsAdded?.toLocaleString()} credits added to your account.`,
                 });
             },
             onError: (err) => {
-                setIsBuying(false);
+                setBuyingPlan(null);
                 setStatusMsg({ type: 'error', text: `❌ ${err}` });
             },
         });
@@ -469,9 +470,19 @@ const AgentPricingSection = () => {
                         transition={{ duration: 0.2 }}
                         className={`grid grid-cols-1 ${tab === 'email' ? 'md:grid-cols-4' : 'md:grid-cols-3'} gap-5 mb-8`}
                     >
-                        {plans.map((plan, idx) => (
-                            <PlanCard key={plan.name} plan={plan} idx={idx} onBuy={handleBuy} isBuying={isBuying} />
-                        ))}
+                        {plans.map((plan, idx) => {
+                            const planKey = `${plan.name}_${plan.planType}`;
+                            return (
+                                <PlanCard
+                                    key={plan.name}
+                                    plan={plan}
+                                    idx={idx}
+                                    onBuy={handleBuy}
+                                    isBuying={buyingPlan === planKey}
+                                    disabled={buyingPlan !== null && buyingPlan !== planKey}
+                                />
+                            );
+                        })}
                     </motion.div>
                 </AnimatePresence>
 
