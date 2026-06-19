@@ -16,6 +16,7 @@ export default function AdminApiKeys() {
   const [generating, setGenerating] = useState(false);
   const [newKey, setNewKey] = useState(null);
   const [visibleKeys, setVisibleKeys] = useState({});
+  const [error, setError] = useState(null);
 
   const toggleKeyVisibility = (id) => {
     setVisibleKeys(prev => ({ ...prev, [id]: !prev[id] }));
@@ -50,6 +51,7 @@ export default function AdminApiKeys() {
     
     setGenerating(true);
     setNewKey(null);
+    setError(null);
     try {
       const response = await axios.post(`${apiUrl}/api/admin/api-keys/create`, {
         client_email: email,
@@ -64,9 +66,15 @@ export default function AdminApiKeys() {
       fetchKeys();
       setEmail('');
       setLabel('');
-    } catch (error) {
-      console.error(error);
-      toast.error(error.response?.data?.detail || 'Failed to generate key');
+    } catch (err) {
+      console.error(err);
+      const errorDetail = err.response?.data?.detail || 'Failed to generate key';
+      if (typeof errorDetail === 'string' && errorDetail.includes('No Supabase user found')) {
+        setError("This user is not registered on Bitlance.");
+      } else {
+        toast.error(errorDetail);
+        setError(errorDetail);
+      }
     } finally {
       setGenerating(false);
     }
@@ -101,9 +109,19 @@ export default function AdminApiKeys() {
           {/* Generator Form */}
           <div className="bg-white rounded-lg shadow px-6 py-6 border border-gray-200">
             <h2 className="text-xl font-bold text-gray-800 mb-4">Provision New Client Key</h2>
+            
+            {error && (
+              <div className="mb-6 bg-red-50 border border-red-200 rounded-md p-4">
+                <h3 className="text-sm font-bold text-red-800">Provisioning Error</h3>
+                <p className="text-sm text-red-700 mt-1">
+                  {error}
+                </p>
+              </div>
+            )}
+
             <form onSubmit={handleGenerate} className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
               <div>
-                <label className="block text-sm font-medium text-gray-700">Client Email (Supabase User)</label>
+                <label className="block text-sm font-medium text-gray-700">Client Email (Bitlance User)</label>
                 <input
                   type="email"
                   value={email}
