@@ -54,6 +54,7 @@ app.use(express.json({
 
 import creditRoutes from './routes/payments/creditRoutes.js';
 import settingsRoutes from './routes/settings/settingsRoutes.js';
+import apiKeysRoutes from './routes/settings/apiKeysRoutes.js';
 import googleSheetsRoutes from './routes/integrations/googleSheetsRoutes.js';
 import retellRoutes from './routes/integrations/retellRoutes.js';
 import meetingRoutes from './routes/integrations/meetingRoutes.js';
@@ -74,6 +75,7 @@ app.use('/api/auth', authRoutes);
 
 app.use('/api/credits', creditRoutes);
 app.use('/api/user/settings', settingsRoutes);
+app.use('/api/user/api-keys', apiKeysRoutes);
 app.use('/api/google-sheets', googleSheetsRoutes);
 app.use('/api', retellRoutes); // Mount at root /api to match /api/create-web-call etc.
 app.use('/api/meetings', meetingRoutes);
