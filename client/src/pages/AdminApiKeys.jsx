@@ -130,6 +130,7 @@ export default function AdminApiKeys() {
                 >
                   <option value="starter">Starter (10/min)</option>
                   <option value="growth">Growth (30/min)</option>
+                  <option value="pro">Pro (45/min)</option>
                   <option value="agency">Agency (60/min)</option>
                   <option value="enterprise">Enterprise (120/min)</option>
                 </select>

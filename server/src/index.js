@@ -139,6 +139,9 @@ app.use('/api/digilocker', digiLockerRoutes);
 import paymentRoutes from './routes/payments/paymentRoutes.js';
 app.use('/api/payment', paymentRoutes);
 
+import razorpayRoutes from './routes/payments/razorpayRoutes.js';
+app.use('/api/razorpay', razorpayRoutes);
+
 import videoRoutes from './routes/video/videoRoutes.js';
 app.use('/api/video', videoRoutes);
 

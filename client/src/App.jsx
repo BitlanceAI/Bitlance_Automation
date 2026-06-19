@@ -8,12 +8,14 @@ import Footer from './components/landing/Footer';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { WorkspaceProvider } from './context/WorkspaceContext';
 import AuthGuard from './components/auth/AuthGuard';
+import AdminGuard from './components/auth/AdminGuard';
 import { Toaster } from 'react-hot-toast';
 
 // ─── Lazy-loaded pages (route-level code splitting) ───────────────────────────
 // Public / Landing
 const LandingPage = lazy(() => import('./pages/landing/LandingPage'));
 const SeoLandingPage = lazy(() => import('./pages/landing/SeoLandingPage'));
+const AgentPricingSection = lazy(() => import('./components/landing/AgentPricingSection'));
 const QuizLandingPage = lazy(() => import('./pages/landing/QuizLandingPage'));
 const ThankYouPage = lazy(() => import('./pages/landing/ThankYouPage'));
 const PartnerPortal = lazy(() => import('./pages/PartnerPortal'));
@@ -181,6 +183,7 @@ function App() {
                 {/* Public Routes */}
                 <Route path="/" element={<RootRedirect />} />
                 <Route path="/seo" element={<SeoLandingPage />} />
+                <Route path="/pricing" element={<div className="pt-24 bg-white"><AgentPricingSection /></div>} />
                 <Route path="/privacy-policy" element={<PrivacyPolicy />} />
                 <Route path="/terms-policy" element={<TermsPage />} />
                 <Route path="/contact" element={<ContactPage />} />
@@ -275,35 +278,34 @@ function App() {
                   </AuthGuard>
                 } />
                 <Route path="/admin" element={
-                  // TODO: Add AdminGuard
-                  <AuthGuard>
+                  <AdminGuard>
                     <AdminDashboard />
-                  </AuthGuard>
+                  </AdminGuard>
                 } />
                 <Route path="/admin/api-keys" element={
-                  <AuthGuard>
+                  <AdminGuard>
                     <AdminApiKeys />
-                  </AuthGuard>
+                  </AdminGuard>
                 } />
                 <Route path="/admin/email-automation" element={
-                  <AuthGuard>
+                  <AdminGuard>
                     <EmailAutomationPage />
-                  </AuthGuard>
+                  </AdminGuard>
                 } />
                 <Route path="/admin/client/:id" element={
-                  <AuthGuard>
+                  <AdminGuard>
                     <ClientHistoryPage />
-                  </AuthGuard>
+                  </AdminGuard>
                 } />
                 <Route path="/admin/campaigns" element={
-                  <AuthGuard>
+                  <AdminGuard>
                     <CampaignManagerPage />
-                  </AuthGuard>
+                  </AdminGuard>
                 } />
                 <Route path="/admin/campaigns/new" element={
-                  <AuthGuard>
+                  <AdminGuard>
                     <CampaignWizard />
-                  </AuthGuard>
+                  </AdminGuard>
                 } />
 
                 <Route path="/apply" element={<QuizLandingPage />} />

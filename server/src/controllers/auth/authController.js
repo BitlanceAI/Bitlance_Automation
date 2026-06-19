@@ -88,11 +88,11 @@ export const signup = async (req, res) => {
             try {
                 const { error: creditsError } = await supabase
                     .from('user_credits')
-                    .insert({
+                    .upsert({
                         user_id: data.user.id,
-                        balance: 5000, // Initial credits
+                        balance: 500, // Initial credits
                         updated_at: new Date().toISOString()
-                    });
+                    }, { onConflict: 'user_id' });
 
                 if (creditsError) {
                     console.error('Failed to create credits record:', creditsError);
