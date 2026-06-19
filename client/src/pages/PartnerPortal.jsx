@@ -21,11 +21,11 @@ export default function PartnerPortal() {
     setLoading(true);
     setGeneratedData(null);
     
-    // Default Python API URL
-    const apiUrl = import.meta.env.VITE_PYTHON_API_URL || 'http://localhost:8001';
+    // Route through Node.js backend — Python AI agent is an internal DO service
+    const apiUrl = import.meta.env.VITE_API_BASE_URL || (import.meta.env.PROD ? 'https://bitlance-app-97qhp.ondigitalocean.app' : 'http://localhost:3001');
     
     try {
-      const response = await axios.post(`${apiUrl}/api/v1/seo/generate`, {
+      const response = await axios.post(`${apiUrl}/api/admin/api-keys/seo/generate`, {
         topic,
         keywords,
         optimization_mode: mode,

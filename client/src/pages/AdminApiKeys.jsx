@@ -21,7 +21,9 @@ export default function AdminApiKeys() {
     setVisibleKeys(prev => ({ ...prev, [id]: !prev[id] }));
   };
 
-  const apiUrl = import.meta.env.VITE_PYTHON_API_URL || 'http://localhost:8001';
+  // Calls go to Node.js backend which proxies internally to the Python AI agent.
+  // The Python service has no public URL (DigitalOcean internal_ports).
+  const apiUrl = import.meta.env.VITE_API_BASE_URL || (import.meta.env.PROD ? 'https://bitlance-app-97qhp.ondigitalocean.app' : 'http://localhost:3001');
 
   useEffect(() => {
     fetchKeys();
@@ -30,7 +32,7 @@ export default function AdminApiKeys() {
   const fetchKeys = async () => {
     if (!session?.access_token) return;
     try {
-      const response = await axios.get(`${apiUrl}/api/v1/admin/api-keys/list`, {
+      const response = await axios.get(`${apiUrl}/api/admin/api-keys/list`, {
         headers: { Authorization: `Bearer ${session.access_token}` }
       });
       setKeys(response.data.keys || []);
@@ -49,7 +51,7 @@ export default function AdminApiKeys() {
     setGenerating(true);
     setNewKey(null);
     try {
-      const response = await axios.post(`${apiUrl}/api/v1/admin/api-keys/create`, {
+      const response = await axios.post(`${apiUrl}/api/admin/api-keys/create`, {
         client_email: email,
         plan: plan,
         label: label
@@ -73,7 +75,7 @@ export default function AdminApiKeys() {
   const handleRevoke = async (keyId) => {
     if (!window.confirm("Are you sure you want to revoke this key?")) return;
     try {
-      await axios.post(`${apiUrl}/api/v1/admin/api-keys/revoke`, { key_id: keyId }, {
+      await axios.post(`${apiUrl}/api/admin/api-keys/revoke`, { key_id: keyId }, {
         headers: { Authorization: `Bearer ${session.access_token}` }
       });
       toast.success("Key revoked!");

@@ -63,6 +63,7 @@ import campaignRoutes from './routes/campaigns/campaignRoutes.js';
 import trackingRoutes from './routes/tracking/trackingRoutes.js';
 
 import adminRoutes from './routes/admin/adminRoutes.js';
+import adminApiKeysProxy from './routes/admin/adminApiKeysProxy.js';
 import profileRoutes from './routes/auth/profileRoutes.js';
 import authRoutes from './routes/auth/authRoutes.js';
 import linkedinRoutes from './routes/social/linkedinRoutes.js';
@@ -84,6 +85,9 @@ app.use('/api/campaigns', campaignRoutes);
 app.use('/api/track', trackingRoutes);
 
 
+// Proxy: browser → Node → internal Python AI agent (no public URL)
+// Must be mounted BEFORE adminRoutes so the more-specific path wins
+app.use('/api/admin/api-keys', adminApiKeysProxy);
 app.use('/api/admin', adminRoutes);
 app.use('/api/profiles', profileRoutes);
 app.use('/api/linkedin', linkedinRoutes);

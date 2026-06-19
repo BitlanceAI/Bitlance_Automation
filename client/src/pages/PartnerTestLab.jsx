@@ -3,9 +3,12 @@ import ReactMarkdown from 'react-markdown';
 import axios from 'axios';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
-const PYTHON_API_URL = import.meta.env.VITE_PYTHON_API_URL || 'http://localhost:8001';
+// Route through Node.js backend which proxies internally to Python AI agent
+// (Python service is an internal DigitalOcean service with no public URL)
+const PYTHON_API_URL = import.meta.env.VITE_API_BASE_URL || (import.meta.env.PROD ? 'https://bitlance-app-97qhp.ondigitalocean.app' : 'http://localhost:3001');
+const BLOG_ENDPOINT = `${PYTHON_API_URL}/api/admin/api-keys/blog/generate`;
 
-const generateCurlSnippet = (apiKey, topic, keywords, mode, brandInfo) => `curl -X POST "${PYTHON_API_URL}/api/blog/generate" \\
+const generateCurlSnippet = (apiKey, topic, keywords, mode, brandInfo) => `curl -X POST "${BLOG_ENDPOINT}" \\
   -H "Authorization: Bearer ${apiKey || 'YOUR_API_KEY'}" \\
   -H "Content-Type: application/json" \\
   -d '{
@@ -20,7 +23,7 @@ const generateCurlSnippet = (apiKey, topic, keywords, mode, brandInfo) => `curl 
 
 const generateJsSnippet = (apiKey, topic, keywords, mode, brandInfo) =>
 `const response = await fetch(
-  "${PYTHON_API_URL}/api/blog/generate",
+  "${BLOG_ENDPOINT}",
   {
     method: "POST",
     headers: {
@@ -119,7 +122,7 @@ export default function PartnerTestLab() {
     setResult(null);
     try {
       const res = await axios.post(
-        `${PYTHON_API_URL}/api/blog/generate`,
+        `${PYTHON_API_URL}/api/admin/api-keys/blog/generate`,
         {
           topic,
           keywords,
@@ -458,7 +461,7 @@ export default function PartnerTestLab() {
               {activeCodeTab === 'python' && (
                 <CodeBlock
                   lang="python"
-                  code={`import requests\n\nresponse = requests.post(\n    "${PYTHON_API_URL}/api/blog/generate",\n    headers={\n        "Authorization": "Bearer ${apiKey || 'YOUR_API_KEY'}",\n        "Content-Type": "application/json"\n    },\n    json={\n        "topic": "${topic || 'Your Blog Topic'}",\n        "keywords": "${keywords || ''}",\n        "optimization_mode": "${mode}",\n        "brand_context_data": {\n            "company_name": "Your Company",\n            "additional_info": "${brandInfo || ''}"\n        }\n    },\n    timeout=180\n)\ndata = response.json()\nprint(data["article"])  # ← Rendered blog content`}
+                  code={`import requests\n\nresponse = requests.post(\n    "${BLOG_ENDPOINT}",\n    headers={\n        "Authorization": "Bearer ${apiKey || 'YOUR_API_KEY'}",\n        "Content-Type": "application/json"\n    },\n    json={\n        "topic": "${topic || 'Your Blog Topic'}",\n        "keywords": "${keywords || ''}",\n        "optimization_mode": "${mode}",\n        "brand_context_data": {\n            "company_name": "Your Company",\n            "additional_info": "${brandInfo || ''}"\n        }\n    },\n    timeout=180\n)\ndata = response.json()\nprint(data["article"])  # ← Rendered blog content`}
                 />
               )}
 
