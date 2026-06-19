@@ -8,18 +8,6 @@ const T = '#26CECE';
 
 const seoGeoPlans = [
     {
-        name: 'Test Live',
-        priceINR: 1,
-        credits: 1,
-        seoBlogs: 1,
-        geoBlogs: 1,
-        popular: false,
-        planType: 'seo_geo',
-        features: ['1 INR Live Payment Test'],
-        missing: ['All other features'],
-        cta: 'Test 1 INR',
-    },
-    {
         name: 'Starter',
         priceINR: 999,
         credits: 3000,
