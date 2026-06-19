@@ -98,18 +98,13 @@ export const checkCreditUsageAndNotify = async () => {
     try {
         console.log('[CreditMonitor] Starting credit usage monitoring scan...');
         
-        // 1. Fetch user credit rows. We can optimize by fetching rows that have active total_credits > 0
+        // 1. Fetch user credit rows. Fetch rows that have active balance > 0 or used_credits > 0
         const { data: creditRecords, error: fetchError } = await supabaseAdmin
             .from('user_credits')
-            .select('user_id, balance, total_credits, used_credits, email_50_sent, email_75_sent, email_90_sent, email_100_sent')
-            .gt('total_credits', 0);
+            .select('user_id, balance, used_credits, email_50_sent, email_75_sent, email_90_sent, email_100_sent')
+            .or('balance.gt.0,used_credits.gt.0');
             
         if (fetchError) {
-            // If column total_credits doesn't exist yet, catch and log gracefully
-            if (fetchError.message?.includes('column') || fetchError.code === 'PGRST116') {
-                console.log('[CreditMonitor] Credit notification columns not yet present in DB. Migration required.');
-                return;
-            }
             throw fetchError;
         }
         
@@ -124,7 +119,6 @@ export const checkCreditUsageAndNotify = async () => {
             const { 
                 user_id, 
                 balance, 
-                total_credits, 
                 used_credits, 
                 email_50_sent, 
                 email_75_sent, 
@@ -140,6 +134,11 @@ export const checkCreditUsageAndNotify = async () => {
             }
             
             const email = userData.user.email;
+            
+            // Calculate total_credits dynamically in real-time as balance + used_credits
+            const total_credits = (balance || 0) + (used_credits || 0);
+            if (total_credits <= 0) continue;
+
             const percentage = (used_credits / total_credits) * 100;
             const remaining = Math.max(0, total_credits - used_credits);
 
@@ -175,7 +174,7 @@ export const checkCreditUsageAndNotify = async () => {
                     <p>To continue using Bitlance AI APIs without service interruption, please purchase additional credits or upgrade your plan.</p>
                     
                     <div style="text-align: center;">
-                        <a href="https://app.bitlancetechhub.com/dashboard" class="btn" style="background-color: #dc2626;">Purchase Credits</a>
+                        <a href="https://app.bitlancetechhub.com/login?redirectTo=/dashboard/api-keys" class="btn" style="background-color: #dc2626;">Purchase Credits</a>
                     </div>
                     
                     <p>Best regards,<br><strong>Team Bitlance</strong></p>
@@ -207,7 +206,7 @@ export const checkCreditUsageAndNotify = async () => {
                     </table>
 
                     <div style="text-align: center;">
-                        <a href="https://app.bitlancetechhub.com/dashboard" class="btn" style="background-color: #d97706;">Upgrade Plan</a>
+                        <a href="https://app.bitlancetechhub.com/login?redirectTo=/dashboard/api-keys" class="btn" style="background-color: #d97706;">Upgrade Plan</a>
                     </div>
                     
                     <p>Best regards,<br><strong>Team Bitlance</strong></p>
@@ -239,7 +238,7 @@ export const checkCreditUsageAndNotify = async () => {
                     </table>
 
                     <div style="text-align: center;">
-                        <a href="https://app.bitlancetechhub.com/dashboard" class="btn">Manage Credits</a>
+                        <a href="https://app.bitlancetechhub.com/login?redirectTo=/dashboard/api-keys" class="btn">Manage Credits</a>
                     </div>
                     
                     <p>Best regards,<br><strong>Team Bitlance</strong></p>
@@ -273,7 +272,7 @@ export const checkCreditUsageAndNotify = async () => {
                     <p>You can monitor your usage details anytime on your dashboard.</p>
                     
                     <div style="text-align: center;">
-                        <a href="https://app.bitlancetechhub.com/dashboard" class="btn">View Dashboard</a>
+                        <a href="https://app.bitlancetechhub.com/login?redirectTo=/dashboard/api-keys" class="btn">View Dashboard</a>
                     </div>
                     
                     <p>Best regards,<br><strong>Team Bitlance</strong></p>
