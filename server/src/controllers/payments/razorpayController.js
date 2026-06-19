@@ -50,6 +50,15 @@ export const BITLANCE_PRICING = {
     seoGeoPlan: {
         plans: [
             {
+                name: 'Test Live',
+                priceINR: 1,
+                credits: 1,
+                seoBlogs: 1,
+                geoBlogs: 1,
+                mixedCapacity: '1',
+                popular: false,
+            },
+            {
                 name: 'Starter',
                 priceINR: 999,
                 credits: 3000,
