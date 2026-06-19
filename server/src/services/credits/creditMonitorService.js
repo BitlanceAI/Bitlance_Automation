@@ -147,6 +147,8 @@ export const checkCreditUsageAndNotify = async () => {
             let emailSent = false;
             let subject = '';
             let contentHtml = '';
+            
+            const clientUrl = process.env.CLIENT_URL || 'https://app.bitlancetechhub.com';
 
             // 1. 100% Credits Exhausted
             if (percentage >= 100 && !email_100_sent) {
@@ -174,7 +176,7 @@ export const checkCreditUsageAndNotify = async () => {
                     <p>To continue using Bitlance AI APIs without service interruption, please purchase additional credits or upgrade your plan.</p>
                     
                     <div style="text-align: center;">
-                        <a href="https://app.bitlancetechhub.com/login?redirectTo=/dashboard/api-keys" class="btn" style="background-color: #dc2626;">Purchase Credits</a>
+                        <a href="${clientUrl}/login?redirectTo=/dashboard/api-keys" class="btn" style="background-color: #dc2626;">Purchase Credits</a>
                     </div>
                     
                     <p>Best regards,<br><strong>Team Bitlance</strong></p>
@@ -206,7 +208,7 @@ export const checkCreditUsageAndNotify = async () => {
                     </table>
 
                     <div style="text-align: center;">
-                        <a href="https://app.bitlancetechhub.com/login?redirectTo=/dashboard/api-keys" class="btn" style="background-color: #d97706;">Upgrade Plan</a>
+                        <a href="${clientUrl}/login?redirectTo=/dashboard/api-keys" class="btn" style="background-color: #d97706;">Upgrade Plan</a>
                     </div>
                     
                     <p>Best regards,<br><strong>Team Bitlance</strong></p>
@@ -238,7 +240,7 @@ export const checkCreditUsageAndNotify = async () => {
                     </table>
 
                     <div style="text-align: center;">
-                        <a href="https://app.bitlancetechhub.com/login?redirectTo=/dashboard/api-keys" class="btn">Manage Credits</a>
+                        <a href="${clientUrl}/login?redirectTo=/dashboard/api-keys" class="btn">Manage Credits</a>
                     </div>
                     
                     <p>Best regards,<br><strong>Team Bitlance</strong></p>
@@ -272,7 +274,7 @@ export const checkCreditUsageAndNotify = async () => {
                     <p>You can monitor your usage details anytime on your dashboard.</p>
                     
                     <div style="text-align: center;">
-                        <a href="https://app.bitlancetechhub.com/login?redirectTo=/dashboard/api-keys" class="btn">View Dashboard</a>
+                        <a href="${clientUrl}/login?redirectTo=/dashboard/api-keys" class="btn">View Dashboard</a>
                     </div>
                     
                     <p>Best regards,<br><strong>Team Bitlance</strong></p>
