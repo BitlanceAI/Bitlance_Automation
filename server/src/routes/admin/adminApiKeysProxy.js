@@ -11,6 +11,7 @@
  */
 
 import express from 'express';
+import { sendWelcomeEmail } from '../../services/credits/creditMonitorService.js';
 // Uses Node 18+ native fetch (no external dependency needed)
 
 const router = express.Router();
@@ -54,8 +55,42 @@ router.get('/list', (req, res) => {
 });
 
 // POST /api/admin/api-keys/create → Python: POST /api/v1/admin/api-keys/create
-router.post('/create', (req, res) => {
-    return proxyToPython(req, res, '/api/v1/admin/api-keys/create', 'POST', req.body);
+router.post('/create', async (req, res) => {
+    const url = `${PYTHON_API_URL}/api/v1/admin/api-keys/create`;
+    try {
+        const fetchOptions = {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: req.headers.authorization || '',
+            },
+            body: JSON.stringify(req.body)
+        };
+
+        const pythonRes = await fetch(url, fetchOptions);
+        const data = await pythonRes.json();
+
+        // If key creation succeeded, trigger welcome email asynchronously
+        if (pythonRes.ok && data.success && data.api_key) {
+            const clientEmail = req.body.client_email;
+            const label = req.body.label || '';
+            const plan = req.body.plan || 'starter';
+            const apiKey = data.api_key;
+            
+            // Fire welcome email asynchronously
+            sendWelcomeEmail(clientEmail, plan, apiKey, label).catch(err => {
+                console.error('[WelcomeEmail] Error sending welcome email:', err.message);
+            });
+        }
+
+        return res.status(pythonRes.status).json(data);
+    } catch (err) {
+        console.error(`[AdminApiKeysProxy] Error forwarding to ${url}:`, err.message);
+        return res.status(502).json({
+            error: 'Failed to reach AI agent service',
+            detail: err.message,
+        });
+    }
 });
 
 // POST /api/admin/api-keys/revoke → Python: POST /api/v1/admin/api-keys/revoke

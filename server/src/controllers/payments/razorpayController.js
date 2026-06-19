@@ -262,16 +262,27 @@ export async function verifyPayment(req, res) {
         // 3. Credit the user (upsert into user_credits)
         const { data: currentRow } = await supabaseAdmin
             .from('user_credits')
-            .select('balance')
+            .select('balance, total_credits')
             .eq('user_id', userId)
             .single();
 
         const currentBalance = currentRow?.balance || 0;
+        const currentTotal = currentRow?.total_credits || 0;
         const newBalance = currentBalance + creditsToAdd;
+        const newTotal = currentTotal + creditsToAdd;
 
         const { error: creditErr } = await supabaseAdmin
             .from('user_credits')
-            .upsert({ user_id: userId, balance: newBalance, updated_at: new Date().toISOString() }, { onConflict: 'user_id' });
+            .upsert({ 
+                user_id: userId, 
+                balance: newBalance, 
+                total_credits: newTotal,
+                email_50_sent: false,
+                email_75_sent: false,
+                email_90_sent: false,
+                email_100_sent: false,
+                updated_at: new Date().toISOString() 
+            }, { onConflict: 'user_id' });
 
         if (creditErr) throw creditErr;
 

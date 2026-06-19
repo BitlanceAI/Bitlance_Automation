@@ -97,6 +97,19 @@ class APIKeyAuthMiddleware(BaseHTTPMiddleware):
             request.state.api_key_id = key_data.get("id")
             request.state.api_plan = plan
             request.state.auth_type = "api_key"
+
+            # Check credit balance
+            try:
+                credits_res = self.supabase.table("user_credits").select("balance").eq("user_id", request.state.user_id).execute()
+                if credits_res.data:
+                    balance = credits_res.data[0].get("balance", 0)
+                    if balance <= 0:
+                        return JSONResponse(
+                            status_code=403,
+                            content={"detail": "Forbidden: Credits exhausted. Please upgrade your plan or purchase additional credits at app.bitlancetechhub.com."}
+                        )
+            except Exception as e:
+                print(f"Error checking user credits in middleware: {e}")
             
         else:
             # Fallback: Check if it's a valid Supabase JWT (from internal Node.js backend)

@@ -222,6 +222,7 @@ import { startPostScheduler } from './services/scheduler/scheduler.js';
 import SchedulerService from './services/scheduler/SchedulerService.js';
 import { startReminderCron } from './services/scheduler/reminderCron.js';
 import { startEmailSequenceCron } from './services/email/emailSequenceCron.js';
+import { startCreditMonitorCron } from './services/scheduler/creditMonitorCron.js';
 // Pass a default MetaService or handle inside Scheduler
 const scheduler = new SchedulerService();
 scheduler.start();
@@ -237,6 +238,9 @@ app.listen(PORT, () => {
 
     // Start email sequence cron (welcome · nurture · re-engagement)
     startEmailSequenceCron();
+
+    // Start credit monitor cron (alerts at 50%, 75%, 90%, 100% usage)
+    startCreditMonitorCron();
 });
 
 export default app;
