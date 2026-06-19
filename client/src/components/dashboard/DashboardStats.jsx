@@ -1,6 +1,7 @@
-
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { Activity, Coins, FileText, Phone } from 'lucide-react';
+import { useAuth } from '../../context/AuthContext';
 
 const StatCard = ({ title, value, icon: Icon, color, subtext }) => {
     // Extract just the text color from the passed prop (e.g., "text-amber-500") for flat neon look
@@ -30,15 +31,18 @@ const StatCard = ({ title, value, icon: Icon, color, subtext }) => {
 };
 
 const DashboardStats = ({ credits, articlesCount, callsCount }) => {
+    const { isAdmin } = useAuth();
     return (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            <StatCard
-                title="Available Credits"
-                value={credits !== null ? credits : '...'}
-                icon={Coins}
-                color="text-amber-500 bg-amber-500"
-                subtext="Credits"
-            />
+            <Link to={isAdmin ? "/admin/api-keys" : "/dashboard/api-keys"} className="block cursor-pointer">
+                <StatCard
+                    title="Available Credits"
+                    value={credits !== null ? credits.toLocaleString() : '...'}
+                    icon={Coins}
+                    color="text-amber-500 bg-amber-500"
+                    subtext="Credits"
+                />
+            </Link>
             <StatCard
                 title="Articles Generated"
                 value={articlesCount !== null ? articlesCount : '...'}
