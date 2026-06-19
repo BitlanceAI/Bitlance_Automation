@@ -54,6 +54,7 @@ const PublicArticlePage = lazy(() => import('./pages/blog/PublicArticlePage'));
 
 // Settings
 const SettingsPage = lazy(() => import('./pages/settings/SettingsPage'));
+const UserApiKeys = lazy(() => import('./pages/dashboard/UserApiKeys'));
 
 // Public pages
 const ContactPage = lazy(() => import('./pages/public/ContactPage'));
@@ -275,6 +276,11 @@ function App() {
                 <Route path="/settings" element={
                   <AuthGuard>
                     <SettingsPage />
+                  </AuthGuard>
+                } />
+                <Route path="/dashboard/api-keys" element={
+                  <AuthGuard>
+                    <UserApiKeys />
                   </AuthGuard>
                 } />
                 <Route path="/admin" element={
