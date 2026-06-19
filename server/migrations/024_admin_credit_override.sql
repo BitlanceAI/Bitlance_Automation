@@ -1,39 +1,7 @@
--- Migration: Add credit usage notification fields to user_credits
-ALTER TABLE public.user_credits ADD COLUMN IF NOT EXISTS total_credits INTEGER DEFAULT 500;
-ALTER TABLE public.user_credits ADD COLUMN IF NOT EXISTS used_credits INTEGER DEFAULT 0;
-ALTER TABLE public.user_credits ADD COLUMN IF NOT EXISTS email_50_sent BOOLEAN DEFAULT false;
-ALTER TABLE public.user_credits ADD COLUMN IF NOT EXISTS email_75_sent BOOLEAN DEFAULT false;
-ALTER TABLE public.user_credits ADD COLUMN IF NOT EXISTS email_90_sent BOOLEAN DEFAULT false;
-ALTER TABLE public.user_credits ADD COLUMN IF NOT EXISTS email_100_sent BOOLEAN DEFAULT false;
+-- Migration: Update deduct_credits_with_ledger to override credit cost for blog agent types
+-- Admin ID (0d396440-7d07-407c-89da-9cb93e353347) -> 10 credits
+-- Other/V1 users -> 50 credits
 
--- Backfill total_credits and used_credits based on balance + history
--- Since balance = total_credits - used_credits:
--- We set used_credits to the sum of credits used from the ledger,
--- and total_credits to balance + used_credits (at least 500).
-UPDATE public.user_credits uc
-SET 
-  used_credits = COALESCE((
-    SELECT SUM(credits_used) 
-    FROM public.credit_ledger 
-    WHERE user_id = uc.user_id
-  ), 0),
-  total_credits = GREATEST(500, balance + COALESCE((
-    SELECT SUM(credits_used) 
-    FROM public.credit_ledger 
-    WHERE user_id = uc.user_id
-  ), 0));
-
--- Update handle_new_user_credits trigger function to initialize these columns
-CREATE OR REPLACE FUNCTION public.handle_new_user_credits()
-RETURNS TRIGGER AS $$
-BEGIN
-  INSERT INTO public.user_credits (user_id, balance, total_credits, used_credits)
-  VALUES (new.id, 500, 500, 0);
-  RETURN new;
-END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
-
--- Update deduct_credits_with_ledger to increment used_credits atomically
 CREATE OR REPLACE FUNCTION deduct_credits_with_ledger(
     p_user_id UUID,
     p_agent_type TEXT,
@@ -69,7 +37,7 @@ BEGIN
             v_unit_cost := 50;
         END IF;
     END IF;
-
+    
     -- Step 2: Calculate credits needed
     v_credits_needed := p_usage_quantity * v_unit_cost;
     

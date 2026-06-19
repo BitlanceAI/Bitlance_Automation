@@ -74,7 +74,7 @@ const BlogPage = () => {
         }
 
         // Check credits
-        const CREDIT_COST = 5;
+        const CREDIT_COST = isAdmin ? 10 : 50;
         if (!isAdmin && credits < CREDIT_COST) {
             alert(`⚠️ Insufficient credits! You need ${CREDIT_COST} credits to generate an article. Current balance: ${credits}`);
             return;

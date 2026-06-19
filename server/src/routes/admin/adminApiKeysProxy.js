@@ -11,7 +11,8 @@
  */
 
 import express from 'express';
-import { sendWelcomeEmail } from '../../services/credits/creditMonitorService.js';
+import { sendWelcomeEmail, sendRevocationEmail } from '../../services/credits/creditMonitorService.js';
+import { supabaseAdmin } from '../../config/supabaseClient.js';
 // Uses Node 18+ native fetch (no external dependency needed)
 
 const router = express.Router();
@@ -94,8 +95,49 @@ router.post('/create', async (req, res) => {
 });
 
 // POST /api/admin/api-keys/revoke → Python: POST /api/v1/admin/api-keys/revoke
-router.post('/revoke', (req, res) => {
-    return proxyToPython(req, res, '/api/v1/admin/api-keys/revoke', 'POST', req.body);
+router.post('/revoke', async (req, res) => {
+    const url = `${PYTHON_API_URL}/api/v1/admin/api-keys/revoke`;
+    try {
+        const fetchOptions = {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: req.headers.authorization || '',
+            },
+            body: JSON.stringify(req.body)
+        };
+
+        const pythonRes = await fetch(url, fetchOptions);
+        const data = await pythonRes.json();
+
+        // If revocation succeeded, look up user and trigger revocation email asynchronously
+        if (pythonRes.ok && data.success && data.user_id) {
+            const { user_id, plan, label, revoked_key_prefix } = data;
+            
+            // Fire revocation email asynchronously
+            (async () => {
+                try {
+                    const { data: userData, error: userError } = await supabaseAdmin.auth.admin.getUserById(user_id);
+                    if (userError || !userData?.user?.email) {
+                        console.error(`[RevocationEmail] Failed to resolve email for user_id ${user_id}:`, userError?.message);
+                        return;
+                    }
+                    await sendRevocationEmail(userData.user.email, plan, revoked_key_prefix, label);
+                    console.log(`[RevocationEmail] Revocation email sent to ${userData.user.email}`);
+                } catch (emailErr) {
+                    console.error('[RevocationEmail] Error looking up user or sending email:', emailErr.message);
+                }
+            })();
+        }
+
+        return res.status(pythonRes.status).json(data);
+    } catch (err) {
+        console.error(`[AdminApiKeysProxy] Error forwarding to ${url}:`, err.message);
+        return res.status(502).json({
+            error: 'Failed to reach AI agent service',
+            detail: err.message,
+        });
+    }
 });
 
 // POST /api/admin/api-keys/blog/generate → Python: POST /api/blog/generate

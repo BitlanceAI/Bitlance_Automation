@@ -43,7 +43,7 @@ const getSystemEmailTemplate = (subjectTitle, contentHtml) => {
                     <p>&copy; ${new Date().getFullYear()} Bitlance Tech Hub. All rights reserved.</p>
                     <p>
                         <a href="https://app.bitlancetechhub.com/dashboard">Dashboard</a> &bull; 
-                        <a href="https://docs.bitlancetechhub.com">Documentation</a> &bull; 
+                        <a href="https://app.bitlancetechhub.com/docs">Documentation</a> &bull; 
                         <a href="mailto:support@bitlancetechhub.com">Support</a>
                     </p>
                 </div>
@@ -78,7 +78,7 @@ export const sendWelcomeEmail = async (email, plan, apiKey, clientName = '') => 
         </div>
 
         <div style="text-align: center;">
-            <a href="https://docs.bitlancetechhub.com" class="btn">View API Documentation</a>
+            <a href="https://app.bitlancetechhub.com/docs" class="btn">View API Documentation</a>
         </div>
         
         <p>If you have any questions or require enterprise assistance, please reply directly to this email or reach out to our team at support@bitlancetechhub.com.</p>
@@ -308,4 +308,27 @@ export const checkCreditUsageAndNotify = async () => {
     } catch (err) {
         console.error('[CreditMonitor] Error during credit monitoring check:', err.message);
     }
+};
+
+/**
+ * Sends revocation email to client when their API Key is revoked by admin
+ */
+export const sendRevocationEmail = async (email, plan, apiKeyPrefix, label = '') => {
+    const planFormatted = plan ? (plan.charAt(0).toUpperCase() + plan.slice(1)) : 'Starter';
+    const labelText = label ? ` (Labeled: <strong>${label}</strong>)` : '';
+    
+    const content = `
+        <h2 class="title" style="color: #dc2626;">Your Bitlance AI API Key has been Revoked</h2>
+        <p>Hello,</p>
+        <p>This is to notify you that your API key starting with <strong>${apiKeyPrefix}</strong> for the <strong>${planFormatted} Plan</strong>${labelText} has been revoked by the administrator.</p>
+        
+        <p>As a result, access to the Bitlance AI API has been permanently blocked. Any subsequent requests using this key will return a <code>403 Forbidden</code> error.</p>
+        
+        <p>If you believe this has occurred in error or if you wish to reactivate your access, please reply to this email.</p>
+        
+        <p>Best regards,<br><strong>Team Bitlance</strong></p>
+    `;
+
+    const html = getSystemEmailTemplate('Your Bitlance AI API Key has been Revoked', content);
+    return sendMailtrapEmail(email, 'Your Bitlance AI API Key has been Revoked', html);
 };

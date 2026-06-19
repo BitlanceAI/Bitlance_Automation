@@ -238,5 +238,8 @@ def revoke_api_key(
         "success": True,
         "message": "Key revoked. Client access is now blocked.",
         "revoked_key_id": revoked_key.get("id"),
-        "revoked_key_prefix": (body.api_key or "")[:16] + "..." if body.api_key else revoked_key.get("id")
+        "revoked_key_prefix": revoked_key.get("api_key", "")[:16] + "..." if revoked_key.get("api_key") else revoked_key.get("id"),
+        "user_id": revoked_key.get("user_id"),
+        "plan": revoked_key.get("plan"),
+        "label": revoked_key.get("label"),
     }

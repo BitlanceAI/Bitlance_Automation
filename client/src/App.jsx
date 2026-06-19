@@ -21,6 +21,7 @@ const ThankYouPage = lazy(() => import('./pages/landing/ThankYouPage'));
 const PartnerPortal = lazy(() => import('./pages/PartnerPortal'));
 const PartnerTestLab = lazy(() => import('./pages/PartnerTestLab'));
 const AdminApiKeys = lazy(() => import('./pages/AdminApiKeys'));
+const ApiDocsPage = lazy(() => import('./pages/public/ApiDocsPage'));
 
 // Auth
 const LoginPage = lazy(() => import('./pages/auth/LoginPage'));
@@ -196,6 +197,7 @@ function App() {
                 <Route path="/blogs/:id" element={<PublicArticlePage />} />
                 <Route path="/api-portal" element={<PartnerPortal />} />
                 <Route path="/api-test-lab" element={<PartnerTestLab />} />
+                <Route path="/docs" element={<ApiDocsPage />} />
                 <Route path="/login" element={
                   <PublicRoute>
                     <LoginPage />

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { toast } from 'react-hot-toast';
+import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import Navbar from '../components/layout/Navbar';
 import Footer from '../components/landing/Footer';
@@ -99,11 +100,19 @@ export default function AdminApiKeys() {
       <Navbar />
       <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8 mt-16">
         <div className="max-w-5xl mx-auto space-y-8">
-          <div>
-            <h1 className="text-3xl font-extrabold text-gray-900">API Key Manager</h1>
-            <p className="mt-2 text-sm text-gray-600">
-              Provision and manage API access for your enterprise partners.
-            </p>
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div>
+              <h1 className="text-3xl font-extrabold text-gray-900">API Key Manager</h1>
+              <p className="mt-2 text-sm text-gray-600">
+                Provision and manage API access for your enterprise partners.
+              </p>
+            </div>
+            <Link
+              to="/docs"
+              className="inline-flex items-center justify-center px-4 py-2 border border-teal-600 text-teal-600 hover:bg-teal-50 rounded-xl text-sm font-semibold transition-all duration-200"
+            >
+              View API Documentation
+            </Link>
           </div>
 
           {/* Generator Form */}
