@@ -503,7 +503,7 @@ const AgentPricingSection = () => {
 
                 {/* Footer note */}
                 <p className="text-center text-xs mt-10" style={{ color: '#333', fontFamily: "'DM Mono',monospace" }}>
-                    All prices in INR · GST applicable · Powered by Razorpay (Test Mode)
+                    All prices in INR · GST applicable · Powered by Razorpay
                 </p>
             </div>
         </section>

@@ -2,10 +2,8 @@ import requests
 from requests.auth import HTTPBasicAuth
 
 # Razorpay credentials
-KEY_ID = "rzp_test_T2eBj783WUzaSw"
-# You need the Key Secret. Since it is hidden in your screenshot (********), 
-# you might need to click "Regenerate" on your dashboard to get it!
-KEY_SECRET = "FfpEqF6e1wq0TDzqf65Iybc3" 
+KEY_ID = "rzp_live_T3SvY8NjuZoIUd"
+KEY_SECRET = "bsxmo2VYs096qguHVb8E26oR" 
 
 url = "https://api.razorpay.com/v1/orders"
 

@@ -1,11 +1,11 @@
 /**
- * Razorpay Payment Controller — Test Mode
+ * Razorpay Payment Controller — Live Mode
  *
  * Used ONLY for non-admin users on the app to purchase credit plans.
  * Admin users are excluded from this flow.
  *
- * Test credentials are pulled from environment:
- *   RAZORPAY_KEY_ID     = rzp_test_...
+ * Credentials are pulled from environment:
+ *   RAZORPAY_KEY_ID     = rzp_live_...
  *   RAZORPAY_KEY_SECRET = ...
  */
 
@@ -144,7 +144,7 @@ export async function getPricing(req, res) {
 }
 
 // ─── POST /api/razorpay/create-order ─────────────────────────────────────────
-// Creates a Razorpay test-mode order for a credit plan purchase.
+// Creates a Razorpay live-mode order for a credit plan purchase.
 // Only allowed for regular (non-admin) users.
 export async function createOrder(req, res) {
     try {
