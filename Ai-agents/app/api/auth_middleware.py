@@ -26,6 +26,13 @@ class APIKeyAuthMiddleware(BaseHTTPMiddleware):
         if request.url.path in ["/", "/docs", "/openapi.json", "/redoc"]:
             return await call_next(request)
 
+        # ── Allow CORS preflight requests through without auth ──
+        # Browsers send OPTIONS requests with no Authorization header
+        # before the actual request. Blocking them returns 401 and
+        # breaks all cross-origin calls from the frontend.
+        if request.method == "OPTIONS":
+            return await call_next(request)
+
         # DEBUG BYPASS FOR LOCAL TESTING
         if request.headers.get("X-Debug-Bypass") == "true":
             request.state.user_id = "cee02595-d1fb-4682-8813-2f709478620c"
