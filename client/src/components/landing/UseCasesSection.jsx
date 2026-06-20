@@ -16,7 +16,7 @@ const UseCasesSection = () => {
                         whileInView={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.5 }}
                         viewport={{ once: true }}
-                        className="text-3xl md:text-5xl lg:text-5xl font-black mb-6 text-black tracking-tight"
+                        className="text-3xl md:text-5xl font-black mb-6 tracking-tight text-slate-900 dark:text-white"
                     >
                         Built for businesses that run on conversations
                     </motion.h2>
@@ -25,9 +25,9 @@ const UseCasesSection = () => {
                         whileInView={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.5, delay: 0.2 }}
                         viewport={{ once: true }}
-                        className="text-lg font-medium text-black mb-2"
+                        className="text-lg font-medium text-slate-600 dark:text-white/60 mb-2"
                     >
-                        Perfect if you get enquiries daily and can’t afford to miss them.
+                        Perfect if you get enquiries daily and can't afford to miss them.
                     </motion.p>
                 </div>
 
@@ -39,27 +39,23 @@ const UseCasesSection = () => {
                         { title: "Education & Coaching", desc: "Handle admissions queries, share brochures, and book counselling or discovery calls on autopilot.", icon: PenTool }
                     ].map((card, idx) => (
                         <TiltCard key={idx} className="h-full">
-                            <div 
-                                className="p-8 h-full transition-all group flex flex-col hover:border-[#26CECE]"
-                                style={{
-                                    background: '#ffffff',
-                                    border: '1px solid #e5e7eb',
-                                    borderRadius: 2,
-                                }}
+                            <div
+                                className="p-8 h-full transition-all group flex flex-col rounded-2xl border
+                                    bg-white border-slate-200/80 shadow-sm hover:border-teal-400
+                                    dark:bg-white/[0.04] dark:border-white/[0.07] dark:hover:border-[#26CECE50]"
                             >
-                                <div 
-                                    className="p-3 w-fit mb-6 transition-transform group-hover:scale-110"
+                                <div
+                                    className="p-3 w-fit mb-6 rounded-2xl transition-transform group-hover:scale-110"
                                     style={{
                                         background: `${TEAL}15`,
                                         color: TEAL,
-                                        border: `1px solid ${TEAL}40`,
-                                        borderRadius: 2
+                                        border: `1px solid ${TEAL}35`,
                                     }}
                                 >
                                     <card.icon size={24} />
                                 </div>
-                                <h3 className="text-xl font-black mb-3 text-black tracking-tight">{card.title}</h3>
-                                <p className="font-medium text-black text-sm leading-relaxed" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+                                <h3 className="text-xl font-black mb-3 tracking-tight text-slate-900 dark:text-white">{card.title}</h3>
+                                <p className="font-medium text-sm leading-relaxed text-slate-600 dark:text-white/60">
                                     {card.desc}
                                 </p>
                             </div>
@@ -67,7 +63,7 @@ const UseCasesSection = () => {
                     ))}
                 </div>
 
-                {/* Brutalist Solid CTA */}
+                {/* CTA */}
                 <div className="mt-20 text-center relative z-10">
                     <motion.div
                         initial={{ opacity: 0, y: 20 }}
@@ -78,26 +74,27 @@ const UseCasesSection = () => {
                     >
                         <Link
                             to="/apply"
-                            className="audit-cta group inline-flex items-center gap-3 font-extrabold text-base transition-all hover:scale-105 active:scale-95"
+                            className="audit-cta group inline-flex items-center gap-3 font-extrabold text-base transition-all hover:scale-105 active:scale-95 rounded-2xl"
                             style={{
                                 background: TEAL,
                                 color: '#000',
-                                padding: '16px 32px',
-                                borderRadius: 2,
+                                padding: '16px 36px',
                                 border: 'none',
                                 cursor: 'pointer',
                                 letterSpacing: '-0.01em',
                                 fontFamily: "'Space Grotesk', sans-serif",
+                                boxShadow: '0 12px 32px rgba(38,206,206,0.25)',
                             }}
                         >
                             Get Free Audit
                             <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
                         </Link>
 
-                        <div className="mt-6 flex items-center justify-center gap-4 text-gray-700" style={{ fontFamily: "'DM Mono', monospace" }}>
-                            <span className="w-8 h-[1px] bg-current" />
+                        <div className="mt-6 flex items-center justify-center gap-4 text-slate-400 dark:text-slate-600"
+                            style={{ fontFamily: "'DM Mono', monospace" }}>
+                            <span className="w-8 h-px bg-current" />
                             <span className="text-[10px] font-extrabold uppercase tracking-[0.2em]">Built For High Performance</span>
-                            <span className="w-8 h-[1px] bg-current" />
+                            <span className="w-8 h-px bg-current" />
                         </div>
                     </motion.div>
                 </div>

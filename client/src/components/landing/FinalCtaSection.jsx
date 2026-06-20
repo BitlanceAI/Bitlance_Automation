@@ -1,98 +1,134 @@
 import React from 'react';
-import { MessageCircle, ShieldCheck } from 'lucide-react';
+import { ArrowRight, MessageCircle, ShieldCheck, Zap, Clock, TrendingUp } from 'lucide-react';
+import { motion } from 'framer-motion';
 import ScrollReveal from '../ui/ScrollReveal';
 
 const T = '#26CECE';
 
+const guarantees = [
+    { icon: Zap,        text: 'Live in 48 hours' },
+    { icon: Clock,      text: 'No long-term lock-in' },
+    { icon: TrendingUp, text: '30-day money back' },
+    { icon: ShieldCheck, text: 'Free setup audit' },
+];
+
 const FinalCtaSection = ({ onOpenBooking }) => (
-    <section className="py-12 relative overflow-hidden bg-transparent">
-        {/* Strong teal glow at center */}
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[400px] rounded-full blur-[140px] pointer-events-none"
-            style={{ background: `${T}0C` }} />
-        <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[800px] h-[240px] rounded-full blur-[120px] pointer-events-none"
-            style={{ background: `${T}07` }} />
+    <section className="py-20 relative overflow-hidden">
 
-        <ScrollReveal className="max-w-4xl mx-auto px-6 text-center relative z-10">
-            {/* Glass container */}
-            <div
-                className="rounded-2xl p-10 md:p-16"
-                style={{
-                    background: 'rgba(255,255,255,0.8)',
-                    border: '1px solid rgba(38,206,206,0.12)',
-                    backdropFilter: 'blur(24px)',
-                    WebkitBackdropFilter: 'blur(24px)',
-                    boxShadow: `0 32px 80px rgba(0,0,0,0.1), 0 0 0 1px rgba(0,0,0,0.03) inset, 0 0 60px ${T}08`,
-                }}
+        {/* Background glows */}
+        <div className="absolute inset-0 pointer-events-none">
+            {/* Light mode */}
+            <div className="dark:hidden absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[500px] rounded-full blur-[140px]"
+                style={{ background: 'rgba(38,206,206,0.08)' }} />
+            <div className="dark:hidden absolute bottom-0 left-1/4 w-[400px] h-[300px] rounded-full blur-[120px]"
+                style={{ background: 'rgba(124,58,237,0.05)' }} />
+            {/* Dark mode */}
+            <div className="hidden dark:block absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[500px] rounded-full blur-[150px]"
+                style={{ background: 'rgba(38,206,206,0.10)' }} />
+            <div className="hidden dark:block absolute bottom-0 right-1/4 w-[400px] h-[300px] rounded-full blur-[120px]"
+                style={{ background: 'rgba(124,58,237,0.07)' }} />
+        </div>
+
+        <ScrollReveal className="max-w-4xl mx-auto px-5 relative z-10">
+
+            {/* Main card */}
+            <div className="rounded-3xl overflow-hidden
+                bg-white border border-slate-200/80 shadow-[0_24px_80px_rgba(0,0,0,0.08)]
+                dark:bg-white/[0.04] dark:border-white/[0.08] dark:shadow-[0_24px_80px_rgba(0,0,0,0.4)]"
+                style={{ backdropFilter: 'blur(24px)', WebkitBackdropFilter: 'blur(24px)' }}
             >
-                <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 10, letterSpacing: '0.18em', color: '#000', textTransform: 'uppercase' }}>
-                    Final Step
-                </span>
+                {/* Top teal accent bar */}
+                <div className="h-1 w-full" style={{ background: `linear-gradient(90deg, transparent, ${T}, transparent)` }} />
 
-                <h2 className="mt-6 text-3xl md:text-5xl font-black text-black uppercase leading-tight"
-                    style={{ fontFamily: "'Space Grotesk',sans-serif", letterSpacing: '-0.03em' }}>
-                    Do you want to see how many more deals you can close if your follow-ups run{' '}
-                    <span style={{ color: T }}>100% on autopilot?</span>
-                </h2>
+                <div className="px-8 py-14 md:px-16 md:py-16 text-center">
 
-                {/* Teal accent rule */}
-                <div className="mt-8 mb-8 mx-auto" style={{ width: 48, height: 2, background: T }} />
+                    {/* Badge */}
+                    <div className="inline-flex items-center gap-2 px-4 py-2 rounded-3xl mb-8
+                        bg-teal-50 border border-teal-200/80 text-teal-700
+                        dark:bg-white/[0.06] dark:border-white/[0.1] dark:text-teal-300"
+                        style={{ fontFamily: "'DM Mono',monospace", fontSize: 10, letterSpacing: '0.16em', textTransform: 'uppercase', fontWeight: 700 }}
+                    >
+                        <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: T }} />
+                        Limited slots — Book your free audit today
+                    </div>
 
-                <p className="text-base text-black/50 mb-12 max-w-xl mx-auto leading-relaxed">
-                    Every lead that goes unanswered is revenue someone else is collecting. If we show you a live dashboard of your leads, follow-ups, and conversions in one screen — would 15 minutes be worth it?
-                </p>
+                    {/* Headline */}
+                    <h2 className="text-3xl md:text-5xl font-black leading-tight mb-6
+                        text-slate-900 dark:text-white"
+                        style={{ fontFamily: "'Space Grotesk',sans-serif", letterSpacing: '-0.03em' }}
+                    >
+                        Ready to Close More Deals{' '}
+                        <span className="block mt-1" style={{ color: T }}>on Autopilot?</span>
+                    </h2>
 
-                <div className="flex flex-col items-center gap-8">
-                    <button
+                    {/* Divider */}
+                    <div className="mx-auto mb-7 rounded-full" style={{ width: 48, height: 3, background: T }} />
+
+                    {/* Subtext */}
+                    <p className="text-base md:text-lg leading-relaxed max-w-2xl mx-auto mb-12
+                        text-slate-500 dark:text-white/55"
+                    >
+                        Every lead that goes unanswered is revenue someone else is collecting.
+                        In 15 minutes we'll show you exactly how many deals you're leaving on the table —
+                        and how AI fixes it, starting this week.
+                    </p>
+
+                    {/* Guarantee chips */}
+                    <div className="flex flex-wrap justify-center gap-3 mb-12">
+                        {guarantees.map(({ icon: Icon, text }) => (
+                            <div key={text}
+                                className="inline-flex items-center gap-2 px-4 py-2 rounded-2xl text-xs font-semibold
+                                    bg-slate-100 border border-slate-200/80 text-slate-600
+                                    dark:bg-white/[0.05] dark:border-white/[0.09] dark:text-white/65"
+                            >
+                                <Icon size={13} style={{ color: T }} />
+                                {text}
+                            </div>
+                        ))}
+                    </div>
+
+                    {/* Primary CTA */}
+                    <motion.button
                         onClick={onOpenBooking}
-                        className="audit-cta font-black text-xl uppercase tracking-tight transition-all w-full sm:w-auto"
+                        whileHover={{ scale: 1.03 }}
+                        whileTap={{ scale: 0.97 }}
+                        className="audit-cta group inline-flex items-center gap-3 font-black text-lg w-full sm:w-auto
+                            justify-center transition-all"
                         style={{
                             background: T,
                             color: '#000',
-                            padding: '18px 56px',
-                            borderRadius: 8,
+                            padding: '18px 52px',
+                            borderRadius: 20,
                             border: 'none',
                             cursor: 'pointer',
                             fontFamily: "'Space Grotesk',sans-serif",
-                            boxShadow: `0 0 40px ${T}35, 0 8px 32px rgba(0,0,0,0.5)`,
-                        }}
-                        onMouseEnter={e => {
-                            e.currentTarget.style.background = '#35DFDF';
-                            e.currentTarget.style.boxShadow = `0 0 60px ${T}50, 0 8px 32px rgba(0,0,0,0.5)`;
-                        }}
-                        onMouseLeave={e => {
-                            e.currentTarget.style.background = T;
-                            e.currentTarget.style.boxShadow = `0 0 40px ${T}35, 0 8px 32px rgba(0,0,0,0.5)`;
+                            letterSpacing: '-0.01em',
+                            boxShadow: `0 16px 48px rgba(38,206,206,0.32), 0 4px 12px rgba(0,0,0,0.08)`,
                         }}
                     >
-                        Get Free Audit
-                    </button>
+                        Get My Free AI Audit
+                        <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
+                    </motion.button>
 
-                    <div className="flex flex-col items-center gap-4">
+                    {/* WhatsApp fallback */}
+                    <div className="mt-8 flex flex-col items-center gap-3">
                         <a
                             href="https://wa.me/917030951331"
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="flex items-center gap-2 text-sm font-extrabold uppercase tracking-widest transition-colors"
-                            style={{ color: '#000', fontFamily: "'DM Mono',monospace" }}
-                            onMouseEnter={e => (e.currentTarget.style.color = T)}
-                            onMouseLeave={e => (e.currentTarget.style.color = '#444')}
+                            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-2xl text-sm font-semibold
+                                transition-all duration-200 hover:scale-[1.02]
+                                text-slate-600 bg-slate-100 border border-slate-200/80 hover:border-teal-300 hover:text-teal-600
+                                dark:text-white/60 dark:bg-white/[0.05] dark:border-white/[0.09] dark:hover:text-teal-400 dark:hover:border-teal-500/40"
                         >
-                            <MessageCircle size={14} /> Prefer WhatsApp? Chat with our AI agent
+                            <MessageCircle size={15} style={{ color: '#25D366' }} />
+                            Prefer WhatsApp? Chat with us directly
                         </a>
 
-                        <div
-                            className="flex items-center gap-2 text-xs uppercase tracking-widest px-4 py-2 rounded-lg"
-                            style={{
-                                color: '#000',
-                                fontFamily: "'DM Mono',monospace",
-                                border: '1px solid rgba(0,0,0,0.06)',
-                                background: 'rgba(0,0,0,0.02)',
-                                backdropFilter: 'blur(6px)',
-                            }}
-                        >
-                            <ShieldCheck size={12} style={{ color: '#22c55e' }} />
-                            No commitment · Cancel anytime · 30-day money back guarantee
-                        </div>
+                        <p className="text-xs text-slate-400 dark:text-white/30"
+                            style={{ fontFamily: "'DM Mono',monospace", letterSpacing: '0.06em' }}>
+                            No commitment · Free consultation · Results in 48h
+                        </p>
                     </div>
                 </div>
             </div>

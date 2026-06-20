@@ -127,40 +127,43 @@ const ServiceCard = ({ icon: Icon, label, title, desc, badge }) => {
             className="relative h-full min-h-[400px] w-full cursor-pointer group"
         >
             <div
+                className="absolute inset-3 transition-all duration-300
+                    bg-white border border-teal-100 shadow-[0_4px_24px_rgba(38,206,206,0.08)]
+                    dark:bg-white/[0.05] dark:border-white/[0.08] dark:shadow-[0_4px_24px_rgba(0,0,0,0.3)]
+                    group-hover:shadow-[0_8px_40px_rgba(38,206,206,0.18)] group-hover:border-[#26CECE50]
+                    dark:group-hover:border-[#26CECE40]"
                 style={{
                     transform: 'translateZ(60px)',
                     transformStyle: 'preserve-3d',
-                    background: '#ffffff',
-                    border: '1px solid #E8F8F8',
-                    borderRadius: 12,
-                    boxShadow: '0 4px 24px rgba(38,206,206,0.08)',
+                    borderRadius: 16,
                 }}
-                className="absolute inset-3 transition-all duration-300 group-hover:shadow-[0_8px_40px_rgba(38,206,206,0.18)] group-hover:border-[#26CECE50]"
             >
                 <div className="p-6 flex flex-col h-full" style={{ transform: 'translateZ(40px)' }}>
                     {/* Badge */}
                     <div className="flex items-center justify-between mb-5">
-                        <span className="text-[10px] font-extrabold uppercase tracking-widest px-2.5 py-1 rounded-sm"
+                        <span className="text-[10px] font-extrabold uppercase tracking-widest px-2.5 py-1 rounded-2xl"
                             style={{ background: `${T}15`, color: T, fontFamily: "'DM Mono',monospace" }}>
                             {label}
                         </span>
                         {badge && (
-                            <span className="text-[9px] font-extrabold uppercase tracking-widest px-2 py-1 rounded-sm"
-                                style={{ background: '#f8f9fa', color: '#26CECE', fontFamily: "'DM Mono',monospace" }}>
+                            <span className="text-[9px] font-extrabold uppercase tracking-widest px-2 py-1 rounded-xl
+                                bg-slate-100 text-teal-600 dark:bg-white/[0.07] dark:text-teal-300"
+                                style={{ fontFamily: "'DM Mono',monospace" }}>
                                 {badge}
                             </span>
                         )}
                     </div>
 
                     {/* Title + desc */}
-                    <h3 className="text-xl font-extrabold mb-2" style={{ fontFamily: "'Space Grotesk',sans-serif", color: '#0A0A0A' }}>
+                    <h3 className="text-xl font-extrabold mb-2 text-slate-900 dark:text-white"
+                        style={{ fontFamily: "'Space Grotesk',sans-serif" }}>
                         {title}
                     </h3>
-                    <p className="text-sm leading-relaxed" style={{ color: '#000' }}>{desc}</p>
+                    <p className="text-sm leading-relaxed text-slate-600 dark:text-white/60">{desc}</p>
 
                     {/* Animated illustration */}
-                    <div className="flex-1 mt-5 rounded-xl flex items-center justify-center relative overflow-hidden"
-                        style={{ background: '#F0FEFE', border: `1px solid ${T}20`, minHeight: 120 }}>
+                    <div className="flex-1 mt-5 rounded-2xl flex items-center justify-center relative overflow-hidden"
+                        style={{ background: `${T}08`, border: `1px solid ${T}20`, minHeight: 120 }}>
                         <div className="w-20 h-20 relative z-10">
                             <Icon />
                         </div>
@@ -196,7 +199,7 @@ const services = [
 ];
 
 const HowItWorksSection = () => (
-    <section className="py-12 relative overflow-hidden bg-[#F8FFFE]">
+    <section className="py-12 relative overflow-hidden bg-teal-50/40 dark:bg-transparent">
         <div className="absolute top-0 left-0 right-0 h-[2px] pointer-events-none"
             style={{ background: `linear-gradient(90deg, transparent, ${T}60, transparent)` }} />
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[400px] rounded-full blur-[140px] -z-0 pointer-events-none"
@@ -209,13 +212,13 @@ const HowItWorksSection = () => (
                 <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 10, letterSpacing: '0.18em', color: T, textTransform: 'uppercase' }}>
                     Our Services
                 </span>
-                <h2 className="mt-4 text-4xl md:text-5xl lg:text-6xl font-black leading-tight"
-                    style={{ fontFamily: "'Space Grotesk',sans-serif", letterSpacing: '-0.03em', color: '#0A0A0A' }}>
+                <h2 className="mt-4 text-4xl md:text-5xl lg:text-6xl font-black leading-tight text-slate-900 dark:text-white"
+                    style={{ fontFamily: "'Space Grotesk',sans-serif", letterSpacing: '-0.03em' }}>
                     Three agents,{' '}
                     <span style={{ color: T }}>zero manual work</span>
                 </h2>
-                <div className="mt-6" style={{ width: 48, height: 2, background: T }} />
-                <p className="mt-6 text-base leading-relaxed" style={{ color: '#000' }}>
+                <div className="mt-6 rounded-full" style={{ width: 48, height: 2, background: T }} />
+                <p className="mt-6 text-base leading-relaxed text-slate-600 dark:text-white/60">
                     Every enquiry answered. Every lead qualified. Every appointment booked — automatically across WhatsApp, phone, and your website.
                 </p>
             </div>

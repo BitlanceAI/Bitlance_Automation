@@ -20,11 +20,11 @@ const testimonials = [
 const doubled = [...testimonials, ...testimonials];
 
 const TestimonialsSection = () => (
-    /* ── WHITE SECTION ── */
-    <section className="py-12 relative overflow-hidden bg-white">
-        {/* Subtle teal tint at top */}
-        <div className="absolute top-0 left-0 right-0 h-1" style={{ background: `linear-gradient(90deg, transparent, ${T}, transparent)` }} />
-        {/* Light teal glow in bg */}
+    <section className="py-12 relative overflow-hidden bg-white dark:bg-transparent">
+        {/* Teal accent line at top */}
+        <div className="absolute top-0 left-0 right-0 h-px pointer-events-none"
+            style={{ background: `linear-gradient(90deg, transparent, ${T}, transparent)` }} />
+        {/* Ambient glow */}
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[400px] rounded-full blur-[160px] pointer-events-none"
             style={{ background: 'rgba(38,206,206,0.06)' }} />
 
@@ -36,22 +36,22 @@ const TestimonialsSection = () => (
             <motion.h2
                 initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.45 }} viewport={{ once: true }}
-                className="mt-4 text-3xl md:text-5xl font-extrabold leading-tight"
-                style={{ fontFamily: "'Space Grotesk',sans-serif", letterSpacing: '-0.025em', color: '#0A0A0A' }}
+                className="mt-4 text-3xl md:text-5xl font-extrabold leading-tight text-slate-900 dark:text-white"
+                style={{ fontFamily: "'Space Grotesk',sans-serif", letterSpacing: '-0.025em' }}
             >
                 Trusted by forward-thinking<br />
                 <span style={{ color: T }}>businesses</span>
             </motion.h2>
-            <div className="mt-6" style={{ width: 48, height: 2, background: T }} />
+            <div className="mt-6 rounded-full" style={{ width: 48, height: 2, background: T }} />
         </div>
 
         {/* Scrolling strip */}
         <div className="w-full overflow-hidden relative">
-            {/* Edge fades — white */}
-            <div className="absolute top-0 bottom-0 left-0 w-32 z-10 pointer-events-none"
-                style={{ background: 'linear-gradient(to right, #ffffff, transparent)' }} />
-            <div className="absolute top-0 bottom-0 right-0 w-32 z-10 pointer-events-none"
-                style={{ background: 'linear-gradient(to left, #ffffff, transparent)' }} />
+            {/* Edge fades — theme-aware */}
+            <div className="absolute top-0 bottom-0 left-0 w-32 z-10 pointer-events-none
+                bg-gradient-to-r from-white dark:from-[#050508] to-transparent" />
+            <div className="absolute top-0 bottom-0 right-0 w-32 z-10 pointer-events-none
+                bg-gradient-to-l from-white dark:from-[#050508] to-transparent" />
 
             <motion.div
                 className="flex gap-5 w-max py-6 pr-5"
@@ -61,32 +61,23 @@ const TestimonialsSection = () => (
                 {doubled.map((t, i) => (
                     <div
                         key={i}
-                        className="w-[300px] md:w-[400px] flex flex-col shrink-0 gap-5 rounded-xl p-6 transition-all duration-300"
-                        style={{
-                            background: '#F8FFFE',
-                            border: '1px solid #E5F9F9',
-                            boxShadow: '0 2px 16px rgba(38,206,206,0.06)',
-                        }}
-                        onMouseEnter={e => {
-                            e.currentTarget.style.borderColor = `${T}60`;
-                            e.currentTarget.style.boxShadow = `0 8px 32px rgba(38,206,206,0.12)`;
-                        }}
-                        onMouseLeave={e => {
-                            e.currentTarget.style.borderColor = '#E5F9F9';
-                            e.currentTarget.style.boxShadow = '0 2px 16px rgba(38,206,206,0.06)';
-                        }}
+                        className="w-[300px] md:w-[400px] flex flex-col shrink-0 gap-5 rounded-2xl p-6 transition-all duration-300
+                            bg-teal-50/60 border border-teal-100 hover:border-teal-300
+                            dark:bg-white/[0.04] dark:border-white/[0.08] dark:hover:border-[#26CECE50]"
+                        style={{ boxShadow: '0 2px 16px rgba(38,206,206,0.05)' }}
                     >
-                        <Quote size={24} style={{ color: `${T}50` }} />
-                        <p className="leading-relaxed text-sm italic flex-grow" style={{ color: '#000' }}>
+                        <Quote size={24} style={{ color: `${T}55` }} />
+                        <p className="leading-relaxed text-sm italic flex-grow text-slate-700 dark:text-white/75">
                             "{t.description}"
                         </p>
                         <div className="flex items-center gap-3 mt-auto">
                             <img src={t.profileImage} alt={t.name}
                                 width="40" height="40"
-                                className="w-10 h-10 rounded-full object-cover"
+                                className="w-10 h-10 rounded-full object-cover flex-shrink-0"
                                 style={{ border: `2px solid ${T}40` }} />
                             <div>
-                                <h4 className="font-extrabold text-sm" style={{ color: '#0A0A0A', fontFamily: "'Space Grotesk',sans-serif" }}>{t.name}</h4>
+                                <h4 className="font-extrabold text-sm text-slate-900 dark:text-white"
+                                    style={{ fontFamily: "'Space Grotesk',sans-serif" }}>{t.name}</h4>
                                 <p className="text-xs mt-0.5" style={{ color: '#1B8E8E', fontFamily: "'DM Mono',monospace" }}>
                                     {t.designation}
                                 </p>
@@ -96,10 +87,6 @@ const TestimonialsSection = () => (
                 ))}
             </motion.div>
         </div>
-
-        {/* Bottom transition to dark */}
-        <div className="absolute bottom-0 left-0 right-0 h-12 pointer-events-none"
-            style={{ background: 'linear-gradient(to bottom, transparent, rgba(7,7,7,0.04))' }} />
     </section>
 );
 

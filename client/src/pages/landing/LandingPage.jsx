@@ -11,7 +11,6 @@ const SocialProofSection = lazy(() => import('../../components/landing/SocialPro
 const TestimonialsSection = lazy(() => import('../../components/landing/TestimonialsSection'));
 const FinalCtaSection = lazy(() => import('../../components/landing/FinalCtaSection'));
 const IntegratedAgentsSection = lazy(() => import('../../components/landing/IntegratedAgentsSection'));
-const WhyBitlanceSection = lazy(() => import('../../components/landing/WhyBitlanceSection'));
 const AgentPricingSection = lazy(() => import('../../components/landing/AgentPricingSection'));
 const Footer = lazy(() => import('../../components/landing/Footer'));
 const ScrollToTopButton = lazy(() => import('../../components/ui/ScrollToTopButton'));
@@ -119,7 +118,7 @@ const LandingPage = () => {
 
 
     return (
-        <div className="relative min-h-screen w-full overflow-hidden bg-white text-black">
+        <div className="relative min-h-screen w-full overflow-hidden bg-white dark:bg-[#050508] text-gray-900 dark:text-white transition-colors duration-300">
             <SEOHead
                 title="AI Voice Bot & WhatsApp Chatbot for Indian Businesses | Bitlance"
                 description="Bitlance deploys AI Voice Agents and WhatsApp Chatbots that respond to leads in 0.4 seconds, qualify enquiries, and book appointments 24/7. Used by real estate, clinics & agencies across India."
@@ -198,18 +197,14 @@ const LandingPage = () => {
                     ]
                 }}
             />
-            {/* Global ambient glows — support glassmorphism across all sections */}
-            <div className="fixed inset-0 pointer-events-none overflow-hidden" style={{ zIndex: 0 }}>
-                {/* Teal core glow */}
+            {/* Global ambient glows — dark mode only */}
+            <div className="hidden dark:block fixed inset-0 pointer-events-none overflow-hidden" style={{ zIndex: 0 }}>
                 <div className="absolute top-[20%] left-[15%] w-[500px] h-[500px] rounded-full blur-[180px]"
                     style={{ background: 'rgba(38,206,206,0.06)' }} />
-                {/* Purple accent */}
                 <div className="absolute top-[60%] right-[10%] w-[400px] h-[400px] rounded-full blur-[160px]"
                     style={{ background: 'rgba(139,92,246,0.05)' }} />
-                {/* Rose accent bottom */}
                 <div className="absolute bottom-[10%] left-[30%] w-[350px] h-[350px] rounded-full blur-[140px]"
                     style={{ background: 'rgba(236,72,153,0.04)' }} />
-                {/* Subtle dot grid */}
                 <div className="absolute inset-0 opacity-[0.02]"
                     style={{ backgroundImage: 'radial-gradient(circle, #26CECE 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
             </div>
@@ -255,7 +250,6 @@ const LandingPage = () => {
                 <ProblemSection />
 
                 <Suspense fallback={<div className="h-40" />}>
-                    <WhyBitlanceSection />
                     <TestimonialsSection />
                     <IntegratedAgentsSection onOpenBooking={handleOpenBooking} />
                     <UseCasesSection />

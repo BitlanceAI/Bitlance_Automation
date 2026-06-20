@@ -6,46 +6,19 @@ import { useNavigate } from 'react-router-dom';
 
 const TEAL = '#26CECE';
 
+const BLOG_WORKFLOW_STEPS = [
+    { icon: <Search className="w-8 h-8" style={{ color: TEAL }} />, title: "Trending Topics", badge: "SerpAPI", desc: "Searches Google in real-time to find trending topics and People Also Ask questions for your industry.", delay: 0.1 },
+    { icon: <Tag className="w-8 h-8" style={{ color: TEAL }} />, title: "Keyword Research", badge: "SerpAPI", desc: "Extracts related searches and PAA signals from Google to build a real, rankable keyword set.", delay: 0.2 },
+    { icon: <Wand2 className="w-8 h-8" style={{ color: TEAL }} />, title: "Content Generation", badge: "Perplexity AI", desc: "Injects SERP-sourced topic and keywords into a writing prompt to craft a fully GEO-optimized article.", delay: 0.3 },
+    { icon: <ShieldCheck className="w-8 h-8" style={{ color: TEAL }} />, title: "Plagiarism Check", badge: "SerpAPI", desc: "Runs exact-phrase Google searches on key sentences to verify the content is original before publishing.", delay: 0.4 },
+    { icon: <Globe className="w-8 h-8" style={{ color: TEAL }} />, title: "Auto-Publish", badge: "WordPress", desc: "Posts directly to your website with images, GEO title, and tags — fully hands-free.", delay: 0.5 }
+];
+
+
 const BlogAgentSection = ({ onOpenBooking }) => {
     const navigate = useNavigate();
 
-    const workflowSteps = [
-        {
-            icon: <Search className="w-8 h-8" style={{ color: TEAL }} />,
-            title: "Trending Topics",
-            badge: "SerpAPI",
-            desc: "Searches Google in real-time to find trending topics and People Also Ask questions for your industry.",
-            delay: 0.2
-        },
-        {
-            icon: <Tag className="w-8 h-8" style={{ color: TEAL }} />,
-            title: "Keyword Research",
-            badge: "SerpAPI",
-            desc: "Extracts related searches and PAA signals from Google to build a real, rankable keyword set.",
-            delay: 0.35
-        },
-        {
-            icon: <Wand2 className="w-8 h-8" style={{ color: TEAL }} />,
-            title: "Content Generation",
-            badge: "Perplexity AI",
-            desc: "Injects SERP-sourced topic and keywords into a writing prompt to craft a fully GEO-optimized article.",
-            delay: 0.5
-        },
-        {
-            icon: <ShieldCheck className="w-8 h-8" style={{ color: TEAL }} />,
-            title: "Plagiarism Check",
-            badge: "SerpAPI",
-            desc: "Runs exact-phrase Google searches on key sentences to verify the content is original before publishing.",
-            delay: 0.65
-        },
-        {
-            icon: <Globe className="w-8 h-8" style={{ color: TEAL }} />,
-            title: "Auto-Publish",
-            badge: "WordPress",
-            desc: "Posts directly to your website with images, GEO title, and tags — fully hands-free.",
-            delay: 0.8
-        }
-    ];
+    const workflowSteps = BLOG_WORKFLOW_STEPS;
 
     return (
         <section className="py-12 relative overflow-hidden bg-transparent" style={{ borderTop: '1px solid #1E1E1E' }}>
@@ -80,7 +53,7 @@ const BlogAgentSection = ({ onOpenBooking }) => {
                         whileInView={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.5, delay: 0.1 }}
                         viewport={{ once: true }}
-                        className="text-4xl md:text-5xl lg:text-5xl font-black tracking-tight mb-6 leading-[1.08] text-black"
+                        className="text-4xl md:text-5xl lg:text-5xl font-black tracking-tight mb-6 leading-[1.08] text-gray-900 dark:text-white"
                         style={{ fontFamily: "'Space Grotesk', sans-serif", letterSpacing: '-0.03em' }}
                     >
                         Automate Your GEO with the<br />
@@ -93,7 +66,7 @@ const BlogAgentSection = ({ onOpenBooking }) => {
                         whileInView={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.5, delay: 0.2 }}
                         viewport={{ once: true }}
-                        className="text-base md:text-lg font-medium text-black mx-auto max-w-xl leading-relaxed"
+                        className="text-base md:text-lg font-medium text-gray-900 dark:text-white mx-auto max-w-xl leading-relaxed"
                     >
                         Stop writing manually. Our autonomous agent takes your keywords and turns them into
                         fully-formatted, GEO-optimized blog posts published straight to your website.
@@ -131,8 +104,8 @@ const BlogAgentSection = ({ onOpenBooking }) => {
                                     transition={{ duration: 0.4, delay: step.delay }}
                                     viewport={{ once: true, margin: "-50px" }}
                                     className="relative w-20 h-20 md:w-24 md:h-24 mb-6 flex items-center justify-center transition-transform duration-300 group-hover:-translate-y-2"
-                                    style={{
-                                        background: '#ffffff',
+                                    className='bg-white dark:bg-[#111]' style={{
+                                        ,
                                         border: '1px solid #e5e7eb',
                                         borderRadius: 2,
                                         boxShadow: `0 8px 30px -10px ${TEAL}15`
@@ -159,7 +132,7 @@ const BlogAgentSection = ({ onOpenBooking }) => {
                                     transition={{ duration: 0.5, delay: step.delay + 0.2 }}
                                     viewport={{ once: true }}
                                 >
-                                    <h3 className="text-base font-extrabold text-black mb-1" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+                                    <h3 className="text-base font-extrabold text-gray-900 dark:text-white mb-1" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
                                         {step.title}
                                     </h3>
                                     {/* Source badge (SerpAPI / Perplexity AI / WordPress) */}
@@ -173,7 +146,7 @@ const BlogAgentSection = ({ onOpenBooking }) => {
                                         }}>
                                         {step.badge}
                                     </div>
-                                    <p className="text-xs text-gray-700 leading-relaxed px-1" style={{ fontFamily: "'DM Mono', monospace" }}>
+                                    <p className="text-xs text-gray-700 dark:text-gray-300 leading-relaxed px-1" style={{ fontFamily: "'DM Mono', monospace" }}>
                                         {step.desc}
                                     </p>
                                 </motion.div>

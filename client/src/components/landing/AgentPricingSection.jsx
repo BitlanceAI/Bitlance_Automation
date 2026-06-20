@@ -169,12 +169,11 @@ function PlanCard({ plan, idx, onBuy, isBuying, disabled }) {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4, delay: idx * 0.07 }}
             whileHover={{ y: -5 }}
-            className="relative flex flex-col rounded p-6 transition-all duration-300"
-            style={{
-                background: plan.popular ? `${T}08` : '#ffffff',
-                border: `1px solid ${plan.popular ? T : '#1E1E1E'}`,
-                boxShadow: plan.popular ? `0 0 40px 0 ${T}12` : 'none',
-            }}
+            className={`relative flex flex-col rounded-2xl p-6 transition-all duration-300 border
+                ${plan.popular
+                    ? 'bg-teal-50/60 dark:bg-[#26CECE08] border-teal-300 dark:border-[#26CECE]'
+                    : 'bg-white dark:bg-white/[0.04] border-slate-200 dark:border-white/[0.08]'}`}
+            style={{ boxShadow: plan.popular ? `0 0 40px 0 ${T}15` : 'none' }}
         >
             {plan.popular && (
                 <div
@@ -185,15 +184,15 @@ function PlanCard({ plan, idx, onBuy, isBuying, disabled }) {
                 </div>
             )}
 
-            <h3 className="text-base font-extrabold text-black mb-1">{plan.name}</h3>
+            <h3 className="text-base font-extrabold text-slate-900 dark:text-white mb-1">{plan.name}</h3>
 
             {/* Price */}
             <div className="flex items-baseline gap-1 mb-1">
-                <span className="text-lg font-extrabold text-gray-500" style={{ fontFamily: "'DM Mono',monospace" }}>₹</span>
-                <span className="text-4xl font-black text-black" style={{ fontFamily: "'DM Mono',monospace" }}>
+                <span className="text-lg font-extrabold text-slate-400" style={{ fontFamily: "'DM Mono',monospace" }}>₹</span>
+                <span className="text-4xl font-black text-slate-900 dark:text-white" style={{ fontFamily: "'DM Mono',monospace" }}>
                     {plan.priceINR?.toLocaleString('en-IN')}
                 </span>
-                <span className="text-gray-500 text-xs">/mo</span>
+                <span className="text-slate-400 text-xs">/mo</span>
             </div>
 
             {/* Badges */}
@@ -203,12 +202,12 @@ function PlanCard({ plan, idx, onBuy, isBuying, disabled }) {
                     {plan.credits?.toLocaleString()} credits
                 </span>
                 {plan.seoBlogs && (
-                    <span className="text-[10px] px-2 py-0.5 rounded-sm font-mono uppercase tracking-widest bg-gray-100 text-gray-600">
+                    <span className="text-[10px] px-2 py-0.5 rounded-xl font-mono uppercase tracking-widest bg-slate-100 text-slate-600 dark:bg-white/[0.07] dark:text-white/60">
                         {plan.seoBlogs} SEO · {plan.geoBlogs} GEO blogs
                     </span>
                 )}
                 {plan.capacity && (
-                    <span className="text-[10px] px-2 py-0.5 rounded-sm font-mono uppercase tracking-widest bg-gray-100 text-gray-600">
+                    <span className="text-[10px] px-2 py-0.5 rounded-xl font-mono uppercase tracking-widest bg-slate-100 text-slate-600 dark:bg-white/[0.07] dark:text-white/60">
                         {plan.capacity}
                     </span>
                 )}
@@ -218,7 +217,7 @@ function PlanCard({ plan, idx, onBuy, isBuying, disabled }) {
                 {plan.features.map((f, i) => (
                     <li key={i} className="flex items-start gap-2">
                         <Check size={11} className="mt-0.5 flex-shrink-0" style={{ color: T }} />
-                        <span className="text-xs text-black/70">{f}</span>
+                        <span className="text-xs text-slate-700 dark:text-white/70">{f}</span>
                     </li>
                 ))}
                 {(plan.missing || []).map((f, i) => (
@@ -232,12 +231,13 @@ function PlanCard({ plan, idx, onBuy, isBuying, disabled }) {
             <button
                 onClick={() => onBuy(plan)}
                 disabled={isBuying || disabled}
-                className="w-full py-3 rounded text-[11px] font-extrabold uppercase tracking-widest flex items-center justify-center gap-2 transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed"
+                className={`w-full py-3 rounded-2xl text-[11px] font-extrabold uppercase tracking-widest flex items-center justify-center gap-2 transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed
+                    ${!plan.popular && !plan.contactSales ? 'bg-slate-100 text-slate-800 border border-slate-200 hover:bg-slate-200 dark:bg-white/[0.07] dark:text-white dark:border-white/[0.12] dark:hover:bg-white/[0.12]' : ''}`}
                 style={plan.popular
                     ? { background: T, color: '#000' }
                     : plan.contactSales
                         ? { background: 'transparent', color: T, border: `1px solid ${T}50` }
-                        : { background: '#f9fafb', color: '#111111', border: '1px solid #2A2A2A' }}
+                        : undefined}
             >
                 {isBuying
                     ? <span className="animate-spin w-3 h-3 border-2 border-black/30 border-t-black rounded-full" />
@@ -252,10 +252,11 @@ function PlanCard({ plan, idx, onBuy, isBuying, disabled }) {
 // ─── Credit Reference Table ───────────────────────────────────────────────────
 function CreditTable({ open, onToggle }) {
     return (
-        <div className="border border-gray-200 rounded overflow-hidden">
+        <div className="rounded-2xl overflow-hidden border border-slate-200 dark:border-white/[0.08]">
             <button
                 onClick={onToggle}
-                className="w-full flex items-center justify-between px-4 py-3 text-[11px] font-extrabold uppercase tracking-widest text-black bg-gray-50 hover:bg-gray-100 transition-colors"
+                className="w-full flex items-center justify-between px-4 py-3 text-[11px] font-extrabold uppercase tracking-widest
+                    text-slate-700 dark:text-white/70 bg-slate-50 hover:bg-slate-100 dark:bg-white/[0.03] dark:hover:bg-white/[0.07] transition-colors"
             >
                 <span>Credit Consumption Reference</span>
                 {open ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
@@ -272,14 +273,14 @@ function CreditTable({ open, onToggle }) {
                         <table className="w-full text-xs">
                             <thead>
                                 <tr style={{ background: `${T}10` }}>
-                                    <th className="px-4 py-2 text-left font-extrabold uppercase tracking-widest text-black">Action</th>
-                                    <th className="px-4 py-2 text-right font-extrabold uppercase tracking-widest text-black">Credits</th>
+                                    <th className="px-4 py-2 text-left font-extrabold uppercase tracking-widest text-slate-800 dark:text-white">Action</th>
+                                    <th className="px-4 py-2 text-right font-extrabold uppercase tracking-widest text-slate-800 dark:text-white">Credits</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {creditConsumption.map((row, i) => (
-                                    <tr key={i} className={i % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
-                                        <td className="px-4 py-2 font-mono text-gray-700">{row.action}</td>
+                                    <tr key={i} className={i % 2 === 0 ? 'bg-white dark:bg-white/[0.02]' : 'bg-slate-50 dark:bg-white/[0.04]'}>
+                                        <td className="px-4 py-2 font-mono text-slate-600 dark:text-white/60">{row.action}</td>
                                         <td className="px-4 py-2 text-right font-extrabold font-mono" style={{ color: T }}>{row.credits}</td>
                                     </tr>
                                 ))}
@@ -295,10 +296,11 @@ function CreditTable({ open, onToggle }) {
 // ─── Market Benchmark Table ───────────────────────────────────────────────────
 function BenchmarkTable({ open, onToggle }) {
     return (
-        <div className="border border-gray-200 rounded overflow-hidden">
+        <div className="rounded-2xl overflow-hidden border border-slate-200 dark:border-white/[0.08]">
             <button
                 onClick={onToggle}
-                className="w-full flex items-center justify-between px-4 py-3 text-[11px] font-extrabold uppercase tracking-widest text-black bg-gray-50 hover:bg-gray-100 transition-colors"
+                className="w-full flex items-center justify-between px-4 py-3 text-[11px] font-extrabold uppercase tracking-widest
+                    text-slate-700 dark:text-white/70 bg-slate-50 hover:bg-slate-100 dark:bg-white/[0.03] dark:hover:bg-white/[0.07] transition-colors"
             >
                 <span>Market Pricing Benchmark — SEO (Why Bitlance is 10× cheaper)</span>
                 {open ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
@@ -315,15 +317,15 @@ function BenchmarkTable({ open, onToggle }) {
                         <table className="w-full text-xs">
                             <thead>
                                 <tr style={{ background: `${T}10` }}>
-                                    <th className="px-4 py-2 text-left font-extrabold uppercase tracking-widest text-black">Segment</th>
-                                    <th className="px-4 py-2 text-right font-extrabold uppercase tracking-widest text-black">Market Price</th>
+                                    <th className="px-4 py-2 text-left font-extrabold uppercase tracking-widest text-slate-800 dark:text-white">Segment</th>
+                                    <th className="px-4 py-2 text-right font-extrabold uppercase tracking-widest text-slate-800 dark:text-white">Market Price</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {benchmarkSEO.map((row, i) => (
-                                    <tr key={i} className={i % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
-                                        <td className="px-4 py-2 font-mono text-gray-700">{row.segment}</td>
-                                        <td className="px-4 py-2 text-right font-mono text-gray-400 line-through">{row.monthly}</td>
+                                    <tr key={i} className={i % 2 === 0 ? 'bg-white dark:bg-white/[0.02]' : 'bg-slate-50 dark:bg-white/[0.04]'}>
+                                        <td className="px-4 py-2 font-mono text-slate-600 dark:text-white/60">{row.segment}</td>
+                                        <td className="px-4 py-2 text-right font-mono text-slate-400 line-through">{row.monthly}</td>
                                     </tr>
                                 ))}
                                 <tr className="border-t-2" style={{ borderColor: T }}>
@@ -403,11 +405,12 @@ const AgentPricingSection = () => {
 
                 {/* Heading */}
                 <div className="mb-12 max-w-2xl">
-                    <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 10, letterSpacing: '0.18em', color: '#000', textTransform: 'uppercase' }}>
+                    <span className="text-slate-500 dark:text-slate-400"
+                        style={{ fontFamily: "'DM Mono',monospace", fontSize: 10, letterSpacing: '0.18em', textTransform: 'uppercase' }}>
                         Pricing
                     </span>
                     <h2
-                        className="mt-4 text-3xl md:text-5xl font-extrabold text-black leading-tight"
+                        className="mt-4 text-3xl md:text-5xl font-extrabold leading-tight text-slate-900 dark:text-white"
                         style={{ fontFamily: "'Space Grotesk',sans-serif", letterSpacing: '-0.025em' }}
                     >
                         Simple pricing,<br /><span style={{ color: T }}>massive ROI</span>
@@ -425,18 +428,20 @@ const AgentPricingSection = () => {
 
                 {/* Tab Toggle */}
                 <div className="flex flex-wrap items-center gap-4 mb-8">
-                    <div className="flex rounded overflow-hidden border border-gray-200">
+                    <div className="flex rounded-2xl overflow-hidden border border-slate-200 dark:border-white/[0.1]">
                         <button
                             onClick={() => setTab('seo_geo')}
-                            className="flex items-center gap-2 px-5 py-2.5 text-xs font-extrabold uppercase tracking-widest transition-all"
-                            style={tab === 'seo_geo' ? { background: T, color: '#000' } : { background: '#ffffff', color: '#000' }}
+                            className={`flex items-center gap-2 px-5 py-2.5 text-xs font-extrabold uppercase tracking-widest transition-all
+                                ${tab !== 'seo_geo' ? 'bg-white dark:bg-white/[0.04] text-slate-700 dark:text-white/70 hover:bg-slate-50 dark:hover:bg-white/[0.08]' : ''}`}
+                            style={tab === 'seo_geo' ? { background: T, color: '#000' } : undefined}
                         >
                             <Zap size={13} /> SEO + GEO Plans
                         </button>
                         <button
                             onClick={() => setTab('email')}
-                            className="flex items-center gap-2 px-5 py-2.5 text-xs font-extrabold uppercase tracking-widest transition-all"
-                            style={tab === 'email' ? { background: T, color: '#000' } : { background: '#ffffff', color: '#000' }}
+                            className={`flex items-center gap-2 px-5 py-2.5 text-xs font-extrabold uppercase tracking-widest transition-all
+                                ${tab !== 'email' ? 'bg-white dark:bg-white/[0.04] text-slate-700 dark:text-white/70 hover:bg-slate-50 dark:hover:bg-white/[0.08]' : ''}`}
+                            style={tab === 'email' ? { background: T, color: '#000' } : undefined}
                         >
                             <Mail size={13} /> Email Automation
                         </button>
