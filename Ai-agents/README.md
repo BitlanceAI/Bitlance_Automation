@@ -6,7 +6,7 @@ Step 2: Start Python Graphic Agents backend
 cd Graphic-agents
 # Activate virtual env if needed
 python -m venv venv
-myenv\Scripts\activate
+venv\Scripts\activate
 #Install required packages (one-time only)
 python -m pip install -r requirements.txt
 # Update .env with your actual provider keys
