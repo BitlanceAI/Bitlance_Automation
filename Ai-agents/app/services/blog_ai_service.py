@@ -1671,6 +1671,7 @@ MINIMUM WORDS   : {length_num}
 def generate_image(topic: str, image_text: str) -> str:
     """
     Generate a real AI image for the blog header using gpt-image-2.
+    Falls back to dall-e-3 if gpt-image-2 returns 401 Unauthorized.
     Returns a data URI (data:image/png;base64,...) that the Node controller
     uploads to Supabase Storage via uploadImageToSupabase().
     """
@@ -1678,22 +1679,22 @@ def generate_image(topic: str, image_text: str) -> str:
         print("OPENAI_API_KEY not set, skipping image generation.")
         return ""
         
+    headers = {
+        "Authorization": f"Bearer {OPENAI_API_KEY}",
+        "Content-Type": "application/json",
+    }
+    # Keep image_text to max 3 words to prevent text overflow/clipping in the image
+    safe_image_text = ' '.join(image_text.split()[:3])
+    prompt = f"Professional blog header image for the topic \"{topic}\". Modern, clean, minimal design with a wide open area for text. Large bold sans-serif white text perfectly centered in the image: \"{safe_image_text}\". Keep the text well within the margins and ensure all text is fully visible, properly rendered, and not cut off or cropped at the edges. No extra text or logos."
+
+    # ── Tier 1: gpt-image-2 ────────────────────────────────────────────────
     try:
-        headers = {
-            "Authorization": f"Bearer {OPENAI_API_KEY}",
-            "Content-Type": "application/json",
-        }
-        # Keep image_text to max 3 words to prevent text overflow/clipping in the image
-        safe_image_text = ' '.join(image_text.split()[:3])
-        # Keep prompt concise — fewer tokens = faster + cheaper
-        prompt = f"Professional blog header image for the topic \"{topic}\". Modern, clean, minimal design with a wide open area for text. Large bold sans-serif white text perfectly centered in the image: \"{safe_image_text}\". Keep the text well within the margins and ensure all text is fully visible, properly rendered, and not cut off or cropped at the edges. No extra text or logos."
         payload = {
             "model": "gpt-image-2",
             "prompt": prompt,
             "n": 1,
             "size": "1024x1024",
-            "quality": "low"  # ~$0.011/image vs ~$0.040 for high — 73% cheaper
-            # NOTE: gpt-image-2 always returns b64_json, response_format param is not supported
+            "quality": "low"
         }
         print(f"Generating image with gpt-image-2 (quality=low) for topic: '{topic}'")
         res = requests.post("https://api.openai.com/v1/images/generations", headers=headers, json=payload, timeout=120)
@@ -1701,15 +1702,36 @@ def generate_image(topic: str, image_text: str) -> str:
         
         # gpt-image-2 returns b64_json, NOT a URL
         b64_data = res.json()["data"][0].get("b64_json", "")
-        if not b64_data:
-            print("generate_image: No b64_json in gpt-image-2 response.")
-            return ""
-            
-        print(f"generate_image: Got base64 image, length={len(b64_data)}")
-        return f"data:image/png;base64,{b64_data}"
+        if b64_data:
+            print(f"generate_image: gpt-image-2 success, length={len(b64_data)}")
+            return f"data:image/png;base64,{b64_data}"
+        print("generate_image: No b64_json in gpt-image-2 response, trying dall-e-3.")
     except Exception as e:
-        print(f"Error generating image with gpt-image-2: {e}")
-        return ""
+        print(f"gpt-image-2 failed ({type(e).__name__}): {e}. Falling back to dall-e-3.")
+
+    # ── Tier 2: dall-e-3 fallback ──────────────────────────────────────────
+    try:
+        payload = {
+            "model": "dall-e-3",
+            "prompt": prompt,
+            "n": 1,
+            "size": "1024x1024",
+            "quality": "standard",
+            "response_format": "b64_json"
+        }
+        print(f"Generating image with dall-e-3 fallback for topic: '{topic}'")
+        res = requests.post("https://api.openai.com/v1/images/generations", headers=headers, json=payload, timeout=120)
+        res.raise_for_status()
+
+        b64_data = res.json()["data"][0].get("b64_json", "")
+        if b64_data:
+            print(f"generate_image: dall-e-3 success, length={len(b64_data)}")
+            return f"data:image/png;base64,{b64_data}"
+        print("generate_image: No b64_json in dall-e-3 response either.")
+    except Exception as e:
+        print(f"Error generating image with dall-e-3: {e}")
+
+    return ""
 
 
 

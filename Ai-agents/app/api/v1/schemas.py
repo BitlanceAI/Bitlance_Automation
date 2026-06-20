@@ -1,5 +1,5 @@
-from pydantic import BaseModel, Field
-from typing import List, Dict, Any, Optional
+from pydantic import BaseModel, Field, field_validator
+from typing import List, Dict, Any, Optional, Union
 
 class FAQItem(BaseModel):
     question: str
@@ -22,12 +22,22 @@ class StandardArticleResponse(BaseModel):
 
 class TopicCandidate(BaseModel):
     topic: str
-    keywords: List[str]
+    keywords: Union[List[str], str] = Field(default_factory=list)
     search_intent: Optional[str] = None
     traffic_score: Optional[int] = None
     revenue_score: Optional[int] = None
     difficulty: Optional[str] = None
     scoring_breakdown: Optional[str] = None
+
+    @field_validator('keywords', mode='before')
+    @classmethod
+    def normalize_keywords(cls, v):
+        """Accept either a comma-separated string or a list of strings."""
+        if isinstance(v, str):
+            return [k.strip() for k in v.split(',') if k.strip()]
+        if isinstance(v, list):
+            return [str(k).strip() for k in v if str(k).strip()]
+        return []
 
 class TopicResponse(BaseModel):
     industry: str

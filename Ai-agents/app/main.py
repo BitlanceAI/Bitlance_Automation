@@ -7,10 +7,7 @@ from dotenv import load_dotenv
 env_path = Path(__file__).resolve().parent.parent / ".env"
 load_dotenv(dotenv_path=env_path)
 
-from fastapi import FastAPI, Request
-from fastapi.responses import JSONResponse
-from fastapi.openapi.docs import get_swagger_ui_html
-from fastapi.openapi.utils import get_openapi
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 # ==================================================
@@ -48,82 +45,6 @@ app = FastAPI(
     redoc_url=None
 )
 
-@app.get("/openapi.json", include_in_schema=False)
-def custom_openapi(req: Request):
-    openapi_schema = get_openapi(
-        title="Bitlance SEO/GEO API",
-        version="1.0.0",
-        description="""
-# Bitlance API Platform
-
-Welcome to the Bitlance Enterprise SEO/GEO Content API. 
-
-## Authentication
-All endpoints require an active API Key passed via the `Authorization` header:
-`Authorization: Bearer <YOUR_API_KEY>`
-
-## Rate Limits
-Rate limits are enforced strictly based on your plan:
-* **Starter:** 10 req/min
-* **Growth:** 30 req/min
-* **Agency:** 60 req/min
-* **Enterprise:** 120 req/min
-
-## Error Codes
-- **401 Unauthorized**: Missing or invalid API key.
-- **402 Payment Required**: Insufficient credits on your dashboard.
-- **403 Forbidden**: API key is inactive or expired.
-- **429 Too Many Requests**: Rate limit exceeded.
-- **500 Internal Server Error**: Downstream generation or DB error.
-        """,
-        routes=app.routes,
-    )
-    
-    if "components" not in openapi_schema:
-        openapi_schema["components"] = {}
-    if "securitySchemes" not in openapi_schema["components"]:
-        openapi_schema["components"]["securitySchemes"] = {}
-        
-    openapi_schema["components"]["securitySchemes"]["BearerAuth"] = {
-        "type": "http",
-        "scheme": "bearer",
-        "bearerFormat": "JWT",
-        "description": "Enter your Bitlance API Key."
-    }
-    
-    for path in openapi_schema.get("paths", {}):
-        if path not in ["/", "/api/blog/generate"]:
-            for method in openapi_schema["paths"][path]:
-                openapi_schema["paths"][path][method]["security"] = [{"BearerAuth": []}]
-
-    # Hide Admin and internal endpoints from public Swagger unless universal key is provided
-    dev_key = req.query_params.get("key")
-    if dev_key != "bitlance":
-        paths_to_remove = []
-        for path in openapi_schema["paths"]:
-            methods_to_remove = []
-            for method in openapi_schema["paths"][path]:
-                tags = openapi_schema["paths"][path][method].get("tags", [])
-                if any(t in tags for t in ["Admin", "Admin API", "Tracking & Visibility", "Tracking API"]) or path.startswith("/api/v1/admin") or path.startswith("/api/geo-tracker") or path.startswith("/api/blog"):
-                    methods_to_remove.append(method)
-            for m in methods_to_remove:
-                del openapi_schema["paths"][path][m]
-            if not openapi_schema["paths"][path]:
-                paths_to_remove.append(path)
-                
-        for p in paths_to_remove:
-            del openapi_schema["paths"][p]
-            
-    return JSONResponse(openapi_schema)
-
-@app.get("/docs", include_in_schema=False)
-def custom_swagger_ui_html(req: Request):
-    key = req.query_params.get("key", "")
-    openapi_url = f"/openapi.json?key={key}" if key else "/openapi.json"
-    return get_swagger_ui_html(
-        openapi_url=openapi_url,
-        title="Bitlance SEO/GEO API Docs",
-    )
 
 # ==================================================
 # CORS (frontend access)
