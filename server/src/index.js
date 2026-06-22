@@ -56,7 +56,6 @@ import creditRoutes from './routes/payments/creditRoutes.js';
 import settingsRoutes from './routes/settings/settingsRoutes.js';
 import apiKeysRoutes from './routes/settings/apiKeysRoutes.js';
 import googleSheetsRoutes from './routes/integrations/googleSheetsRoutes.js';
-import retellRoutes from './routes/integrations/retellRoutes.js';
 import meetingRoutes from './routes/integrations/meetingRoutes.js';
 import designRoutes from './routes/design/designRoutes.js';
 import campaignRoutes from './routes/campaigns/campaignRoutes.js';
@@ -78,7 +77,6 @@ app.use('/api/credits', creditRoutes);
 app.use('/api/user/settings', settingsRoutes);
 app.use('/api/user/api-keys', apiKeysRoutes);
 app.use('/api/google-sheets', googleSheetsRoutes);
-app.use('/api', retellRoutes); // Mount at root /api to match /api/create-web-call etc.
 app.use('/api/meetings', meetingRoutes);
 app.use('/api/design', designRoutes);
 app.use('/api/campaigns', campaignRoutes);
@@ -108,10 +106,6 @@ app.use('/webhooks/meta', webhookRoutes);
 
 import autoBlogRoutes from './routes/admin/autoBlogRoutes.js';
 app.use('/api/admin/auto-blog', autoBlogRoutes);
-
-
-import whatsappRoutes from './routes/social/whatsappRoutes.js';
-app.use('/api/whatsapp', whatsappRoutes);
 
 import workspaceRoutes from './routes/settings/workspaceRoutes.js';
 app.use('/api/workspaces', workspaceRoutes);

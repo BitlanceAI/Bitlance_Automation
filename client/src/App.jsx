@@ -29,7 +29,6 @@ const SignupPage = lazy(() => import('./pages/auth/SignupPage'));
 
 // Dashboard (heavy: recharts, fullcalendar, spline, retell, etc.)
 const HomePage = lazy(() => import('./pages/dashboard/HomePage'));
-const SalesDashboard = lazy(() => import('./pages/dashboard/SalesDashboard'));
 const SocialDashboard = lazy(() => import('./pages/dashboard/SocialDashboard'));
 const AgentsPage = lazy(() => import('./pages/dashboard/AgentsPage'));
 const SeoAgentPage = lazy(() => import('./pages/dashboard/SeoAgentPage'));
@@ -138,7 +137,7 @@ function App() {
     if (agent.title === 'WhatsApp Broadcasting Automation') {
       window.open('https://wacrm.bitlancetechhub.com/', '_blank');
     } else if (agent.title === 'AI Voice Agent') {
-      navigate('/dashboard/agents/voice');
+      window.open('https://voice.bitlancetechhub.com/workflow', '_blank');
     } else if (agent.title === 'GEO (Generative) AI Agent' || agent.title === 'SEO (Search Engine) AI Agent') {
       const isSeo = agent.title === 'SEO (Search Engine) AI Agent';
       navigate(isSeo ? '/dashboard/agents/seo' : '/dashboard/agents/geo', { state: { defaultMode: isSeo ? 'SEO' : 'GEO' } });
@@ -234,11 +233,6 @@ function App() {
                 <Route path="/SocialDashboard" element={
                   <AuthGuard>
                     <SocialDashboard />
-                  </AuthGuard>
-                } />
-                <Route path="/dashboard/agents/voice" element={
-                  <AuthGuard>
-                    <SalesDashboard />
                   </AuthGuard>
                 } />
                 <Route path="/dashboard/agents/seo" element={
