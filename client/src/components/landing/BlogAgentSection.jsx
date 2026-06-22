@@ -103,9 +103,8 @@ const BlogAgentSection = ({ onOpenBooking }) => {
                                     whileInView={{ opacity: 1, y: 0 }}
                                     transition={{ duration: 0.4, delay: step.delay }}
                                     viewport={{ once: true, margin: "-50px" }}
-                                    className="relative w-20 h-20 md:w-24 md:h-24 mb-6 flex items-center justify-center transition-transform duration-300 group-hover:-translate-y-2"
-                                    className='bg-white dark:bg-[#111]' style={{
-                                        ,
+                                    className="relative w-20 h-20 md:w-24 md:h-24 mb-6 flex items-center justify-center transition-transform duration-300 group-hover:-translate-y-2 bg-white dark:bg-[#111]"
+                                    style={{
                                         border: '1px solid #e5e7eb',
                                         borderRadius: 2,
                                         boxShadow: `0 8px 30px -10px ${TEAL}15`

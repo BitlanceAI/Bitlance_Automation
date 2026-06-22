@@ -287,11 +287,12 @@ const SeoAgentPage = () => {
 
             if (selectedProfile) {
                 if (selectedProfile.type === 'existing') {
-                    authorProfileId = selectedProfile.profileId;
+                    authorProfileId = selectedProfile.profileId === 'seed-anurag-dhole' ? null : selectedProfile.profileId;
                     // Override author_name with the profile's name to ensure consistency
                     payload.author_name = selectedProfile.profileData?.name;
                     payload.author_bio = selectedProfile.profileData?.bio; // Add bio if supported by API
                     payload.author_image_url = selectedProfile.profileData?.profile_image;
+                    authorDetails = selectedProfile.profileData;
                 } else if (selectedProfile.type === 'manual') {
                     authorDetails = selectedProfile.profileData;
                     payload.author_name = authorDetails.name;
