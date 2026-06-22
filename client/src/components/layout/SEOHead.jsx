@@ -16,7 +16,16 @@ const SEOHead = ({
 }) => {
     const siteName = 'Bitlance Tech Hub';
     const fullTitle = title ? `${title} | ${siteName}` : siteName;
-    const currentUrl = canonicalUrl || (typeof window !== 'undefined' ? window.location.href : '');
+
+    // Normalize canonical URL: strip query params/hashes, and force primary HTTPS WWW domain
+    let currentUrl = canonicalUrl;
+    if (!currentUrl && typeof window !== 'undefined') {
+        const cleanPath = window.location.pathname.replace(/\/$/, ''); // strip trailing slash for consistency
+        currentUrl = `https://www.bitlancetechhub.com${cleanPath || '/'}`;
+    } else if (!currentUrl) {
+        currentUrl = 'https://www.bitlancetechhub.com/';
+    }
+
     const defaultImage = '/og-image.jpg';
     const image = ogImage || defaultImage;
 

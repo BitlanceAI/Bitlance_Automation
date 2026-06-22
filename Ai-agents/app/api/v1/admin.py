@@ -75,7 +75,7 @@ import string
 from typing import Optional
 from pydantic import BaseModel
 
-VALID_PLANS = {"starter", "growth", "agency", "enterprise"}
+VALID_PLANS = {"starter", "growth", "pro", "agency", "enterprise"}
 
 class CreateAPIKeyRequest(BaseModel):
     """
@@ -164,7 +164,7 @@ def create_api_key(
     if not result.data:
         raise HTTPException(status_code=500, detail="Key insert returned no data.")
 
-    rate_limits = {"starter": 10, "growth": 30, "agency": 60, "enterprise": 120}
+    rate_limits = {"starter": 10, "growth": 30, "pro": 45, "agency": 60, "enterprise": 120}
     return {
         "success": True,
         "api_key": new_key,
@@ -190,15 +190,20 @@ def list_api_keys(user_id: str = Depends(require_admin)):
     sb = get_admin_supabase()
     try:
         result = sb.table("api_keys").select(
-            "id, user_id, plan, status, label, expires_at, created_at"
+            "id, user_id, plan, status, label, expires_at, created_at, api_key"
         ).order("created_at", desc=True).execute()
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+    keys = result.data or []
+    for k in keys:
+        if "api_key" in k and k["api_key"]:
+            k["prefix"] = k["api_key"][:16]
+
     return {
         "success": True,
-        "total": len(result.data or []),
-        "keys": result.data or []
+        "total": len(keys),
+        "keys": keys
     }
 
 

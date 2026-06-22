@@ -1206,13 +1206,13 @@ const SeoAgentPage = () => {
                                         {/* New Fields: Author & Category */}
                                         <div className="space-y-3" data-tour="profile-select">
                                             <ProfileSelection onProfileSelect={handleProfileSelect} />
-                                            
+
                                             <div className="mt-4 p-3 bg-slate-50 border border-slate-200 rounded-[2px]">
                                                 <label className="block text-[10px] font-mono tracking-widest uppercase text-slate-500 mb-2">Author Circular Image (Optional)</label>
                                                 <p className="text-[10px] text-slate-400 font-mono mb-3 leading-relaxed">
                                                     Overrides the profile image. Upload from machine or paste a URL.
                                                 </p>
-                                                
+
                                                 <div className="flex flex-col gap-3">
                                                     <div className="flex gap-3">
                                                         <label className="flex-1 px-3 py-2 bg-white border border-slate-200 hover:border-[#26cece] rounded-[2px] cursor-pointer transition-colors flex items-center justify-center gap-2">
@@ -1224,9 +1224,9 @@ const SeoAgentPage = () => {
                                                             <span className="text-[11px] font-mono uppercase font-bold text-slate-600">
                                                                 {isUploadingQuickAuthor ? 'Uploading...' : 'Upload Image'}
                                                             </span>
-                                                            <input 
-                                                                type="file" 
-                                                                className="hidden" 
+                                                            <input
+                                                                type="file"
+                                                                className="hidden"
                                                                 accept="image/*"
                                                                 onChange={handleQuickAuthorUpload}
                                                                 disabled={isUploadingQuickAuthor}

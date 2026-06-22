@@ -54,6 +54,7 @@ app.use(express.json({
 
 import creditRoutes from './routes/payments/creditRoutes.js';
 import settingsRoutes from './routes/settings/settingsRoutes.js';
+import apiKeysRoutes from './routes/settings/apiKeysRoutes.js';
 import googleSheetsRoutes from './routes/integrations/googleSheetsRoutes.js';
 import retellRoutes from './routes/integrations/retellRoutes.js';
 import meetingRoutes from './routes/integrations/meetingRoutes.js';
@@ -62,6 +63,7 @@ import campaignRoutes from './routes/campaigns/campaignRoutes.js';
 import trackingRoutes from './routes/tracking/trackingRoutes.js';
 
 import adminRoutes from './routes/admin/adminRoutes.js';
+import adminApiKeysProxy from './routes/admin/adminApiKeysProxy.js';
 import profileRoutes from './routes/auth/profileRoutes.js';
 import authRoutes from './routes/auth/authRoutes.js';
 import linkedinRoutes from './routes/social/linkedinRoutes.js';
@@ -74,6 +76,7 @@ app.use('/api/auth', authRoutes);
 
 app.use('/api/credits', creditRoutes);
 app.use('/api/user/settings', settingsRoutes);
+app.use('/api/user/api-keys', apiKeysRoutes);
 app.use('/api/google-sheets', googleSheetsRoutes);
 app.use('/api', retellRoutes); // Mount at root /api to match /api/create-web-call etc.
 app.use('/api/meetings', meetingRoutes);
@@ -82,6 +85,9 @@ app.use('/api/campaigns', campaignRoutes);
 app.use('/api/track', trackingRoutes);
 
 
+// Proxy: browser → Node → internal Python AI agent (no public URL)
+// Must be mounted BEFORE adminRoutes so the more-specific path wins
+app.use('/api/admin/api-keys', adminApiKeysProxy);
 app.use('/api/admin', adminRoutes);
 app.use('/api/profiles', profileRoutes);
 app.use('/api/linkedin', linkedinRoutes);
@@ -138,6 +144,9 @@ app.use('/api/digilocker', digiLockerRoutes);
 
 import paymentRoutes from './routes/payments/paymentRoutes.js';
 app.use('/api/payment', paymentRoutes);
+
+import razorpayRoutes from './routes/payments/razorpayRoutes.js';
+app.use('/api/razorpay', razorpayRoutes);
 
 import videoRoutes from './routes/video/videoRoutes.js';
 app.use('/api/video', videoRoutes);

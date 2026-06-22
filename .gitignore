@@ -151,3 +151,6 @@ yarn.lock
 set-azure-env-*.ps1
 *.ps1.bak
 set-env.ps1
+*.egg-info/
+dist/
+build/

@@ -14,7 +14,7 @@ import whatsappRoutes from './src/routes/whatsappRoutes.js';
 import articleRoutes from './src/routes/articleRoutes.js';
 import wordpressRoutes from './src/routes/wordpressRoutes.js';
 
-// Load environment variables
+// Load environment variables from .env file
 dotenv.config();
 
 const __filename = fileURLToPath(import.meta.url);
@@ -779,6 +779,39 @@ app.post('/api/user/settings', async (req, res) => {
 
     } catch (error) {
         console.error('Error saving settings:', error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// Get User API Keys
+app.get('/api/user/api-keys', async (req, res) => {
+    try {
+        const authHeader = req.headers.authorization;
+        if (!authHeader?.startsWith("Bearer ")) {
+            return res.status(401).json({ error: "Unauthorized" });
+        }
+
+        const token = authHeader.replace("Bearer ", "").trim();
+
+        // Verify token and get user
+        const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+
+        if (authError || !user) {
+            return res.status(401).json({ error: "Invalid token" });
+        }
+
+        const { data, error } = await supabase
+            .from('api_keys')
+            .select('*')
+            .eq('user_id', user.id)
+            .order('created_at', { ascending: false });
+
+        if (error) throw error;
+
+        res.json({ success: true, keys: data || [] });
+
+    } catch (error) {
+        console.error('Error fetching user API keys:', error);
         res.status(500).json({ success: false, error: error.message });
     }
 });

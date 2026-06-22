@@ -20,7 +20,7 @@ import {
 const Navbar = () => {
     const [scrolled, setScrolled] = useState(false);
     const location = useLocation();
-    const { user, credits, signOut } = useAuth();
+    const { user, credits, isAdmin, signOut } = useAuth();
     const { theme, toggleTheme } = useTheme();
 
     useEffect(() => {
@@ -32,6 +32,7 @@ const Navbar = () => {
     const navLinks = [
         { name: 'Home',    path: '/',        icon: Home },
         { name: 'Agents',  path: '/agents',  icon: Users },
+        { name: 'Pricing', path: '/pricing', icon: Sparkles },
         { name: 'Blog',    path: '/blogs',   icon: FileText },
         { name: 'Contact', path: '/contact', icon: Mail },
     ];
@@ -99,12 +100,16 @@ const Navbar = () => {
                         {user ? (
                             <div className="flex items-center gap-3">
                                 {/* Credits badge */}
-                                <div className="bg-[#26CECE]/10 px-3 py-1.5 rounded-lg border border-[#26CECE]/20 flex items-center gap-2">
+                                <Link 
+                                    to={isAdmin ? "/admin/api-keys" : "/dashboard/api-keys"} 
+                                    className="bg-[#26CECE]/10 px-3 py-1.5 rounded-lg border border-[#26CECE]/20 flex items-center gap-2 hover:bg-[#26CECE]/20 transition-colors cursor-pointer"
+                                    title={isAdmin ? "Manage API Keys" : "View API Keys & Integrations"}
+                                >
                                     <Sparkles className="w-4 h-4 text-[#26CECE]" />
                                     <span className="text-sm font-semibold text-[#26CECE]">
-                                        {credits} Credits
+                                        {typeof credits === 'number' ? credits.toLocaleString() : credits} Credits
                                     </span>
-                                </div>
+                                </Link>
                                 {/* Avatar */}
                                 <div
                                     className="w-8 h-8 rounded-full flex items-center justify-center text-[#070707] font-bold text-xs shadow-md"

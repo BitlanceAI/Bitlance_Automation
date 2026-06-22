@@ -15,8 +15,15 @@ export default function AdminApiKeys() {
   const [label, setLabel] = useState('');
   const [generating, setGenerating] = useState(false);
   const [newKey, setNewKey] = useState(null);
+  const [visibleKeys, setVisibleKeys] = useState({});
 
-  const apiUrl = import.meta.env.VITE_PYTHON_API_URL || 'http://localhost:8001';
+  const toggleKeyVisibility = (id) => {
+    setVisibleKeys(prev => ({ ...prev, [id]: !prev[id] }));
+  };
+
+  // Calls go to Node.js backend which proxies internally to the Python AI agent.
+  // The Python service has no public URL (DigitalOcean internal_ports).
+  const apiUrl = import.meta.env.VITE_API_BASE_URL || (import.meta.env.PROD ? 'https://bitlance-app-97qhp.ondigitalocean.app' : 'http://localhost:3001');
 
   useEffect(() => {
     fetchKeys();
@@ -25,7 +32,7 @@ export default function AdminApiKeys() {
   const fetchKeys = async () => {
     if (!session?.access_token) return;
     try {
-      const response = await axios.get(`${apiUrl}/api/v1/admin/api-keys/list`, {
+      const response = await axios.get(`${apiUrl}/api/admin/api-keys/list`, {
         headers: { Authorization: `Bearer ${session.access_token}` }
       });
       setKeys(response.data.keys || []);
@@ -44,7 +51,7 @@ export default function AdminApiKeys() {
     setGenerating(true);
     setNewKey(null);
     try {
-      const response = await axios.post(`${apiUrl}/api/v1/admin/api-keys/create`, {
+      const response = await axios.post(`${apiUrl}/api/admin/api-keys/create`, {
         client_email: email,
         plan: plan,
         label: label
@@ -68,7 +75,7 @@ export default function AdminApiKeys() {
   const handleRevoke = async (keyId) => {
     if (!window.confirm("Are you sure you want to revoke this key?")) return;
     try {
-      await axios.post(`${apiUrl}/api/v1/admin/api-keys/revoke`, { key_id: keyId }, {
+      await axios.post(`${apiUrl}/api/admin/api-keys/revoke`, { key_id: keyId }, {
         headers: { Authorization: `Bearer ${session.access_token}` }
       });
       toast.success("Key revoked!");
@@ -125,6 +132,7 @@ export default function AdminApiKeys() {
                 >
                   <option value="starter">Starter (10/min)</option>
                   <option value="growth">Growth (30/min)</option>
+                  <option value="pro">Pro (45/min)</option>
                   <option value="agency">Agency (60/min)</option>
                   <option value="enterprise">Enterprise (120/min)</option>
                 </select>
@@ -144,7 +152,7 @@ export default function AdminApiKeys() {
               <div className="mt-6 bg-green-50 border border-green-200 rounded-md p-4">
                 <h3 className="text-sm font-bold text-green-800">Success! Key Generated.</h3>
                 <p className="text-sm text-green-700 mt-1 mb-2">
-                  Send this key to your client. You will not be able to see it again.
+                  Send this key to your client.
                 </p>
                 <code className="block w-full bg-white border border-green-300 rounded p-2 text-sm font-mono break-all text-gray-900">
                   {newKey}
@@ -178,8 +186,19 @@ export default function AdminApiKeys() {
                           </span>
                         )}
                       </div>
-                      <div className="mt-1 text-sm text-gray-500">
-                        Prefix: <code className="bg-gray-100 px-1 rounded">{k.prefix}...</code>
+                      <div className="mt-1 text-sm text-gray-500 flex items-center gap-2">
+                        <span>API Key:</span> 
+                        <code className="bg-gray-100 px-1 rounded break-all">
+                          {visibleKeys[k.id] ? k.api_key || k.prefix + '...' : k.prefix + '...'}
+                        </code>
+                        {k.api_key && (
+                          <button 
+                            onClick={() => toggleKeyVisibility(k.id)}
+                            className="text-teal-600 hover:text-teal-800 text-xs font-medium"
+                          >
+                            {visibleKeys[k.id] ? 'Hide' : 'Show'}
+                          </button>
+                        )}
                       </div>
                       <div className="mt-1 text-xs text-gray-400">
                         Created: {new Date(k.created_at).toLocaleDateString()}

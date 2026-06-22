@@ -1,5 +1,14 @@
 User-agent: *
 Allow: /
+Disallow: /home
+Disallow: /admin/
+Disallow: /settings/
+Disallow: /blog-manager/
+Disallow: /push/
+Disallow: /SocialDashboard
+Disallow: /esign/complete
+Disallow: /digilocker/complete
+Disallow: /payment/complete
 
 Sitemap: https://www.bitlancetechhub.com/sitemap.xml
 Sitemap: https://www.bitlancetechhub.com/blog-sitemap.xml

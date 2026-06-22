@@ -8,12 +8,14 @@ import Footer from './components/landing/Footer';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { WorkspaceProvider } from './context/WorkspaceContext';
 import AuthGuard from './components/auth/AuthGuard';
+import AdminGuard from './components/auth/AdminGuard';
 import { Toaster } from 'react-hot-toast';
 
 // ─── Lazy-loaded pages (route-level code splitting) ───────────────────────────
 // Public / Landing
 const LandingPage = lazy(() => import('./pages/landing/LandingPage'));
 const SeoLandingPage = lazy(() => import('./pages/landing/SeoLandingPage'));
+const AgentPricingSection = lazy(() => import('./components/landing/AgentPricingSection'));
 const QuizLandingPage = lazy(() => import('./pages/landing/QuizLandingPage'));
 const ThankYouPage = lazy(() => import('./pages/landing/ThankYouPage'));
 const PartnerPortal = lazy(() => import('./pages/PartnerPortal'));
@@ -52,6 +54,7 @@ const PublicArticlePage = lazy(() => import('./pages/blog/PublicArticlePage'));
 
 // Settings
 const SettingsPage = lazy(() => import('./pages/settings/SettingsPage'));
+const UserApiKeys = lazy(() => import('./pages/dashboard/UserApiKeys'));
 
 // Public pages
 const ContactPage = lazy(() => import('./pages/public/ContactPage'));
@@ -59,6 +62,7 @@ const PrivacyPolicy = lazy(() => import('./pages/public/PrivacyPolicy'));
 const TermsPage = lazy(() => import('./pages/public/TermsPage'));
 const TextGeneratorPage = lazy(() => import('./pages/public/TextGeneratorPage'));
 const EmailGeneratorPage = lazy(() => import('./pages/public/EmailGeneratorPage'));
+const NotFoundPage = lazy(() => import('./pages/public/NotFoundPage'));
 
 // Push notifications
 const PushNotificationPage = lazy(() => import('./pages/push/PushNotificationPage'));
@@ -180,6 +184,7 @@ function App() {
                 {/* Public Routes */}
                 <Route path="/" element={<RootRedirect />} />
                 <Route path="/seo" element={<SeoLandingPage />} />
+                <Route path="/pricing" element={<div className="pt-24 bg-white"><AgentPricingSection /></div>} />
                 <Route path="/privacy-policy" element={<PrivacyPolicy />} />
                 <Route path="/terms-policy" element={<TermsPage />} />
                 <Route path="/contact" element={<ContactPage />} />
@@ -273,39 +278,44 @@ function App() {
                     <SettingsPage />
                   </AuthGuard>
                 } />
-                <Route path="/admin" element={
-                  // TODO: Add AdminGuard
+                <Route path="/dashboard/api-keys" element={
                   <AuthGuard>
-                    <AdminDashboard />
+                    <UserApiKeys />
                   </AuthGuard>
+                } />
+                <Route path="/admin" element={
+                  <AdminGuard>
+                    <AdminDashboard />
+                  </AdminGuard>
                 } />
                 <Route path="/admin/api-keys" element={
-                  <AuthGuard>
+                  <AdminGuard>
                     <AdminApiKeys />
-                  </AuthGuard>
+                  </AdminGuard>
                 } />
                 <Route path="/admin/email-automation" element={
-                  <AuthGuard>
+                  <AdminGuard>
                     <EmailAutomationPage />
-                  </AuthGuard>
+                  </AdminGuard>
                 } />
                 <Route path="/admin/client/:id" element={
-                  <AuthGuard>
+                  <AdminGuard>
                     <ClientHistoryPage />
-                  </AuthGuard>
+                  </AdminGuard>
                 } />
                 <Route path="/admin/campaigns" element={
-                  <AuthGuard>
+                  <AdminGuard>
                     <CampaignManagerPage />
-                  </AuthGuard>
+                  </AdminGuard>
                 } />
                 <Route path="/admin/campaigns/new" element={
-                  <AuthGuard>
+                  <AdminGuard>
                     <CampaignWizard />
-                  </AuthGuard>
+                  </AdminGuard>
                 } />
 
                 <Route path="/apply" element={<QuizLandingPage />} />
+                <Route path="/apply/real-estate" element={<Navigate to="/apply" replace />} />
                 <Route path="/thank-you" element={<ThankYouPage />} />
 
                 {/* <Route path="/testimonial-demo" element={<TestimonialDemo />} /> */}
@@ -342,6 +352,9 @@ function App() {
                     <BlogEditorPage />
                   </AuthGuard>
                 } />
+
+                {/* Fallback Wildcard 404 Route */}
+                <Route path="*" element={<NotFoundPage />} />
               </Routes>
             </Suspense>
             {!isDashboard && location.pathname !== '/' && <Footer />}

@@ -159,8 +159,8 @@ const PublicArticlePage = () => {
                 <p className="text-lg text-gray-500 mb-8 font-medium uppercase tracking-widest" style={{ fontFamily: "'DM Mono', monospace" }}>
                     {error || 'Article not found'}
                 </p>
-                <Link 
-                    to="/blogs" 
+                <Link
+                    to="/blogs"
                     className="px-8 py-4 font-bold uppercase tracking-widest text-xs transition-all hover:bg-gray-100"
                     style={{ background: '#f9fafb', color: TEAL, border: '1px solid #e5e7eb', fontFamily: "'DM Mono', monospace" }}
                 >
@@ -173,6 +173,25 @@ const PublicArticlePage = () => {
     // Estimate reading time (200 words per minute)
     const wordCount = article.word_count || article.content?.split(/\s+/).length || 0;
     const readingTime = Math.ceil(wordCount / 200);
+
+    let formattedContent = article.content || '';
+    // Fix privacy error: convert absolute bitlancetechhub.com links to relative links
+    formattedContent = formattedContent.replace(/https?:\/\/(www\.)?bitlancetechhub\.com/gi, '');
+
+    // Extract footer for formal display
+    const footerRegex = /^(?:###\s*)?\*?\*?(?:author|written by|content attribution):\s*\*?\*?\s*(.*?)\s*\|\s*\*?\*?(?:reviewed by|fact-checked & reviewed by|authority & verification):\s*\*?\*?\s*(.*?)\s*\|\s*\*?\*?(?:last updated|updated):\s*\*?\*?\s*(.*)$/im;
+    const footerMatch = formattedContent.match(footerRegex);
+    let extractedFooter = null;
+
+    if (footerMatch) {
+        extractedFooter = {
+            author: footerMatch[1].replace(/\*|_|#/g, '').trim(),
+            reviewedBy: footerMatch[2].replace(/\*|_|#/g, '').trim(),
+            lastUpdated: footerMatch[3].replace(/\*|_|#/g, '').trim()
+        };
+        // Remove it from the markdown content
+        formattedContent = formattedContent.replace(footerRegex, '');
+    }
 
 
 
@@ -217,17 +236,17 @@ const PublicArticlePage = () => {
             {/* Header Image & Title */}
             <div className="bg-white border-b border-gray-200">
                 <div className="max-w-7xl mx-auto px-6 py-12 md:py-24 lg:px-8">
-                    <Link 
-                        to="/blogs" 
+                    <Link
+                        to="/blogs"
                         className="inline-flex items-center text-xs uppercase tracking-widest font-bold hover:translate-x-1 mb-10 transition-all"
                         style={{ color: TEAL, fontFamily: "'DM Mono', monospace" }}
                     >
-                        <ArrowLeft size={16} className="mr-2" /> 
+                        <ArrowLeft size={16} className="mr-2" />
                         CD /BLOGS
                     </Link>
 
-                    <h1 
-                        className="text-4xl md:text-5xl lg:text-6xl font-extrabold text-black mb-8 tracking-tighter uppercase leading-[1.1]" 
+                    <h1
+                        className="text-4xl md:text-5xl lg:text-6xl font-extrabold text-black mb-8 tracking-tighter uppercase leading-[1.1]"
                         style={{ fontFamily: "'Space Grotesk', sans-serif" }}
                     >
                         {article.seo_title || article.topic}
@@ -239,10 +258,10 @@ const PublicArticlePage = () => {
                                 const profileImg = article.author?.profile_image || article.author_details?.profile_image || article.author_image_url;
                                 if (profileImg) {
                                     return (
-                                        <img 
-                                            src={profileImg} 
-                                            alt={article.author_name || 'Author'} 
-                                            className="w-8 h-8 rounded-full object-cover border-2 border-[#26CECE]" 
+                                        <img
+                                            src={profileImg}
+                                            alt={article.author_name || 'Author'}
+                                            className="w-8 h-8 rounded-full object-cover border-2 border-[#26CECE]"
                                             onError={(e) => { e.target.style.display = 'none'; e.target.nextElementSibling.style.display = 'flex'; }}
                                         />
                                     );
@@ -271,7 +290,7 @@ const PublicArticlePage = () => {
                             {article.estimated_read_time || readingTime} MIN READ
                         </span>
                         {article.category && (
-                            <span 
+                            <span
                                 className="px-2 py-1"
                                 style={{ background: `${TEAL}10`, color: TEAL, border: `1px solid ${TEAL}30` }}
                             >
@@ -307,22 +326,41 @@ const PublicArticlePage = () => {
                         className="prose prose-lg max-w-none prose-headings:font-extrabold prose-headings:text-black prose-headings:uppercase prose-headings:tracking-tight prose-a:no-underline hover:prose-a:underline prose-img:border prose-img:border-gray-200 prose-img:p-1 prose-img:bg-gray-50 text-gray-700 leading-relaxed marker:text-[#26CECE] prose-table:border-collapse prose-th:border prose-th:border-gray-300 prose-th:bg-gray-100 prose-th:p-3 prose-td:border prose-td:border-gray-300 prose-td:p-3"
                         style={{ fontFamily: "'Space Grotesk', sans-serif" }}
                     >
-                        <ReactMarkdown 
+                        <ReactMarkdown
                             remarkPlugins={[remarkGfm]}
                             rehypePlugins={[rehypeRaw]}
                         >
-                            {article.content}
+                            {formattedContent}
                         </ReactMarkdown>
                     </div>
-                    
+
                     {/* Inject teal color for prose links manually or via custom tag class */}
-                    <style dangerouslySetInnerHTML={{__html: `
+                    <style dangerouslySetInnerHTML={{
+                        __html: `
                         .prose a { color: ${TEAL}; font-weight: bold; }
                         .prose strong { color: #000000; }
                         .prose blockquote { border-left-color: ${TEAL}; background: #f9fafb; padding: 1rem; color: #4b5563; }
                         .prose code { color: ${TEAL}; background: #f9fafb; padding: 0.2rem 0.4rem; border: 1px solid #e5e7eb; }
                         .prose pre { background: #ffffff; border: 1px solid #e5e7eb; }
                     `}} />
+
+                    {/* Formal Extracted Footer */}
+                    {extractedFooter && (
+                        <div className="mt-16 p-8 bg-slate-50 border-l-4 border-[#26CECE] shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-4 text-[12px] font-medium text-slate-600 font-mono">
+                            <div className="flex items-center gap-3">
+                                <span className="text-slate-400">AUTHOR:</span>
+                                <span className="text-slate-900 font-bold uppercase">{extractedFooter.author}</span>
+                            </div>
+                            <div className="flex items-center gap-3">
+                                <span className="text-slate-400">REVIEWED BY:</span>
+                                <span className="text-slate-900 font-bold uppercase">{extractedFooter.reviewedBy}</span>
+                            </div>
+                            <div className="flex items-center gap-3">
+                                <span className="text-slate-400">UPDATED:</span>
+                                <span className="text-slate-900 uppercase">{extractedFooter.lastUpdated}</span>
+                            </div>
+                        </div>
+                    )}
 
                     {/* Tags Section */}
                     {article.tags && article.tags.length > 0 && (
@@ -345,22 +383,22 @@ const PublicArticlePage = () => {
 
                     {/* CTA Section (Book a Demo) Brutalist */}
                     <div className="mt-16 p-8 md:p-12 relative overflow-hidden flex flex-col items-start gap-8 group"
-                         style={{ background: TEAL, border: `2px solid #000`, color: '#000', fontFamily: "'Space Grotesk', sans-serif" }}
+                        style={{ background: TEAL, border: `2px solid #000`, color: '#000', fontFamily: "'Space Grotesk', sans-serif" }}
                     >
                         {/* Abstract Decor */}
                         <div className="absolute -right-20 -top-20 opacity-10 pointer-events-none">
                             <span className="text-[200px] leading-none font-black text-black">/&gt;</span>
                         </div>
-                        
+
                         <div className="relative z-10">
                             <h3 className="text-3xl md:text-5xl font-black uppercase tracking-tighter mb-4 text-black">
-                                Automate your <br/>workflow
+                                Automate your <br />workflow
                             </h3>
                             <p className="text-black/80 text-lg md:text-xl font-medium max-w-xl leading-relaxed">
                                 Deploy AI agents today. Let's schedule a deep dive into the architecture and operations.
                             </p>
                         </div>
-                        
+
                         <Link
                             to="/apply"
                             onClick={() => trackDemoClick('blog_article_cta')}
