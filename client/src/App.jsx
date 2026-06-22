@@ -16,7 +16,6 @@ import { Toaster } from 'react-hot-toast';
 const LandingPage = lazy(() => import('./pages/landing/LandingPage'));
 const SeoLandingPage = lazy(() => import('./pages/landing/SeoLandingPage'));
 const AgentPricingSection = lazy(() => import('./components/landing/AgentPricingSection'));
-const QuizLandingPage = lazy(() => import('./pages/landing/QuizLandingPage'));
 const ThankYouPage = lazy(() => import('./pages/landing/ThankYouPage'));
 const PartnerPortal = lazy(() => import('./pages/PartnerPortal'));
 const PartnerTestLab = lazy(() => import('./pages/PartnerTestLab'));
@@ -172,7 +171,7 @@ function App() {
       <AuthProvider>
         <WorkspaceProvider>
           <Toaster position="top-right" reverseOrder={false} />
-          <div className={isDashboard ? 'bg-gray-50 min-h-screen transition-colors duration-300' : 'bg-gray-50 min-h-screen transition-colors duration-300 pb-20 md:pb-0'}>
+          <div className={isDashboard ? 'min-h-screen transition-colors duration-300' : 'min-h-screen transition-colors duration-300 pb-20 md:pb-0'}>
 
             {/* Temporary Debug Banner
           <div className="fixed top-0 left-0 bg-red-500 text-white z-[100] text-xs p-1">
@@ -185,7 +184,7 @@ function App() {
                 {/* Public Routes */}
                 <Route path="/" element={<RootRedirect />} />
                 <Route path="/seo" element={<SeoLandingPage />} />
-                <Route path="/pricing" element={<div className="pt-24 bg-white"><AgentPricingSection /></div>} />
+                <Route path="/pricing" element={<AgentPricingSection />} />
                 <Route path="/privacy-policy" element={<PrivacyPolicy />} />
                 <Route path="/terms-policy" element={<TermsPage />} />
                 <Route path="/contact" element={<ContactPage />} />
@@ -311,8 +310,6 @@ function App() {
                   </AdminGuard>
                 } />
 
-                <Route path="/apply" element={<QuizLandingPage />} />
-                <Route path="/apply/real-estate" element={<Navigate to="/apply" replace />} />
                 <Route path="/thank-you" element={<ThankYouPage />} />
 
                 {/* <Route path="/testimonial-demo" element={<TestimonialDemo />} /> */}

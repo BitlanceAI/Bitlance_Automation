@@ -8,7 +8,7 @@ const TEAL = '#26CECE';
 
 const UseCasesSection = () => {
     return (
-        <section className="py-12 relative overflow-hidden bg-transparent" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+        <section className="py-12 relative overflow-hidden bg-teal-800" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
             <ScrollReveal className="max-w-7xl mx-auto px-6">
                 <div className="text-center mb-16">
                     <motion.h2
@@ -16,7 +16,7 @@ const UseCasesSection = () => {
                         whileInView={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.5 }}
                         viewport={{ once: true }}
-                        className="text-3xl md:text-5xl font-black mb-6 tracking-tight text-slate-900 dark:text-white"
+                        className="text-3xl md:text-5xl font-black mb-6 tracking-tight text-white"
                     >
                         Built for businesses that run on conversations
                     </motion.h2>
@@ -25,7 +25,7 @@ const UseCasesSection = () => {
                         whileInView={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.5, delay: 0.2 }}
                         viewport={{ once: true }}
-                        className="text-lg font-medium text-slate-600 dark:text-white/60 mb-2"
+                        className="text-lg font-medium text-teal-100 mb-2"
                     >
                         Perfect if you get enquiries daily and can't afford to miss them.
                     </motion.p>
@@ -41,8 +41,7 @@ const UseCasesSection = () => {
                         <TiltCard key={idx} className="h-full">
                             <div
                                 className="p-8 h-full transition-all group flex flex-col rounded-2xl border
-                                    bg-white border-slate-200/80 shadow-sm hover:border-teal-400
-                                    dark:bg-white/[0.04] dark:border-white/[0.07] dark:hover:border-[#26CECE50]"
+                                    bg-white/5 border-white/10 shadow-xl hover:border-teal-400"
                             >
                                 <div
                                     className="p-3 w-fit mb-6 rounded-2xl transition-transform group-hover:scale-110"
@@ -54,8 +53,8 @@ const UseCasesSection = () => {
                                 >
                                     <card.icon size={24} />
                                 </div>
-                                <h3 className="text-xl font-black mb-3 tracking-tight text-slate-900 dark:text-white">{card.title}</h3>
-                                <p className="font-medium text-sm leading-relaxed text-slate-600 dark:text-white/60">
+                                <h3 className="text-xl font-black mb-3 tracking-tight text-white">{card.title}</h3>
+                                <p className="font-medium text-sm leading-relaxed text-teal-50/90">
                                     {card.desc}
                                 </p>
                             </div>
@@ -90,7 +89,7 @@ const UseCasesSection = () => {
                             <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
                         </Link>
 
-                        <div className="mt-6 flex items-center justify-center gap-4 text-slate-400 dark:text-slate-600"
+                        <div className="mt-6 flex items-center justify-center gap-4 text-teal-200/60"
                             style={{ fontFamily: "'DM Mono', monospace" }}>
                             <span className="w-8 h-px bg-current" />
                             <span className="text-[10px] font-extrabold uppercase tracking-[0.2em]">Built For High Performance</span>

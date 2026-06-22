@@ -69,8 +69,7 @@ const StatCard = ({ delay, value, symbol, text, type, direction='up', start=0, c
             initial={{ opacity:0, y:20 }} whileInView={{ opacity:1, y:0 }}
             transition={{ duration:0.45, delay }} viewport={{ once:true }}
             className="group relative p-7 rounded-2xl flex flex-col items-center justify-center gap-2 overflow-hidden transition-all duration-300
-                bg-white border border-slate-200 shadow-sm hover:border-teal-300
-                dark:bg-white/[0.04] dark:border-white/[0.08] dark:hover:border-[#26CECE40]"
+                bg-white/5 border border-white/10 hover:border-teal-400"
             style={{ rotateY:rY, rotateX:rX, transformStyle:'preserve-3d' }}
             onMouseEnter={e => (e.currentTarget.style.borderColor = `${T}40`)}
         >
@@ -86,12 +85,12 @@ const StatCard = ({ delay, value, symbol, text, type, direction='up', start=0, c
             </div>
 
             <p style={{ transform:'translateZ(16px)', fontFamily:"'Space Grotesk',sans-serif" }}
-                className="relative z-10 font-medium text-center text-sm max-w-[180px] leading-relaxed text-slate-700 dark:text-white/75">
+                className="relative z-10 font-medium text-center text-sm max-w-[180px] leading-relaxed text-teal-50/90">
                 {text}
             </p>
             {contrast && (
                 <p style={{ transform:'translateZ(12px)', fontFamily:"'DM Mono',monospace", fontSize:10, letterSpacing:'0.08em' }}
-                    className="relative z-10 text-center mt-1 max-w-[180px] text-slate-400 dark:text-white/40">
+                    className="relative z-10 text-center mt-1 max-w-[180px] text-teal-200/60">
                     {contrast}
                 </p>
             )}
@@ -100,7 +99,7 @@ const StatCard = ({ delay, value, symbol, text, type, direction='up', start=0, c
 };
 
 const SocialProofSection = () => (
-    <section className="py-12 bg-transparent relative overflow-hidden">
+    <section className="py-12 bg-teal-900 relative overflow-hidden">
         {/* Single teal glow */}
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[300px] rounded-full blur-[120px] pointer-events-none"
             style={{ background:`${T}0A` }} />
@@ -114,32 +113,55 @@ const SocialProofSection = () => (
                 <motion.h2
                     initial={{ opacity:0, y:20 }} whileInView={{ opacity:1, y:0 }}
                     transition={{ duration:0.45 }} viewport={{ once:true }}
-                    className="mt-4 text-3xl md:text-5xl font-black leading-tight text-slate-900 dark:text-white"
+                    className="mt-4 text-3xl md:text-5xl font-black leading-tight text-white"
                     style={{ fontFamily:"'Space Grotesk',sans-serif", letterSpacing:'-0.03em' }}
                 >
-                    Teams closing <span style={{ color:T }}>more deals</span><br />with less effort
+                    Real businesses. <br /><span style={{ color:T }}>Real numbers.</span>
                 </motion.h2>
                 <div className="mt-6 rounded-full" style={{ width:48, height:2, background:T }} />
+                <motion.p
+                    initial={{ opacity:0, y:16 }} whileInView={{ opacity:1, y:0 }}
+                    transition={{ duration:0.45, delay:0.15 }} viewport={{ once:true }}
+                    className="mt-6 text-base leading-relaxed text-teal-100"
+                >
+                    Don't take our word for it — here's what happened when these teams stopped doing it manually.
+                </motion.p>
             </div>
 
             {/* Stat cards */}
-            <div className="grid md:grid-cols-3 gap-6 mb-24 max-w-6xl mx-auto perspective-1000">
-                <StatCard delay={0}   value={40} symbol="+" text="more enquiries handled without adding staff."   contrast="vs. industry avg of +8%"          type="chart" />
-                <StatCard delay={0.1} value={2}  symbol="×" text="increase in booked appointments from same ad spend." contrast="vs. 1.3× with manual follow-up"   type="multiplier" />
-                <StatCard delay={0.2} value={10} symbol="<" text="seconds response time."                         contrast="vs. 8-hour avg human response" start={60} direction="down" type="time" />
+            <div className="grid md:grid-cols-3 gap-6 mb-16 max-w-6xl mx-auto perspective-1000">
+                <StatCard delay={0}   value={40} symbol="+" text="more enquiries handled without adding a single staff member."   type="chart" />
+                <StatCard delay={0.1} value={2}  symbol="×" text="more booked appointments from the exact same ad spend." type="multiplier" />
+                <StatCard delay={0.2} value={10} symbol="<" text="seconds response time — vs. the 8-hour industry avg." start={60} direction="down" type="time" />
+            </div>
+
+            {/* Testimonials */}
+            <div className="grid md:grid-cols-2 gap-6 mb-24 max-w-6xl mx-auto">
+                {[
+                    "The AI Voice agent has changed lots of missed calls. Our staff finally have time to focus on what actually moves the needle.",
+                    "We used to miss 20-30% of calls at peak time. Now every lead is answered and pre-qualified before it reaches our sales team. Game changer."
+                ].map((quote, i) => (
+                    <motion.div key={i}
+                        initial={{ opacity:0, y:20 }} whileInView={{ opacity:1, y:0 }}
+                        transition={{ duration:0.45, delay: 0.3 + (i*0.1) }} viewport={{ once:true }}
+                        className="p-8 rounded-2xl bg-white/5 border border-white/10 flex flex-col justify-between"
+                    >
+                        <p className="text-lg italic text-teal-50 mb-6 leading-relaxed">"{quote}"</p>
+                    </motion.div>
+                ))}
             </div>
 
             {/* Trust label */}
-            <div className="text-center mb-10 text-slate-500 dark:text-white/40" style={{ fontFamily:"'DM Mono',monospace", fontSize:10, letterSpacing:'0.2em', textTransform:'uppercase' }}>
+            <div className="text-center mb-10 text-teal-100" style={{ fontFamily:"'DM Mono',monospace", fontSize:10, letterSpacing:'0.2em', textTransform:'uppercase' }}>
                 Trusted by teams in real estate · healthcare · education · local services
             </div>
 
             {/* Logo marquee */}
             <div className="relative flex overflow-hidden">
                 <div className="absolute left-0 top-0 bottom-0 w-24 z-10 pointer-events-none
-                    bg-gradient-to-r from-white dark:from-[#050508] to-transparent" />
+                    bg-gradient-to-r from-teal-900 to-transparent" />
                 <div className="absolute right-0 top-0 bottom-0 w-24 z-10 pointer-events-none
-                    bg-gradient-to-l from-white dark:from-[#050508] to-transparent" />
+                    bg-gradient-to-l from-teal-900 to-transparent" />
 
                 <motion.div
                     className="flex gap-16 items-center whitespace-nowrap"
@@ -157,7 +179,7 @@ const SocialProofSection = () => (
                                 { icon:Award,      name:'TopTier' },
                                 { icon:TrendingUp, name:'GrowthX' },
                             ].map(({ icon:Icon, name }) => (
-                                <div key={name} className="flex items-center gap-2 opacity-60 hover:opacity-100 transition-opacity text-slate-700 dark:text-white/70"
+                                <div key={name} className="flex items-center gap-2 opacity-60 hover:opacity-100 transition-opacity text-teal-50"
                                     style={{ fontFamily:"'Space Grotesk',sans-serif", fontWeight:700, fontSize:18 }}>
                                     <Icon size={20} style={{ color:T }} />
                                     {name}

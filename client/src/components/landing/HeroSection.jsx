@@ -25,7 +25,6 @@ export default function HeroSection({ onOpenBooking }) {
       setFormStep("success")
       setTimeout(() => {
           handleClose()
-          navigate('/apply') // Navigate to onboarding/booking
       }, 2000)
     }, 1500)
   }
@@ -42,33 +41,18 @@ export default function HeroSection({ onOpenBooking }) {
 
   return (
     <>
-      <header className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden bg-white dark:bg-[#050508] px-4 sm:px-6 py-12 sm:py-20 transition-colors duration-300 w-full">
+      <header className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden bg-teal-700 px-4 sm:px-6 py-12 sm:py-20 transition-colors duration-300 w-full">
         
-        {/* GodRays Background - Adjusted to be subtle in both modes */}
-        <div className="absolute inset-0 pointer-events-none">
-          <GodRays
-            colorBack="#00000000"
-            // Using slightly transparent teals/whites to match Bitlance branding
-            colors={["#26cece40", "#e4e4e740", "#26cece20", "#1aa8a840"]}
-            colorBloom="#26cece"
-            offsetX={0.85}
-            offsetY={-1}
-            intensity={0.5}
-            spotty={0.45}
-            midSize={10}
-            midIntensity={0}
-            density={0.38}
-            bloom={0.3}
-            speed={0.5}
-            scale={1.6}
-            frame={3332042.8159981333}
-            style={{
-              height: "100%",
-              width: "100%",
-              position: "absolute",
-              top: 0,
-              left: 0,
-            }}
+        {/* Mesh Gradient Background */}
+        <div className="absolute inset-0 pointer-events-none z-0">
+          <MeshGradient
+            speed={0.6}
+            colors={["#26CECE", "#1AA8A8", "#0d5c5c", "#178282"]}
+            distortion={0.8}
+            swirl={0.1}
+            grainMixer={0.15}
+            grainOverlay={0}
+            style={{ height: "100%", width: "100%" }}
           />
         </div>
 
@@ -77,22 +61,22 @@ export default function HeroSection({ onOpenBooking }) {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
-            className="inline-flex items-center rounded-full border border-teal-200 dark:border-teal-800/30 bg-teal-50/50 dark:bg-teal-900/10 px-4 py-1.5 text-sm font-medium text-teal-800 dark:text-teal-300 backdrop-blur-sm"
+            className="inline-flex items-center rounded-full border border-teal-200/30 bg-teal-900/30 px-4 py-1.5 text-sm font-medium text-teal-50 backdrop-blur-md"
           >
             <span className="flex h-2 w-2 rounded-full bg-teal-500 mr-2 animate-pulse"></span>
-            New: GEO AI Agent v2 — Auto-Publishing Live
+            AI Agents that sell while you sleep.
           </motion.div>
 
           <motion.h1 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.1 }}
-            className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black tracking-tight text-zinc-900 dark:text-zinc-50 max-w-4xl"
+            className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black tracking-tight text-white max-w-4xl drop-shadow-lg"
             style={{ fontFamily: "'Space Grotesk', sans-serif" }}
           >
-            Automate your business with <br className="hidden sm:block" />
-            <span className="text-transparent bg-clip-text bg-gradient-to-br from-[#26CECE] to-[#1AA8A8] dark:from-[#26CECE] dark:to-[#35DFDF]">
-              AI Agents
+            Your business loses money every minute it goes <br className="hidden sm:block" />
+            <span className="text-transparent bg-clip-text bg-gradient-to-br from-teal-200 to-white">
+              without answering.
             </span>
           </motion.h1>
 
@@ -100,20 +84,23 @@ export default function HeroSection({ onOpenBooking }) {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.2 }}
-            className="text-base sm:text-lg md:text-xl text-zinc-600 dark:text-zinc-400 max-w-2xl px-4 leading-relaxed font-medium"
+            className="text-base sm:text-lg md:text-xl text-teal-50/90 max-w-2xl px-4 leading-relaxed font-medium drop-shadow-md"
           >
-            Stop wrestling with manual tasks. Bitlance deploys autonomous AI Voice Bots and WhatsApp Agents that respond instantly, qualify leads, and book appointments 24/7.
+            Bitlance brings AI Voice Bots and WhatsApp Agents that respond in 0.4 seconds, qualify your leads, and book appointments — 24/7, with zero human involvement.
           </motion.p>
 
           <AnimatePresence initial={false}>
             {!isExpanded && (
-              <motion.div className="inline-block relative mt-4">
+              <motion.div className="inline-block relative mt-8 group">
+                {/* Glowing drop shadow behind button */}
+                <div className="absolute -inset-1 bg-white/20 rounded-[100px] blur-md opacity-30 group-hover:opacity-60 transition duration-500"></div>
+                
                 {/* The expanding background element */}
                 <motion.div
                   style={{ borderRadius: "100px" }}
                   layout
                   layoutId="cta-card"
-                  className="absolute inset-0 bg-[#26CECE] dark:bg-[#26CECE]"
+                  className="absolute inset-0 bg-white shadow-[0_8px_30px_rgb(0,0,0,0.1)]"
                 />
                 <motion.button
                   initial={{ opacity: 0, scale: 0.9 }}
@@ -122,15 +109,30 @@ export default function HeroSection({ onOpenBooking }) {
                   exit={{ opacity: 0, scale: 0.8 }}
                   layout={false}
                   onClick={handleExpand}
-                  className="relative flex items-center gap-2 h-14 px-8 py-3 text-lg font-bold text-black tracking-wide hover:opacity-90 transition-opacity"
+                  className="relative flex items-center gap-3 h-16 px-10 py-4 text-lg font-bold text-teal-800 tracking-wide hover:scale-[1.02] active:scale-[0.98] transition-all"
                   style={{ fontFamily: "'Space Grotesk', sans-serif" }}
                 >
-                  Get Free AI Audit
-                  <ArrowRight className="w-5 h-5" />
+                  Get My Free Audit
+                  <ArrowRight className="w-6 h-6 group-hover:translate-x-1 transition-transform" />
                 </motion.button>
               </motion.div>
             )}
           </AnimatePresence>
+
+          {/* Secondary CTAs */}
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.4 }}
+            className="mt-6 flex flex-col items-center gap-4 text-sm"
+          >
+            <p className="text-teal-100/70" style={{ fontFamily: "'DM Mono', monospace" }}>
+              or just curious about the platform? - "Check out out of the box"
+            </p>
+            <p className="text-white font-medium">
+              Or chat with us on WhatsApp — we respond in under 30 seconds.
+            </p>
+          </motion.div>
         </div>
       </header>
 
@@ -226,11 +228,11 @@ export default function HeroSection({ onOpenBooking }) {
                       </blockquote>
                       <figcaption className="flex items-center gap-4">
                         <div className="h-12 w-12 rounded-full bg-gradient-to-tr from-teal-400 to-blue-500 flex items-center justify-center text-lg font-bold text-white">
-                          R
+                          A
                         </div>
                         <div>
-                          <div className="font-semibold">Rahul M.</div>
-                          <div className="text-sm text-teal-100">Director, Elite Clinics</div>
+                          <div className="font-semibold">Alok Kumar</div>
+                          <div className="text-sm text-teal-100">Lotlite Real Estate</div>
                         </div>
                       </figcaption>
                     </figure>

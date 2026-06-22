@@ -112,7 +112,7 @@ const LandingPage = () => {
     if (user) return <Navigate to="/home" replace />;
 
     const handleOpenBooking = () => {
-        navigate('/apply');
+        navigate('/contact');
     };
 
 

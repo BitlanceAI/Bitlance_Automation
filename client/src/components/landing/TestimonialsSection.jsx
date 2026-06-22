@@ -20,7 +20,7 @@ const testimonials = [
 const doubled = [...testimonials, ...testimonials];
 
 const TestimonialsSection = () => (
-    <section className="py-12 relative overflow-hidden bg-white dark:bg-transparent">
+    <section className="py-12 relative overflow-hidden bg-teal-950">
         {/* Teal accent line at top */}
         <div className="absolute top-0 left-0 right-0 h-px pointer-events-none"
             style={{ background: `linear-gradient(90deg, transparent, ${T}, transparent)` }} />
@@ -36,7 +36,7 @@ const TestimonialsSection = () => (
             <motion.h2
                 initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.45 }} viewport={{ once: true }}
-                className="mt-4 text-3xl md:text-5xl font-extrabold leading-tight text-slate-900 dark:text-white"
+                className="mt-4 text-3xl md:text-5xl font-extrabold leading-tight text-white"
                 style={{ fontFamily: "'Space Grotesk',sans-serif", letterSpacing: '-0.025em' }}
             >
                 Trusted by forward-thinking<br />
@@ -49,9 +49,9 @@ const TestimonialsSection = () => (
         <div className="w-full overflow-hidden relative">
             {/* Edge fades — theme-aware */}
             <div className="absolute top-0 bottom-0 left-0 w-32 z-10 pointer-events-none
-                bg-gradient-to-r from-white dark:from-[#050508] to-transparent" />
+                bg-gradient-to-r from-teal-950 to-transparent" />
             <div className="absolute top-0 bottom-0 right-0 w-32 z-10 pointer-events-none
-                bg-gradient-to-l from-white dark:from-[#050508] to-transparent" />
+                bg-gradient-to-l from-teal-950 to-transparent" />
 
             <motion.div
                 className="flex gap-5 w-max py-6 pr-5"
@@ -62,12 +62,11 @@ const TestimonialsSection = () => (
                     <div
                         key={i}
                         className="w-[300px] md:w-[400px] flex flex-col shrink-0 gap-5 rounded-2xl p-6 transition-all duration-300
-                            bg-teal-50/60 border border-teal-100 hover:border-teal-300
-                            dark:bg-white/[0.04] dark:border-white/[0.08] dark:hover:border-[#26CECE50]"
+                            bg-white/5 border border-white/10 hover:border-teal-400"
                         style={{ boxShadow: '0 2px 16px rgba(38,206,206,0.05)' }}
                     >
                         <Quote size={24} style={{ color: `${T}55` }} />
-                        <p className="leading-relaxed text-sm italic flex-grow text-slate-700 dark:text-white/75">
+                        <p className="leading-relaxed text-sm italic flex-grow text-teal-50/90">
                             "{t.description}"
                         </p>
                         <div className="flex items-center gap-3 mt-auto">
@@ -76,9 +75,9 @@ const TestimonialsSection = () => (
                                 className="w-10 h-10 rounded-full object-cover flex-shrink-0"
                                 style={{ border: `2px solid ${T}40` }} />
                             <div>
-                                <h4 className="font-extrabold text-sm text-slate-900 dark:text-white"
+                                <h4 className="font-extrabold text-sm text-white"
                                     style={{ fontFamily: "'Space Grotesk',sans-serif" }}>{t.name}</h4>
-                                <p className="text-xs mt-0.5" style={{ color: '#1B8E8E', fontFamily: "'DM Mono',monospace" }}>
+                                <p className="text-xs mt-0.5 text-teal-300" style={{ fontFamily: "'DM Mono',monospace" }}>
                                     {t.designation}
                                 </p>
                             </div>

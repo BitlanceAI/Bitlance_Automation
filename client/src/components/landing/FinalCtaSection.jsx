@@ -13,7 +13,7 @@ const guarantees = [
 ];
 
 const FinalCtaSection = ({ onOpenBooking }) => (
-    <section className="py-20 relative overflow-hidden">
+    <section className="py-20 bg-teal-900 relative overflow-hidden">
 
         {/* Background glows */}
         <div className="absolute inset-0 pointer-events-none">
@@ -33,8 +33,7 @@ const FinalCtaSection = ({ onOpenBooking }) => (
 
             {/* Main card */}
             <div className="rounded-3xl overflow-hidden
-                bg-white border border-slate-200/80 shadow-[0_24px_80px_rgba(0,0,0,0.08)]
-                dark:bg-white/[0.04] dark:border-white/[0.08] dark:shadow-[0_24px_80px_rgba(0,0,0,0.4)]"
+                bg-white/5 border border-white/10 shadow-[0_24px_80px_rgba(0,0,0,0.4)]"
                 style={{ backdropFilter: 'blur(24px)', WebkitBackdropFilter: 'blur(24px)' }}
             >
                 {/* Top teal accent bar */}
@@ -44,8 +43,7 @@ const FinalCtaSection = ({ onOpenBooking }) => (
 
                     {/* Badge */}
                     <div className="inline-flex items-center gap-2 px-4 py-2 rounded-3xl mb-8
-                        bg-teal-50 border border-teal-200/80 text-teal-700
-                        dark:bg-white/[0.06] dark:border-white/[0.1] dark:text-teal-300"
+                        bg-white/[0.06] border border-white/[0.1] text-teal-300"
                         style={{ fontFamily: "'DM Mono',monospace", fontSize: 10, letterSpacing: '0.16em', textTransform: 'uppercase', fontWeight: 700 }}
                     >
                         <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: T }} />
@@ -53,12 +51,12 @@ const FinalCtaSection = ({ onOpenBooking }) => (
                     </div>
 
                     {/* Headline */}
-                    <h2 className="text-3xl md:text-5xl font-black leading-tight mb-6
-                        text-slate-900 dark:text-white"
+                    <h2 className="text-3xl md:text-4xl lg:text-5xl font-black leading-tight mb-6
+                        text-white"
                         style={{ fontFamily: "'Space Grotesk',sans-serif", letterSpacing: '-0.03em' }}
                     >
-                        Ready to Close More Deals{' '}
-                        <span className="block mt-1" style={{ color: T }}>on Autopilot?</span>
+                        Every lead that goes unanswered tonight is revenue{' '}
+                        <span className="block mt-1" style={{ color: T }}>someone else collects tomorrow.</span>
                     </h2>
 
                     {/* Divider */}
@@ -66,11 +64,10 @@ const FinalCtaSection = ({ onOpenBooking }) => (
 
                     {/* Subtext */}
                     <p className="text-base md:text-lg leading-relaxed max-w-2xl mx-auto mb-12
-                        text-slate-500 dark:text-white/55"
+                        text-teal-50/70"
                     >
-                        Every lead that goes unanswered is revenue someone else is collecting.
-                        In 15 minutes we'll show you exactly how many deals you're leaving on the table —
-                        and how AI fixes it, starting this week.
+                        In a free 15-minute audit, we'll show you exactly how many deals you're leaving on the table —
+                        and have your AI agent live within 48 hours.
                     </p>
 
                     {/* Guarantee chips */}
@@ -78,8 +75,7 @@ const FinalCtaSection = ({ onOpenBooking }) => (
                         {guarantees.map(({ icon: Icon, text }) => (
                             <div key={text}
                                 className="inline-flex items-center gap-2 px-4 py-2 rounded-2xl text-xs font-semibold
-                                    bg-slate-100 border border-slate-200/80 text-slate-600
-                                    dark:bg-white/[0.05] dark:border-white/[0.09] dark:text-white/65"
+                                    bg-white/[0.05] border border-white/[0.09] text-white/65"
                             >
                                 <Icon size={13} style={{ color: T }} />
                                 {text}
@@ -106,29 +102,33 @@ const FinalCtaSection = ({ onOpenBooking }) => (
                             boxShadow: `0 16px 48px rgba(38,206,206,0.32), 0 4px 12px rgba(0,0,0,0.08)`,
                         }}
                     >
-                        Get My Free AI Audit
+                        Get My Free Audit
                         <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
                     </motion.button>
 
+                    {/* Text under button */}
+                    <div className="mt-6 flex flex-col items-center gap-3">
+                        <p className="text-sm font-medium text-white/80">
+                            No commitment. No credit card. Just a straight conversation about your business.
+                        </p>
+                    </div>
+
                     {/* WhatsApp fallback */}
                     <div className="mt-8 flex flex-col items-center gap-3">
+                        <p className="text-sm text-teal-100/70" style={{ fontFamily: "'DM Mono', monospace" }}>
+                            Still not sure? See it in action <ArrowRight size={14} className="inline ml-1" />
+                        </p>
                         <a
                             href="https://wa.me/917030951331"
                             target="_blank"
                             rel="noopener noreferrer"
                             className="inline-flex items-center gap-2 px-5 py-2.5 rounded-2xl text-sm font-semibold
                                 transition-all duration-200 hover:scale-[1.02]
-                                text-slate-600 bg-slate-100 border border-slate-200/80 hover:border-teal-300 hover:text-teal-600
-                                dark:text-white/60 dark:bg-white/[0.05] dark:border-white/[0.09] dark:hover:text-teal-400 dark:hover:border-teal-500/40"
+                                text-white/60 bg-white/[0.05] border border-white/[0.09] hover:text-teal-400 hover:border-teal-500/40 mt-2"
                         >
                             <MessageCircle size={15} style={{ color: '#25D366' }} />
-                            Prefer WhatsApp? Chat with us directly
+                            Chat on WhatsApp
                         </a>
-
-                        <p className="text-xs text-slate-400 dark:text-white/30"
-                            style={{ fontFamily: "'DM Mono',monospace", letterSpacing: '0.06em' }}>
-                            No commitment · Free consultation · Results in 48h
-                        </p>
                     </div>
                 </div>
             </div>
