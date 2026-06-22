@@ -20,13 +20,13 @@ const AgentCard = ({
                 onClick && onClick(e);
             }}
             className={`
-        group relative rounded-[2px] 
+        group relative rounded-[24px] 
         transition-all duration-300 ease-in-out
         p-5 flex flex-col h-full
         border
         ${status === 'Coming Soon' 
-            ? 'bg-gray-100 border-gray-200 opacity-70 cursor-not-allowed' 
-            : 'bg-white border-gray-200 hover:border-gray-300 hover:-translate-y-1 hover:shadow-[0_2px_16px_0_rgba(0,0,0,0.4)] cursor-pointer'
+            ? 'bg-black/40 border-white/5 opacity-70 cursor-not-allowed backdrop-blur-md' 
+            : 'bg-black/20 border-white/10 hover:border-white/30 hover:-translate-y-1 hover:shadow-[0_10px_20px_rgba(38,206,206,0.15)] cursor-pointer backdrop-blur-md'
         }
       `}
         >
@@ -38,33 +38,33 @@ const AgentCard = ({
             {/* Icon */}
             <div className="mb-3">
                 <div className={`
-                  w-10 h-10 rounded-[2px] bg-white border border-gray-200
+                  w-10 h-10 rounded-lg bg-black/30 border border-white/10
                   flex items-center justify-center text-[#26CECE]
                   transition-colors duration-300
-                  ${status !== 'Coming Soon' ? 'group-hover:bg-[#26CECE] group-hover:text-black' : 'text-gray-600 border-gray-200'}
+                  ${status !== 'Coming Soon' ? 'group-hover:bg-[#26CECE] group-hover:text-teal-900 group-hover:border-[#26CECE]' : 'text-white/40 border-white/5'}
                 `}>
                     <Icon className="w-5 h-5" />
                 </div>
             </div>
 
             {/* Title */}
-            <h3 className={`text-[15px] font-bold mb-2 leading-tight font-['Space_Grotesk'] tracking-widest uppercase ${status === 'Coming Soon' ? 'text-gray-600' : 'text-black'}`}>
+            <h3 className={`text-[15px] font-bold mb-2 leading-tight font-['Space_Grotesk'] tracking-widest uppercase ${status === 'Coming Soon' ? 'text-white/50' : 'text-white'}`}>
                 {title}
             </h3>
 
             {/* Description */}
-            <p className="text-gray-600 text-[11px] font-mono leading-relaxed mb-4 flex-grow tracking-wide">
+            <p className="text-teal-50/70 text-[11px] font-mono leading-relaxed mb-4 flex-grow tracking-wide">
                 {description}
             </p>
 
             {/* Features List */}
-            <div className={`space-y-2 pt-3 border-t ${status === 'Coming Soon' ? 'border-gray-200' : 'border-gray-200'}`}>
+            <div className={`space-y-2 pt-3 border-t ${status === 'Coming Soon' ? 'border-white/5' : 'border-white/10'}`}>
                 {features.map((feature, index) => (
                     <div
                         key={index}
-                        className={`flex items-start gap-2 text-[10px] font-mono tracking-widest uppercase ${status === 'Coming Soon' ? 'text-gray-600' : 'text-gray-600'}`}
+                        className={`flex items-start gap-2 text-[10px] font-mono tracking-widest uppercase ${status === 'Coming Soon' ? 'text-white/40' : 'text-teal-100/60'}`}
                     >
-                        <CheckCircle2 className={`w-3 h-3 flex-shrink-0 mt-[1px] ${status === 'Coming Soon' ? 'text-gray-600' : 'text-[#26CECE]'}`} />
+                        <CheckCircle2 className={`w-3 h-3 flex-shrink-0 mt-[1px] ${status === 'Coming Soon' ? 'text-white/30' : 'text-[#26CECE]'}`} />
                         <span className="leading-snug">{feature}</span>
                     </div>
                 ))}

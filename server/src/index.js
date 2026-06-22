@@ -96,6 +96,9 @@ app.use('/api/twitter', twitterRoutes);
 import metaRoutes from './routes/social/metaRoutes.js';
 app.use('/api/meta', metaRoutes);
 
+import whatsappRoutes from './routes/social/whatsappRoutes.js';
+app.use('/api/whatsapp', whatsappRoutes);
+
 app.use('/api', articleRoutes); // blog generation + CRUD + public blog routes
 app.use('/api/gemini', geminiRoutes); // Gemini AI endpoints
 

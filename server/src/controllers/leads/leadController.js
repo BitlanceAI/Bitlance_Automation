@@ -3,6 +3,8 @@ import axios from 'axios';
 import { sendRemarketingEmail } from '../../services/push/onesignalService.js';
 import { PDF_DELIVERY_TEMPLATE, BOOKING_CONFIRMATION_TEMPLATE } from '../../constants/emailTemplates.js';
 import twilio from 'twilio';
+import { sendMailtrapEmail } from '../../services/email/mailtrapService.js';
+import whatsappService from '../../services/social/whatsappService.js';
 
 // =============================================
 // TWILIO HELPERS (WhatsApp)
@@ -227,6 +229,79 @@ export const createLead = async (req, res) => {
     }
 };
 
+// @desc    Handle Contact Form Submission (with Email + WhatsApp Acknowledgement)
+// @route   POST /api/leads/contact
+// @access  Public
+export const submitContactForm = async (req, res) => {
+    try {
+        const { name, email, phone, service, message } = req.body;
+
+        if (!name || !email) {
+            return res.status(400).json({ success: false, message: 'Name and email are required.' });
+        }
+
+        // 1. Save to Supabase
+        const insertData = {
+            name,
+            email,
+            company: `${phone || 'No phone'} | ${service || 'General'}`,
+            message,
+            created_at: new Date().toISOString()
+        };
+
+        const { data: lead, error } = await supabaseAdmin
+            .from('contacts')
+            .insert([insertData])
+            .select()
+            .single();
+
+        if (error) {
+            console.error('Supabase contact save error:', error);
+            return res.status(500).json({ success: false, message: 'Failed to save contact' });
+        }
+
+        // 2. Send Email Acknowledgement via Mailtrap
+        const emailSubject = 'We received your Free AI Audit Request - Bitlance';
+        const emailText = `Hi ${name},
+
+Thank you for requesting a Free AI Audit with Bitlance!
+We have received your details and our team is currently reviewing your submission.
+
+Here is a summary of what you submitted:
+- Service Interest: ${service || 'Not specified'}
+- Message: ${message || 'None'}
+
+We will get back to you shortly to schedule your audit call.
+
+Best regards,
+The Bitlance Team`;
+
+        await sendMailtrapEmail(email, emailSubject, '', emailText).catch(err => {
+            console.error('Failed to send Mailtrap acknowledgement:', err);
+        });
+
+        // 3. Send WhatsApp Acknowledgement via Meta API (if phone is provided)
+        if (phone) {
+            // Using a default template name like 'contact_acknowledgement'. 
+            // The user can change this if the template name differs in Meta Business Manager.
+            await whatsappService.sendSystemTemplateMessage(
+                phone,
+                'contact_acknowledgement',
+                'en',
+                [name] // Passing name as variable
+            ).catch(err => {
+                console.error('Failed to send WhatsApp acknowledgement:', err);
+            });
+        }
+
+        res.status(201).json({ success: true, data: lead, message: 'Contact submitted successfully' });
+
+    } catch (error) {
+        console.error('Error submitting contact form:', error);
+        res.status(500).json({ success: false, message: 'Server Error' });
+    }
+};
+
 // @desc    Update lead to booked status
 // @route   PUT /api/leads/:id/book
 // @access  Public
@@ -366,6 +441,47 @@ export const getLeadById = async (req, res) => {
         res.status(200).json({ success: true, data: lead });
     } catch (error) {
         console.error('Error fetching lead:', error);
+        res.status(500).json({ success: false, message: 'Server Error' });
+    }
+};
+
+// @desc    Get contacts (Contact Form submissions)
+// @route   GET /api/leads/contacts
+// @access  Private (Admin)
+export const getContactLeads = async (req, res) => {
+    try {
+        const page = parseInt(req.query.page, 10) || 1;
+        const limit = parseInt(req.query.limit, 10) || 20;
+        const from = (page - 1) * limit;
+        const to = from + limit - 1;
+
+        let query = supabaseAdmin
+            .from('contacts')
+            .select('*', { count: 'exact' })
+            .order('created_at', { ascending: false })
+            .range(from, to);
+
+        if (req.query.search) {
+            query = query.or(`name.ilike.%${req.query.search}%,email.ilike.%${req.query.search}%`);
+        }
+
+        const { data: contacts, count, error } = await query;
+
+        if (error) {
+            console.error('Supabase query error:', error);
+            return res.status(500).json({ success: false, message: 'Failed to fetch contacts' });
+        }
+
+        res.status(200).json({
+            success: true,
+            count: contacts.length,
+            total: count,
+            totalPages: Math.ceil(count / limit),
+            page,
+            data: contacts
+        });
+    } catch (error) {
+        console.error('Error fetching contacts:', error);
         res.status(500).json({ success: false, message: 'Server Error' });
     }
 };

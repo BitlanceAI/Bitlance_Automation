@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from "../../context/AuthContext";
-import { useTheme } from "../../context/ThemeContext";
 import Logo from "../../assets/logo.webp";
 import {
     Home,
@@ -12,16 +11,12 @@ import {
     Sparkles,
     LogIn,
     Mail,
-    Sun,
-    Moon,
 } from 'lucide-react';
 
 const Navbar = () => {
     const [scrolled, setScrolled] = useState(false);
     const location = useLocation();
     const { user, credits, isAdmin, signOut } = useAuth();
-    const { theme, toggleTheme } = useTheme();
-    const isDark = theme === 'dark';
 
     useEffect(() => {
         const handleScroll = () => setScrolled(window.scrollY > 20);
@@ -41,7 +36,7 @@ const Navbar = () => {
 
     /* Scrolled state — floating pill style */
     const scrolledClass = scrolled
-        ? 'py-2.5 bg-white/80 dark:bg-[#0D0D1A]/85 backdrop-blur-xl border-b border-slate-200/70 dark:border-white/[0.07] shadow-[0_4px_24px_rgba(0,0,0,0.06)] dark:shadow-[0_4px_24px_rgba(0,0,0,0.4)]'
+        ? 'py-2.5 bg-[#0D0D1A]/85 backdrop-blur-xl border-b border-white/[0.07] shadow-[0_4px_24px_rgba(0,0,0,0.4)]'
         : 'py-4 bg-transparent';
 
     return (
@@ -68,8 +63,8 @@ const Navbar = () => {
                     {/* Desktop nav links — centered pill container */}
                     <div className="hidden md:flex items-center gap-1 absolute left-1/2 -translate-x-1/2
                         px-2 py-1.5 rounded-2xl
-                        bg-slate-100/80 dark:bg-white/[0.05]
-                        border border-slate-200/60 dark:border-white/[0.07]
+                        bg-white/[0.06]
+                        border border-white/[0.08]
                         backdrop-blur-md">
                         {navLinks.map(({ name, path, icon: Icon }) => (
                             <Link
@@ -77,8 +72,8 @@ const Navbar = () => {
                                 to={path}
                                 className={`flex items-center gap-1.5 px-3.5 py-1.5 text-sm font-medium rounded-xl transition-all duration-200 ${
                                     isActive(path)
-                                        ? 'bg-white dark:bg-white/[0.1] text-[#26CECE] shadow-sm dark:shadow-black/20'
-                                        : 'text-slate-600 dark:text-slate-300 hover:text-[#26CECE] dark:hover:text-[#26CECE] hover:bg-white/70 dark:hover:bg-white/[0.06]'
+                                        ? 'bg-white/[0.12] text-[#26CECE] shadow-sm shadow-black/20'
+                                        : 'text-slate-300 hover:text-[#26CECE] hover:bg-white/[0.08]'
                                 }`}
                             >
                                 <Icon className={`w-3.5 h-3.5 ${isActive(path) ? 'text-[#26CECE]' : ''}`} />
@@ -90,8 +85,8 @@ const Navbar = () => {
                                 to="/admin"
                                 className={`flex items-center gap-1.5 px-3.5 py-1.5 text-sm font-medium rounded-xl transition-all duration-200 ${
                                     location.pathname.startsWith('/admin')
-                                        ? 'bg-white dark:bg-white/[0.1] text-[#26CECE] shadow-sm'
-                                        : 'text-slate-600 dark:text-slate-300 hover:text-[#26CECE] hover:bg-white/70 dark:hover:bg-white/[0.06]'
+                                        ? 'bg-white/[0.12] text-[#26CECE] shadow-sm'
+                                        : 'text-slate-300 hover:text-[#26CECE] hover:bg-white/[0.08]'
                                 }`}
                             >
                                 <LayoutDashboard className="w-3.5 h-3.5" />
@@ -103,26 +98,13 @@ const Navbar = () => {
                     {/* Desktop right side */}
                     <div className="hidden md:flex items-center gap-2 flex-shrink-0">
 
-                        {/* Theme toggle */}
-                        <button
-                            onClick={toggleTheme}
-                            aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
-                            className="w-9 h-9 rounded-2xl flex items-center justify-center transition-all duration-200
-                                text-slate-500 hover:text-slate-800 bg-slate-100 hover:bg-slate-200
-                                dark:text-slate-400 dark:hover:text-white dark:bg-white/[0.07] dark:hover:bg-white/[0.13]
-                                border border-slate-200/80 dark:border-white/[0.08]"
-                        >
-                            {isDark ? <Sun size={15} /> : <Moon size={15} />}
-                        </button>
-
                         {user ? (
                             <div className="flex items-center gap-2">
                                 {/* Credits badge */}
                                 <Link
                                     to={isAdmin ? "/admin/api-keys" : "/dashboard/api-keys"}
                                     className="px-3 py-1.5 rounded-2xl border flex items-center gap-1.5 transition-all duration-200
-                                        bg-teal-50 border-teal-200/80 text-teal-700 hover:bg-teal-100
-                                        dark:bg-[#26CECE]/[0.09] dark:border-[#26CECE]/25 dark:text-[#26CECE] dark:hover:bg-[#26CECE]/[0.16]"
+                                        bg-[#26CECE]/[0.09] border-[#26CECE]/25 text-[#26CECE] hover:bg-[#26CECE]/[0.16]"
                                     title={isAdmin ? "Manage API Keys" : "View API Keys & Integrations"}
                                 >
                                     <Sparkles className="w-3.5 h-3.5" />
@@ -137,15 +119,14 @@ const Navbar = () => {
                                 >
                                     {user.email?.charAt(0).toUpperCase()}
                                 </div>
-                                <span className="text-sm text-slate-700 dark:text-slate-200 hidden lg:block max-w-[90px] truncate">
+                                <span className="text-sm text-slate-200 hidden lg:block max-w-[90px] truncate">
                                     {user.email?.split('@')[0]}
                                 </span>
                                 <button
                                     onClick={signOut}
                                     className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-2xl transition-all duration-200
-                                        text-slate-500 hover:text-red-500 bg-slate-100 hover:bg-red-50
-                                        dark:text-slate-400 dark:hover:text-red-400 dark:bg-white/[0.05] dark:hover:bg-red-500/[0.08]
-                                        border border-slate-200/80 dark:border-white/[0.07]"
+                                        text-slate-400 hover:text-red-400 bg-white/[0.05] hover:bg-red-500/[0.08]
+                                        border border-white/[0.07]"
                                     title="Logout"
                                     aria-label="Logout"
                                 >
@@ -165,19 +146,8 @@ const Navbar = () => {
                         )}
                     </div>
 
-                    {/* Mobile top-right: theme toggle + user */}
+                    {/* Mobile top-right: user */}
                     <div className="md:hidden flex items-center gap-2">
-                        <button
-                            onClick={toggleTheme}
-                            aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
-                            className="w-8 h-8 rounded-2xl flex items-center justify-center transition-all
-                                text-slate-500 bg-slate-100 hover:bg-slate-200
-                                dark:text-slate-400 dark:bg-white/[0.07] dark:hover:bg-white/[0.13]
-                                border border-slate-200/70 dark:border-white/[0.08]"
-                        >
-                            {isDark ? <Sun size={14} /> : <Moon size={14} />}
-                        </button>
-
                         {user ? (
                             <div
                                 className="w-8 h-8 rounded-2xl flex items-center justify-center text-[#070707] font-bold text-xs shadow-md"
@@ -201,10 +171,10 @@ const Navbar = () => {
 
             {/* ── Mobile Bottom Navigation Bar ── */}
             <div className="md:hidden fixed bottom-0 left-0 right-0 z-50">
-                <div className="h-5 bg-gradient-to-t from-white/80 dark:from-[#0A0A12]/80 to-transparent pointer-events-none" />
-                <div className="bg-white/90 dark:bg-[#0D0D1A]/95 backdrop-blur-xl
-                    border-t border-slate-200/70 dark:border-white/[0.07]
-                    shadow-[0_-6px_24px_rgba(0,0,0,0.08)] dark:shadow-[0_-6px_24px_rgba(0,0,0,0.45)]">
+                <div className="h-5 bg-gradient-to-t from-[#0A0A12]/80 to-transparent pointer-events-none" />
+                <div className="bg-[#0D0D1A]/95 backdrop-blur-xl
+                    border-t border-white/[0.07]
+                    shadow-[0_-6px_24px_rgba(0,0,0,0.45)]">
                     <div className="flex items-center justify-around px-2 pt-2.5 pb-5">
                         {navLinks.map(({ name, path, icon: Icon }) => {
                             const active = isActive(path);
@@ -235,23 +205,6 @@ const Navbar = () => {
                                 </Link>
                             );
                         })}
-
-                        {/* Theme toggle */}
-                        <button
-                            onClick={toggleTheme}
-                            className="flex flex-col items-center justify-center gap-1 flex-1 min-w-0 group"
-                            aria-label={isDark ? 'Light mode' : 'Dark mode'}
-                        >
-                            <div className="flex items-center justify-center w-11 h-8 rounded-2xl transition-all duration-300 group-hover:bg-slate-100 dark:group-hover:bg-white/[0.06]">
-                                {isDark
-                                    ? <Sun className="w-[20px] h-[20px] text-amber-400" strokeWidth={1.8} />
-                                    : <Moon className="w-[20px] h-[20px] text-slate-400 group-hover:text-[#26CECE]" strokeWidth={1.8} />
-                                }
-                            </div>
-                            <span className="text-[10px] font-semibold tracking-wide leading-none text-slate-400 dark:text-slate-500 group-hover:text-[#26CECE] transition-colors duration-300">
-                                {isDark ? 'Light' : 'Dark'}
-                            </span>
-                        </button>
 
                         {/* Admin */}
                         {user?.email === 'rahul7697762@gmail.com' && (

@@ -216,7 +216,7 @@ const BlogAgentFeaturesPage = () => {
                                 background: TEAL,
                                 color: '#070707',
                                 padding: '16px 32px',
-                                borderRadius: 2,
+                                borderRadius: 30,
                                 border: 'none',
                                 cursor: 'pointer',
                                 letterSpacing: '-0.01em',
@@ -458,7 +458,7 @@ const BlogAgentFeaturesPage = () => {
                                     style={{
                                         background: '#111',
                                         border: '1px solid #1E1E1E',
-                                        borderRadius: 2,
+                                        borderRadius: 16,
                                         boxShadow: `0 8px 30px -10px ${TEAL}15`,
                                     }}
                                 >
@@ -468,7 +468,7 @@ const BlogAgentFeaturesPage = () => {
                                         style={{
                                             background: TEAL,
                                             color: '#070707',
-                                            borderRadius: 2,
+                                            borderRadius: 8,
                                             fontFamily: "'DM Mono', monospace",
                                         }}
                                     >
@@ -488,7 +488,7 @@ const BlogAgentFeaturesPage = () => {
                                         background: `${TEAL}15`,
                                         color: TEAL,
                                         border: `1px solid ${TEAL}30`,
-                                        borderRadius: 2,
+                                        borderRadius: 12,
                                         fontFamily: "'DM Mono', monospace",
                                     }}
                                 >
@@ -640,7 +640,7 @@ const BlogAgentFeaturesPage = () => {
                             <details
                                 key={i}
                                 className="group cursor-pointer"
-                                style={{ background: '#111', border: '1px solid #1E1E1E', borderRadius: 2 }}
+                                style={{ background: '#111', border: '1px solid #1E1E1E', borderRadius: 16 }}
                             >
                                 <summary
                                     className="flex items-center justify-between p-6 font-semibold text-white list-none"
