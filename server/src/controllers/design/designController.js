@@ -167,10 +167,7 @@ export const generateFlyer = async (req, res) => {
         try {
             console.log('🚀 Starting business logic generation...');
 
-            const GRAPHIC_API = process.env.GRAPHIC_GENERATOR_URL;
-            if (!GRAPHIC_API) {
-                throw new Error("GRAPHIC_GENERATOR_URL env var not set");
-            }
+            const GRAPHIC_API = process.env.GRAPHIC_AGENT_URL || process.env.GRAPHIC_GENERATOR_URL || 'http://localhost:8001';
 
             console.log(`📡 Calling Graphic Service: ${GRAPHIC_API}/api/generate_from_details`);
 
@@ -296,6 +293,14 @@ export const generateFlyer = async (req, res) => {
             return res.status(402).json({
                 success: false,
                 error: 'Insufficient credits to generate flyer'
+            });
+        }
+        
+        // Handle Axios errors explicitly
+        if (error.response) {
+            return res.status(500).json({
+                success: false,
+                error: `Graphic API returned an error: ${error.response.status} ${JSON.stringify(error.response.data)}`
             });
         }
 
@@ -587,8 +592,7 @@ export const generateFromPrompt = async (req, res) => {
             return res.status(500).json({ success: false, error: 'Failed to process payment' });
         }
 
-        const GRAPHIC_API = process.env.GRAPHIC_GENERATOR_URL;
-        if (!GRAPHIC_API) throw new Error("GRAPHIC_GENERATOR_URL env var not set");
+        const GRAPHIC_API = process.env.GRAPHIC_AGENT_URL || process.env.GRAPHIC_GENERATOR_URL || 'http://localhost:8001';
 
         const response = await axios.post(`${GRAPHIC_API}/api/generate_from_prompt`, {
             prompt,
@@ -632,6 +636,15 @@ export const generateFromPrompt = async (req, res) => {
 
     } catch (error) {
         console.error('Design Generation Error:', error);
+        
+        // Handle Axios errors explicitly
+        if (error.response) {
+            return res.status(500).json({
+                success: false,
+                error: `Graphic API returned an error: ${error.response.status} ${JSON.stringify(error.response.data)}`
+            });
+        }
+        
         res.status(500).json({ success: false, error: error.message });
     }
 };
