@@ -204,7 +204,10 @@ _GARBAGE_PATTERNS = [
 ]
 
 def clean_blog_output(text: str) -> str:
-    """Strip internal system artifacts and footer garbage from AI-generated blog text."""
+    """Strip internal system artifacts, academic bracket citations, and footer garbage from AI-generated blog text."""
+    # Strip bracket citations like [1], [2], [10] etc.
+    text = _re.sub(r'\s*\[\d+\]', '', text)
+    
     lines = text.split('\n')
     cleaned = []
     for line in lines:
@@ -813,6 +816,7 @@ SECTION ORDER (follow exactly):
 
 20. ## Sources & References
     List real sources only (McKinsey, Gartner, WEF, IDC, Stanford AI Index, etc.).
+    You MUST format each source as a Markdown link, linking directly to the real report URL or verified homepage of the organization (e.g. * [Gartner](https://www.gartner.com) - Report Name *). Every single source listed MUST be a clickable link. Do NOT output plain text sources.
     Do NOT fabricate. Do NOT invent reports.
 
 21. ## Related Topics
@@ -1423,6 +1427,7 @@ SEO ARTICLE STRUCTURE (follow in order — SEO=70%, GEO=30%):
 14. ## Quick Answer — 3-4 sentence direct block (GEO support layer only).
 15. ## Future Trends — Forward-looking predictions.
 16. ## Final Thoughts — 80-120 words, 3 takeaways, natural CTA.
+17. ## Sources & References — List real sources. Format each as a Markdown link (e.g. * [Gartner](https://www.gartner.com) - Report Name *). Every source MUST be a clickable link. Do NOT output plain text sources.
 
 RULES: No AI Overview/Fact Box at top. Semantic variants. Inline citations only.
 
@@ -1485,6 +1490,7 @@ Follow with **Learn More:** block using provided internal links.
 18. ## Future Outlook — 12-24 month specific predictions.
 19. ## Key Takeaways — 5 concise bullets.
 20. ## Conclusion — 80-120 words + natural CTA.
+21. ## Sources & References — List real sources. Format each as a Markdown link (e.g. * [Gartner](https://www.gartner.com) - Report Name *). Every source MUST be a clickable link. Do NOT output plain text sources.
 
 SUBHEADING QUALITY RULES (H2 & H3) — CRITICAL FOR GEO CITATIONS:
 - H2 subheadings MUST be precise, informative, and AI-citation-ready. LLMs quote specific, named sections.
