@@ -912,7 +912,7 @@ MINIMUM WORDS   : {length_num}
 - Do NOT include [1], [2], or any academic-style citation numbers.
 - Do NOT use filler phrases: "In conclusion, as we have seen", "It goes without saying",
   "In today's fast-paced world", "In the digital age", "Without further ado".
-- {"ONLY use the internal links listed above — add NO other URLs, hyperlinks, or links anywhere in the article." if interlinks else "Do NOT add ANY hyperlinks, internal links, or external URLs anywhere in the content. Do NOT invent URLs. Do NOT link to example.com, placeholder domains, or any fabricated addresses. If you want to reference another article or guide, mention it in plain text only — never as a hyperlink."}
+- {"You MUST use the provided internal and external links. For statistics and sources, you MUST include real URL citations as Markdown links. Do NOT invent fake URLs." if (interlinks or external_links) else "Do NOT add ANY invented URLs. For statistics and sources, you MUST include real URL citations as Markdown links."}
 - NEVER output: AUTHOR_ID, COMM_LOGS, PAYLOAD, USER_ID, SESSION_ID, DATABASE_FIELDS, DEBUG_DATA, SYSTEM_PROMPT, RAW_METADATA, INTERNAL_NOTES.
 - NEVER output HTML tags (e.g., <h1>, <p>, <strong>). Use ONLY pure Markdown.
 - The entire article MUST be written ONLY in {language}. Absolutely no foreign words or characters.
@@ -1186,7 +1186,7 @@ Step 3: Select exactly 7 of the BEST and most topically relevant articles to be 
 Step 4: Identify 2-3 additional articles as "suggested" for future content silos.
 Step 5: Determine the primary Topical Cluster Category (e.g., "AI Infrastructure", "Real Estate Marketing").
 Step 6: Assign an Authority Score (0-100) based on how well the available articles support the target topic.
-Step 7: Search the web to identify exactly 3 high-authority EXTERNAL URLs (e.g., Stanford AI Index, Gartner, McKinsey, etc.) related to this topic. Provide their real URLs and a recommended anchor text.
+Step 7: Search the web to identify exactly 3 high-authority EXTERNAL URLs from trending, elite industry publications (e.g., Gartner, McKinsey, Harvard Business Review, Forbes, TechCrunch, Stanford AI Index, etc.) related to this topic. These must be reputable, high-domain-authority websites to boost our blog's SEO. Provide their real URLs and a recommended anchor text.
 CRITICAL RATIO RULE: You MUST enforce a strict ratio of 70% Internal Links (7) to 30% External Links (3). Internal links from our own database ALWAYS take priority.
 WARNING FOR EXTERNAL LINKS: Do NOT hallucinate URLs. Deep links (e.g., /linux, /report-2026) often 404. If you cannot verify an exact active page URL, you MUST link only to the verified homepage of the authoritative organization (e.g., "https://www.linuxfoundation.org", "https://www.gartner.com").
 
@@ -1556,7 +1556,7 @@ MINIMUM WORDS   : {length_num}
 - Do NOT include [1], [2], or any academic-style citation numbers.
 - Do NOT use filler phrases: "In conclusion, as we have seen", "It goes without saying",
   "In today's fast-paced world", "In the digital age", "Without further ado".
-- {"ONLY use the internal links listed above — add NO other external URLs anywhere." if interlinks else "Do NOT add any external links or URLs anywhere in the content."}
+- {"You MUST use the provided internal and external links. For statistics and sources, you MUST include real URL citations as Markdown links. Do NOT invent fake URLs." if (interlinks or external_links) else "Do NOT add ANY invented URLs. For statistics and sources, you MUST include real URL citations as Markdown links."}
 - Every sentence must add value — delete any sentence that could be cut without loss.
 - The entire article MUST be written ONLY in {language}. Absolutely no foreign words or characters.
 - Output ONLY clean, valid Markdown. No preamble, no meta-commentary.
