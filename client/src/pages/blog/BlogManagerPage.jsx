@@ -647,15 +647,13 @@ const BlogManagerPage = () => {
                                         <div
                                             key={profile.id}
                                             onClick={() => setWpSelectedProfileId(profile.id)}
-                                            className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg border text-left transition-colors group cursor-pointer ${
-                                                wpSelectedProfileId === profile.id
+                                            className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg border text-left transition-colors group cursor-pointer ${wpSelectedProfileId === profile.id
                                                     ? 'border-blue-500 bg-blue-50'
                                                     : 'border-slate-200 hover:border-blue-300'
-                                            }`}
+                                                }`}
                                         >
-                                            <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
-                                                wpSelectedProfileId === profile.id ? 'bg-blue-100 dark:bg-blue-800' : 'bg-gray-100 dark:bg-slate-700'
-                                            }`}>
+                                            <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${wpSelectedProfileId === profile.id ? 'bg-blue-100 dark:bg-blue-800' : 'bg-gray-100 dark:bg-slate-700'
+                                                }`}>
                                                 <Globe className={`w-4 h-4 ${wpSelectedProfileId === profile.id ? 'text-blue-600 dark:text-blue-400' : 'text-gray-400'}`} />
                                             </div>
                                             <div className="flex-1 min-w-0">

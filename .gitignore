@@ -61,7 +61,7 @@ yarn-error.log*
 # ===============================
 # AI Agents - hosted separately
 # ===============================
-Graphic-agents/
+
 seo-agent-video/
 seo-landing-page/
 reports/
@@ -151,3 +151,6 @@ yarn.lock
 set-azure-env-*.ps1
 *.ps1.bak
 set-env.ps1
+*.egg-info/
+dist/
+build/

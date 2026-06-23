@@ -32,9 +32,17 @@ def audit_content(request: Request, body: AuditRequest):
         try:
             credit_check = validate_credits(user_id, "blog", 1)
             if not credit_check["hasEnough"]:
-                raise HTTPException(status_code=402, detail="Payment Required: Insufficient credits.")
-        except HTTPException:
-            raise
+                from fastapi.responses import JSONResponse
+                return JSONResponse(
+                    status_code=402,
+                    content={
+                        "success": False,
+                        "code": "INSUFFICIENT_CREDITS",
+                        "credits_remaining": int(credit_check["currentBalance"]),
+                        "required_credits": int(credit_check["creditsNeeded"]),
+                        "pricing_url": "https://app.bitlance.ai/pricing"
+                    }
+                )
         except Exception as e:
             raise HTTPException(status_code=500, detail=f"Credit validation failed: {str(e)}")
 
@@ -67,9 +75,17 @@ def rewrite_content(request: Request, body: RewriteRequest):
         try:
             credit_check = validate_credits(user_id, "blog", 1)
             if not credit_check["hasEnough"]:
-                raise HTTPException(status_code=402, detail="Payment Required: Insufficient credits.")
-        except HTTPException:
-            raise
+                from fastapi.responses import JSONResponse
+                return JSONResponse(
+                    status_code=402,
+                    content={
+                        "success": False,
+                        "code": "INSUFFICIENT_CREDITS",
+                        "credits_remaining": int(credit_check["currentBalance"]),
+                        "required_credits": int(credit_check["creditsNeeded"]),
+                        "pricing_url": "https://app.bitlance.ai/pricing"
+                    }
+                )
         except Exception as e:
             raise HTTPException(status_code=500, detail=f"Credit validation failed: {str(e)}")
 

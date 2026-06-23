@@ -112,6 +112,54 @@ const whatsappService = {
     },
 
     // ──────────────────────────────────────────
+    // Send System Template Message via Meta Cloud API (Bypasses DB, uses env vars)
+    // ──────────────────────────────────────────
+    sendSystemTemplateMessage: async (to, templateName, language = 'en', variables = []) => {
+        const phoneId = process.env.WHATSAPP_PHONE_ID;
+        const accessToken = process.env.WHATSAPP_GLOBAL_TOKEN;
+
+        if (!phoneId || !accessToken) {
+            console.warn('[WhatsApp] System Phone ID or Token not configured. Simulating send.');
+            return { success: true, simulated: true, messageId: 'wamid_SIM_' + Date.now() };
+        }
+
+        const components = [];
+        if (variables && variables.length > 0) {
+            components.push({
+                type: 'body',
+                parameters: variables.map(val => ({ type: 'text', text: String(val) }))
+            });
+        }
+
+        const formattedPhone = to.replace('+', '');
+
+        const payload = {
+            messaging_product: 'whatsapp',
+            recipient_type: 'individual',
+            to: formattedPhone,
+            type: 'template',
+            template: {
+                name: templateName,
+                language: { code: language },
+                ...(components.length > 0 && { components })
+            }
+        };
+
+        try {
+            const response = await axios.post(
+                `${META_API_BASE}/${phoneId}/messages`,
+                payload,
+                { headers: { 'Authorization': `Bearer ${accessToken}`, 'Content-Type': 'application/json' } }
+            );
+            return { success: true, messageId: response.data.messages?.[0]?.id };
+        } catch (error) {
+            const errData = error.response?.data?.error;
+            console.error('[WhatsApp] System Send Error:', errData || error.message);
+            return { success: false, error: errData?.message || error.message, errorCode: errData?.code };
+        }
+    },
+
+    // ──────────────────────────────────────────
     // Send Free-Form Text Message (within 24hr window)
     // ──────────────────────────────────────────
     sendTextMessage: async (userId, to, text) => {

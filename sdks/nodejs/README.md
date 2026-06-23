@@ -1,6 +1,6 @@
-# Bitlance AI Node.js SDK
+# bitlance-ai-sdk (Node.js)
 
-The official Node.js SDK for the Bitlance SEO/GEO Content Generation API.
+Official Node.js SDK for the [Bitlance](https://app.bitlance.ai) SEO/GEO AI Content Generation API.
 
 ## Installation
 
@@ -8,48 +8,91 @@ The official Node.js SDK for the Bitlance SEO/GEO Content Generation API.
 npm install bitlance-ai-sdk
 ```
 
-## Usage
+## Quick Start
 
 ```javascript
 const BitlanceAI = require('bitlance-ai-sdk');
 
-const ai = new BitlanceAI('YOUR_API_KEY');
+const ai = new BitlanceAI('sk_live_YOUR_API_KEY');
 
-async function run() {
-  try {
-    // 1. Generate Topics
-    const topics = await ai.generateTopics('Real Estate', 'SEO');
-    console.log(topics);
-
-    // 2. Generate SEO Article
-    const seoArticle = await ai.generateSEO({
-      topic: "How to Invest in Commercial Real Estate in 2026",
-      keywords: "commercial real estate, investment tips",
-      length: "Long (1500+ words)"
-    });
-    console.log(seoArticle.title);
-
-    // 3. Generate GEO Article
-    const geoArticle = await ai.generateGEO({
-      topic: "Enterprise AI Adoption Maturity Model",
-    });
-    console.log(geoArticle.schema_markup);
-
-    // 4. Audit Content
-    const audit = await ai.auditContent("Your content here...", "AI Adoption", "GEO");
-    console.log(audit.audit_report);
-
-    // 5. Rewrite Content
-    const rewritten = await ai.rewriteContent("Your content here...", "Add more hard statistics", "GEO");
-    console.log(rewritten.rewritten_content);
-
-  } catch (error) {
-    console.error(error.message);
+// Generate a full SEO blog article
+const result = await ai.generateSEO({
+  topic: 'Top 10 EdTech Trends in 2026',
+  keywords: 'edtech, online learning, LMS',
+  industry: 'Education',
+  length: 'Long (1500+ words)',
+  brand_context_data: {
+    company_name: 'Lotlite Edu',
+    additional_info: 'We offer 1-on-1 mentorship with 50,000+ students.'
   }
-}
+});
 
-run();
+console.log(result.article);    // Full HTML blog
+console.log(result.seoTitle);   // SEO-optimised title
+console.log(result.imageUrl);   // AI-generated featured image
+console.log(result.wordCount);  // e.g. 1842
 ```
 
+## Methods
+
+### `generateSEO(params)` — Google search-optimised blog
+### `generateGEO(params)` — AI search (ChatGPT / Perplexity) optimised blog
+
+Both accept the same params object:
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `topic` | string | ✅ | The blog topic |
+| `keywords` | string | ❌ | Target keywords (comma-separated) |
+| `industry` | string | ❌ | Industry for context |
+| `length` | string | ❌ | `"Short"`, `"Medium"`, `"Long (1500+ words)"` |
+| `language` | string | ❌ | Default: `"English"` |
+| `brand_context_data` | object | ❌ | `{ company_name, additional_info }` |
+
+### `generateTopics(industry, mode, location, goal)` — Get topic suggestions
+
+```javascript
+const topics = await ai.generateTopics('Real Estate', 'SEO', 'Mumbai', 'Lead Generation');
+```
+
+### `auditContent(content, targetKeyword, mode)` — SEO/GEO/EEAT content audit
+
+### `rewriteContent(content, instructions, mode)` — Rewrite and improve content
+
 ## Error Handling
-The SDK automatically retries on network failures and 429 Too Many Requests errors using exponential backoff (up to 3 retries). 401 Unauthorized or 402 Payment Required errors are thrown immediately.
+
+```javascript
+const { BitlanceAIError } = require('bitlance-ai-sdk');
+
+try {
+  const result = await ai.generateSEO({ topic: 'AI in Healthcare' });
+} catch (err) {
+  if (err instanceof BitlanceAIError) {
+    if (err.code === 'INSUFFICIENT_CREDITS') {
+      console.log(`Credits remaining: ${err.creditsRemaining}`);
+      console.log(`Credits needed:    ${err.requiredCredits}`);
+      console.log(`Top up at:         ${err.pricingUrl}`);
+    } else if (err.statusCode === 401) {
+      console.log('Invalid API key');
+    } else if (err.statusCode === 429) {
+      console.log('Rate limit hit — SDK will auto-retry with backoff');
+    }
+  }
+}
+```
+
+The SDK automatically retries on network failures, 5xx errors, and `429 Too Many Requests` using exponential backoff (up to 3 retries by default).
+
+## Constructor Options
+
+```javascript
+const ai = new BitlanceAI('sk_live_...', {
+  timeout: 300000,    // ms — default 5 min (generation takes 30-90 seconds)
+  maxRetries: 3,      // retry count on network/server errors
+  baseURL: 'https://api.bitlancetechhub.com/api/v1'  // override if self-hosted
+});
+```
+
+## License
+
+MIT © [Bitlance Automation](https://app.bitlance.ai)

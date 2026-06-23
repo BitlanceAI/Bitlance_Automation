@@ -8,17 +8,19 @@ import Footer from './components/landing/Footer';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { WorkspaceProvider } from './context/WorkspaceContext';
 import AuthGuard from './components/auth/AuthGuard';
+import AdminGuard from './components/auth/AdminGuard';
 import { Toaster } from 'react-hot-toast';
 
 // ─── Lazy-loaded pages (route-level code splitting) ───────────────────────────
 // Public / Landing
 const LandingPage = lazy(() => import('./pages/landing/LandingPage'));
 const SeoLandingPage = lazy(() => import('./pages/landing/SeoLandingPage'));
-const QuizLandingPage = lazy(() => import('./pages/landing/QuizLandingPage'));
+const AgentPricingSection = lazy(() => import('./components/landing/AgentPricingSection'));
 const ThankYouPage = lazy(() => import('./pages/landing/ThankYouPage'));
 const PartnerPortal = lazy(() => import('./pages/PartnerPortal'));
 const PartnerTestLab = lazy(() => import('./pages/PartnerTestLab'));
 const AdminApiKeys = lazy(() => import('./pages/AdminApiKeys'));
+const ApiDocsPage = lazy(() => import('./pages/public/ApiDocsPage'));
 
 // Auth
 const LoginPage = lazy(() => import('./pages/auth/LoginPage'));
@@ -26,7 +28,6 @@ const SignupPage = lazy(() => import('./pages/auth/SignupPage'));
 
 // Dashboard (heavy: recharts, fullcalendar, spline, retell, etc.)
 const HomePage = lazy(() => import('./pages/dashboard/HomePage'));
-const SalesDashboard = lazy(() => import('./pages/dashboard/SalesDashboard'));
 const SocialDashboard = lazy(() => import('./pages/dashboard/SocialDashboard'));
 const AgentsPage = lazy(() => import('./pages/dashboard/AgentsPage'));
 const SeoAgentPage = lazy(() => import('./pages/dashboard/SeoAgentPage'));
@@ -52,6 +53,7 @@ const PublicArticlePage = lazy(() => import('./pages/blog/PublicArticlePage'));
 
 // Settings
 const SettingsPage = lazy(() => import('./pages/settings/SettingsPage'));
+const UserApiKeys = lazy(() => import('./pages/dashboard/UserApiKeys'));
 
 // Public pages
 const ContactPage = lazy(() => import('./pages/public/ContactPage'));
@@ -134,7 +136,7 @@ function App() {
     if (agent.title === 'WhatsApp Broadcasting Automation') {
       window.open('https://wacrm.bitlancetechhub.com/', '_blank');
     } else if (agent.title === 'AI Voice Agent') {
-      navigate('/dashboard/agents/voice');
+      window.open('https://voice.bitlancetechhub.com/workflow', '_blank');
     } else if (agent.title === 'GEO (Generative) AI Agent' || agent.title === 'SEO (Search Engine) AI Agent') {
       const isSeo = agent.title === 'SEO (Search Engine) AI Agent';
       navigate(isSeo ? '/dashboard/agents/seo' : '/dashboard/agents/geo', { state: { defaultMode: isSeo ? 'SEO' : 'GEO' } });
@@ -161,14 +163,15 @@ function App() {
     normalizedPath.startsWith('/l/') ||
     normalizedPath.includes('/apply/audit') ||
     normalizedPath.includes('/apply') || // Hide Main Nav for Landing Pages and Audit Funnel
-    normalizedPath === '/seo'; // GEO landing has its own NavBar
+    normalizedPath === '/seo' ||
+    normalizedPath === '/docs'; // GEO landing and developer docs have their own NavBar
 
   return (
     <ThemeProvider>
       <AuthProvider>
         <WorkspaceProvider>
           <Toaster position="top-right" reverseOrder={false} />
-          <div className={isDashboard ? 'bg-gray-50 min-h-screen transition-colors duration-300' : 'bg-gray-50 min-h-screen transition-colors duration-300 pb-20 md:pb-0'}>
+          <div className={isDashboard ? 'min-h-screen transition-colors duration-300' : 'min-h-screen transition-colors duration-300 pb-20 md:pb-0'}>
 
             {/* Temporary Debug Banner
           <div className="fixed top-0 left-0 bg-red-500 text-white z-[100] text-xs p-1">
@@ -181,6 +184,7 @@ function App() {
                 {/* Public Routes */}
                 <Route path="/" element={<RootRedirect />} />
                 <Route path="/seo" element={<SeoLandingPage />} />
+                <Route path="/pricing" element={<AgentPricingSection />} />
                 <Route path="/privacy-policy" element={<PrivacyPolicy />} />
                 <Route path="/terms-policy" element={<TermsPage />} />
                 <Route path="/contact" element={<ContactPage />} />
@@ -192,6 +196,7 @@ function App() {
                 <Route path="/blogs/:id" element={<PublicArticlePage />} />
                 <Route path="/api-portal" element={<PartnerPortal />} />
                 <Route path="/api-test-lab" element={<PartnerTestLab />} />
+                <Route path="/docs" element={<ApiDocsPage />} />
                 <Route path="/login" element={
                   <PublicRoute>
                     <LoginPage />
@@ -227,11 +232,6 @@ function App() {
                 <Route path="/SocialDashboard" element={
                   <AuthGuard>
                     <SocialDashboard />
-                  </AuthGuard>
-                } />
-                <Route path="/dashboard/agents/voice" element={
-                  <AuthGuard>
-                    <SalesDashboard />
                   </AuthGuard>
                 } />
                 <Route path="/dashboard/agents/seo" element={
@@ -274,40 +274,42 @@ function App() {
                     <SettingsPage />
                   </AuthGuard>
                 } />
-                <Route path="/admin" element={
-                  // TODO: Add AdminGuard
+                <Route path="/dashboard/api-keys" element={
                   <AuthGuard>
-                    <AdminDashboard />
+                    <UserApiKeys />
                   </AuthGuard>
+                } />
+                <Route path="/admin" element={
+                  <AdminGuard>
+                    <AdminDashboard />
+                  </AdminGuard>
                 } />
                 <Route path="/admin/api-keys" element={
-                  <AuthGuard>
+                  <AdminGuard>
                     <AdminApiKeys />
-                  </AuthGuard>
+                  </AdminGuard>
                 } />
                 <Route path="/admin/email-automation" element={
-                  <AuthGuard>
+                  <AdminGuard>
                     <EmailAutomationPage />
-                  </AuthGuard>
+                  </AdminGuard>
                 } />
                 <Route path="/admin/client/:id" element={
-                  <AuthGuard>
+                  <AdminGuard>
                     <ClientHistoryPage />
-                  </AuthGuard>
+                  </AdminGuard>
                 } />
                 <Route path="/admin/campaigns" element={
-                  <AuthGuard>
+                  <AdminGuard>
                     <CampaignManagerPage />
-                  </AuthGuard>
+                  </AdminGuard>
                 } />
                 <Route path="/admin/campaigns/new" element={
-                  <AuthGuard>
+                  <AdminGuard>
                     <CampaignWizard />
-                  </AuthGuard>
+                  </AdminGuard>
                 } />
 
-                <Route path="/apply" element={<QuizLandingPage />} />
-                <Route path="/apply/real-estate" element={<Navigate to="/apply" replace />} />
                 <Route path="/thank-you" element={<ThankYouPage />} />
 
                 {/* <Route path="/testimonial-demo" element={<TestimonialDemo />} /> */}

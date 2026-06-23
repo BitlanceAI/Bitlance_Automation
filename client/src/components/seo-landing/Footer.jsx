@@ -89,7 +89,7 @@ export default function Footer() {
           <p className="text-white/25 text-xs">
             © {new Date().getFullYear()} Bitlance Tech Hub. All rights reserved.
           </p>
-          
+
         </div>
       </div>
     </footer>

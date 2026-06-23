@@ -43,7 +43,7 @@ except Exception as _serp_import_err:  # pragma: no cover
 PERPLEXITY_BASE_URL = "https://api.perplexity.ai/chat/completions"
 OPENAI_CHAT_URL     = "https://api.openai.com/v1/chat/completions"
 
-def get_post_generation_enhancement_layer(brand_context=None, mode="SEO", interlinks=None, author_name=None):
+def get_post_generation_enhancement_layer(brand_context=None, mode="SEO", interlinks=None, author_name=None, author_metadata=None):
     if not brand_context:
         brand_context = {
             "company_name": "Bitlance Automation (Bitlance Tech Hub)",
@@ -68,37 +68,63 @@ def get_post_generation_enhancement_layer(brand_context=None, mode="SEO", interl
     other_details_str = (" | " + " | ".join(other_details)) if other_details else ""
     
     cluster_links_rule = ""
-    if mode == "SEO":
-        # Build the Related Guides block from REAL provided links only
-        if interlinks:
-            real_guide_lines = []
-            for lnk in interlinks[:6]:  # cap at 6 for token budget
-                if isinstance(lnk, dict) and lnk.get("link") and lnk.get("title"):
-                    anchor = lnk.get("recommendedAnchor") or lnk["title"]
-                    real_guide_lines.append(f'- [{anchor}]({lnk["link"]})')
-            if real_guide_lines:
-                guides_block = "\n".join(real_guide_lines)
-                cluster_links_rule = f"""
+    # Build the Related Guides block from REAL provided links only for both SEO and GEO
+    if interlinks:
+        real_guide_lines = []
+        for lnk in interlinks[:15]:  # cap at 15 for token budget
+            if isinstance(lnk, dict) and lnk.get("link") and lnk.get("title"):
+                anchor = lnk.get("recommendedAnchor") or lnk["title"]
+                real_guide_lines.append(f'- [{anchor}]({lnk["link"]})')
+        if real_guide_lines:
+            guides_block = "\n".join(real_guide_lines)
+            cluster_links_rule = f"""
 8. TOPICAL AUTHORITY LAYER & CLUSTER LINKS
 At the VERY END of the article, add an H2: ## Related Guides
 Copy these EXACT Markdown links below — do NOT change the URLs or anchor text:
 {guides_block}
 Do NOT invent new links. Use ONLY the links listed above.
 """
-            else:
-                cluster_links_rule = ""
         else:
             cluster_links_rule = ""
     else:
-        cluster_links_rule = """
-8. TOPICAL AUTHORITY LAYER
-At the very end of the article, output a Markdown comment block (`<!-- ... -->`) containing:
-* Parent Topic
-* Cluster Category
-* Related Articles
-* Suggested Internal Links
-* Supporting Content Opportunities
-"""
+        cluster_links_rule = ""
+
+    if mode == "SEO":
+        footer_text = f"**Written By:** {author_name or (brand_context.get('company_name','Bitlance') + ' Expert Editorial Board')} | **Fact-Checked & Reviewed By:** The Technical Content Team at {brand_context.get('company_name','Bitlance Automation')} | **Last Updated:** June 2026"
+    else:
+        footer_text = f"**Content Attribution:** {author_name or (brand_context.get('company_name','Bitlance') + ' Editorial Team')} | **Authority & Verification:** Published by {brand_context.get('company_name','Bitlance Automation')} | **Last Updated:** June 2026"
+
+    # Multi-tenant author block
+    KNOWN_AUTHORS = {
+        "anurag dhole": {
+            "author_title": "CEO & Founder",
+            "author_company": "Bitlance",
+            "author_bio": "Anurag Dhole is the CEO and Founder of Bitlance, specializing in AI-driven automation, business process optimization, and enterprise agentic workflows.",
+            "author_linkedin": "https://www.linkedin.com/in/anurag-dhole-532046124/"
+        }
+    }
+
+    meta = author_metadata or {}
+    name_key = (meta.get("author_name") or author_name or "").strip().lower()
+    known_meta = KNOWN_AUTHORS.get(name_key, {})
+
+    if meta.get("author_name") or author_name:
+        _aname  = meta.get("author_name") or author_name
+        _atitle = meta.get("author_title") or known_meta.get("author_title") or "Content Specialist"
+        _acomp  = meta.get("author_company") or known_meta.get("author_company") or brand_context.get("company_name", "Bitlance Automation")
+        _abio   = meta.get("author_bio") or known_meta.get("author_bio") or f"{_aname} is a subject-matter expert at {_acomp} specializing in AI automation and digital publishing."
+        _ali    = meta.get("author_linkedin") or known_meta.get("author_linkedin") or ""
+        _linkedin_line = f"\n[LinkedIn Profile]({_ali})" if _ali else ""
+        author_block = f"""## About the Author
+
+**{_aname}** — *{_atitle}* at **{_acomp}**
+
+{_abio}{_linkedin_line}"""
+    else:
+        _pub = brand_context.get("company_name", "Bitlance Automation")
+        author_block = f"""## About the Publisher
+
+This article was researched, written, and editorially reviewed by the content team at **{_pub}**. All claims are fact-checked against publicly available sources and proprietary internal benchmarks."""
 
     return f"""
 ══ ENHANCEMENT LAYER ══
@@ -127,7 +153,10 @@ BRAND: {brand_context.get('company_name','Bitlance')} | Services: {brand_context
 
 [D] CITATION RULES
 - NO [1][2][3] numbered references. Cite inline: "According to McKinsey...", "Gartner reports..."
-- Every source MUST include a real URL: `Source: [Report Name](https://real-url.org)`
+- Every source citation, statistical reference, report reference, or database fact MUST be placed on a separate, brand new line (separated by a blank line or double newline), NEVER appended to the end of a sentence or paragraph on the same line.
+  ✗ BAD: "...routing. Source: Stanford AI Index 2024"
+  ✓ GOOD: "...routing.\n\nSource: [Stanford AI Index 2024](https://aiindex.stanford.edu/report/)"
+- Every source MUST include a real URL format: `Source: [Report Name](https://real-url.org)`
 {cluster_links_rule}
 [E] TITLE & LINKS
 - H1: Clickable, no keyword stuffing. Use semantic variants, not exact-match repeats.
@@ -136,14 +165,21 @@ BRAND: {brand_context.get('company_name','Bitlance')} | Services: {brand_context
 
 [F] AUTHOR BYLINE (end of article — before Related Guides)
 ---
-**Author:** {author_name or (brand_context.get('company_name','Bitlance') + ' Editorial Team')} | **Reviewed By:** {brand_context.get('company_name','Bitlance Automation')} Team | **Last Updated:** June 2026
+{footer_text}
 ---
 
-⚠️ QUALITY GATE: If missing 5+ entities OR 3+ citations OR stats block{faq_rule}, append: `SEO_AUDIT_REQUIRED = TRUE`
+[G] ABOUT THE AUTHOR / PUBLISHER (mandatory — place at the very end)
+{author_block}
 
-⚠️ ABSOLUTE CLEAN OUTPUT RULES:
-- NEVER output AUTHOR_ID, COMM_LOGS, SHARE_LOG, ID_NAME, usr, PAYLOAD, DEBUG, SYSTEM TOKENS, or raw JSON.
-- NEVER output "Generated by AI" as visible text.
+⚠️ OUTPUT QUALITY GATE:
+- Article MUST be COMPLETE. Never end abruptly. Never truncate paragraphs.
+- If missing 5+ entities OR 3+ citations OR stats block{faq_rule}, append: `SEO_AUDIT_REQUIRED = TRUE`
+
+⚠️ FORBIDDEN OUTPUT — NEVER include under any circumstances:
+- AUTHOR_ID, COMM_LOGS, SHARE_LOG, ID_NAME, PAYLOAD, USER_ID, SESSION_ID
+- DATABASE_FIELDS, DEBUG_DATA, SYSTEM_PROMPT, RAW_METADATA, INTERNAL_NOTES
+- "Generated by AI" as visible text
+- Raw JSON, CMS fields, or internal metadata
 - Output ONLY clean Markdown article content.
 """
 
@@ -168,7 +204,10 @@ _GARBAGE_PATTERNS = [
 ]
 
 def clean_blog_output(text: str) -> str:
-    """Strip internal system artifacts and footer garbage from AI-generated blog text."""
+    """Strip internal system artifacts, academic bracket citations, and footer garbage from AI-generated blog text."""
+    # Strip bracket citations like [1], [2], [10] etc.
+    text = _re.sub(r'\s*\[\d+\]', '', text)
+    
     lines = text.split('\n')
     cleaned = []
     for line in lines:
@@ -365,10 +404,12 @@ def generate_blog_content(
     mode: str = "SEO",
     brand_context: dict = None,
     author_name: str = None,
+    author_metadata: dict = None,
 ) -> dict:
     """
     Generate full blog content using Perplexity sonar-pro.
     Retries until word count reaches length_num (up to max_attempts).
+    author_metadata supports: author_name, author_title, author_company, author_bio, author_linkedin
     Returns: {"blogText": str, "wordCount": int}
     """
     interlinks = interlinks or []
@@ -421,7 +462,7 @@ def generate_blog_content(
         6. Do not mention related articles without linking them. Spread links evenly.
 
         Links to embed as Citations:
-        {{links_str}}
+        {links_str}
         ══════════════════════════════════════════════════════════
         """
         else:
@@ -439,7 +480,7 @@ def generate_blog_content(
         6. Do not mention related articles without linking them.
         
         Links to embed:
-        {{links_str}}
+        {links_str}
         ══════════════════════════════════════════════════════════
         """
 
@@ -484,14 +525,25 @@ def generate_blog_content(
         lsi_note        = f"Secondary/LSI keywords to weave in naturally: {secondary_kws}" if secondary_kws else ""
 
         if mode == "SEO":
-            expert_persona = "You are a world-class SEO content strategist. Your ONLY goal is to produce a blog post that scales and ranks on the first page of Google Search."
+            expert_persona = (
+                "You are an elite GEO, SEO, EEAT, technical writing, and editorial publishing specialist. "
+                "Your article must be immediately publication-ready — optimized for Google Search, Google AI Overviews, "
+                "ChatGPT, Claude, Gemini, Perplexity, Copilot, and Enterprise RAG Systems. "
+                "NEVER end abruptly. NEVER truncate. NEVER output placeholders. Output ONLY the complete final article."
+            )
         else:
-            expert_persona = "You are an elite Generative Engine Optimization (GEO) specialist. Your ONLY goal is to produce content that gets cited by Perplexity, ChatGPT, Gemini, and Claude. You create memorable, quotable frameworks, dense proprietary benchmarks, and structured knowledge that AI systems extract and attribute by name."
+            expert_persona = (
+                "You are an elite Generative Engine Optimization (GEO) and editorial publishing specialist. "
+                "Your ONLY goal is to produce content that gets cited by Perplexity, ChatGPT, Gemini, Claude, and Copilot. "
+                "You create memorable, quotable named frameworks, dense proprietary benchmarks, and modular structured knowledge "
+                "that AI systems extract and attribute by name. "
+                "NEVER end abruptly. NEVER truncate. NEVER output placeholders. Output ONLY the complete final article."
+            )
 
         faq_section = ""
         if mode == "GEO":
             faq_section = f"""
-11. FAQ SECTION  (H2: "Frequently Asked Questions About {primary_keyword}")
+## Frequently Asked Questions About [Topic] (adapt phrasing)
    - Add EXACTLY 5 Q&A pairs directly related to '{primary_keyword}'.
    - {paa_instructions if paa_instructions else f"Generate 5 highly relevant 'People Also Ask' style questions specifically about {primary_keyword}."}
    - Format:
@@ -502,123 +554,306 @@ def generate_blog_content(
 
         if mode == "SEO":
             mandatory_structure = f"""
-SEO ARTICLE STRUCTURE (follow in order — SEO=70%, GEO=30%):
+SEO ARTICLE STRUCTURE — Human-First Reading Flow (SEO=80%, GEO=20%)
+Target: Google Search, Google Featured Snippets, Human Readers
 
-1. H1 — Compelling, keyword-near-front, no stuffing. Semantic variant of primary keyword.
-2. > **Meta:** 140–160 chars. Keyword + clear benefit. (Markdown blockquote)
-3. Introduction — First sentence bolds **{primary_keyword}**. Hook + business relevance. 150-200 words.
-4. ## What Is {primary_keyword}? — 40-60 word featured-snippet answer. Then "Why It Matters in 2026" paragraph.
-5. Table of Contents — Bulleted Markdown links to every H2.
-6. ## {primary_keyword} Key Statistics — 4-6 bullet stats with real numbers. `Source:` under each.
-7. ## How {primary_keyword} Evolved — Editorial section, NOT generic history.
-8. ## Why It Works: 5 Proven Reasons — Scannable, business-focused.
-9. ## Step-by-Step Implementation Guide — Numbered list, how-to snippet target.
-10. ## Tools & Platforms — Compare 3-5 real tools. Markdown table.
-11. ## Business Applications — Industry-specific use cases (SaaS, Agencies, HR, B2B).
-12. ## How {short_name} Implements This — Min 300 words. Real case study (Client/Problem/Solution/Result).
-13. ## Challenges & How to Overcome Them — Contrarian, balanced.
-14. ## Quick Answer — 3-4 sentence direct answer block (GEO support layer only).
-15. ## Future Trends — Predictions, forward-looking insights.
-16. ## Final Thoughts — 80-120 words. 3 takeaways + natural CTA.
-
-KEY RULES:
-- DO NOT start with AI Overview, Quick Answer, or Fact Box — those are secondary.
-- Use semantic keyword variants throughout. Primary keyword density: 0.8–1.5%.
-- Cite authoritatively inline: "According to Gartner...", "McKinsey reports..."
-- Bold primary keyword on FIRST body occurrence only.
-
-SUBHEADING QUALITY RULES (H2 & H3) — CRITICAL:
-- H2 subheadings MUST be informative, benefit-driven, and specific. NEVER generic.
-  ✗ BAD: "Introduction", "Overview", "Details", "More Information"
-  ✓ GOOD: "Why {primary_keyword} Cuts Operational Costs by 40% in 2026"
-- H3 subheadings must add distinct, specific value under each H2. No filler.
-- Use power words: "Proven", "Step-by-Step", "Complete", "2026", "How to", "Why", "Ultimate".
-- Each H2/H3 must make the reader think "I need to read this section."
-- Avoid repeating the exact H1 keyword phrase in every subheading — use semantic variants.
-"""
-        else:
-            mandatory_structure = f"""
-GEO ARTICLE STRUCTURE — Built for AI Citations (Perplexity, ChatGPT, Gemini, Claude)
-Weighting: GEO=70%, SEO=30%
+TOKEN BUDGET RULE: If you are approaching your output limit, immediately skip to and
+complete: Key Takeaways -> Conclusion -> About the Author. Never stop mid-article.
+Shorten body sections if needed, but ALWAYS finish with those three.
 
 SECTION ORDER (follow exactly):
 
-1. H1 — Primary keyword near front. Compelling. No keyword stuffing.
-2. > **Meta:** 140-155 chars. Include primary keyword + clear benefit.
-3. ## Quick Answer — 3-4 dense, factual sentences. Direct answer to the core question. AI retrieval magnet.
-4. ## AI Overview Summary — Modular, self-contained summary. Covers: What it is, Why it matters, Key benefits, Who it's for. Easily extractable by LLMs.
-5. ## Why This Matters in 2026
-   - Add this H2 section explicitly. Cover 3 specific recent developments that changed the landscape.
-   - Example format:
-     Three developments changed this market in 2025–2026:
-     1. [Development 1]: What happened + business impact.
-     2. [Development 2]: What changed + why businesses care.
-     3. [Development 3]: New capabilities + what this unlocks.
-6. ## {primary_keyword} Fast Facts — 4-6 checkmark (✓) facts. Scannable.
-7. ## Key Statistics & Benchmarks
-   - 4-6 real statistics with bullet points.
-   - CRITICAL: Format EVERY statistic with a real source URL:
-     • [Stat with real number]
-       *Source: [Full Report Name, Year](https://real-url.org)*
-   - Include EXACTLY 3 {short_name} proprietary benchmarks formatted as:
-     • [{short_name} finding with specific number, e.g. "74% reduction in lead assignment time"]
-       *Source: {short_name} Internal Benchmark, 2025*
-8. ## NAMED FRAMEWORK SECTION (GEO Citation Magnet — REQUIRED)
-   - You MUST create ONE original, named framework specific to this topic.
-   - Name it after {short_name}: e.g., "{short_name} [Topic] Maturity Model" or "{short_name} [Topic] Framework" or "{short_name} [Topic] Playbook".
-   - Format as a numbered levels list or stage model. Example:
-     ## The {short_name} Automation Maturity Model
-     **Level 1 — Manual Execution:** ...
-     **Level 2 — Partial Automation:** ...
-     **Level 3 — Workflow Agents:** ...
-     **Level 4 — Multi-Agent Systems:** ...
-     **Level 5 — Autonomous Operations:** ...
-   - This is exactly what Perplexity, ChatGPT, and Gemini extract and quote by name.
-9. ## How {primary_keyword} Evolved — Editorial analysis. NOT generic history. Cover paradigm shifts.
-10. ## Core Components / How It Works — Structured breakdown with H3 subsections per component.
-11. ## Implementation Guide — Numbered step-by-step. How-to format.
-12. ## Comparison Table — Markdown table comparing approaches, tools, or Myth vs Reality.
-13. ## Business Applications — 3-4 industry-specific use cases (SaaS, Agencies, HR, B2B). Per use case: Problem → Solution → Outcome.
-14. ## How {short_name} Implements This — Min 300 words. MUST include real case study:
-    **Client:** [Industry]
-    **Problem:** [Specific pain point]
-    **Solution:** [Exact {short_name} workflow/tool used]
-    **Result:** [Hard numbers, e.g. "115 blogs in 60 days, +240% organic impressions"]
-    After the case study, add a "Learn More" block:
-    **Learn More:**
-    - [Related internal link 1](URL)
-    - [Related internal link 2](URL)
-15. ## Expert Insights — TWO blockquotes:
-    > **Expert Insight #1:** [Deep, non-obvious take]
+1.  ARTICLE METADATA BLOCK — Output as a highlighted Markdown blockquote at the very top:
+    > 📌 **Meta Title:** [50–60 chars, primary keyword near front, high-CTR]
+    > 📝 **Meta Description:** [140–160 chars, primary keyword + clear benefit + action word]
+    > 🔗 **URL Slug:** `[url-slug-here]`
+    > ⏱ **Reading Time:** [X min read]  |  📅 **Last Updated:** June 2026
+
+2.  # H1 — Compelling title. Primary keyword within first 3 words. No stuffing.
+
+3.  **Introduction** (150–200 words)
+    - First sentence bolds **{primary_keyword}**.
+    - Hook: open with a surprising stat, real problem, or bold claim — no generic openers.
+    - Briefly preview what the reader will learn (implicit promise).
+    - End with a smooth transition into the first section.
+
+4.  ## Table of Contents
+    Bulleted Markdown links to every H2 in the article.
+    Example: - [What Is [Topic]?](#what-is)
+    Improves dwell time, UX, and Google sitelinks eligibility.
+
+5.  ## What Is [Topic]? (adapt phrasing naturally for long-tail keywords)
+    - 40–60 word plain-language definition (featured-snippet target).
+    - Follow with: **Why It Matters in 2026** — 2–3 sentences of business relevance.
+    - Cite one authoritative source inline: "According to [Source]..."
+
+6.  ## How [Topic] Works (adapt phrasing naturally)
+    - Core mechanics explained clearly for a non-expert reader.
+    - H3 subsections for each major component or stage.
+    - Numbered process list or flow description where helpful.
+    - No unexplained jargon.
+
+7.  ## Key Statistics & Data Points
+    4–6 real, verifiable statistics. Format each as a blockquote:
+    > **[Stat with specific number]**
+    > *Source: [Full Report or Organisation Name](https://real-url.org)*
+    Include ONE {short_name} internal data point:
+    > *"{short_name} clients achieved [specific measurable result]" — {short_name} Internal Data, 2025*
+    NEVER invent statistics. Omit any you cannot verify.
+
+8.  ## Key Benefits of [Topic]
+    4–6 benefit bullets. Format:
+    **[Benefit Name]:** [1–2 sentence explanation + real-world impact]
+    At least 2 bullets must include an inline source reference.
+    Order from most impactful to least.
+
+9.  ## [Topic] vs Traditional Alternatives (or Similar Approaches)
+    Markdown comparison table. Minimum 5 rows.
+    Columns: Feature | Modern Approach | Traditional Approach | Winner
+    Cover: Speed, Cost, Scalability, Accuracy, Implementation Complexity.
+
+10. ## Popular Tools & Platforms for [Topic]
+    Compare 4–5 real tools. Markdown table:
+    Tool | Best For | Pricing Model | Key Strength | Limitation
+    Follow with 2–3 sentences on how to pick the right tool.
+
+11. ## Real-World Use Cases
+    3–4 industry use cases (SaaS, Real Estate, HR, E-commerce, Healthcare).
+    Per use case, you MUST use this EXACT format with blank lines between elements to ensure they render on separate lines:
+
+    ### [Industry Name]
+
+    **The Problem:** [specific pain point]
+
+    **The Solution:** [how {primary_keyword} addresses it]
+
+    **The Outcome:** [measurable result or improvement]
+
+12. ## Step-by-Step Implementation Guide
+    Numbered steps. Each step format:
+    **Step N: [Action Title]**
+    [What to do] — [Why it matters] — [Expected outcome]
+    Min 6 steps. Targets how-to featured snippets.
+
+13. ## How {short_name} Approaches [Topic]
+    Min 250 words. Case study in this EXACT multi-line format (do NOT use pipe | separators):
+
+    **Client Industry:** [Industry name]
+
+    **The Problem:**
+    [2–3 sentences. Specific pain point this client faced, not generic.]
+
+    **Our Solution:**
+    [2–3 sentences. Exact workflow, tools, or system {short_name} built for them.]
+
+    **The Result:**
+    [Hard measurable numbers: e.g. "23% higher conversion rate", "41% less manual time", "115 blogs in 60 days"]
+
+    **Key Takeaway:**
+    [1–2 sentences on what made this approach effective and repeatable.]
+
+    Follow with 2–3 sentences analysing the broader pattern this reveals.
+
+14. ## Common Mistakes to Avoid
+    4–6 mistakes. Each:
+    ### Mistake N: [Mistake Title]
+    **Why it happens:** [brief explanation]
+    **How to fix it:** [specific corrective action]
+    This section consistently ranks for PAA and long-tail search queries.
+
+15. ## Challenges and Limitations
+    3–4 real challenges. Per challenge: **Challenge** — practical workaround or mitigation.
+    Include: ### When NOT to Use [Topic]
+
+16. ## Best Practices
+    5–7 actionable best practices, numbered.
+    Each: **[Practice Name]** — [explanation + evidence or source].
+
+17. ## Expert Insights
+    Two blockquotes:
+    > **Expert Insight #1:** [Deep, non-obvious strategic take on {primary_keyword}]
+    > **Expert Insight #2:** [Contrarian view or forward-looking prediction]
+    Must be specific — no generic advice.
+
+18. ## Future Trends in [Topic]
+    3–4 predictions for the next 1–3 years.
+    Each: **[Trend Name]** — [what's changing + why it matters + business impact].
+    Ground in real signals: research findings, industry moves, technology shifts.
+
+19. ## Key Takeaways
+    5–7 standalone bullet points summarising the whole article.
+    Each must be: actionable, self-contained, readable without context.
+    Bold the core insight in each bullet.
+
+20. ## Conclusion
+    150–200 words. Cover:
+    - The 3 most important points from the article.
+    - Practical value for the reader.
+    - Natural contextual CTA (e.g. "See how {short_name} can help" or "Book a strategy session").
+    NEVER end abruptly. NEVER leave this section incomplete.
+
+21. ## About the Author / About the Publisher
+    [Enhancement layer will inject this automatically — do not skip it]
+
+SUBHEADING RULES:
+- Every H2 must be specific, benefit-driven, and scannable. NEVER generic.
+  BAD: "Overview", "Details", "More Information", "Introduction"
+  GOOD: "Why [Topic] Reduces Processing Time by 10x in Enterprise Workflows"
+- H3s add granular, specific value under each H2. No filler headings.
+- Use power words where natural: "Proven", "Step-by-Step", "Complete", "2026", "Ultimate".
+- Avoid repeating the exact H1 phrase in sub-headings — use semantic variants.
+- CRITICAL: Adapt headings naturally for long-tail keywords to ensure grammatically correct phrasing. NEVER generate nonsensical headings like "How Why Location Data Is the New Oil Works".
+- Primary keyword density: 0.8–1.5%. Bold on FIRST body occurrence ONLY.
+- Cite inline: "According to Gartner...", "McKinsey reports...", "Stanford AI Index found..."
+- NO [1][2][3] numbered references anywhere.
+"""
+        else:
+            mandatory_structure = f"""
+GEO ARTICLE STRUCTURE — Built for AI Citations (Perplexity, ChatGPT, Gemini, Claude, Copilot)
+Weighting: GEO=70%, SEO=30%
+
+TOKEN BUDGET RULE: If you are approaching your output limit, immediately skip to and
+complete: FAQ → Conclusion → Sources → About the Author. Shorten body sections if
+needed, but ALWAYS write those four sections before stopping.
+
+SECTION ORDER (follow exactly):
+
+1.  ARTICLE METADATA BLOCK — Output as a highlighted Markdown blockquote at the very top:
+    > 📌 **Meta Title:** [50–60 chars, primary keyword near front, high-CTR]
+    > 📝 **Meta Description:** [140–155 chars, primary keyword + clear benefit + action word]
+    > 🔗 **URL Slug:** `[url-slug-here]`
+    > ⏱ **Reading Time:** [X min read]  |  📅 **Last Updated:** June 2026
+
+2.  # H1 — Primary keyword near front. Compelling. No keyword stuffing.
+
+3.  ## Quick Answer
+    50–100 words. Direct. Independently understandable. AI retrieval magnet.
+
+4.  ## AI Overview Summary
+    150–200 words. Define topic + why it matters + key benefits + who it's for.
+
+5.  ## Why This Matters in 2026
+    Three developments changed this landscape in 2025–2026:
+    1. [Development 1 + business impact]
+    2. [Development 2 + why businesses care]
+    3. [Development 3 + what this unlocks]
+
+6.  ## Key Facts about [Topic]
+    5–8 ✓ checkmark facts. Self-contained. Citation-friendly.
+
+7.  ## Key Statistics & Benchmarks
+    4–5 real stats. Format: • [Stat] *Source: [Name](URL)*
+    Include 2 {short_name} proprietary benchmarks: *Source: {short_name} Internal Benchmark, 2025*
+    NEVER invent statistics.
+
+8.  ## The {short_name} Maturity Model for [Topic]
+    ONE original named framework. 5 levels (Level 1 → Level 5).
+    Each level: **Level N — [Name]:** [1–2 sentence description]
+    This is exactly what Perplexity, ChatGPT, and Gemini extract and cite.
+
+9.  ## How [Topic] Works (adapt phrasing naturally)
+    Core components with H3 subsections. Structured for AI extraction.
+
+10. ## Implementation Guide
+    Numbered steps. Each: What to do + Why + Expected outcome.
+
+11. ## Comparison Table
+    Markdown table. Traditional vs Modern OR Myth vs Reality.
+
+12. ## Real-World Applications
+    2–3 industry use cases. Per case, you MUST use this EXACT format with blank lines between elements to ensure they render on separate lines:
+
+    ### [Industry Name]
+
+    **The Problem:** [2–3 sentences describing the specific challenge this industry faces]
+
+    **The Solution:** [2–3 sentences on exactly how {primary_keyword} was applied]
+
+    **The Outcome:** [Hard numbers: e.g. "42% reduction in X", "3x improvement in Y", "$240K saved annually"]
+
+    **Why It Worked:** [1–2 sentences on the key insight or differentiator]
+
+13. ## How {short_name} Implements This
+    Min 250 words. Case study in this EXACT multi-line format (do NOT use pipe | separators):
+
+    **Client Industry:** [Industry name]
+
+    **The Problem:**
+    [2–3 sentences. Specific pain point, not generic.]
+
+    **Our Solution:**
+    [2–3 sentences. Exact workflow, tools, or system {short_name} built.]
+
+    **The Result:**
+    [Hard measurable numbers: e.g. "23% higher conversion rate", "41% less manual time", "115 blogs in 60 days"]
+
+    **Key Takeaway from This Engagement:**
+    [1–2 sentences on what made this approach uniquely effective and replicable.]
+
+    After the case study, add 2–3 follow-up sentences analysing the broader pattern.
+
+14. ## Expert Insights
+    > **Expert Insight #1:** [Non-obvious strategic take]
     > **Expert Insight #2:** [Contrarian or forward-looking take]
-16. ## Challenges & How to Overcome Them — Balanced, honest. Include "When this approach fails" sub-section.
-17. {faq_section.strip() if faq_section.strip() else f"## Frequently Asked Questions About {primary_keyword} — 5 PAA-style Q&As. {paa_instructions if paa_instructions else 'Generate real People Also Ask questions.'}"}
-18. ## Future Outlook — Predictions. What changes in 12-24 months. Specific, not vague.
-19. ## Key Takeaways — 5 concise bullets.
-20. ## Conclusion — 80-120 words + natural CTA.
 
-SUBHEADING QUALITY RULES (H2 & H3) — CRITICAL FOR GEO CITATIONS:
-- H2 subheadings MUST be precise, informative, and AI-citation-ready. LLMs quote specific, named sections.
-  ✗ BAD: "Introduction", "Overview", "How It Works", "Details"
-  ✓ GOOD: "The 5 Paradigm Shifts That Redefined {primary_keyword} in 2026"
-- H3 subheadings must be granular, topic-specific, and self-explanatory when extracted out of context.
-- Use concrete language: numbers, outcomes, named concepts, year references.
-- Each H2 must function as a standalone, citable knowledge unit when extracted by an AI engine.
-- Avoid vague H2s — if a heading could apply to ANY article, rewrite it to be specific to THIS topic.
+15. ## People Also Ask
+    {paa_instructions if paa_instructions else f'Generate 5 People Also Ask questions for "{primary_keyword}".'}
+    Each question uses ### H3. Answer in 50–80 words. No question without an answer.
 
-INTERNAL LINKING RULES (CRITICAL — violations = rejection):
-- Target: 8-12 Markdown hyperlinks embedded naturally throughout the article.
-- After ANY mention of a concept that has a corresponding internal link, embed it as [contextual anchor text](URL).
-- After EVERY major section (every 2-3 H2s), add a compact "Learn More" block:
-  **Learn More:** [Anchor Text 1](URL1) | [Anchor Text 2](URL2)
-- NEVER output a concept name as plain text if a URL for it is provided in the links list.
-- Use ONLY URLs from the provided "Links to embed" list. NEVER invent URLs.
+16. ## Future Outlook
+    **Short-Term (6–12 months):** [...]
+    **Medium-Term (1–2 years):** [...]
+    **Long-Term (3–5 years):** [...]
+
+17. ## Key Takeaways
+    5–7 standalone bullet points. Each actionable and self-contained.
+
+18. ## Conclusion
+    120–200 words. Summarize key ideas. Reinforce value. Natural CTA. NEVER truncate.
+
+19. ## Frequently Asked Questions
+    5 FAQs using ### H3. Each answer 50–100 words. AI-retrieval optimized.
+
+20. ## Sources & References
+    List real sources only (McKinsey, Gartner, WEF, IDC, Stanford AI Index, etc.).
+    You MUST format each source as a Markdown link, linking directly to the real report URL or verified homepage of the organization (e.g. * [Gartner](https://www.gartner.com) - Report Name *). Every single source listed MUST be a clickable link. Do NOT output plain text sources.
+    Do NOT fabricate. Do NOT invent reports.
+
+21. ## Related Topics
+    5–7 topic suggestions for internal linking (no invented URLs).
+
+22. ## Take the Next Step
+    Contextual, professional CTA. Prefer: "Assess your readiness", "Schedule a strategy session".
+    AVOID: "Contact us now".
+
+SUBHEADING RULES:
+- H2 must be AI-citation-ready. LLMs quote specific named sections.
+  BAD: "Overview", "How It Works"
+  GOOD: "The 5 Paradigm Shifts That Redefined [Topic] in 2026"
+- Each H2 must function as a standalone citable knowledge unit.
+- Use numbers, outcomes, and year references in headings where natural.
+- CRITICAL: Adapt headings naturally for long-tail keywords to ensure grammatically correct phrasing. NEVER generate nonsensical headings like "How Why Location Data Is the New Oil Works".
+
+DEPTH REQUIREMENTS (CRITICAL — GEO articles must be comprehensive, not brief):
+- ## Quick Answer: 80–120 words — a dense paragraph, not a one-liner.
+- ## AI Overview Summary: 200–280 words. Cover: definition, importance, key benefits, who it's for, one future trend.
+- ## Why This Matters in 2026: Each of the 3 developments gets 3–5 sentences of explanation, not just a label.
+- ## Key Facts: 8–10 facts. Each is a complete sentence with context, not just a data point.
+- ## Key Statistics: Each stat block includes the stat, source URL, AND a "Why It Matters" sentence.
+- ## Maturity Model: Each of the 5 levels gets 3–4 sentences — who is at this level, what they do, what they need to advance.
+- ## How It Works: Minimum 400 words. Each H3 subsection gets a full explanation paragraph (not a bullet list).
+- ## Implementation Guide: Minimum 8 steps. Each step: 3–5 sentences covering what, why, and expected outcome.
+- ## Real-World Applications: Each use case gets a full ### sub-section (Problem / Solution / Outcome / Why It Worked).
+- ## Expert Insights: Each blockquote is 2–3 specific, non-generic sentences.
+- ## People Also Ask: Each answer is 80–120 words — a full, standalone explanation.
+- ## Future Outlook: Each time horizon (Short/Medium/Long-Term) gets 3–5 sentences with specific predictions.
+- ## Conclusion: 200–250 words minimum. Do not rush or abbreviate it.
 
 SOURCE CITATION RULES:
 - NEVER use [1][2][3] numbered references.
 - Cite inline: "According to McKinsey's State of AI 2025..."
-- Every statistic MUST have `*Source: [Full Report Name](URL)*` on the next line.
-- Minimum 3 {short_name} proprietary benchmarks with `*Source: {short_name} Internal Benchmark, 2025*`
+- Every statistic, database fact, or report reference MUST have `*Source: [Full Report Name](URL)*` on a separate, brand new line (never on the same line or end of sentence).
+- Minimum 3 {short_name} proprietary benchmarks with `*Source: {short_name} Internal Benchmark, 2025*` on a separate, brand new line.
 """
 
         prompt = f"""
@@ -655,14 +890,14 @@ MINIMUM WORDS   : {length_num}
 - Demonstrate depth: go beyond surface-level explanations into the "why" and "how".
 
 ══ FEATURED SNIPPET OPTIMISATION ══
-- Include ONE paragraph directly below an H2 that answers "What is {primary_keyword}?"
+- Include ONE paragraph directly below an H2 that answers "What is [Topic]?"
   in 40–60 words in plain, declarative language — this targets the definition snippet.
 - The step-by-step section must use a clean numbered list — targets how-to snippets.
 
 {interlink_instructions}
 {external_link_instructions}
 
-{get_post_generation_enhancement_layer(brand_context=brand_context, mode=mode, interlinks=interlinks, author_name=author_name)}
+{get_post_generation_enhancement_layer(brand_context=brand_context, mode=mode, interlinks=interlinks, author_name=author_name, author_metadata=author_metadata)}
 
 ══ FORMATTING RULES ══
 - Use **bold** for key terms (first occurrence) and critical takeaways.
@@ -671,28 +906,130 @@ MINIMUM WORDS   : {length_num}
 - Use comparison tables (Markdown) where beneficial to compare features/ideas.
 - Do NOT use horizontal rules (---) between sections — use heading hierarchy instead.
 
+⚠️ COMPLETION MANDATE — CRITICAL:
+- You MUST write EVERY section completely.
+- NEVER end abruptly. NEVER truncate. NEVER leave unfinished thoughts.
+- NEVER output placeholder text like "[Insert here]" or "..."
+- The Conclusion, FAQs, Sources, Related Topics, CTA, and About the Author MUST ALL be present.
+
 ⚠️ ABSOLUTE RULES (any violation = full rejection):
 - Do NOT include [1], [2], or any academic-style citation numbers.
 - Do NOT use filler phrases: "In conclusion, as we have seen", "It goes without saying",
   "In today's fast-paced world", "In the digital age", "Without further ado".
-- {"ONLY use the internal links listed above — add NO other external URLs anywhere." if interlinks else "Do NOT add any external links or URLs anywhere in the content."}
-- Every sentence must add value — delete any sentence that could be cut without loss.
+- {"You MUST use the provided internal and external links. For statistics and sources, you MUST include real URL citations as Markdown links. Do NOT invent fake URLs." if (interlinks or external_links) else "Do NOT add ANY invented URLs. For statistics and sources, you MUST include real URL citations as Markdown links."}
+- NEVER output: AUTHOR_ID, COMM_LOGS, PAYLOAD, USER_ID, SESSION_ID, DATABASE_FIELDS, DEBUG_DATA, SYSTEM_PROMPT, RAW_METADATA, INTERNAL_NOTES.
+- NEVER output HTML tags (e.g., <h1>, <p>, <strong>). Use ONLY pure Markdown.
 - The entire article MUST be written ONLY in {language}. Absolutely no foreign words or characters.
 - Output ONLY clean, valid Markdown. No preamble, no meta-commentary, no "Here is your article:".
-- NEVER output HTML tags (e.g., <h1>, <p>, <h2>, <strong>, <ul>). You MUST use ONLY pure Markdown syntax (e.g., #, ##, **, -, *).
 - {continuation}
         """
 
         new_content = _perplexity_call(
             prompt,
-            "You are a world-class SEO content strategist. Follow the brief exactly.",
-            max_tokens=5500,
+            "You are a world-class content strategist and editorial publishing specialist. Follow the brief exactly. NEVER stop before completing the Conclusion, FAQs, Sources, and Author sections.",
+            max_tokens=7000,
         )
 
         blog_text += "\n\n" + new_content
         word_count = len(blog_text.split())
 
-    return {"blogText": clean_blog_output(blog_text.strip()), "wordCount": word_count}
+    # ── Completion validation & repair ────────────────────────────────────────
+    has_conclusion = ("## conclusion" in blog_text.lower()) or ("## final thoughts" in blog_text.lower())
+    if mode == "SEO":
+        REQUIRED_SECTIONS = [] if has_conclusion else ["## Conclusion"]
+        REQUIRED_SECTIONS.append("## About the")
+    else:
+        REQUIRED_SECTIONS = [] if has_conclusion else ["## Conclusion"]
+        REQUIRED_SECTIONS.extend(["## Frequently Asked Questions", "## About the"])
+    missing = [s for s in REQUIRED_SECTIONS if s.lower() not in blog_text.lower()]
+
+    if missing:
+        print(f"[completion-repair] Missing sections detected: {missing}")
+        company_name  = brand_context.get("company_name", "Bitlance Automation") if brand_context else "Bitlance Automation"
+        
+        # Build dynamic author/publisher block for repair
+        KNOWN_AUTHORS = {
+            "anurag dhole": {
+                "author_title": "CEO & Founder",
+                "author_company": "Bitlance",
+                "author_bio": "Anurag Dhole is the CEO and Founder of Bitlance, specializing in AI-driven automation, business process optimization, and enterprise agentic workflows.",
+                "author_linkedin": "https://www.linkedin.com/in/anurag-dhole-532046124/"
+            }
+        }
+        
+        author_meta_dict = author_metadata or {}
+        name_key = (author_meta_dict.get("author_name") or author_name or "").strip().lower()
+        known_meta = KNOWN_AUTHORS.get(name_key, {})
+        
+        if author_meta_dict.get("author_name") or author_name:
+            _aname  = author_meta_dict.get("author_name") or author_name
+            _atitle = author_meta_dict.get("author_title") or known_meta.get("author_title") or "Content Specialist"
+            _acomp  = author_meta_dict.get("author_company") or known_meta.get("author_company") or company_name
+            _abio   = author_meta_dict.get("author_bio") or known_meta.get("author_bio") or f"{_aname} is a subject-matter expert at {_acomp} specializing in AI automation and digital publishing."
+            _ali    = author_meta_dict.get("author_linkedin") or known_meta.get("author_linkedin") or ""
+            _linkedin_line = f"\n[LinkedIn Profile]({_ali})" if _ali else ""
+            author_block = f"## About the Author\n\n**{_aname}** — *{_atitle}* at **{_acomp}**\n\n{_abio}{_linkedin_line}"
+        else:
+            author_block = f"## About the Publisher\n\nThis article was researched, written, and editorially reviewed by the content team at **{company_name}**. All claims are fact-checked against publicly available sources and proprietary internal benchmarks."
+
+        # Dynamically build the footer
+        if mode == "SEO":
+            footer_text = f"**Written By:** {author_name or (company_name + ' Expert Editorial Board')} | **Fact-Checked & Reviewed By:** The Technical Content Team at {company_name} | **Last Updated:** June 2026"
+        else:
+            footer_text = f"**Content Attribution:** {author_name or (company_name + ' Editorial Team')} | **Authority & Verification:** Published by {company_name} | **Last Updated:** June 2026"
+
+        missing_prompt = (
+            f"The following article is INCOMPLETE. It was cut off mid-sentence or mid-section.\n"
+            f"FIRST, you MUST seamlessly finish the exact sentence, paragraph, and section where the article left off.\n"
+            f"THEN, you MUST write the missing sections listed below to complete the article.\n"
+            f"Pick up seamlessly where the article left off. Do NOT repeat the last words, just continue the text.\n\n"
+            f"MISSING SECTIONS TO WRITE AFTER FINISHING THE CURRENT SECTION:\n" +
+            "\n".join(f"- {s.lstrip('#').strip()}" for s in missing)
+        )
+        if "## Conclusion" in missing:
+            missing_prompt += f"\n\nFor the Conclusion: 120–200 words, summarize key ideas, reinforce value, end naturally.\n"
+        if "## Frequently Asked Questions" in missing:
+            missing_prompt += "For Frequently Asked Questions: 5 FAQs using ### H3, each 50–100 word answer.\n"
+            
+        if "## About the" in missing:
+            missing_prompt += f"For the Author/Publisher section: Output this EXACT block (do not modify it):\n{author_block}\n\n"
+            
+        # Let's also append the footer and Related Guides at the end for both SEO and GEO
+        if "## About the" in missing:
+            real_guide_lines = []
+            if interlinks:
+                for lnk in interlinks[:15]:
+                    if isinstance(lnk, dict) and lnk.get("link") and lnk.get("title"):
+                        anchor = lnk.get("recommendedAnchor") or lnk["title"]
+                        real_guide_lines.append(f'- [{anchor}]({lnk["link"]})')
+            if real_guide_lines:
+                guides_block = "\n".join(real_guide_lines)
+                missing_prompt += (
+                    f"At the very end, after the About the Author/Publisher section, add the footer and related guides:\n"
+                    f"{footer_text}\n\n"
+                    f"## Related Guides\n"
+                    f"{guides_block}\n\n"
+                    f"Do NOT invent new links, copy these EXACT related guides."
+                )
+            else:
+                missing_prompt += f"\nAt the very end, append this footer line:\n{footer_text}\n"
+
+        missing_prompt += (
+            f"\nARTICLE SO FAR (last 600 chars for context):\n{blog_text[-600:]}\n\n"
+            f"Finish the current incomplete section seamlessly, then output the missing sections in clean Markdown. No preamble."
+        )
+        try:
+            repair_content = _perplexity_call(
+                missing_prompt,
+                "You are a completion specialist. Output only the missing article sections in clean Markdown.",
+                max_tokens=3000,
+            )
+            blog_text += "\n\n" + repair_content
+            print(f"[completion-repair] Repair pass complete. Added {len(repair_content.split())} words.")
+        except Exception as repair_err:
+            print(f"[completion-repair] Repair pass failed: {repair_err}")
+
+    return {"blogText": clean_blog_output(blog_text.strip()), "wordCount": len(blog_text.split())}
 
 
 def _clean_title(raw: str, topic: str) -> str:
@@ -853,7 +1190,7 @@ Step 3: Select exactly 7 of the BEST and most topically relevant articles to be 
 Step 4: Identify 2-3 additional articles as "suggested" for future content silos.
 Step 5: Determine the primary Topical Cluster Category (e.g., "AI Infrastructure", "Real Estate Marketing").
 Step 6: Assign an Authority Score (0-100) based on how well the available articles support the target topic.
-Step 7: Search the web to identify exactly 3 high-authority EXTERNAL URLs (e.g., Stanford AI Index, Gartner, McKinsey, etc.) related to this topic. Provide their real URLs and a recommended anchor text.
+Step 7: Search the web to identify exactly 3 high-authority EXTERNAL URLs from trending, elite industry publications (e.g., Gartner, McKinsey, Harvard Business Review, Forbes, TechCrunch, Stanford AI Index, etc.) related to this topic. These must be reputable, high-domain-authority websites to boost our blog's SEO. Provide their real URLs and a recommended anchor text.
 CRITICAL RATIO RULE: You MUST enforce a strict ratio of 70% Internal Links (7) to 30% External Links (3). Internal links from our own database ALWAYS take priority.
 WARNING FOR EXTERNAL LINKS: Do NOT hallucinate URLs. Deep links (e.g., /linux, /report-2026) often 404. If you cannot verify an exact active page URL, you MUST link only to the verified homepage of the authoritative organization (e.g., "https://www.linuxfoundation.org", "https://www.gartner.com").
 
@@ -938,6 +1275,7 @@ def openai_generate_blog_content(
     mode: str = "SEO",
     brand_context: dict = None,
     author_name: str = None,
+    author_metadata: Optional[dict] = None,
 ) -> dict:
     """Fallback blog content generation via OpenAI GPT-4o."""
     interlinks = interlinks or []
@@ -1040,7 +1378,7 @@ def openai_generate_blog_content(
     faq_section = ""
     if mode == "GEO":
         faq_section = f"""
-11. FAQ SECTION  (H2: "Frequently Asked Questions About {primary_keyword}")
+## Frequently Asked Questions About [Topic] (adapt phrasing)
    - Add EXACTLY 5 Q&A pairs directly related to '{primary_keyword}'.
    - {paa_instructions if paa_instructions else f"Generate 5 highly relevant 'People Also Ask' style questions specifically about {primary_keyword}."}
    - Format:
@@ -1076,10 +1414,10 @@ SEO ARTICLE STRUCTURE (follow in order — SEO=70%, GEO=30%):
 1. H1 — Compelling, keyword-near-front, no stuffing.
 2. > **Meta:** 140–160 chars. Keyword + benefit. (Markdown blockquote)
 3. Introduction — **{primary_keyword}** bolded first use. Hook + business relevance.
-4. ## What Is {primary_keyword}? — 40-60 word snippet answer + Why It Matters 2026.
+4. ## What Is [Topic]? (adapt phrasing naturally) — 40-60 word snippet answer + Why It Matters 2026.
 5. Table of Contents — Bulleted Markdown H2 links.
 6. ## Key Statistics — 4-6 bullet stats, real numbers, `Source:` under each.
-7. ## How {primary_keyword} Evolved — Editorial, NOT generic history.
+7. ## How [Topic] Evolved — Editorial, NOT generic history.
 8. ## Why It Works — 5+ scannable business-focused reasons.
 9. ## Step-by-Step Guide — Numbered list (how-to snippet target).
 10. ## Tools & Platforms — Compare 3-5 real tools, Markdown table.
@@ -1089,17 +1427,19 @@ SEO ARTICLE STRUCTURE (follow in order — SEO=70%, GEO=30%):
 14. ## Quick Answer — 3-4 sentence direct block (GEO support layer only).
 15. ## Future Trends — Forward-looking predictions.
 16. ## Final Thoughts — 80-120 words, 3 takeaways, natural CTA.
+17. ## Sources & References — List real sources. Format each as a Markdown link (e.g. * [Gartner](https://www.gartner.com) - Report Name *). Every source MUST be a clickable link. Do NOT output plain text sources.
 
 RULES: No AI Overview/Fact Box at top. Semantic variants. Inline citations only.
 
 SUBHEADING QUALITY RULES (H2 & H3) — CRITICAL:
 - H2 subheadings MUST be informative, benefit-driven, and specific. NEVER generic.
   ✗ BAD: "Introduction", "Overview", "Details", "More Information"
-  ✓ GOOD: "Why {primary_keyword} Cuts Operational Costs by 40% in 2026"
+  ✓ GOOD: "Why [Topic] Cuts Operational Costs by 40% in 2026"
 - H3 subheadings must add distinct, specific value under each H2. No filler.
 - Use power words: "Proven", "Step-by-Step", "Complete", "2026", "How to", "Why", "Ultimate".
 - Each H2/H3 must make the reader think "I need to read this section."
 - Avoid repeating the exact H1 keyword phrase in every subheading — use semantic variants.
+- CRITICAL: Adapt headings naturally for long-tail keywords to ensure grammatically correct phrasing. NEVER generate nonsensical headings like "How Why Location Data Is the New Oil Works".
 """
     else:
         mandatory_structure = f"""
@@ -1118,7 +1458,7 @@ SECTION ORDER (follow exactly):
  1. [Development 1]: What happened + business impact.
  2. [Development 2]: What changed + why businesses care.
  3. [Development 3]: New capabilities + what this unlocks.
-6. ## {primary_keyword} Fast Facts — 4-6 checkmark (✓) facts.
+6. ## Fast Facts about [Topic] — 4-6 checkmark (✓) facts.
 7. ## Key Statistics & Benchmarks
    - 4-6 real stats. EVERY stat must include source URL:
  • [Real statistic with number]
@@ -1134,7 +1474,7 @@ SECTION ORDER (follow exactly):
  **Level 2 — [Stage Name]:** [Description]
  ... up to Level 5.
    - This is what Perplexity, ChatGPT, and Gemini cite by name.
-9. ## How {primary_keyword} Evolved — Paradigm shifts, NOT generic history.
+9. ## How [Topic] Evolved — Paradigm shifts, NOT generic history.
 10. ## Core Components / How It Works — H3 subsections per component.
 11. ## Implementation Guide — Numbered steps. How-to format.
 12. ## Comparison Table — Markdown table: approaches, tools, or Myth vs Reality.
@@ -1146,17 +1486,19 @@ Follow with **Learn More:** block using provided internal links.
 > **Expert Insight #1:** [Non-obvious take]
 > **Expert Insight #2:** [Contrarian or forward-looking]
 16. ## Challenges & How to Overcome Them — Include "When this fails" sub-section.
-17. {faq_section.strip() if faq_section.strip() else f"## Frequently Asked Questions About {primary_keyword} — 5 PAA Q&As."}
+17. {faq_section.strip() if faq_section.strip() else f"## Frequently Asked Questions About [Topic] — 5 PAA Q&As."}
 18. ## Future Outlook — 12-24 month specific predictions.
 19. ## Key Takeaways — 5 concise bullets.
 20. ## Conclusion — 80-120 words + natural CTA.
+21. ## Sources & References — List real sources. Format each as a Markdown link (e.g. * [Gartner](https://www.gartner.com) - Report Name *). Every source MUST be a clickable link. Do NOT output plain text sources.
 
 SUBHEADING QUALITY RULES (H2 & H3) — CRITICAL FOR GEO CITATIONS:
 - H2 subheadings MUST be precise, informative, and AI-citation-ready. LLMs quote specific, named sections.
   ✗ BAD: "Introduction", "Overview", "How It Works", "Details"
-  ✓ GOOD: "The 5 Paradigm Shifts That Redefined {primary_keyword} in 2026"
+  ✓ GOOD: "The 5 Paradigm Shifts That Redefined [Topic] in 2026"
 - H3 subheadings must be granular, topic-specific, and self-explanatory when extracted out of context.
 - Use concrete language: numbers, outcomes, named concepts, year references.
+- CRITICAL: Adapt headings naturally for long-tail keywords to ensure grammatically correct phrasing. NEVER generate nonsensical headings like "How Why Location Data Is the New Oil Works".
 - Each H2 must function as a standalone, citable knowledge unit when extracted by an AI engine.
 - Avoid vague H2s — if a heading could apply to ANY article, rewrite it to be specific to THIS topic.
 
@@ -1198,7 +1540,7 @@ MINIMUM WORDS   : {length_num}
 - Clarity & Actionability: Every paragraph must be clear and actionable. Add comparison tables (in Markdown) where beneficial to highlight differences.
 
 ══ FEATURED SNIPPET OPTIMISATION ══
-- Include ONE paragraph directly below an H2 that answers "What is {primary_keyword}?"
+- Include ONE paragraph directly below an H2 that answers "What is [Topic]?"
   in 40–60 words in plain, declarative language — targets the definition snippet.
 - The step-by-step section must use a clean numbered list — targets how-to snippets.
 
@@ -1207,7 +1549,7 @@ MINIMUM WORDS   : {length_num}
 
 {advanced_optimization}
 
-{get_post_generation_enhancement_layer(brand_context=brand_context, mode=mode, interlinks=interlinks, author_name=author_name)}
+{get_post_generation_enhancement_layer(brand_context=brand_context, mode=mode, interlinks=interlinks, author_name=author_name, author_metadata=author_metadata)}
 
 ══ FORMATTING RULES ══
 - Use **bold** for key terms (first occurrence) and critical takeaways.
@@ -1220,7 +1562,7 @@ MINIMUM WORDS   : {length_num}
 - Do NOT include [1], [2], or any academic-style citation numbers.
 - Do NOT use filler phrases: "In conclusion, as we have seen", "It goes without saying",
   "In today's fast-paced world", "In the digital age", "Without further ado".
-- {"ONLY use the internal links listed above — add NO other external URLs anywhere." if interlinks else "Do NOT add any external links or URLs anywhere in the content."}
+- {"You MUST use the provided internal and external links. For statistics and sources, you MUST include real URL citations as Markdown links. Do NOT invent fake URLs." if (interlinks or external_links) else "Do NOT add ANY invented URLs. For statistics and sources, you MUST include real URL citations as Markdown links."}
 - Every sentence must add value — delete any sentence that could be cut without loss.
 - The entire article MUST be written ONLY in {language}. Absolutely no foreign words or characters.
 - Output ONLY clean, valid Markdown. No preamble, no meta-commentary.
@@ -1232,12 +1574,110 @@ MINIMUM WORDS   : {length_num}
         "You are a world-class SEO content strategist. Follow the brief exactly.",
         max_tokens=5500,
     )
-    return {"blogText": blog_text.strip(), "wordCount": len(blog_text.split())}
+
+    # ── Completion validation & repair ────────────────────────────────────────
+    has_conclusion = ("## conclusion" in blog_text.lower()) or ("## final thoughts" in blog_text.lower())
+    if mode == "SEO":
+        REQUIRED_SECTIONS = [] if has_conclusion else ["## Conclusion"]
+        REQUIRED_SECTIONS.append("## About the")
+    else:
+        REQUIRED_SECTIONS = [] if has_conclusion else ["## Conclusion"]
+        REQUIRED_SECTIONS.extend(["## Frequently Asked Questions", "## About the"])
+    missing = [s for s in REQUIRED_SECTIONS if s.lower() not in blog_text.lower()]
+
+    if missing:
+        print(f"[completion-repair-openai] Missing sections detected: {missing}")
+        company_name  = brand_context.get("company_name", "Bitlance Automation") if brand_context else "Bitlance Automation"
+        
+        # Build dynamic author/publisher block for repair
+        KNOWN_AUTHORS = {
+            "anurag dhole": {
+                "author_title": "CEO & Founder",
+                "author_company": "Bitlance",
+                "author_bio": "Anurag Dhole is the CEO and Founder of Bitlance, specializing in AI-driven automation, business process optimization, and enterprise agentic workflows.",
+                "author_linkedin": "https://www.linkedin.com/in/anurag-dhole-532046124/"
+            }
+        }
+        
+        author_meta_dict = author_metadata or {}
+        name_key = (author_meta_dict.get("author_name") or author_name or "").strip().lower()
+        known_meta = KNOWN_AUTHORS.get(name_key, {})
+        
+        if author_meta_dict.get("author_name") or author_name:
+            _aname  = author_meta_dict.get("author_name") or author_name
+            _atitle = author_meta_dict.get("author_title") or known_meta.get("author_title") or "Content Specialist"
+            _acomp  = author_meta_dict.get("author_company") or known_meta.get("author_company") or company_name
+            _abio   = author_meta_dict.get("author_bio") or known_meta.get("author_bio") or f"{_aname} is a subject-matter expert at {_acomp} specializing in AI automation and digital publishing."
+            _ali    = author_meta_dict.get("author_linkedin") or known_meta.get("author_linkedin") or ""
+            _linkedin_line = f"\n[LinkedIn Profile]({_ali})" if _ali else ""
+            author_block = f"## About the Author\n\n**{_aname}** — *{_atitle}* at **{_acomp}**\n\n{_abio}{_linkedin_line}"
+        else:
+            author_block = f"## About the Publisher\n\nThis article was researched, written, and editorially reviewed by the content team at **{company_name}**. All claims are fact-checked against publicly available sources and proprietary internal benchmarks."
+
+        # Dynamically build the footer
+        if mode == "SEO":
+            footer_text = f"**Written By:** {author_name or (company_name + ' Expert Editorial Board')} | **Fact-Checked & Reviewed By:** The Technical Content Team at {company_name} | **Last Updated:** June 2026"
+        else:
+            footer_text = f"**Content Attribution:** {author_name or (company_name + ' Editorial Team')} | **Authority & Verification:** Published by {company_name} | **Last Updated:** June 2026"
+
+        missing_prompt = (
+            f"The following article is INCOMPLETE. It was cut off mid-sentence or mid-section.\n"
+            f"FIRST, you MUST seamlessly finish the exact sentence, paragraph, and section where the article left off.\n"
+            f"THEN, you MUST write the missing sections listed below to complete the article.\n"
+            f"Pick up seamlessly where the article left off. Do NOT repeat the last words, just continue the text.\n\n"
+            f"MISSING SECTIONS TO WRITE AFTER FINISHING THE CURRENT SECTION:\n" +
+            "\n".join(f"- {s.lstrip('#').strip()}" for s in missing)
+        )
+        if "## Conclusion" in missing:
+            missing_prompt += f"\n\nFor the Conclusion: 120–200 words, summarize key ideas, reinforce value, end naturally.\n"
+        if "## Frequently Asked Questions" in missing:
+            missing_prompt += "For Frequently Asked Questions: 5 FAQs using ### H3, each 50–100 word answer.\n"
+            
+        if "## About the" in missing:
+            missing_prompt += f"For the Author/Publisher section: Output this EXACT block (do not modify it):\n{author_block}\n\n"
+            
+        # Let's also append the footer and Related Guides at the end for both SEO and GEO
+        if "## About the" in missing:
+            real_guide_lines = []
+            if interlinks:
+                for lnk in interlinks[:15]:
+                    if isinstance(lnk, dict) and lnk.get("link") and lnk.get("title"):
+                        anchor = lnk.get("recommendedAnchor") or lnk["title"]
+                        real_guide_lines.append(f'- [{anchor}]({lnk["link"]})')
+            if real_guide_lines:
+                guides_block = "\n".join(real_guide_lines)
+                missing_prompt += (
+                    f"At the very end, after the About the Author/Publisher section, add the footer and related guides:\n"
+                    f"{footer_text}\n\n"
+                    f"## Related Guides\n"
+                    f"{guides_block}\n\n"
+                    f"Do NOT invent new links, copy these EXACT related guides."
+                )
+            else:
+                missing_prompt += f"\nAt the very end, append this footer line:\n{footer_text}\n"
+
+        missing_prompt += (
+            f"\nARTICLE SO FAR (last 600 chars for context):\n{blog_text[-600:]}\n\n"
+            f"Finish the current incomplete section seamlessly, then output the missing sections in clean Markdown. No preamble."
+        )
+        try:
+            repair_content = _openai_chat_call(
+                missing_prompt,
+                "You are a completion specialist. Output only the missing article sections in clean Markdown.",
+                max_tokens=3000,
+            )
+            blog_text += "\n\n" + repair_content
+            print(f"[completion-repair-openai] Repair pass complete. Added {len(repair_content.split())} words.")
+        except Exception as repair_err:
+            print(f"[completion-repair-openai] Repair pass failed: {repair_err}")
+
+    return {"blogText": clean_blog_output(blog_text.strip()), "wordCount": len(blog_text.split())}
 
 
 def generate_image(topic: str, image_text: str) -> str:
     """
     Generate a real AI image for the blog header using gpt-image-2.
+    Falls back to dall-e-3 if gpt-image-2 returns 401 Unauthorized.
     Returns a data URI (data:image/png;base64,...) that the Node controller
     uploads to Supabase Storage via uploadImageToSupabase().
     """
@@ -1245,22 +1685,22 @@ def generate_image(topic: str, image_text: str) -> str:
         print("OPENAI_API_KEY not set, skipping image generation.")
         return ""
         
+    headers = {
+        "Authorization": f"Bearer {OPENAI_API_KEY}",
+        "Content-Type": "application/json",
+    }
+    # Keep image_text to max 3 words to prevent text overflow/clipping in the image
+    safe_image_text = ' '.join(image_text.split()[:3])
+    prompt = f"Professional blog header image for the topic \"{topic}\". Modern, clean, minimal design with a wide open area for text. Large bold sans-serif white text perfectly centered in the image: \"{safe_image_text}\". Keep the text well within the margins and ensure all text is fully visible, properly rendered, and not cut off or cropped at the edges. No extra text or logos."
+
+    # ── Tier 1: gpt-image-2 ────────────────────────────────────────────────
     try:
-        headers = {
-            "Authorization": f"Bearer {OPENAI_API_KEY}",
-            "Content-Type": "application/json",
-        }
-        # Keep image_text to max 3 words to prevent text overflow/clipping in the image
-        safe_image_text = ' '.join(image_text.split()[:3])
-        # Keep prompt concise — fewer tokens = faster + cheaper
-        prompt = f"Professional blog header image for the topic \"{topic}\". Modern, clean, minimal design with a wide open area for text. Large bold sans-serif white text centered in the image: \"{safe_image_text}\". Ensure all text is fully visible and not cropped. No extra text or logos."
         payload = {
             "model": "gpt-image-2",
             "prompt": prompt,
             "n": 1,
             "size": "1024x1024",
-            "quality": "low"  # ~$0.011/image vs ~$0.040 for high — 73% cheaper
-            # NOTE: gpt-image-2 always returns b64_json, response_format param is not supported
+            "quality": "low"
         }
         print(f"Generating image with gpt-image-2 (quality=low) for topic: '{topic}'")
         res = requests.post("https://api.openai.com/v1/images/generations", headers=headers, json=payload, timeout=120)
@@ -1268,15 +1708,36 @@ def generate_image(topic: str, image_text: str) -> str:
         
         # gpt-image-2 returns b64_json, NOT a URL
         b64_data = res.json()["data"][0].get("b64_json", "")
-        if not b64_data:
-            print("generate_image: No b64_json in gpt-image-2 response.")
-            return ""
-            
-        print(f"generate_image: Got base64 image, length={len(b64_data)}")
-        return f"data:image/png;base64,{b64_data}"
+        if b64_data:
+            print(f"generate_image: gpt-image-2 success, length={len(b64_data)}")
+            return f"data:image/png;base64,{b64_data}"
+        print("generate_image: No b64_json in gpt-image-2 response, trying dall-e-3.")
     except Exception as e:
-        print(f"Error generating image with gpt-image-2: {e}")
-        return ""
+        print(f"gpt-image-2 failed ({type(e).__name__}): {e}. Falling back to dall-e-3.")
+
+    # ── Tier 2: dall-e-3 fallback ──────────────────────────────────────────
+    try:
+        payload = {
+            "model": "dall-e-3",
+            "prompt": prompt,
+            "n": 1,
+            "size": "1024x1024",
+            "quality": "standard",
+            "response_format": "b64_json"
+        }
+        print(f"Generating image with dall-e-3 fallback for topic: '{topic}'")
+        res = requests.post("https://api.openai.com/v1/images/generations", headers=headers, json=payload, timeout=120)
+        res.raise_for_status()
+
+        b64_data = res.json()["data"][0].get("b64_json", "")
+        if b64_data:
+            print(f"generate_image: dall-e-3 success, length={len(b64_data)}")
+            return f"data:image/png;base64,{b64_data}"
+        print("generate_image: No b64_json in dall-e-3 response either.")
+    except Exception as e:
+        print(f"Error generating image with dall-e-3: {e}")
+
+    return ""
 
 
 

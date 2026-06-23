@@ -75,7 +75,7 @@ import string
 from typing import Optional
 from pydantic import BaseModel
 
-VALID_PLANS = {"starter", "growth", "agency", "enterprise"}
+VALID_PLANS = {"starter", "growth", "pro", "agency", "enterprise"}
 
 class CreateAPIKeyRequest(BaseModel):
     """
@@ -164,7 +164,7 @@ def create_api_key(
     if not result.data:
         raise HTTPException(status_code=500, detail="Key insert returned no data.")
 
-    rate_limits = {"starter": 10, "growth": 30, "agency": 60, "enterprise": 120}
+    rate_limits = {"starter": 10, "growth": 30, "pro": 45, "agency": 60, "enterprise": 120}
     return {
         "success": True,
         "api_key": new_key,
@@ -238,5 +238,8 @@ def revoke_api_key(
         "success": True,
         "message": "Key revoked. Client access is now blocked.",
         "revoked_key_id": revoked_key.get("id"),
-        "revoked_key_prefix": (body.api_key or "")[:16] + "..." if body.api_key else revoked_key.get("id")
+        "revoked_key_prefix": revoked_key.get("api_key", "")[:16] + "..." if revoked_key.get("api_key") else revoked_key.get("id"),
+        "user_id": revoked_key.get("user_id"),
+        "plan": revoked_key.get("plan"),
+        "label": revoked_key.get("label"),
     }

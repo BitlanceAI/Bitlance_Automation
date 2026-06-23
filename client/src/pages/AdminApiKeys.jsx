@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { toast } from 'react-hot-toast';
+import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import Navbar from '../components/layout/Navbar';
 import Footer from '../components/landing/Footer';
@@ -16,12 +17,15 @@ export default function AdminApiKeys() {
   const [generating, setGenerating] = useState(false);
   const [newKey, setNewKey] = useState(null);
   const [visibleKeys, setVisibleKeys] = useState({});
+  const [error, setError] = useState(null);
 
   const toggleKeyVisibility = (id) => {
     setVisibleKeys(prev => ({ ...prev, [id]: !prev[id] }));
   };
 
-  const apiUrl = import.meta.env.VITE_PYTHON_API_URL || 'http://localhost:8001';
+  // Calls go to Node.js backend which proxies internally to the Python AI agent.
+  // The Python service has no public URL (DigitalOcean internal_ports).
+  const apiUrl = import.meta.env.VITE_API_BASE_URL || (import.meta.env.PROD ? 'https://bitlance-app-97qhp.ondigitalocean.app' : 'http://localhost:3001');
 
   useEffect(() => {
     fetchKeys();
@@ -30,7 +34,7 @@ export default function AdminApiKeys() {
   const fetchKeys = async () => {
     if (!session?.access_token) return;
     try {
-      const response = await axios.get(`${apiUrl}/api/v1/admin/api-keys/list`, {
+      const response = await axios.get(`${apiUrl}/api/admin/api-keys/list`, {
         headers: { Authorization: `Bearer ${session.access_token}` }
       });
       setKeys(response.data.keys || []);
@@ -48,8 +52,9 @@ export default function AdminApiKeys() {
     
     setGenerating(true);
     setNewKey(null);
+    setError(null);
     try {
-      const response = await axios.post(`${apiUrl}/api/v1/admin/api-keys/create`, {
+      const response = await axios.post(`${apiUrl}/api/admin/api-keys/create`, {
         client_email: email,
         plan: plan,
         label: label
@@ -62,9 +67,15 @@ export default function AdminApiKeys() {
       fetchKeys();
       setEmail('');
       setLabel('');
-    } catch (error) {
-      console.error(error);
-      toast.error(error.response?.data?.detail || 'Failed to generate key');
+    } catch (err) {
+      console.error(err);
+      const errorDetail = err.response?.data?.detail || 'Failed to generate key';
+      if (typeof errorDetail === 'string' && errorDetail.includes('No Supabase user found')) {
+        setError("This user is not registered on Bitlance.");
+      } else {
+        toast.error(errorDetail);
+        setError(errorDetail);
+      }
     } finally {
       setGenerating(false);
     }
@@ -73,7 +84,7 @@ export default function AdminApiKeys() {
   const handleRevoke = async (keyId) => {
     if (!window.confirm("Are you sure you want to revoke this key?")) return;
     try {
-      await axios.post(`${apiUrl}/api/v1/admin/api-keys/revoke`, { key_id: keyId }, {
+      await axios.post(`${apiUrl}/api/admin/api-keys/revoke`, { key_id: keyId }, {
         headers: { Authorization: `Bearer ${session.access_token}` }
       });
       toast.success("Key revoked!");
@@ -89,19 +100,37 @@ export default function AdminApiKeys() {
       <Navbar />
       <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8 mt-16">
         <div className="max-w-5xl mx-auto space-y-8">
-          <div>
-            <h1 className="text-3xl font-extrabold text-gray-900">API Key Manager</h1>
-            <p className="mt-2 text-sm text-gray-600">
-              Provision and manage API access for your enterprise partners.
-            </p>
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div>
+              <h1 className="text-3xl font-extrabold text-gray-900">API Key Manager</h1>
+              <p className="mt-2 text-sm text-gray-600">
+                Provision and manage API access for your enterprise partners.
+              </p>
+            </div>
+            <Link
+              to="/docs"
+              className="inline-flex items-center justify-center px-4 py-2 border border-teal-600 text-teal-600 hover:bg-teal-50 rounded-xl text-sm font-semibold transition-all duration-200"
+            >
+              View API Documentation
+            </Link>
           </div>
 
           {/* Generator Form */}
           <div className="bg-white rounded-lg shadow px-6 py-6 border border-gray-200">
             <h2 className="text-xl font-bold text-gray-800 mb-4">Provision New Client Key</h2>
+            
+            {error && (
+              <div className="mb-6 bg-red-50 border border-red-200 rounded-md p-4">
+                <h3 className="text-sm font-bold text-red-800">Provisioning Error</h3>
+                <p className="text-sm text-red-700 mt-1">
+                  {error}
+                </p>
+              </div>
+            )}
+
             <form onSubmit={handleGenerate} className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
               <div>
-                <label className="block text-sm font-medium text-gray-700">Client Email (Supabase User)</label>
+                <label className="block text-sm font-medium text-gray-700">Client Email (Bitlance User)</label>
                 <input
                   type="email"
                   value={email}
@@ -130,6 +159,7 @@ export default function AdminApiKeys() {
                 >
                   <option value="starter">Starter (10/min)</option>
                   <option value="growth">Growth (30/min)</option>
+                  <option value="pro">Pro (45/min)</option>
                   <option value="agency">Agency (60/min)</option>
                   <option value="enterprise">Enterprise (120/min)</option>
                 </select>

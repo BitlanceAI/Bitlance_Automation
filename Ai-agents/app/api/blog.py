@@ -42,6 +42,9 @@ class GenerateBlogRequest(BaseModel):
     interlinks: Optional[list] = None       # pre-built interlinks from Node.js [{title, link}]
     optimization_mode: Optional[str] = Field(default="SEO", description="SEO or GEO mode")
     author_name: Optional[str] = None
+    author_bio: Optional[str] = None
+    author_profile_id: Optional[str] = None
+    author_details: Optional[dict] = None
     author_image_url: Optional[str] = None
     brand_context_id: Optional[str] = None
     company_name: Optional[str] = Field(default=None, description="Provide your company name for white-labeled dynamic generation")
@@ -66,9 +69,9 @@ class GenerateBlogRequest(BaseModel):
 
 
 LENGTH_MAPPING = {
-    "Short (300-500 words)": 300,
-    "Medium (500-1000 words)": 500,
-    "Long (1000-2000 words)": 1000,
+    "Short (300-500 words)": 600,
+    "Medium (500-1000 words)": 1200,
+    "Long (1000-2000 words)": 2000,
 }
 
 
@@ -98,9 +101,17 @@ def generate_blog(request: Request, body: GenerateBlogRequest):
 
                 credit_check = validate_credits(user_id, agent_type_for_cost, 1)
                 if not credit_check["hasEnough"]:
-                    raise HTTPException(status_code=402, detail="Payment Required: Insufficient credits. Please purchase more credits on your dashboard.")
-            except HTTPException:
-                raise
+                    from fastapi.responses import JSONResponse
+                    return JSONResponse(
+                        status_code=402,
+                        content={
+                            "success": False,
+                            "code": "INSUFFICIENT_CREDITS",
+                            "credits_remaining": int(credit_check["currentBalance"]),
+                            "required_credits": int(credit_check["creditsNeeded"]),
+                            "pricing_url": "https://app.bitlance.ai/pricing"
+                        }
+                    )
             except Exception as e:
                 raise HTTPException(status_code=500, detail=f"Credit validation failed: {str(e)}")
     
@@ -142,7 +153,7 @@ def generate_blog(request: Request, body: GenerateBlogRequest):
         # Determine dynamic author
         if not body.author_name:
             if "lotlite" in company_name_str.lower() or (brand_context and any("lotlite" in str(v).lower() for v in brand_context.values() if isinstance(v, str))):
-                body.author_name = "Alok Kumar"
+                body.author_name = "Anurag Dhole"
             else:
                 body.author_name = f"{company_name_str} Editorial Team"
         # ── 1. Industry mode: auto-generate topic + keywords ──────────────────────
@@ -237,28 +248,52 @@ def generate_blog(request: Request, body: GenerateBlogRequest):
             backlink_analysis = None
     
         # ── 3.6 Enforce 70:30 internal:external link ratio ────────────────────────
-        # Hard cap: max 7 internal, max 3 external — regardless of what AI returned.
-        # If fewer than 7 internals exist, allow up to 4 externals to fill the gap
-        # but never exceed 10 total links or flip the majority to externals.
-        MAX_INTERNAL = 7
-        MAX_EXTERNAL = 3
-        interlinks    = interlinks[:MAX_INTERNAL]
-        external_links = external_links[:MAX_EXTERNAL]
-        print(f"[Link Ratio] Internal: {len(interlinks)} | External: {len(external_links)} (target 7:3)")
+        # We strictly limit external links to ensure they make up at most 30% of the total links.
+        # Ratio: Internal (70%) to External (30%).
+        # Math: external = internal * 0.3 / 0.7 = internal * 3 / 7.
+        if len(interlinks) > 0:
+            target_external_count = int(len(interlinks) * 3 / 7)
+            # Ensure at least 1 external link if we have internals, but cap at 5
+            max_ext = max(1, min(5, target_external_count))
+        else:
+            # If no internals are available, allow at most 2 external links to prevent over-linking
+            max_ext = 2
+            
+        interlinks = interlinks[:15] # Hard cap at 15 internal links
+        external_links = external_links[:max_ext]
+        print(f"[Link Ratio] Enforced 70:30 ratio. Internal: {len(interlinks)} | External: {len(external_links)}")
     
+        # Build author metadata dictionary
+        author_meta = {}
+        if body.author_details:
+            author_meta = {
+                "author_name": body.author_details.get("name") or body.author_name,
+                "author_title": body.author_details.get("role") or "Content Specialist",
+                "author_company": company_name_str,
+                "author_bio": body.author_details.get("bio") or body.author_bio,
+                "author_linkedin": (body.author_details.get("social_links") or {}).get("linkedin", "") if isinstance(body.author_details.get("social_links"), dict) else ""
+            }
+        else:
+            author_meta = {
+                "author_name": body.author_name,
+                "author_bio": body.author_bio
+            }
+
         # ── 4. Content generation ─────────────────────────────────────────────────
         length_num = LENGTH_MAPPING.get(body.length, 500)
         mode = body.optimization_mode.upper() if body.optimization_mode else "SEO"
         try:
             content_result = ai.generate_blog_content(
                 topic, keywords, body.language, body.audience, body.style,
-                length_num, interlinks, external_links, mode=mode, brand_context=brand_context, author_name=body.author_name
+                length_num, interlinks, external_links, mode=mode, brand_context=brand_context,
+                author_name=body.author_name, author_metadata=author_meta
             )
         except Exception as e:
             print(f"Content gen failed, falling back to OpenAI: {e}")
             content_result = ai.openai_generate_blog_content(
                 topic, keywords, body.language, body.audience, body.style,
-                length_num, interlinks, external_links, mode=mode, brand_context=brand_context, author_name=body.author_name
+                length_num, interlinks, external_links, mode=mode, brand_context=brand_context,
+                author_name=body.author_name, author_metadata=author_meta
             )
     
         blog_text = content_result["blogText"]
