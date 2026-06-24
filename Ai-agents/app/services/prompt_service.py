@@ -54,6 +54,7 @@ class PromptService:
         raw_prompt: str,
         niche: Optional[str] = None,
         trending_keywords: Optional[list[str]] = None,
+        language: Optional[str] = "english",
     ) -> tuple[str, list[str]]:
         """
         Expand a short user prompt into a rich image generation prompt.
@@ -83,6 +84,27 @@ class PromptService:
 
         # Build system prompt with optional trend injection
         system = SystemPrompts.PROMPT_ENHANCER_SYSTEM + trending_info
+        if language == "hindi_marathi":
+            system += (
+                "\nCRITICAL MULTILINGUAL TEXT RULE: All text elements, headlines, subtitles, "
+                "or descriptive copy overlaid on the image MUST be written in the Devanagari script. "
+                "Specifically, use a hybrid of Hindi and Marathi language (mostly Hindi vocabulary with "
+                "Marathi/Hindi common phrasing/words, e.g. for price '₹10 Cr पासून' or '₹10 Cr पासुन', "
+                "for call-to-action 'त्वरित संपर्क करा' or 'त्वरित कॉल करा'). "
+                "Do NOT write any text in English alphabets; all text overlays must be rendered in beautiful, "
+                "highly legible Devanagari script. Ensure that the image generator generates the text overlays "
+                "in this exact Hindi/Marathi hybrid Devanagari script."
+            )
+
+        import re
+        urls = re.findall(r'https?://[^\s<>"]+|www\.[^\s<>"]+', raw_prompt)
+        for url in urls:
+            try:
+                description = self._analyze_image(url)
+                if description and description != url:
+                    raw_prompt = raw_prompt.replace(url, f"[{url} -> Visually describes: {description}]")
+            except Exception:
+                pass
 
         response = self.client.chat.completions.create(
             model=ModelConfig.LLM_MODEL,
@@ -115,6 +137,24 @@ class PromptService:
         """
         logger.info("[PromptService.build_prompt_from_details] details keys=%s", list(details.keys()))
 
+        language = details.get("language") or "english"
+        if language == "hindi_marathi":
+            try:
+                # Translate details to Hindi/Marathi hybrid in Devanagari
+                resp = self.client.chat.completions.create(
+                    model="gpt-4o-mini",
+                    messages=[
+                        {"role": "system", "content": "You are a professional Hindi and Marathi translator. Given a JSON object of property details, translate/transliterate all string values (including property_type, location, price, bhk, extra_details, and items in amenities list) into Hindi/Marathi hybrid language using the Devanagari script. Keep numbers and phone/email values as they are, but write currency words or labels (like 'BHK', 'Crore', 'Onwards', 'Amenities', etc.) in Hindi/Marathi hybrid using Devanagari. Return ONLY the translated JSON object, with no explanation and no markdown formatting."},
+                        {"role": "user", "content": json.dumps(details)}
+                    ],
+                    temperature=0.0,
+                )
+                translated_details = json.loads(resp.choices[0].message.content.strip())
+                # Merge translated details
+                details.update(translated_details)
+            except Exception as e:
+                logger.warning("Failed to translate details to Hindi/Marathi: %s", e)
+
         # ── Style resolution ────────────────────────────────────────────────
         template_id = details.get("template_id", "random")
         style_prompt = STYLE_DESCRIPTIONS.get(template_id, STYLE_DESCRIPTIONS["random"])
@@ -135,13 +175,25 @@ class PromptService:
             )
 
         # ── Color instruction (non-destructive) ─────────────────────────────
-        theme_color = details.get("theme_color")
+        theme_color = details.get("theme_color") or details.get("color_theme")
         color_instruction = ""
         if theme_color:
             color_instruction = (
                 f" Use the color '{theme_color}' STRICTLY for text overlays, typography, borders, "
                 "and graphic branding accents. Do NOT use this color to alter the physical scene "
                 "or interior design elements (e.g., walls, furniture, lighting)."
+            )
+
+        # ── Reference Image ─────────────────────────────────────────────────
+        reference_image = details.get("reference_image") or details.get("image_reference")
+        reference_instruction = ""
+        if reference_image:
+            image_description = self._analyze_image(reference_image)
+            reference_instruction = (
+                f"\nIMPORTANT: First, artistically enhance and adjust the lighting, contrast, and mood of the provided reference image subject "
+                f"('{image_description}') so that it perfectly matches the '{style_prompt}' aesthetic. "
+                f"For example, if the template is bright but the reference is dark, intelligently brighten and harmonize the reference subject. "
+                f"Then, seamlessly integrate this enhanced version into the graphic as a high-quality, polished photo insert or focal layout element."
             )
 
         # ── Creative twist for uniqueness ───────────────────────────────────
@@ -151,13 +203,23 @@ class PromptService:
             f"Details: {json.dumps(details)}\n"
             f"Style: {style_prompt}{color_instruction}\n"
             f"Inject a distinctly {random_twist} artistic feel to ensure uniqueness.\n"
-            f"{trending_info}"
+            f"{trending_info}{reference_instruction}"
         )
+
+        system_prompt = SystemPrompts.DETAILS_PROMPT_BUILDER_SYSTEM
+        if language == "hindi_marathi":
+            system_prompt += (
+                "\nCRITICAL MULTILINGUAL TEXT RULE: Since the details are provided in Devanagari, "
+                "you MUST explicitly instruct the image generator to render all text overlays and headings "
+                "in the Devanagari script using the Hindi/Marathi hybrid text provided. The generated flyer "
+                "MUST display the details in Devanagari script (e.g., 'लक्झरी अपार्टमेंट', '₹१० Cr पासून', etc.). "
+                "Do NOT write any English text except for email/phone numbers."
+            )
 
         response = self.client.chat.completions.create(
             model=ModelConfig.LLM_MODEL,
             messages=[
-                {"role": "system", "content": SystemPrompts.DETAILS_PROMPT_BUILDER_SYSTEM},
+                {"role": "system", "content": system_prompt},
                 {"role": "user",   "content": user_message},
             ],
             temperature=0.9,   # Higher temp for creative uniqueness
@@ -169,6 +231,66 @@ class PromptService:
     # ──────────────────────────────────────────────────────────────────────────
     # Private helpers
     # ──────────────────────────────────────────────────────────────────────────
+
+    def _analyze_image(self, image_url: str) -> str:
+        """Helper to analyze an uploaded image URL, local path, or base64 data using GPT-4o-mini Vision."""
+        if not image_url:
+            return ""
+
+        import os
+        import base64
+
+        image_data_url = image_url
+
+        # Check if local file exists
+        if os.path.exists(image_url):
+            try:
+                ext = os.path.splitext(image_url)[1].lower()
+                mime = "image/png"
+                if ext in [".jpg", ".jpeg"]:
+                    mime = "image/jpeg"
+                elif ext == ".webp":
+                    mime = "image/webp"
+                elif ext == ".gif":
+                    mime = "image/gif"
+                with open(image_url, "rb") as f:
+                    b64_data = base64.b64encode(f.read()).decode("utf-8")
+                image_data_url = f"data:{mime};base64,{b64_data}"
+                logger.info(f"[PromptService] Loaded local image file: {image_url}")
+            except Exception as e:
+                logger.warning("[PromptService] Failed to load local image %s: %s", image_url, e)
+                return image_url
+        elif not image_url.startswith("http") and not image_url.startswith("data:"):
+            # Could be a raw base64 string
+            if len(image_url) > 100:
+                image_data_url = f"data:image/png;base64,{image_url}"
+
+        try:
+            logger.info("[PromptService] Analyzing image with Vision...")
+            response = self.client.chat.completions.create(
+                model="gpt-4o-mini",
+                messages=[
+                    {
+                        "role": "user",
+                        "content": [
+                            {"type": "text", "text": "Analyze this image in extreme detail. Describe the architecture, lighting, subject matter, colors, and layout perfectly. Do not mention that it's an image. Just provide the visual description of the subject."},
+                            {
+                                "type": "image_url",
+                                "image_url": {
+                                    "url": image_data_url,
+                                }
+                            },
+                        ],
+                    }
+                ],
+                max_tokens=300,
+            )
+            description = response.choices[0].message.content.strip()
+            logger.info("[PromptService] Image analyzed successfully.")
+            return description
+        except Exception as exc:
+            logger.warning("[PromptService] Image analysis failed: %s", exc)
+            return image_url
 
     def _fetch_keywords(self, niche: str) -> list[str]:
         """Internal helper — fetch keywords via KeywordService. Returns [] on failure."""

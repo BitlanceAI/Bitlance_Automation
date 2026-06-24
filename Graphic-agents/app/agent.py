@@ -133,9 +133,20 @@ class GraphicAgent:
             f"{json.dumps(details, indent=2)}\n\n"
             f"Image settings: size={details.get('image_size', '1024x1024')}, "
             f"quality={details.get('image_quality', 'low')}, "
-            f"num_variants={details.get('num_variants', 1)}."
+            f"num_variants={details.get('num_variants', 1)}.\n"
+            f"IMPORTANT: If there is a reference image, you MUST keep the entire center-right area of the graphic COMPLETELY EMPTY so we can overlay the photo there later."
         )
-        return self._invoke(instruction, session_id)
+        result = self._invoke(instruction, session_id)
+        
+        # Extract URL and composite
+        reference_image = details.get("reference_image") or details.get("image_reference")
+        if reference_image and reference_image.startswith("http") and result.get("success") and result.get("images"):
+            from app.compositor import composite_reference_image
+            for img in result["images"]:
+                if "b64_string" in img and "filepath" in img:
+                    img["b64_string"] = composite_reference_image(img["b64_string"], img["filepath"], reference_image)
+                    
+        return result
 
     def run_from_prompt(
         self,
@@ -163,9 +174,22 @@ class GraphicAgent:
             f"Enhance the following raw prompt and generate a promotional graphic image.\n"
             f"Raw prompt: {raw_prompt}\n"
             f"{niche_line}\n"
-            f"Image settings: size={image_size}, quality={image_quality}, num_variants=1."
+            f"Image settings: size={image_size}, quality={image_quality}, num_variants=1.\n"
+            f"IMPORTANT: If there is a reference image, you MUST keep the entire center-right area of the graphic COMPLETELY EMPTY so we can overlay the photo there later."
         )
-        return self._invoke(instruction, session_id)
+        result = self._invoke(instruction, session_id)
+        
+        # Extract URL and composite
+        import re
+        urls = re.findall(r'https?://[^\s<>"]+|www\.[^\s<>"]+', raw_prompt)
+        if urls and result.get("success") and result.get("images"):
+            from app.compositor import composite_reference_image
+            ref_url = urls[0]
+            for img in result["images"]:
+                if "b64_string" in img and "filepath" in img:
+                    img["b64_string"] = composite_reference_image(img["b64_string"], img["filepath"], ref_url)
+                    
+        return result
 
     # ──────────────────────────────────────────────────────────────────────────
     # Internal

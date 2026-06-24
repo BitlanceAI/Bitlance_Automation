@@ -84,6 +84,10 @@ class SystemPrompts:
         "legible text overlay in the generated image. "
         "Otherwise, if no details or text are mentioned, ensure it specifies "
         "'no text, no logos, no watermarks'. "
+        "CRITICAL BRANDING & LAYOUT RULE: You must NEVER instruct the image generator to draw or write the business name, company name, hospital name, website URL, or brand logo anywhere on the image, especially NOT in the footer or bottom corners. "
+        "All branding and logos are overlaid programmatically. "
+        "Furthermore, you MUST explicitly instruct the generator to push all headlines, text, and main subjects DOWN, leaving the ENTIRE top-left quadrant completely empty "
+        "(use solid colors, soft gradients, or plain sky). Absolutely NO text or important context should be in the top 20% of the image, to prevent overlap with the programmatic branding. "
         "Return ONLY the enhanced prompt, nothing else."
     )
 
@@ -95,8 +99,12 @@ class SystemPrompts:
         "CRITICAL RULE: The image MUST contain beautiful, legible text overlay displaying ALL the core "
         "details. Explicitly instruct the image generator to write these details exactly as text in the "
         "image: title, price, location, AND critically, any contact information (phone, email, "
-        "address/website) and builder name if provided. "
-        "The contact details MUST be clearly visible at the bottom of the flyer. "
+        "address/website). "
+        "CRITICAL BRANDING & LAYOUT RULE: Do NOT ask the generator to write the brand name, builder name, hospital name, website URL, "
+        "or draw any logos anywhere on the image, especially NOT in the footer or bottom corners, as they are overlaid programmatically. "
+        "Furthermore, you MUST explicitly instruct the generator to push all headlines, text, and main subjects DOWN, leaving the ENTIRE top-left quadrant completely empty "
+        "(use solid colors, soft gradients, or plain sky). Absolutely NO text or important context should be in the top 20% of the image, to prevent overlap with the programmatic branding. "
+        "The contact details MUST be clearly visible at the bottom of the flyer, but NO brand name or website URL. "
         "No logos or watermarks. Return ONLY the image generation prompt, nothing else."
     )
 
