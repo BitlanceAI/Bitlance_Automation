@@ -267,30 +267,61 @@ class GraphicAgent:
 
             # 2. Load logo image
             logo_img = None
-            if logo_src.startswith("data:image"):
-                try:
-                    header, data = logo_src.split(",", 1)
-                    logo_img = Image.open(BytesIO(base64.b64decode(data))).convert("RGBA")
-                except Exception as e:
-                    logger.warning("Failed to parse base64 logo: %s", e)
-            elif logo_src.startswith("http"):
-                try:
-                    resp = requests.get(logo_src, timeout=10)
-                    if resp.status_code == 200:
-                        logo_img = Image.open(BytesIO(resp.content)).convert("RGBA")
-                except Exception as e:
-                    logger.warning("Failed to download logo: %s", e)
-            else:
-                # Assume local file path
-                if os.path.exists(logo_src):
+            if logo_src:
+                if logo_src.startswith("data:image"):
                     try:
-                        logo_img = Image.open(logo_src).convert("RGBA")
+                        header, data = logo_src.split(",", 1)
+                        logo_img = Image.open(BytesIO(base64.b64decode(data))).convert("RGBA")
                     except Exception as e:
-                        logger.warning("Failed to open local logo file: %s", e)
+                        logger.warning("Failed to parse base64 logo: %s", e)
+                elif logo_src.startswith("http"):
+                    try:
+                        resp = requests.get(logo_src, timeout=10)
+                        if resp.status_code == 200:
+                            logo_img = Image.open(BytesIO(resp.content)).convert("RGBA")
+                    except Exception as e:
+                        logger.warning("Failed to download logo: %s", e)
+                else:
+                    # Assume local file path
+                    if os.path.exists(logo_src):
+                        try:
+                            logo_img = Image.open(logo_src).convert("RGBA")
+                        except Exception as e:
+                            logger.warning("Failed to open local logo file: %s", e)
 
-            if not logo_img:
-                logger.warning("Logo image could not be loaded. Returning background unaltered.")
+            # Determine brand name text width early to see if we have anything to render
+            brand_name_clean = str(brand_name).strip() if brand_name else None
+            if brand_name_clean == "None" or brand_name_clean == "":
+                brand_name_clean = None
+
+            if not logo_img and not brand_name_clean:
+                logger.warning("No logo and no brand name to overlay. Returning background unaltered.")
                 return image_b64
+
+            # Dynamic AI Logo Generation if no logo was provided but brand name exists
+            if not logo_img and brand_name_clean:
+                try:
+                    logger.info("No logo provided. Generating dynamic AI logo for %s...", brand_name_clean)
+                    from app.services.image_service import ImageService
+                    prompt = f"A simple, modern, minimalist vector icon logo for {brand_name_clean}. Flat design, solid white background, no text, no words."
+                    img_res = ImageService().generate(prompt=prompt, size="1024x1024", quality="low")
+                    if img_res and len(img_res) > 0 and img_res[0].get("b64_string"):
+                        logo_data = base64.b64decode(img_res[0]["b64_string"])
+                        gen_logo = Image.open(BytesIO(logo_data)).convert("RGBA")
+                        
+                        # Remove white background to blend into the pill
+                        datas = gen_logo.getdata()
+                        newData = []
+                        for item in datas:
+                            if item[0] > 235 and item[1] > 235 and item[2] > 235:
+                                newData.append((255, 255, 255, 0))
+                            else:
+                                newData.append(item)
+                        gen_logo.putdata(newData)
+                        logo_img = gen_logo
+                        logger.info("Successfully generated and processed AI logo.")
+                except Exception as e:
+                    logger.warning("Failed to generate dynamic AI logo: %s", e)
 
             # 3. Helper to get font
             def get_font(font_size):
@@ -324,24 +355,23 @@ class GraphicAgent:
             # Scale logo and font sizes dynamically based on canvas width (normalized to 1024px)
             scale = W / 1024.0
 
-            # 4. Resize logo
-            logo_h = max(int(45 * scale), 20)
-            logo_w = int(logo_img.width * (logo_h / logo_img.height))
-            
-            # Prevent absurdly wide logos
-            if logo_w > int(W * 0.20):
-                logo_w = int(W * 0.20)
-                logo_h = int(logo_img.height * (logo_w / logo_img.width))
+            # 4. Resize logo (if present)
+            logo_h = 0
+            logo_w = 0
+            logo_resized = None
+            if logo_img:
+                logo_h = max(int(55 * scale), 25)
+                logo_w = int(logo_img.width * (logo_h / logo_img.height))
+                
+                # Prevent absurdly wide logos
+                if logo_w > int(W * 0.20):
+                    logo_w = int(W * 0.20)
+                    logo_h = int(logo_img.height * (logo_w / logo_img.width))
 
-            logo_resized = logo_img.resize((logo_w, logo_h), Image.Resampling.LANCZOS)
-
-            # Determine brand name text width
-            brand_name_clean = str(brand_name).strip() if brand_name else None
-            if brand_name_clean == "None" or brand_name_clean == "":
-                brand_name_clean = None
+                logo_resized = logo_img.resize((logo_w, logo_h), Image.Resampling.LANCZOS)
 
             if brand_name_clean:
-                f_size = max(int(22 * scale), 11)
+                f_size = max(int(32 * scale), 16)
                 font = get_font(f_size)
                 
                 # Dummy image to measure text
@@ -365,9 +395,14 @@ class GraphicAgent:
                     text_h = text_bbox[3] - text_bbox[1]
 
                 # Pill dimensions
-                pill_h = logo_h + int(16 * scale)
-                # Plenty of right-padding so the rounded edge doesn't clip
-                pill_w = int(12 * scale) + logo_w + int(10 * scale) + text_w + int(40 * scale)
+                if logo_img:
+                    pill_h = logo_h + int(16 * scale)
+                    # Plenty of right-padding so the rounded edge doesn't clip
+                    pill_w = int(12 * scale) + logo_w + int(10 * scale) + text_w + int(40 * scale)
+                else:
+                    # Fallback if generation failed
+                    pill_h = text_h + int(24 * scale)
+                    pill_w = int(24 * scale) + text_w + int(40 * scale)
 
                 # Ensure pill fits within canvas bounds
                 if pill_w > W - int(W * 0.08):
@@ -385,17 +420,22 @@ class GraphicAgent:
                     width=max(int(2 * scale), 1)
                 )
 
-                # Paste logo
-                logo_x = int(12 * scale)
-                logo_y = (pill_h - logo_h) // 2
-                try:
-                    pill.paste(logo_resized, (logo_x, logo_y), logo_resized)
-                except ValueError:
-                    pill.paste(logo_resized, (logo_x, logo_y))
+                if logo_img:
+                    # Paste logo
+                    logo_x = int(12 * scale)
+                    logo_y = (pill_h - logo_h) // 2
+                    try:
+                        pill.paste(logo_resized, (logo_x, logo_y), logo_resized)
+                    except ValueError:
+                        pill.paste(logo_resized, (logo_x, logo_y))
 
-                # Draw text
-                text_x = int(12 * scale) + logo_w + int(10 * scale)
+                    text_x = int(12 * scale) + logo_w + int(10 * scale)
+                else:
+                    text_x = int(24 * scale)
+                
                 text_y = (pill_h - text_h) // 2 - text_bbox[1]
+                
+                # Draw text inside pill
                 draw_pill.text(
                     (text_x, text_y),
                     brand_name_clean,
@@ -616,17 +656,17 @@ class GraphicAgent:
             except Exception as e:
                 logger.warning("Failed to pre-analyze reference image in run_from_prompt: %s", e)
 
-        brand_name = None
-        if logo_image:
-            import re
-            brand_name = self._extract_brand_name(raw_prompt)
-            if brand_name and brand_name.lower() != "none":
-                # Sanitize the raw prompt to hide the name from DALL-E (case-insensitive)
-                raw_prompt = re.sub(re.escape(brand_name), "the business", raw_prompt, flags=re.IGNORECASE)
-            
-            # Translate brand name for overlay
-            if language == "hindi_marathi" and brand_name:
-                brand_name = self._translate_to_hindi(brand_name)
+        import re
+        brand_name = self._extract_brand_name(raw_prompt)
+        if brand_name and brand_name.lower() != "none":
+            # Sanitize the raw prompt to hide the name from DALL-E (case-insensitive)
+            raw_prompt = re.sub(re.escape(brand_name), "the business", raw_prompt, flags=re.IGNORECASE)
+        else:
+            brand_name = None
+        
+        # Translate brand name for overlay
+        if language == "hindi_marathi" and brand_name:
+            brand_name = self._translate_to_hindi(brand_name)
                 
         # Build the agent instruction
         instruction = (
@@ -636,9 +676,10 @@ class GraphicAgent:
         )
         if niche:
             instruction += f"The niche is: '{niche}'.\n"
-        if logo_image:
+        if logo_image or brand_name:
+            branding_str = brand_name if brand_name else "the logo"
             instruction += (
-                f"\n\nIMPORTANT: The branding logo and brand name container ('{brand_name}') will be programmatically overlaid at the top-left corner of the final image. "
+                f"\n\nIMPORTANT: The branding/logo container ('{branding_str}') will be programmatically overlaid at the top-left corner of the final image. "
                 "CRITICAL BULLETPROOF RULE: You MUST COMPLETELY OMIT the brand name / hospital name from the final DALL-E prompt you generate. "
                 "If DALL-E sees the hospital name in the prompt, it will hallucinate and duplicate it on the background canvas. "
                 "Instead of the name, just use generic terms like 'the hospital' or 'the business' in the DALL-E prompt. "
@@ -651,8 +692,8 @@ class GraphicAgent:
         # Run ReAct agent
         result = self._invoke(instruction, session_id=session_id)
 
-        # Post-process: Overlay logo if present
-        if logo_image and result.get("success") and result.get("images"):
+        # Post-process: Overlay logo/brand if present
+        if (logo_image or brand_name) and result.get("success") and result.get("images"):
             for img_data in result["images"]:
                 b64 = img_data.get("b64_string")
                 if b64:
