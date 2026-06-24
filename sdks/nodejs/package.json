@@ -1,6 +1,6 @@
 {
   "name": "bitlance-ai-sdk",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "Official Node.js SDK for the Bitlance SEO/GEO AI Content Generation API",
   "main": "src/index.js",
   "type": "commonjs",
@@ -25,7 +25,7 @@
   },
   "homepage": "https://app.bitlance.ai",
   "dependencies": {
-    "axios": "^1.6.0",
+    "axios": "^1.18.0",
     "bitlance-ai-sdk": "^1.1.0"
   }
 }

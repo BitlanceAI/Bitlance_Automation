@@ -240,7 +240,7 @@ const SeoAgentPage = () => {
         }
 
         // Check credits
-        const CREDIT_COST = 10;
+        const CREDIT_COST = isAdmin ? 10 : 50;
         if (!isAdmin && credits < CREDIT_COST) {
             alert(`⚠️ Insufficient credits! You need ${CREDIT_COST} credits to generate an article. Current balance: ${credits}`);
             return;
@@ -287,11 +287,12 @@ const SeoAgentPage = () => {
 
             if (selectedProfile) {
                 if (selectedProfile.type === 'existing') {
-                    authorProfileId = selectedProfile.profileId;
+                    authorProfileId = selectedProfile.profileId === 'seed-anurag-dhole' ? null : selectedProfile.profileId;
                     // Override author_name with the profile's name to ensure consistency
                     payload.author_name = selectedProfile.profileData?.name;
                     payload.author_bio = selectedProfile.profileData?.bio; // Add bio if supported by API
                     payload.author_image_url = selectedProfile.profileData?.profile_image;
+                    authorDetails = selectedProfile.profileData;
                 } else if (selectedProfile.type === 'manual') {
                     authorDetails = selectedProfile.profileData;
                     payload.author_name = authorDetails.name;
@@ -721,7 +722,7 @@ const SeoAgentPage = () => {
                                             <span className="text-[#26cece] font-bold">{agentStats.totalUsageCount}</span>
                                         </div>
                                         <div className="text-slate-500 uppercase tracking-widest text-[10px] pt-2 mt-2 border-t border-slate-200 text-center">
-                                            Cost: 10 credits/article
+                                            Cost: {isAdmin ? 10 : 50} credits/article
                                         </div>
                                     </div>
                                 </div>
@@ -1300,7 +1301,7 @@ const SeoAgentPage = () => {
                                             Generation cost
                                         </div>
                                         <div className="flex items-center gap-2">
-                                            <span className="text-[#26cece] font-bold font-mono text-sm">10 credits</span>
+                                            <span className="text-[#26cece] font-bold font-mono text-sm">{isAdmin ? 10 : 50} credits</span>
                                             <span className="text-slate-400 font-mono text-[10px]">/ article</span>
                                         </div>
                                     </div>
@@ -1321,7 +1322,7 @@ const SeoAgentPage = () => {
                                                 <Zap fill="currentColor" size={24} />
                                                 Generate {optimizationMode} Content
                                                 <span className="text-[12px] font-mono ml-2 opacity-70 border-l border-white/30 pl-2">
-                                                    Cost 10 credits
+                                                    Cost {isAdmin ? 10 : 50} credits
                                                 </span>
                                             </>
                                         )}

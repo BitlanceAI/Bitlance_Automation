@@ -15,6 +15,7 @@ import { supabase } from '../../lib/supabase';
 import DashboardStats from '../../components/dashboard/DashboardStats';
 import RecentActivity from '../../components/dashboard/RecentActivity';
 import { trackAgentOpen } from '../../lib/analytics';
+import { agents as allAgents } from '../../data/agentsData';
 
 const HomePage = () => {
     const navigate = useNavigate();
@@ -112,32 +113,23 @@ const HomePage = () => {
         fetchDashboardData();
     }, [user]);
 
-    const agents = [
-        {
-            title: 'GEO (Generative) AI Agent',
-            description: 'Dominate search and AI engine rankings with automated content and GEO optimization.',
-            icon: Search,
-            path: '/dashboard/agents/geo',
-            color: 'from-amber-500 to-orange-500',
-            stats: 'Keyword Rankings'
-        },
-        {
-            title: 'WhatsApp Automation',
-            description: 'AI-powered bulk messaging, follow-ups, and lead engagement on WhatsApp.',
-            icon: MessageSquare,
-            path: 'https://wacrm.bitlancetechhub.com/',
-            color: 'from-green-500 to-emerald-500',
-            stats: 'Active Broadcasts'
-        },
-        {
-            title: 'AI Voice Agent',
-            description: 'Intelligent voice assistants for sales, support, and customer engagement.',
-            icon: Phone,
-            path: '/dashboard/agents/voice',
-            color: 'from-purple-500 to-pink-500',
-            stats: 'Call Analytics'
-        }
-    ];
+    const agentPaths = {
+        'GEO (Generative) AI Agent': { path: '/dashboard/agents/geo', stats: 'Keyword Rankings' },
+        'SEO (Search Engine) AI Agent': { path: '/dashboard/agents/seo', stats: 'Content Scaling' },
+        'Graphic Designer AI': { path: '/dashboard/agents/design', stats: 'Templates Generated' },
+        'Real Estate Reel AI Agent': { path: '/dashboard/agents/video', stats: 'Reels Generated' },
+        'Email Automation AI': { path: '/dashboard/email-automation', stats: 'Campaigns Sent' },
+        'WhatsApp Broadcasting Automation': { path: 'https://wacrm.bitlancetechhub.com/', stats: 'Active Broadcasts' },
+        'AI Voice Agent': { path: 'https://voice.bitlancetechhub.com/', stats: 'Call Analytics' }
+    };
+
+    const agents = allAgents
+        .filter(a => a.status === 'Available')
+        .map(a => ({
+            ...a,
+            path: agentPaths[a.title]?.path || '#',
+            stats: agentPaths[a.title]?.stats || 'Access Agent'
+        }));
 
     return (
         <div className="min-h-screen bg-white transition-colors duration-300 pt-24 font-['Space_Grotesk']">

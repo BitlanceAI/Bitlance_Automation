@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { FullScreenLogin } from '../../components/ui/full-screen-login';
 import { trackLogin, trackLoginError } from '../../lib/analytics';
@@ -7,6 +7,8 @@ import toast from 'react-hot-toast';
 
 const LoginPage = () => {
     const navigate = useNavigate();
+    const location = useLocation();
+    const [searchParams] = useSearchParams();
     const { signIn } = useAuth();
 
     const [email, setEmail] = useState('');
@@ -22,7 +24,8 @@ const LoginPage = () => {
             if (error) throw error;
             trackLogin('email');
             toast.success("Welcome back! 👋");
-            navigate('/home');
+            const redirectTo = searchParams.get('redirectTo') || location.state?.from?.pathname || '/home';
+            navigate(redirectTo);
         } catch (error) {
             console.error(error);
             const message = error.message === "Invalid login credentials"

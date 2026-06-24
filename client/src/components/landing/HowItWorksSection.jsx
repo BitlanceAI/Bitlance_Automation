@@ -67,11 +67,11 @@ const CustomAutomationAnim = () => (
         <rect x="40" y="20" width="20" height="20" rx="4" fill="none" stroke="url(#ca1)" strokeWidth="2.5" />
         <rect x="20" y="60" width="20" height="20" rx="4" fill="none" stroke="url(#ca1)" strokeWidth="2.5" />
         <rect x="60" y="60" width="20" height="20" rx="4" fill="none" stroke="url(#ca1)" strokeWidth="2.5" />
-        
+
         {/* Lines */}
         <path d="M50 40 L50 50 L30 50 L30 60" fill="none" stroke="url(#ca1)" strokeWidth="2" strokeLinejoin="round" />
         <path d="M50 40 L50 50 L70 50 L70 60" fill="none" stroke="url(#ca1)" strokeWidth="2" strokeLinejoin="round" />
-        
+
         {/* Pulses traveling along lines */}
         <motion.circle r="3" fill="url(#ca1)"
             animate={{
@@ -89,17 +89,46 @@ const CustomAutomationAnim = () => (
             }}
             transition={{ repeat: Infinity, duration: 2.5, delay: 1.25, ease: 'linear' }}
         />
-        
+
         {/* Node Highlights */}
         {[
             { cx: 50, cy: 30, delay: 0 },
             { cx: 30, cy: 70, delay: 2.5 },
             { cx: 70, cy: 70, delay: 3.75 }
         ].map((node, i) => (
-             <motion.circle key={i} cx={node.cx} cy={node.cy} r="6" fill="url(#ca1)"
-                 animate={{ opacity: [0, 0.4, 0], scale: [0.5, 1.8, 0.5] }}
-                 transition={{ repeat: Infinity, duration: 2, delay: node.delay }} />
+            <motion.circle key={i} cx={node.cx} cy={node.cy} r="6" fill="url(#ca1)"
+                animate={{ opacity: [0, 0.4, 0], scale: [0.5, 1.8, 0.5] }}
+                transition={{ repeat: Infinity, duration: 2, delay: node.delay }} />
         ))}
+    </svg>
+);
+
+const GeoAnim = () => (
+    <svg viewBox="0 0 100 100" className="w-full h-full opacity-80 group-hover:opacity-100 transition-opacity">
+        <defs>
+            <linearGradient id="ga1" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stopColor={T} /><stop offset="100%" stopColor={T2} />
+            </linearGradient>
+        </defs>
+        {/* Document outline */}
+        <rect x="30" y="20" width="40" height="50" rx="4" fill="none" stroke="url(#ga1)" strokeWidth="2.5" />
+        {/* Lines */}
+        <line x1="40" y1="35" x2="60" y2="35" stroke="url(#ga1)" strokeWidth="2.5" strokeLinecap="round" />
+        <line x1="40" y1="45" x2="55" y2="45" stroke="url(#ga1)" strokeWidth="2.5" strokeLinecap="round" />
+        {/* Magic wand / AI stars */}
+        {[
+            { cx: 70, cy: 30, delay: 0 },
+            { cx: 80, cy: 45, delay: 0.5 },
+            { cx: 75, cy: 65, delay: 1 }
+        ].map((star, i) => (
+            <motion.path key={i} d={`M${star.cx} ${star.cy - 4} L${star.cx + 1} ${star.cy - 1} L${star.cx + 4} ${star.cy} L${star.cx + 1} ${star.cy + 1} L${star.cx} ${star.cy + 4} L${star.cx - 1} ${star.cy + 1} L${star.cx - 4} ${star.cy} L${star.cx - 1} ${star.cy - 1} Z`} fill="url(#ga1)"
+                animate={{ opacity: [0, 1, 0], scale: [0.5, 1.5, 0.5], rotate: [0, 90, 180] }}
+                transition={{ repeat: Infinity, duration: 2, delay: star.delay }} />
+        ))}
+        {/* Globe or web symbol */}
+        <circle cx="50" cy="75" r="12" fill="none" stroke="url(#ga1)" strokeWidth="2" />
+        <ellipse cx="50" cy="75" rx="5" ry="12" fill="none" stroke="url(#ga1)" strokeWidth="1" />
+        <line x1="38" y1="75" x2="62" y2="75" stroke="url(#ga1)" strokeWidth="1" />
     </svg>
 );
 
@@ -127,40 +156,41 @@ const ServiceCard = ({ icon: Icon, label, title, desc, badge }) => {
             className="relative h-full min-h-[400px] w-full cursor-pointer group"
         >
             <div
+                className="absolute inset-3 transition-all duration-300
+                    bg-white/5 border border-white/10 shadow-[0_4px_24px_rgba(0,0,0,0.3)]
+                    group-hover:shadow-[0_8px_40px_rgba(38,206,206,0.18)] group-hover:border-[#26CECE50]"
                 style={{
                     transform: 'translateZ(60px)',
                     transformStyle: 'preserve-3d',
-                    background: '#ffffff',
-                    border: '1px solid #E8F8F8',
-                    borderRadius: 12,
-                    boxShadow: '0 4px 24px rgba(38,206,206,0.08)',
+                    borderRadius: 16,
                 }}
-                className="absolute inset-3 transition-all duration-300 group-hover:shadow-[0_8px_40px_rgba(38,206,206,0.18)] group-hover:border-[#26CECE50]"
             >
                 <div className="p-6 flex flex-col h-full" style={{ transform: 'translateZ(40px)' }}>
                     {/* Badge */}
                     <div className="flex items-center justify-between mb-5">
-                        <span className="text-[10px] font-extrabold uppercase tracking-widest px-2.5 py-1 rounded-sm"
+                        <span className="text-[10px] font-extrabold uppercase tracking-widest px-2.5 py-1 rounded-2xl"
                             style={{ background: `${T}15`, color: T, fontFamily: "'DM Mono',monospace" }}>
                             {label}
                         </span>
                         {badge && (
-                            <span className="text-[9px] font-extrabold uppercase tracking-widest px-2 py-1 rounded-sm"
-                                style={{ background: '#f8f9fa', color: '#26CECE', fontFamily: "'DM Mono',monospace" }}>
+                            <span className="text-[9px] font-extrabold uppercase tracking-widest px-2 py-1 rounded-xl
+                                bg-white/[0.07] text-teal-300"
+                                style={{ fontFamily: "'DM Mono',monospace" }}>
                                 {badge}
                             </span>
                         )}
                     </div>
 
                     {/* Title + desc */}
-                    <h3 className="text-xl font-extrabold mb-2" style={{ fontFamily: "'Space Grotesk',sans-serif", color: '#0A0A0A' }}>
+                    <h3 className="text-xl font-extrabold mb-2 text-white"
+                        style={{ fontFamily: "'Space Grotesk',sans-serif" }}>
                         {title}
                     </h3>
-                    <p className="text-sm leading-relaxed" style={{ color: '#000' }}>{desc}</p>
+                    <p className="text-sm leading-relaxed text-teal-50/90">{desc}</p>
 
                     {/* Animated illustration */}
-                    <div className="flex-1 mt-5 rounded-xl flex items-center justify-center relative overflow-hidden"
-                        style={{ background: '#F0FEFE', border: `1px solid ${T}20`, minHeight: 120 }}>
+                    <div className="flex-1 mt-5 rounded-2xl flex items-center justify-center relative overflow-hidden"
+                        style={{ background: `${T}08`, border: `1px solid ${T}20`, minHeight: 120 }}>
                         <div className="w-20 h-20 relative z-10">
                             <Icon />
                         </div>
@@ -176,27 +206,34 @@ const services = [
         icon: WhatsAppAnim,
         label: 'WhatsApp Bot',
         title: 'WhatsApp AI Agent',
-        desc: 'Instantly responds to every WhatsApp enquiry, qualifies leads, shares brochures, and books appointments — 24/7 with zero human involvement.',
+        desc: 'Responds to every WhatsApp enquiry in 0.4 seconds. Qualifies leads, sends brochures, books appointments — all without a single human touchpoint. Day or night.',
         badge: '0.4s response',
     },
     {
         icon: VoiceAnim,
         label: 'Voice Agent',
         title: 'AI Voice Agent',
-        desc: 'Answers every inbound call, handles objections, and books appointments in a natural human voice. Never miss a lead during peak hours again.',
+        desc: 'Answers every inbound call in a natural human voice. Handles objections, books appointments, and never puts a caller on hold. Never miss a lead during peak hours again.',
         badge: '24/7 calls',
+    },
+    {
+        icon: GeoAnim,
+        label: 'GEO Blog',
+        title: 'GEO Blog AI Agent',
+        desc: 'Stop writing manually. This agent researches trending topics, generates fully optimized articles, and posts directly to your website — hands-free.',
+        badge: 'Auto-Publish',
     },
     {
         icon: CustomAutomationAnim,
         label: 'Custom Automation',
-        title: 'Any Type of Automation',
-        desc: 'Have a specific workflow in mind? We build custom AI agents and automations tailored exactly to your business needs. Contact us to discuss your custom requirements.',
+        title: 'Custom AI Automations',
+        desc: 'Have a workflow that doesn\'t fit a template? We build exactly what your business needs. Talk to us.',
         badge: 'Contact Us',
     },
 ];
 
 const HowItWorksSection = () => (
-    <section className="py-12 relative overflow-hidden bg-[#F8FFFE]">
+    <section className="py-12 relative overflow-hidden bg-teal-950">
         <div className="absolute top-0 left-0 right-0 h-[2px] pointer-events-none"
             style={{ background: `linear-gradient(90deg, transparent, ${T}60, transparent)` }} />
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[400px] rounded-full blur-[140px] -z-0 pointer-events-none"
@@ -209,18 +246,18 @@ const HowItWorksSection = () => (
                 <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 10, letterSpacing: '0.18em', color: T, textTransform: 'uppercase' }}>
                     Our Services
                 </span>
-                <h2 className="mt-4 text-4xl md:text-5xl lg:text-6xl font-black leading-tight"
-                    style={{ fontFamily: "'Space Grotesk',sans-serif", letterSpacing: '-0.03em', color: '#0A0A0A' }}>
-                    Three agents,{' '}
-                    <span style={{ color: T }}>zero manual work</span>
+                <h2 className="mt-4 text-4xl md:text-5xl lg:text-6xl font-black leading-tight text-white"
+                    style={{ fontFamily: "'Space Grotesk',sans-serif", letterSpacing: '-0.03em' }}>
+                    Three AI agents. Zero missed leads.{' '}
+                    <span style={{ color: T }}>Zero manual work.</span>
                 </h2>
-                <div className="mt-6" style={{ width: 48, height: 2, background: T }} />
-                <p className="mt-6 text-base leading-relaxed" style={{ color: '#000' }}>
+                <div className="mt-6 rounded-full" style={{ width: 48, height: 2, background: T }} />
+                <p className="mt-6 text-base leading-relaxed text-teal-100">
                     Every enquiry answered. Every lead qualified. Every appointment booked — automatically across WhatsApp, phone, and your website.
                 </p>
             </div>
 
-            <div className="grid md:grid-cols-3 gap-8 md:gap-10 max-w-6xl mx-auto">
+            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8 md:gap-10 max-w-7xl mx-auto">
                 {services.map((s, i) => (
                     <motion.div key={i}
                         initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }}

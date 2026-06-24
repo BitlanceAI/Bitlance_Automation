@@ -81,7 +81,17 @@ class CreditLedgerService {
             if (pricingError) throw pricingError;
             if (!pricing) throw new Error(`No pricing found for agent: ${agentType}`);
 
-            const creditsNeeded = estimatedQuantity * pricing.unit_cost;
+            let unitCost = pricing.unit_cost;
+            // Override unit cost for blog agent types: Admin gets 10, other users get 50 credits.
+            if (['blog', 'seo_blog', 'geo_blog', 'geo_blog_dashboard'].includes(agentType)) {
+                if (userId === '0d396440-7d07-407c-89da-9cb93e353347') {
+                    unitCost = 10;
+                } else {
+                    unitCost = 50;
+                }
+            }
+
+            const creditsNeeded = estimatedQuantity * unitCost;
 
             // Get user balance
             const { data: userCredits, error: balanceError } = await supabaseAdmin

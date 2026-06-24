@@ -295,9 +295,9 @@ export const generateArticle = async (req, res) => {
         console.error('Credit check failed:', e);
     }
 
-    // ── 2. Pre-build interlinks for admin from published articles ─────────────
+    // ── 2. Pre-build interlinks from published articles ─────────────
     let interlinks = req.body.interlinks || null;
-    if (!interlinks && userId === ADMIN_ID) {
+    if (!interlinks) {
         try {
             const { data: articles } = await supabaseAdmin
                 .from('company_articles')
@@ -312,7 +312,7 @@ export const generateArticle = async (req, res) => {
                     title: a.seo_title || a.slug,
                     link: `https://www.bitlancetechhub.com/blogs/${a.slug}`
                 }));
-                console.log(`[Article] Pre-built ${interlinks.length} interlinks for admin`);
+                console.log(`[Article] Pre-built ${interlinks.length} interlinks`);
             }
         } catch (e) {
             console.warn('[Article] Failed to pre-build interlinks:', e.message);

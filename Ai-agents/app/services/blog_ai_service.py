@@ -204,7 +204,10 @@ _GARBAGE_PATTERNS = [
 ]
 
 def clean_blog_output(text: str) -> str:
-    """Strip internal system artifacts and footer garbage from AI-generated blog text."""
+    """Strip internal system artifacts, academic bracket citations, and footer garbage from AI-generated blog text."""
+    # Strip bracket citations like [1], [2], [10] etc.
+    text = _re.sub(r'\s*\[\d+\]', '', text)
+    
     lines = text.split('\n')
     cleaned = []
     for line in lines:
@@ -813,6 +816,7 @@ SECTION ORDER (follow exactly):
 
 20. ## Sources & References
     List real sources only (McKinsey, Gartner, WEF, IDC, Stanford AI Index, etc.).
+    You MUST format each source as a Markdown link, linking directly to the real report URL or verified homepage of the organization (e.g. * [Gartner](https://www.gartner.com) - Report Name *). Every single source listed MUST be a clickable link. Do NOT output plain text sources.
     Do NOT fabricate. Do NOT invent reports.
 
 21. ## Related Topics
@@ -912,7 +916,7 @@ MINIMUM WORDS   : {length_num}
 - Do NOT include [1], [2], or any academic-style citation numbers.
 - Do NOT use filler phrases: "In conclusion, as we have seen", "It goes without saying",
   "In today's fast-paced world", "In the digital age", "Without further ado".
-- {"ONLY use the internal links listed above — add NO other URLs, hyperlinks, or links anywhere in the article." if interlinks else "Do NOT add ANY hyperlinks, internal links, or external URLs anywhere in the content. Do NOT invent URLs. Do NOT link to example.com, placeholder domains, or any fabricated addresses. If you want to reference another article or guide, mention it in plain text only — never as a hyperlink."}
+- {"You MUST use the provided internal and external links. For statistics and sources, you MUST include real URL citations as Markdown links. Do NOT invent fake URLs." if (interlinks or external_links) else "Do NOT add ANY invented URLs. For statistics and sources, you MUST include real URL citations as Markdown links."}
 - NEVER output: AUTHOR_ID, COMM_LOGS, PAYLOAD, USER_ID, SESSION_ID, DATABASE_FIELDS, DEBUG_DATA, SYSTEM_PROMPT, RAW_METADATA, INTERNAL_NOTES.
 - NEVER output HTML tags (e.g., <h1>, <p>, <strong>). Use ONLY pure Markdown.
 - The entire article MUST be written ONLY in {language}. Absolutely no foreign words or characters.
@@ -1186,7 +1190,7 @@ Step 3: Select exactly 7 of the BEST and most topically relevant articles to be 
 Step 4: Identify 2-3 additional articles as "suggested" for future content silos.
 Step 5: Determine the primary Topical Cluster Category (e.g., "AI Infrastructure", "Real Estate Marketing").
 Step 6: Assign an Authority Score (0-100) based on how well the available articles support the target topic.
-Step 7: Search the web to identify exactly 3 high-authority EXTERNAL URLs (e.g., Stanford AI Index, Gartner, McKinsey, etc.) related to this topic. Provide their real URLs and a recommended anchor text.
+Step 7: Search the web to identify exactly 3 high-authority EXTERNAL URLs from trending, elite industry publications (e.g., Gartner, McKinsey, Harvard Business Review, Forbes, TechCrunch, Stanford AI Index, etc.) related to this topic. These must be reputable, high-domain-authority websites to boost our blog's SEO. Provide their real URLs and a recommended anchor text.
 CRITICAL RATIO RULE: You MUST enforce a strict ratio of 70% Internal Links (7) to 30% External Links (3). Internal links from our own database ALWAYS take priority.
 WARNING FOR EXTERNAL LINKS: Do NOT hallucinate URLs. Deep links (e.g., /linux, /report-2026) often 404. If you cannot verify an exact active page URL, you MUST link only to the verified homepage of the authoritative organization (e.g., "https://www.linuxfoundation.org", "https://www.gartner.com").
 
@@ -1423,6 +1427,7 @@ SEO ARTICLE STRUCTURE (follow in order — SEO=70%, GEO=30%):
 14. ## Quick Answer — 3-4 sentence direct block (GEO support layer only).
 15. ## Future Trends — Forward-looking predictions.
 16. ## Final Thoughts — 80-120 words, 3 takeaways, natural CTA.
+17. ## Sources & References — List real sources. Format each as a Markdown link (e.g. * [Gartner](https://www.gartner.com) - Report Name *). Every source MUST be a clickable link. Do NOT output plain text sources.
 
 RULES: No AI Overview/Fact Box at top. Semantic variants. Inline citations only.
 
@@ -1485,6 +1490,7 @@ Follow with **Learn More:** block using provided internal links.
 18. ## Future Outlook — 12-24 month specific predictions.
 19. ## Key Takeaways — 5 concise bullets.
 20. ## Conclusion — 80-120 words + natural CTA.
+21. ## Sources & References — List real sources. Format each as a Markdown link (e.g. * [Gartner](https://www.gartner.com) - Report Name *). Every source MUST be a clickable link. Do NOT output plain text sources.
 
 SUBHEADING QUALITY RULES (H2 & H3) — CRITICAL FOR GEO CITATIONS:
 - H2 subheadings MUST be precise, informative, and AI-citation-ready. LLMs quote specific, named sections.
@@ -1556,7 +1562,7 @@ MINIMUM WORDS   : {length_num}
 - Do NOT include [1], [2], or any academic-style citation numbers.
 - Do NOT use filler phrases: "In conclusion, as we have seen", "It goes without saying",
   "In today's fast-paced world", "In the digital age", "Without further ado".
-- {"ONLY use the internal links listed above — add NO other external URLs anywhere." if interlinks else "Do NOT add any external links or URLs anywhere in the content."}
+- {"You MUST use the provided internal and external links. For statistics and sources, you MUST include real URL citations as Markdown links. Do NOT invent fake URLs." if (interlinks or external_links) else "Do NOT add ANY invented URLs. For statistics and sources, you MUST include real URL citations as Markdown links."}
 - Every sentence must add value — delete any sentence that could be cut without loss.
 - The entire article MUST be written ONLY in {language}. Absolutely no foreign words or characters.
 - Output ONLY clean, valid Markdown. No preamble, no meta-commentary.
@@ -1671,6 +1677,7 @@ MINIMUM WORDS   : {length_num}
 def generate_image(topic: str, image_text: str) -> str:
     """
     Generate a real AI image for the blog header using gpt-image-2.
+    Falls back to dall-e-3 if gpt-image-2 returns 401 Unauthorized.
     Returns a data URI (data:image/png;base64,...) that the Node controller
     uploads to Supabase Storage via uploadImageToSupabase().
     """
@@ -1678,22 +1685,22 @@ def generate_image(topic: str, image_text: str) -> str:
         print("OPENAI_API_KEY not set, skipping image generation.")
         return ""
         
+    headers = {
+        "Authorization": f"Bearer {OPENAI_API_KEY}",
+        "Content-Type": "application/json",
+    }
+    # Keep image_text to max 3 words to prevent text overflow/clipping in the image
+    safe_image_text = ' '.join(image_text.split()[:3])
+    prompt = f"Professional blog header image for the topic \"{topic}\". Modern, clean, minimal design with a wide open area for text. Large bold sans-serif white text perfectly centered in the image: \"{safe_image_text}\". Keep the text well within the margins and ensure all text is fully visible, properly rendered, and not cut off or cropped at the edges. No extra text or logos."
+
+    # ── Tier 1: gpt-image-2 ────────────────────────────────────────────────
     try:
-        headers = {
-            "Authorization": f"Bearer {OPENAI_API_KEY}",
-            "Content-Type": "application/json",
-        }
-        # Keep image_text to max 3 words to prevent text overflow/clipping in the image
-        safe_image_text = ' '.join(image_text.split()[:3])
-        # Keep prompt concise — fewer tokens = faster + cheaper
-        prompt = f"Professional blog header image for the topic \"{topic}\". Modern, clean, minimal design with a wide open area for text. Large bold sans-serif white text perfectly centered in the image: \"{safe_image_text}\". Keep the text well within the margins and ensure all text is fully visible, properly rendered, and not cut off or cropped at the edges. No extra text or logos."
         payload = {
             "model": "gpt-image-2",
             "prompt": prompt,
             "n": 1,
             "size": "1024x1024",
-            "quality": "low"  # ~$0.011/image vs ~$0.040 for high — 73% cheaper
-            # NOTE: gpt-image-2 always returns b64_json, response_format param is not supported
+            "quality": "low"
         }
         print(f"Generating image with gpt-image-2 (quality=low) for topic: '{topic}'")
         res = requests.post("https://api.openai.com/v1/images/generations", headers=headers, json=payload, timeout=120)
@@ -1701,15 +1708,36 @@ def generate_image(topic: str, image_text: str) -> str:
         
         # gpt-image-2 returns b64_json, NOT a URL
         b64_data = res.json()["data"][0].get("b64_json", "")
-        if not b64_data:
-            print("generate_image: No b64_json in gpt-image-2 response.")
-            return ""
-            
-        print(f"generate_image: Got base64 image, length={len(b64_data)}")
-        return f"data:image/png;base64,{b64_data}"
+        if b64_data:
+            print(f"generate_image: gpt-image-2 success, length={len(b64_data)}")
+            return f"data:image/png;base64,{b64_data}"
+        print("generate_image: No b64_json in gpt-image-2 response, trying dall-e-3.")
     except Exception as e:
-        print(f"Error generating image with gpt-image-2: {e}")
-        return ""
+        print(f"gpt-image-2 failed ({type(e).__name__}): {e}. Falling back to dall-e-3.")
+
+    # ── Tier 2: dall-e-3 fallback ──────────────────────────────────────────
+    try:
+        payload = {
+            "model": "dall-e-3",
+            "prompt": prompt,
+            "n": 1,
+            "size": "1024x1024",
+            "quality": "standard",
+            "response_format": "b64_json"
+        }
+        print(f"Generating image with dall-e-3 fallback for topic: '{topic}'")
+        res = requests.post("https://api.openai.com/v1/images/generations", headers=headers, json=payload, timeout=120)
+        res.raise_for_status()
+
+        b64_data = res.json()["data"][0].get("b64_json", "")
+        if b64_data:
+            print(f"generate_image: dall-e-3 success, length={len(b64_data)}")
+            return f"data:image/png;base64,{b64_data}"
+        print("generate_image: No b64_json in dall-e-3 response either.")
+    except Exception as e:
+        print(f"Error generating image with dall-e-3: {e}")
+
+    return ""
 
 
 

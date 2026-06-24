@@ -61,7 +61,7 @@ yarn-error.log*
 # ===============================
 # AI Agents - hosted separately
 # ===============================
-Graphic-agents/
+
 seo-agent-video/
 seo-landing-page/
 reports/

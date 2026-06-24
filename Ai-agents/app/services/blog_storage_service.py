@@ -97,7 +97,15 @@ def validate_credits(user_id: str, agent_type: str = "blog", quantity: int = 1) 
     if pricing_res.data is None:
         raise RuntimeError(f"No pricing found for agent: {agent_type}")
 
-    credits_needed = quantity * pricing_res.data["unit_cost"]
+    unit_cost = pricing_res.data["unit_cost"]
+    # Override unit cost for blog agent types: Admin gets 10, other users get 50 credits.
+    if agent_type in ["blog", "seo_blog", "geo_blog", "geo_blog_dashboard"]:
+        if user_id == ADMIN_ID:
+            unit_cost = 10
+        else:
+            unit_cost = 50
+
+    credits_needed = quantity * unit_cost
 
     # Get balance
     balance_res = (

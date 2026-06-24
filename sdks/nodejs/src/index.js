@@ -99,7 +99,7 @@ class BitlanceAI {
    */
   async generateSEO(params) {
     if (!params.topic && !params.industry) throw new BitlanceAIError('topic or industry is required');
-    return this._request('POST', '/blog/generate', {
+    return this._request('POST', '/seo/generate', {
       ...params,
       optimization_mode: 'SEO',
     });
@@ -112,7 +112,7 @@ class BitlanceAI {
    */
   async generateGEO(params) {
     if (!params.topic && !params.industry) throw new BitlanceAIError('topic or industry is required');
-    return this._request('POST', '/blog/generate', {
+    return this._request('POST', '/geo/generate', {
       ...params,
       optimization_mode: 'GEO',
     });

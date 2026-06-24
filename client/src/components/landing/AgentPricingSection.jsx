@@ -3,10 +3,10 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Check, X, ArrowRight, Phone, Zap, Mail, ChevronDown, ChevronUp } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import API_BASE_URL from '../../config.js';
+import { MeshGradient } from '@paper-design/shaders-react';
 
 const T = '#26CECE';
 
-// ─── SEO + GEO Plans (2026) ────────────────────────────────────────────────────
 const seoGeoPlans = [
     {
         name: 'Starter',
@@ -14,6 +14,7 @@ const seoGeoPlans = [
         credits: 3000,
         seoBlogs: 60,
         geoBlogs: 40,
+        desc: 'Ideal for freelancers just getting started. 3,000 credits (60 SEO / 40 GEO blogs a month). Enough to dominate your niche.',
         popular: false,
         planType: 'seo_geo',
         features: ['SEO Optimization', 'GEO Optimization', 'Internal Linking', 'AI Search Optimization'],
@@ -26,6 +27,7 @@ const seoGeoPlans = [
         credits: 12000,
         seoBlogs: 240,
         geoBlogs: 160,
+        desc: 'The sweet spot for growing teams. 12,000 credits (240 SEO / 160 GEO blogs). This is where most of our clients see their first 2x results.',
         popular: true,
         planType: 'seo_geo',
         features: ['SEO Optimization', 'GEO Optimization', 'Internal Linking', 'AI Search Optimization', 'Brand Knowledge', 'AI Overview Optimization'],
@@ -38,6 +40,7 @@ const seoGeoPlans = [
         credits: 19999,
         seoBlogs: 399,
         geoBlogs: 266,
+        desc: 'Maximum output for businesses that want to own every search result in their category. 19,999 credits (399 SEO / 266 GEO blogs) monthly.',
         popular: false,
         planType: 'seo_geo',
         features: ['SEO Optimization', 'GEO Optimization', 'Internal Linking', 'AI Search Optimization', 'Brand Knowledge', 'AI Overview Optimization', 'Multi-Agent Research', 'Competitor Analysis', 'Content Audits', 'Priority Generation'],
@@ -170,12 +173,11 @@ function PlanCard({ plan, idx, onBuy, isBuying, disabled }) {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4, delay: idx * 0.07 }}
             whileHover={{ y: -5 }}
-            className="relative flex flex-col rounded p-6 transition-all duration-300"
-            style={{
-                background: plan.popular ? `${T}08` : '#ffffff',
-                border: `1px solid ${plan.popular ? T : '#1E1E1E'}`,
-                boxShadow: plan.popular ? `0 0 40px 0 ${T}12` : 'none',
-            }}
+            className={`relative flex flex-col rounded-[24px] p-6 transition-all duration-300 border backdrop-blur-md
+                ${plan.popular
+                    ? 'bg-[#26cece]/10 border-[#26cece]/50'
+                    : 'bg-black/20 border-white/10 hover:border-white/30'}`}
+            style={{ boxShadow: plan.popular ? `0 0 40px 0 ${T}15` : 'none' }}
         >
             {plan.popular && (
                 <div
@@ -186,15 +188,16 @@ function PlanCard({ plan, idx, onBuy, isBuying, disabled }) {
                 </div>
             )}
 
-            <h3 className="text-base font-extrabold text-black mb-1">{plan.name}</h3>
+            <h3 className="text-base font-extrabold text-white mb-1">{plan.name}</h3>
+            {plan.desc && <p className="text-[11px] text-teal-100/60 mb-3">{plan.desc}</p>}
 
             {/* Price */}
             <div className="flex items-baseline gap-1 mb-1">
-                <span className="text-lg font-extrabold text-gray-500" style={{ fontFamily: "'DM Mono',monospace" }}>₹</span>
-                <span className="text-4xl font-black text-black" style={{ fontFamily: "'DM Mono',monospace" }}>
+                <span className="text-lg font-extrabold text-slate-400" style={{ fontFamily: "'DM Mono',monospace" }}>₹</span>
+                <span className="text-4xl font-black text-white" style={{ fontFamily: "'DM Mono',monospace" }}>
                     {plan.priceINR?.toLocaleString('en-IN')}
                 </span>
-                <span className="text-gray-500 text-xs">/mo</span>
+                <span className="text-slate-400 text-xs">/mo</span>
             </div>
 
             {/* Badges */}
@@ -204,12 +207,12 @@ function PlanCard({ plan, idx, onBuy, isBuying, disabled }) {
                     {plan.credits?.toLocaleString()} credits
                 </span>
                 {plan.seoBlogs && (
-                    <span className="text-[10px] px-2 py-0.5 rounded-sm font-mono uppercase tracking-widest bg-gray-100 text-gray-600">
+                    <span className="text-[10px] px-2 py-0.5 rounded-xl font-mono uppercase tracking-widest bg-white/[0.07] text-white/60">
                         {plan.seoBlogs} SEO · {plan.geoBlogs} GEO blogs
                     </span>
                 )}
                 {plan.capacity && (
-                    <span className="text-[10px] px-2 py-0.5 rounded-sm font-mono uppercase tracking-widest bg-gray-100 text-gray-600">
+                    <span className="text-[10px] px-2 py-0.5 rounded-xl font-mono uppercase tracking-widest bg-white/[0.07] text-white/60">
                         {plan.capacity}
                     </span>
                 )}
@@ -219,7 +222,7 @@ function PlanCard({ plan, idx, onBuy, isBuying, disabled }) {
                 {plan.features.map((f, i) => (
                     <li key={i} className="flex items-start gap-2">
                         <Check size={11} className="mt-0.5 flex-shrink-0" style={{ color: T }} />
-                        <span className="text-xs text-black/70">{f}</span>
+                        <span className="text-xs text-teal-50/90">{f}</span>
                     </li>
                 ))}
                 {(plan.missing || []).map((f, i) => (
@@ -233,12 +236,13 @@ function PlanCard({ plan, idx, onBuy, isBuying, disabled }) {
             <button
                 onClick={() => onBuy(plan)}
                 disabled={isBuying || disabled}
-                className="w-full py-3 rounded text-[11px] font-extrabold uppercase tracking-widest flex items-center justify-center gap-2 transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed"
+                className={`w-full py-3 rounded-[12px] text-[11px] font-extrabold uppercase tracking-widest flex items-center justify-center gap-2 transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed
+                    ${!plan.popular && !plan.contactSales ? 'bg-white/[0.07] text-white border-white/[0.12] hover:bg-white/[0.12]' : ''}`}
                 style={plan.popular
                     ? { background: T, color: '#000' }
                     : plan.contactSales
                         ? { background: 'transparent', color: T, border: `1px solid ${T}50` }
-                        : { background: '#f9fafb', color: '#111111', border: '1px solid #2A2A2A' }}
+                        : undefined}
             >
                 {isBuying
                     ? <span className="animate-spin w-3 h-3 border-2 border-black/30 border-t-black rounded-full" />
@@ -253,10 +257,11 @@ function PlanCard({ plan, idx, onBuy, isBuying, disabled }) {
 // ─── Credit Reference Table ───────────────────────────────────────────────────
 function CreditTable({ open, onToggle }) {
     return (
-        <div className="border border-gray-200 rounded overflow-hidden">
+        <div className="rounded-2xl overflow-hidden border border-white/10">
             <button
                 onClick={onToggle}
-                className="w-full flex items-center justify-between px-4 py-3 text-[11px] font-extrabold uppercase tracking-widest text-black bg-gray-50 hover:bg-gray-100 transition-colors"
+                className="w-full flex items-center justify-between px-4 py-3 text-[11px] font-extrabold uppercase tracking-widest
+                    text-teal-50/90 bg-white/5 hover:bg-white/10 transition-colors"
             >
                 <span>Credit Consumption Reference</span>
                 {open ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
@@ -273,14 +278,14 @@ function CreditTable({ open, onToggle }) {
                         <table className="w-full text-xs">
                             <thead>
                                 <tr style={{ background: `${T}10` }}>
-                                    <th className="px-4 py-2 text-left font-extrabold uppercase tracking-widest text-black">Action</th>
-                                    <th className="px-4 py-2 text-right font-extrabold uppercase tracking-widest text-black">Credits</th>
+                                    <th className="px-4 py-2 text-left font-extrabold uppercase tracking-widest text-white">Action</th>
+                                    <th className="px-4 py-2 text-right font-extrabold uppercase tracking-widest text-white">Credits</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {creditConsumption.map((row, i) => (
-                                    <tr key={i} className={i % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
-                                        <td className="px-4 py-2 font-mono text-gray-700">{row.action}</td>
+                                    <tr key={i} className={i % 2 === 0 ? 'bg-white/[0.02]' : 'bg-white/[0.04]'}>
+                                        <td className="px-4 py-2 font-mono text-teal-50/70">{row.action}</td>
                                         <td className="px-4 py-2 text-right font-extrabold font-mono" style={{ color: T }}>{row.credits}</td>
                                     </tr>
                                 ))}
@@ -296,10 +301,11 @@ function CreditTable({ open, onToggle }) {
 // ─── Market Benchmark Table ───────────────────────────────────────────────────
 function BenchmarkTable({ open, onToggle }) {
     return (
-        <div className="border border-gray-200 rounded overflow-hidden">
+        <div className="rounded-2xl overflow-hidden border border-white/10">
             <button
                 onClick={onToggle}
-                className="w-full flex items-center justify-between px-4 py-3 text-[11px] font-extrabold uppercase tracking-widest text-black bg-gray-50 hover:bg-gray-100 transition-colors"
+                className="w-full flex items-center justify-between px-4 py-3 text-[11px] font-extrabold uppercase tracking-widest
+                    text-teal-50/90 bg-white/5 hover:bg-white/10 transition-colors"
             >
                 <span>Market Pricing Benchmark — SEO (Why Bitlance is 10× cheaper)</span>
                 {open ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
@@ -316,15 +322,15 @@ function BenchmarkTable({ open, onToggle }) {
                         <table className="w-full text-xs">
                             <thead>
                                 <tr style={{ background: `${T}10` }}>
-                                    <th className="px-4 py-2 text-left font-extrabold uppercase tracking-widest text-black">Segment</th>
-                                    <th className="px-4 py-2 text-right font-extrabold uppercase tracking-widest text-black">Market Price</th>
+                                    <th className="px-4 py-2 text-left font-extrabold uppercase tracking-widest text-white">Segment</th>
+                                    <th className="px-4 py-2 text-right font-extrabold uppercase tracking-widest text-white">Market Price</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {benchmarkSEO.map((row, i) => (
-                                    <tr key={i} className={i % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
-                                        <td className="px-4 py-2 font-mono text-gray-700">{row.segment}</td>
-                                        <td className="px-4 py-2 text-right font-mono text-gray-400 line-through">{row.monthly}</td>
+                                    <tr key={i} className={i % 2 === 0 ? 'bg-white/[0.02]' : 'bg-white/[0.04]'}>
+                                        <td className="px-4 py-2 font-mono text-teal-50/70">{row.segment}</td>
+                                        <td className="px-4 py-2 text-right font-mono text-slate-400 line-through">{row.monthly}</td>
                                     </tr>
                                 ))}
                                 <tr className="border-t-2" style={{ borderColor: T }}>
@@ -399,45 +405,56 @@ const AgentPricingSection = () => {
     };
 
     return (
-        <section className="py-24 bg-transparent" id="pricing">
-            <div className="max-w-7xl mx-auto px-6">
+        <section className="pt-32 pb-24 bg-teal-900 relative overflow-hidden transition-colors duration-300" id="pricing">
+            {/* Mesh Gradient Background */}
+            <div className="absolute inset-0 pointer-events-none z-0 opacity-40">
+                <MeshGradient
+                    speed={0.6}
+                    colors={["#26CECE", "#1AA8A8", "#0d5c5c", "#178282"]}
+                    distortion={0.8}
+                    swirl={0.1}
+                    grainMixer={0.15}
+                    grainOverlay={0}
+                    style={{ height: "100%", width: "100%" }}
+                />
+            </div>
+            
+            <div className="max-w-7xl mx-auto px-6 relative z-10">
 
                 {/* Heading */}
                 <div className="mb-12 max-w-2xl">
-                    <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 10, letterSpacing: '0.18em', color: '#000', textTransform: 'uppercase' }}>
+                    <span className="text-slate-500 dark:text-slate-400"
+                        style={{ fontFamily: "'DM Mono',monospace", fontSize: 10, letterSpacing: '0.18em', textTransform: 'uppercase' }}>
                         Pricing
                     </span>
                     <h2
-                        className="mt-4 text-3xl md:text-5xl font-extrabold text-black leading-tight"
+                        className="mt-4 text-3xl md:text-5xl font-extrabold leading-tight text-white"
                         style={{ fontFamily: "'Space Grotesk',sans-serif", letterSpacing: '-0.025em' }}
                     >
-                        Simple pricing,<br /><span style={{ color: T }}>massive ROI</span>
+                        Agencies charge ₹2.5L-₹6L/month for this. <span style={{ color: T }}>You don't have to.</span>
                     </h2>
                     <div className="mt-5" style={{ width: 48, height: 2, background: T }} />
-                    <div
-                        className="mt-5 inline-flex flex-wrap items-center gap-2 px-4 py-2.5 text-xs rounded"
-                        style={{ background: `${T}0D`, border: `1px solid ${T}25` }}
-                    >
-                        <span style={{ color: T, fontFamily: "'DM Mono',monospace" }}>Agencies charge</span>
-                        <span className="line-through" style={{ color: '#000', fontFamily: "'DM Mono',monospace" }}>₹2,50,000–₹6,00,000/mo</span>
-                        <span style={{ color: T, fontFamily: "'DM Mono',monospace" }}>for what you get below.</span>
-                    </div>
+                    <p className="mt-5 text-teal-50/90 max-w-xl text-lg leading-relaxed">
+                        Pick the plan that fits your output. Scale up when you're ready. No long-term lock-in.
+                    </p>
                 </div>
 
                 {/* Tab Toggle */}
                 <div className="flex flex-wrap items-center gap-4 mb-8">
-                    <div className="flex rounded overflow-hidden border border-gray-200">
+                    <div className="flex rounded-2xl overflow-hidden border border-slate-200 dark:border-white/[0.1]">
                         <button
                             onClick={() => setTab('seo_geo')}
-                            className="flex items-center gap-2 px-5 py-2.5 text-xs font-extrabold uppercase tracking-widest transition-all"
-                            style={tab === 'seo_geo' ? { background: T, color: '#000' } : { background: '#ffffff', color: '#000' }}
+                            className={`flex items-center gap-2 px-5 py-2.5 text-xs font-extrabold uppercase tracking-widest transition-all
+                                ${tab !== 'seo_geo' ? 'bg-white/5 text-teal-50/90 hover:bg-white/10' : ''}`}
+                            style={tab === 'seo_geo' ? { background: T, color: '#000' } : undefined}
                         >
                             <Zap size={13} /> SEO + GEO Plans
                         </button>
                         <button
                             onClick={() => setTab('email')}
-                            className="flex items-center gap-2 px-5 py-2.5 text-xs font-extrabold uppercase tracking-widest transition-all"
-                            style={tab === 'email' ? { background: T, color: '#000' } : { background: '#ffffff', color: '#000' }}
+                            className={`flex items-center gap-2 px-5 py-2.5 text-xs font-extrabold uppercase tracking-widest transition-all
+                                ${tab !== 'email' ? 'bg-white/5 text-teal-50/90 hover:bg-white/10' : ''}`}
+                            style={tab === 'email' ? { background: T, color: '#000' } : undefined}
                         >
                             <Mail size={13} /> Email Automation
                         </button>
@@ -453,7 +470,7 @@ const AgentPricingSection = () => {
                         exit={{ opacity: 0 }}
                         transition={{ duration: 0.2 }}
                         className="text-xs mb-8 font-mono"
-                        style={{ color: '#555' }}
+                        style={{ color: '#a5f3fc' }}
                     >
                         {tab === 'seo_geo' && '⚡ Credits-based platform — generate SEO & GEO blogs, audit content, rewrite, and more'}
                         {tab === 'email' && '📧 Email Automation — sequences, broadcasts, and AI-powered follow-ups'}
@@ -502,8 +519,8 @@ const AgentPricingSection = () => {
                 </div>
 
                 {/* Footer note */}
-                <p className="text-center text-xs mt-10" style={{ color: '#333', fontFamily: "'DM Mono',monospace" }}>
-                    All prices in INR · GST applicable · Powered by Razorpay (Test Mode)
+                <p className="text-center text-xs mt-10" style={{ color: 'rgba(255,255,255,0.4)', fontFamily: "'DM Mono',monospace" }}>
+                    30 day money back guarantee · No setup fees · Live in 72 hours
                 </p>
             </div>
         </section>
