@@ -17,6 +17,9 @@ class PropertyDetailsRequest(BaseModel):
     image_quality: Optional[str] = Field(default="low", example="medium", description="Image quality ('low', 'medium', 'high', 'auto')")
     num_variants: Optional[int] = Field(default=1, description="Number of variants to generate")
     theme_color: Optional[str] = Field(default=None, description="Theme color to use")
+    logo_image: Optional[str] = Field(default=None, description="Optional logo image URL or base64")
+    reference_image: Optional[str] = Field(default=None, description="Optional reference image URL or base64")
+    language: Optional[str] = Field(default="english", example="hindi_marathi", description="Language of the flyer text ('english', 'hindi_marathi')")
 
 class PromptEnhanceRequest(BaseModel):
     raw_prompt: str = Field(..., example="make a poster for an apartment")
@@ -31,6 +34,9 @@ class GenerateFromPromptRequest(BaseModel):
     prompt: str = Field(..., example="Premium urban Luxury Apartments in Pune, stunning high-rise residential tower...")
     image_size: Optional[str] = Field(default="1024x1024", example="1024x1024", description="Image resolution (e.g., 512x512, 1024x1024, 1536x1024)")
     image_quality: Optional[str] = Field(default="low", example="medium", description="Image quality ('low', 'medium', 'high', 'auto')")
+    logo_image: Optional[str] = Field(default=None, description="Optional logo image URL or base64")
+    reference_image: Optional[str] = Field(default=None, description="Optional reference image URL or base64")
+    language: Optional[str] = Field(default="english", example="hindi_marathi", description="Language of the flyer text ('english', 'hindi_marathi')")
 
 class GenerateResponse(BaseModel):
     success: bool = Field(..., example=True)

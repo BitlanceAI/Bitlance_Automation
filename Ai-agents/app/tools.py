@@ -57,16 +57,21 @@ def fetch_trending_keywords(niche: str) -> str:
 # ─────────────────────────────────────────────────────────────────────────────
 
 @tool
-def enhance_raw_prompt(input_json: str) -> str:
+def enhance_raw_prompt(
+    raw_prompt: str,
+    niche: Optional[str] = None,
+    trending_keywords: Optional[list[str]] = None,
+    language: Optional[str] = "english",
+) -> str:
     """
     Enhance a short user-written prompt into a rich, detailed image generation prompt.
     Optionally incorporates trending keywords for the given niche.
 
     Args:
-        input_json: A JSON string with keys:
-            - "raw_prompt" (str, required): The user's raw text prompt.
-            - "niche" (str, optional): Design niche for trend enrichment.
-            - "trending_keywords" (list[str], optional): Pre-fetched keywords to embed.
+        raw_prompt: The user's raw text prompt.
+        niche: Design niche for trend enrichment (e.g. "real estate", "fitness").
+        trending_keywords: Pre-fetched keywords to embed.
+        language: Language of the flyer text ('english', 'hindi_marathi').
 
     Returns:
         A JSON string: {"enhanced_prompt": "...", "trending_keywords": [...]}
@@ -74,15 +79,11 @@ def enhance_raw_prompt(input_json: str) -> str:
     from app.services.prompt_service import PromptService
     service = PromptService()
     try:
-        data = json.loads(input_json)
-        raw_prompt: str = data["raw_prompt"]
-        niche: Optional[str] = data.get("niche")
-        trending_keywords: Optional[list] = data.get("trending_keywords")
-
         enhanced, used_keywords = service.enhance_prompt(
             raw_prompt=raw_prompt,
             niche=niche,
             trending_keywords=trending_keywords,
+            language=language or "english",
         )
         logger.info("[Tool: enhance_raw_prompt] enhanced prompt generated.")
         return json.dumps({"enhanced_prompt": enhanced, "trending_keywords": used_keywords})
@@ -96,16 +97,17 @@ def enhance_raw_prompt(input_json: str) -> str:
 # ─────────────────────────────────────────────────────────────────────────────
 
 @tool
-def build_prompt_from_details(input_json: str) -> str:
+def build_prompt_from_details(
+    details: dict,
+    trending_keywords: Optional[list[str]] = None,
+) -> str:
     """
     Build a detailed image generation prompt from structured property/business details.
     Always enforces text overlays for key information (price, contact, location).
 
     Args:
-        input_json: A JSON string with keys matching PropertyDetailsRequest:
-            property_type, location, price, bhk, builder, phone, email, address,
-            amenities, extra_details, niche, template_id, theme_color,
-            trending_keywords (optional pre-fetched list).
+        details: A dictionary containing business/property fields like property_type, location, price, phone, etc.
+        trending_keywords: Optional pre-fetched list of design motif keywords.
 
     Returns:
         A JSON string: {"prompt": "...", "trending_keywords": [...]}
@@ -113,10 +115,7 @@ def build_prompt_from_details(input_json: str) -> str:
     from app.services.prompt_service import PromptService
     service = PromptService()
     try:
-        details = json.loads(input_json)
-        trending_keywords: Optional[list] = details.pop("trending_keywords", None)
-        niche: Optional[str] = details.get("niche") or details.get("property_type")
-
+        niche = details.get("niche") or details.get("property_type")
         prompt, used_keywords = service.build_prompt_from_details(
             details=details,
             niche=niche,
@@ -140,38 +139,38 @@ _last_image_results: list[dict] = []
 
 
 @tool
-def generate_image(input_json: str) -> str:
+def generate_image(
+    prompt: str,
+    quality: Optional[str] = None,
+    size: Optional[str] = None,
+    num_variants: Optional[int] = 1,
+) -> str:
     """
-    Generate one or more images using OpenAI's gpt-image-2 model.
+    Generate one or more images using OpenAI's image model.
     Saves each image to the outputs folder.
 
     Args:
-        input_json: A JSON string with keys:
-            - "prompt"        (str, required): The final image generation prompt.
-            - "quality"       (str, optional): 'low', 'medium', 'high', 'auto'. Default: 'low'.
-            - "size"          (str, optional): '1024x1024', '1536x1024', '1024x1536'. Default: '1024x1024'.
-            - "num_variants"  (int, optional): Number of images to generate. Default: 1.
+        prompt: The final image generation prompt.
+        quality: Image quality level ('low', 'medium', 'high', 'auto').
+        size: Image size dimensions (e.g. '1024x1024', '1536x1024').
+        num_variants: Number of images to generate (default is 1).
 
     Returns:
-        A compact JSON string: {"images": [{"filepath": "...", "filename": "..."}, ...]}
-        NOTE: base64 data is NOT included here to avoid LLM context overflow.
-        The full results (with b64_string) are stored in _last_image_results.
+        A compact JSON string listing generated image files: {"images": [{"filepath": "...", "filename": "..."}, ...]}
     """
     global _last_image_results
     from app.services.image_service import ImageService
     service = ImageService()
     try:
-        data = json.loads(input_json)
-        prompt: str = data["prompt"]
-        quality: str = data.get("quality", ModelConfig.IMAGE_DEFAULT_QUALITY)
-        size: str = data.get("size", ModelConfig.IMAGE_DEFAULT_SIZE)
-        num_variants: int = int(data.get("num_variants", 1))
+        q = quality or ModelConfig.IMAGE_DEFAULT_QUALITY
+        sz = size or ModelConfig.IMAGE_DEFAULT_SIZE
+        nv = num_variants or 1
 
         results = service.generate(
             prompt=prompt,
-            quality=quality,
-            size=size,
-            num_variants=num_variants,
+            quality=q,
+            size=sz,
+            num_variants=nv,
         )
         logger.info("[Tool: generate_image] %d image(s) generated.", len(results))
 
@@ -193,31 +192,35 @@ def generate_image(input_json: str) -> str:
 # ─────────────────────────────────────────────────────────────────────────────
 
 @tool
-def generate_social_post(input_json: str) -> str:
+def generate_social_post(
+    category: str,
+    platforms: list[str],
+    tone: Optional[str] = None,
+    extra_instructions: Optional[str] = None,
+    image_quality: Optional[str] = None,
+) -> str:
     """
     Full social post pipeline: category → Google Trends → platform-aware captions → graphic.
 
     Args:
-        input_json: A JSON string with keys:
-            - "category"           (str, required): Topic/niche for the post.
-            - "platforms"          (list[str], required): Target platforms e.g. ["twitter", "linkedin"].
-            - "tone"               (str, optional): Writing tone. Default: 'professional'.
-            - "extra_instructions" (str, optional): Extra context for the AI.
-            - "image_quality"      (str, optional): 'low', 'medium', 'high', 'auto'. Default: 'low'.
+        category: Topic or niche for the post.
+        platforms: List of platforms to write captions for (e.g. ["twitter", "linkedin"]).
+        tone: Tone of the captions (default is 'professional').
+        extra_instructions: Extra user context/instructions.
+        image_quality: Quality of the generated graphic ('low', 'medium', etc.).
 
     Returns:
-        A JSON string with captions per platform, trending keywords, and image metadata.
+        A JSON string containing platform captions, keywords, and image metadata.
     """
     from app.services.social_post_service import SocialPostService
     service = SocialPostService()
     try:
-        data = json.loads(input_json)
         result = service.generate_social_post(
-            category=data["category"],
-            platforms=data["platforms"],
-            tone=data.get("tone", "professional"),
-            extra_instructions=data.get("extra_instructions", ""),
-            image_quality=data.get("image_quality", "low"),
+            category=category,
+            platforms=platforms,
+            tone=tone or "professional",
+            extra_instructions=extra_instructions or "",
+            image_quality=image_quality or "low",
         )
         # Strip b64 from tool output to avoid context overflow
         slim_result = {
@@ -228,7 +231,7 @@ def generate_social_post(input_json: str) -> str:
             "graphic_prompt": result["graphic_prompt"],
             "images": [{"filepath": img["filepath"], "filename": img["filename"]} for img in result.get("images", [])],
         }
-        logger.info("[Tool: generate_social_post] Pipeline complete for category='%s'", data["category"])
+        logger.info("[Tool: generate_social_post] Pipeline complete for category='%s'", category)
         return json.dumps(slim_result)
     except Exception as exc:
         logger.error("[Tool: generate_social_post] FAILED: %s", exc)

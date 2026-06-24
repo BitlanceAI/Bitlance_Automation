@@ -82,6 +82,8 @@ class SystemPrompts:
         "amenities, etc.) or explicitly asks for text in the prompt, you MUST ensure your enhanced "
         "prompt explicitly instructs the image generator to write those details as beautiful, "
         "legible text overlay in the generated image. "
+        "The text typography MUST be perfectly clear, sharp, high-contrast, vector-style, and completely legible with zero blurriness or artifacting. "
+        "If a reference image or specific color theme is mentioned, ensure the prompt instructs to use that exact theme and seamlessly integrate a realistic photo insert of the reference. "
         "Otherwise, if no details or text are mentioned, ensure it specifies "
         "'no text, no logos, no watermarks'. "
         "Return ONLY the enhanced prompt, nothing else."
@@ -96,6 +98,8 @@ class SystemPrompts:
         "details. Explicitly instruct the image generator to write these details exactly as text in the "
         "image: title, price, location, AND critically, any contact information (phone, email, "
         "address/website) and builder name if provided. "
+        "The text typography MUST be perfectly clear, sharp, high-contrast, vector-style, and completely legible with zero blurriness or artifacting. Ensure exact spelling. "
+        "If a reference image description or URL is provided in the details, explicitly instruct the model to first ENHANCE and HARMONIZE the reference image's lighting, contrast, and mood to perfectly match the overall template style (e.g., brightening a dark image if the template is bright), and then seamlessly integrate it as a polished photo insert. "
         "The contact details MUST be clearly visible at the bottom of the flyer. "
         "No logos or watermarks. Return ONLY the image generation prompt, nothing else."
     )

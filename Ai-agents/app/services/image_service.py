@@ -84,7 +84,7 @@ class ImageService:
 
         output_list: list[dict] = []
         for img_data in api_result.data:
-            result = self._process_image_data(img_data)
+            result = self._process_image_data(img_data, quality)
             if result:
                 output_list.append(result)
 
@@ -98,7 +98,7 @@ class ImageService:
     # Private helpers
     # ──────────────────────────────────────────────────────────────────────────
 
-    def _process_image_data(self, img_data) -> Optional[dict]:
+    def _process_image_data(self, img_data, quality: str) -> Optional[dict]:
         """Decode a single image API response item and persist to disk."""
         job_id   = str(uuid.uuid4())
         filename = f"image_{job_id}.png"
@@ -110,13 +110,16 @@ class ImageService:
                 # API returned base64 directly
                 b64_string  = img_data.b64_json
                 image_bytes = base64.b64decode(b64_string)
+                image_bytes = self._resize_if_needed(image_bytes, quality)
                 self._save_bytes(filepath, image_bytes)
+                b64_string = base64.b64encode(image_bytes).decode("utf-8")
 
             elif hasattr(img_data, "url") and img_data.url:
                 # API returned a temporary URL — download it
                 resp = requests.get(img_data.url, timeout=30)
                 resp.raise_for_status()
                 image_bytes = resp.content
+                image_bytes = self._resize_if_needed(image_bytes, quality)
                 self._save_bytes(filepath, image_bytes)
                 b64_string = base64.b64encode(image_bytes).decode("utf-8")
 
@@ -134,6 +137,38 @@ class ImageService:
             "b64_string": b64_string,
             "image_url":  None,   # Populated by upload layer if CDN is configured
         }
+
+    def _resize_if_needed(self, image_bytes: bytes, quality: str) -> bytes:
+        """Physically resizes the image bytes if quality settings require downscaling."""
+        if quality not in ["low", "medium"]:
+            return image_bytes
+
+        try:
+            from PIL import Image
+            import io
+
+            img = Image.open(io.BytesIO(image_bytes))
+            width, height = img.size
+
+            scale = 0.5 if quality == "low" else 0.75
+            new_w = int(width * scale)
+            new_h = int(height * scale)
+
+            logger.info("[ImageService] Resizing generated image from %dx%d to %dx%d (requested quality: %s)", width, height, new_w, new_h, quality)
+
+            try:
+                resample_filter = Image.Resampling.LANCZOS
+            except AttributeError:
+                resample_filter = Image.ANTIALIAS
+
+            img_resized = img.resize((new_w, new_h), resample=resample_filter)
+
+            out_buf = io.BytesIO()
+            img_resized.save(out_buf, format="PNG")
+            return out_buf.getvalue()
+        except Exception as e:
+            logger.error("[ImageService] Failed to resize image for quality: %s, error: %s", quality, e)
+            return image_bytes
 
     @staticmethod
     def _save_bytes(filepath: str, data: bytes) -> None:

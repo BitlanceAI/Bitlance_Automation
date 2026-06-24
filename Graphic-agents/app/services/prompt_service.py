@@ -84,6 +84,16 @@ class PromptService:
         # Build system prompt with optional trend injection
         system = SystemPrompts.PROMPT_ENHANCER_SYSTEM + trending_info
 
+        import re
+        urls = re.findall(r'https?://[^\s<>"]+|www\.[^\s<>"]+', raw_prompt)
+        for url in urls:
+            try:
+                description = self._analyze_image(url)
+                if description and description != url:
+                    raw_prompt = raw_prompt.replace(url, f"[{url} -> Visually describes: {description}]")
+            except Exception:
+                pass
+
         response = self.client.chat.completions.create(
             model=ModelConfig.LLM_MODEL,
             messages=[
@@ -135,13 +145,25 @@ class PromptService:
             )
 
         # ── Color instruction (non-destructive) ─────────────────────────────
-        theme_color = details.get("theme_color")
+        theme_color = details.get("theme_color") or details.get("color_theme")
         color_instruction = ""
         if theme_color:
             color_instruction = (
                 f" Use the color '{theme_color}' STRICTLY for text overlays, typography, borders, "
                 "and graphic branding accents. Do NOT use this color to alter the physical scene "
                 "or interior design elements (e.g., walls, furniture, lighting)."
+            )
+
+        # ── Reference Image ─────────────────────────────────────────────────
+        reference_image = details.get("reference_image") or details.get("image_reference")
+        reference_instruction = ""
+        if reference_image:
+            image_description = self._analyze_image(reference_image)
+            reference_instruction = (
+                f"\nIMPORTANT: First, artistically enhance and adjust the lighting, contrast, and mood of the provided reference image subject "
+                f"('{image_description}') so that it perfectly matches the '{style_prompt}' aesthetic. "
+                f"For example, if the template is bright but the reference is dark, intelligently brighten and harmonize the reference subject. "
+                f"Then, seamlessly integrate this enhanced version into the graphic as a high-quality, polished photo insert or focal layout element."
             )
 
         # ── Creative twist for uniqueness ───────────────────────────────────
@@ -151,7 +173,7 @@ class PromptService:
             f"Details: {json.dumps(details)}\n"
             f"Style: {style_prompt}{color_instruction}\n"
             f"Inject a distinctly {random_twist} artistic feel to ensure uniqueness.\n"
-            f"{trending_info}"
+            f"{trending_info}{reference_instruction}"
         )
 
         response = self.client.chat.completions.create(
@@ -169,6 +191,38 @@ class PromptService:
     # ──────────────────────────────────────────────────────────────────────────
     # Private helpers
     # ──────────────────────────────────────────────────────────────────────────
+
+    def _analyze_image(self, image_url: str) -> str:
+        """Helper to analyze an uploaded image URL using GPT-4o-mini Vision."""
+        if not image_url or not image_url.startswith("http"):
+            return image_url
+
+        try:
+            logger.info(f"[PromptService] Analyzing image URL with Vision: {image_url}")
+            response = self.client.chat.completions.create(
+                model="gpt-4o-mini",
+                messages=[
+                    {
+                        "role": "user",
+                        "content": [
+                            {"type": "text", "text": "Analyze this image in extreme detail. Describe the architecture, lighting, subject matter, colors, and layout perfectly. Do not mention that it's an image. Just provide the visual description of the subject."},
+                            {
+                                "type": "image_url",
+                                "image_url": {
+                                    "url": image_url,
+                                }
+                            },
+                        ],
+                    }
+                ],
+                max_tokens=300,
+            )
+            description = response.choices[0].message.content.strip()
+            logger.info("[PromptService] Image analyzed successfully.")
+            return description
+        except Exception as exc:
+            logger.warning("[PromptService] Image analysis failed: %s", exc)
+            return image_url
 
     def _fetch_keywords(self, niche: str) -> list[str]:
         """Internal helper — fetch keywords via KeywordService. Returns [] on failure."""

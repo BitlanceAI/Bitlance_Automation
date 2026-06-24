@@ -143,7 +143,10 @@ def generate_from_prompt(
                 niche=niche,
                 image_size=request.image_size    or "1024x1024",
                 image_quality=request.image_quality or "low",
+                logo_image=request.logo_image,
+                reference_image=request.reference_image,
                 session_id=session_id,
+                language=request.language or "english",
             )
             return _agent_result_to_response(result)
 
@@ -153,7 +156,21 @@ def generate_from_prompt(
         size    = request.image_size    or "1024x1024"
         quality = request.image_quality or "low"
 
-        results = image_svc.generate(request.prompt, size=size, quality=quality)
+        final_prompt = request.prompt
+        if request.reference_image:
+            prompt_svc = PromptService()
+            desc = prompt_svc._analyze_image(request.reference_image)
+            if desc:
+                final_prompt = f"{final_prompt}\n\n[Visual Subject Reference: {desc}]"
+
+        if request.language == "hindi_marathi":
+            prompt_svc = PromptService()
+            final_prompt, _ = prompt_svc.enhance_prompt(
+                raw_prompt=final_prompt,
+                language="hindi_marathi"
+            )
+
+        results = image_svc.generate(final_prompt, size=size, quality=quality)
         result  = results[0]
 
         return GenerateResponse(

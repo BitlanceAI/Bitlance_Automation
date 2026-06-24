@@ -32,8 +32,11 @@ import {
     Phone,
     Mail,
     Navigation,
-    UserCircle
+    UserCircle,
+    Upload,
+    Globe
 } from 'lucide-react';
+
 
 
 // Input field component
@@ -133,9 +136,81 @@ const GraphicDesignerPage = () => {
         niche: '',
         image_size: '1024x1024',
         image_quality: 'low',
+        language: 'english',
         num_variants: 1,
-        theme_color: ''
+        theme_color: '',
+        reference_image: '',
+        logo_image: ''
     });
+
+    const [isUploadingImage, setIsUploadingImage] = useState(false);
+    const [isUploadingLogo, setIsUploadingLogo] = useState(false);
+
+    const handleImageUpload = async (e, isCustomPrompt = false) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        setIsUploadingImage(true);
+        try {
+            const fileExt = file.name.split('.').pop();
+            const fileName = `reference-${Math.random()}.${fileExt}`;
+            const filePath = `references/${fileName}`;
+
+            const { error: uploadError } = await supabase.storage
+                .from('blog-images')
+                .upload(filePath, file);
+
+            if (uploadError) throw uploadError;
+
+            const { data } = supabase.storage
+                .from('blog-images')
+                .getPublicUrl(filePath);
+
+            // Always set in formData so the submit handler can pick it up
+            setFormData(prev => ({ ...prev, reference_image: data.publicUrl }));
+            
+            if (isCustomPrompt) {
+                // Optionally append a note to the prompt text box so the user sees it
+                setPromptText(prev => prev + `\n\n[Visual Subject Reference Uploaded]`);
+            }
+            toast.success('Image uploaded successfully');
+        } catch (error) {
+            console.error('Error uploading image:', error);
+            toast.error('Failed to upload image. Please try again.');
+        } finally {
+            setIsUploadingImage(false);
+        }
+    };
+
+    const handleLogoUpload = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        setIsUploadingLogo(true);
+        try {
+            const fileExt = file.name.split('.').pop();
+            const fileName = `logo-${Math.random()}.${fileExt}`;
+            const filePath = `logos/${fileName}`;
+
+            const { error: uploadError } = await supabase.storage
+                .from('blog-images')
+                .upload(filePath, file);
+
+            if (uploadError) throw uploadError;
+
+            const { data } = supabase.storage
+                .from('blog-images')
+                .getPublicUrl(filePath);
+
+            setFormData(prev => ({ ...prev, logo_image: data.publicUrl }));
+            toast.success('Logo uploaded successfully');
+        } catch (error) {
+            console.error('Error uploading logo:', error);
+            toast.error('Failed to upload logo. Please try again.');
+        } finally {
+            setIsUploadingLogo(false);
+        }
+    };
 
     const COST_PER_FLYER = 5;
 
@@ -215,8 +290,11 @@ const GraphicDesignerPage = () => {
                     niche: formData.niche || null,
                     image_size: formData.image_size,
                     image_quality: formData.image_quality,
+                    language: formData.language,
                     num_variants: parseInt(formData.num_variants, 10),
                     theme_color: formData.theme_color,
+                    reference_image: formData.reference_image || null,
+                    logo_image: formData.logo_image || null,
                     amenities: formData.amenities
                         ? formData.amenities.split(',').map(a => a.trim()).filter(a => a)
                         : []
@@ -226,7 +304,10 @@ const GraphicDesignerPage = () => {
                 submitData = {
                     prompt: promptText,
                     image_size: formData.image_size,
-                    image_quality: formData.image_quality
+                    image_quality: formData.image_quality,
+                    language: formData.language,
+                    logo_image: formData.logo_image || null,
+                    reference_image: formData.reference_image || null
                 };
                 endpoint = '/api/design/generate-from-prompt';
             }
@@ -259,11 +340,15 @@ const GraphicDesignerPage = () => {
                         niche: '',
                         image_size: '1024x1024',
                         image_quality: 'low',
+                        language: 'english',
                         num_variants: 1,
-                        theme_color: ''
+                        theme_color: '',
+                        reference_image: '',
+                        logo_image: ''
                     });
                 } else {
                     setPromptText('');
+                    setFormData(prev => ({ ...prev, logo_image: '' }));
                 }
                 setActiveTab('history');
                 refreshCredits();
@@ -583,15 +668,117 @@ const GraphicDesignerPage = () => {
                                                     required={false}
                                                 />
                                             </div>
+                                            <div>
+                                                <div className="flex justify-between items-end mb-2">
+                                                    <label className="block text-sm font-medium text-slate-700">
+                                                        Reference Image URL or Context (Optional)
+                                                    </label>
+                                                    <label className="cursor-pointer text-xs font-medium text-[#26cece] hover:text-[#1ca0a0] flex items-center gap-1">
+                                                        {isUploadingImage ? (
+                                                            <Loader2 className="h-3 w-3 animate-spin" />
+                                                        ) : (
+                                                            <Image className="h-3 w-3" />
+                                                        )}
+                                                        Upload from Computer
+                                                        <input 
+                                                            type="file" 
+                                                            className="hidden" 
+                                                            accept="image/*" 
+                                                            onChange={(e) => handleImageUpload(e, false)} 
+                                                            disabled={isUploadingImage}
+                                                        />
+                                                    </label>
+                                                </div>
+                                                <div className="relative group">
+                                                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                                        <Image className="h-5 w-5 text-slate-400 group-focus-within:text-[#26cece] transition-colors" />
+                                                    </div>
+                                                    <input
+                                                        type="text"
+                                                        name="reference_image"
+                                                        value={formData.reference_image}
+                                                        onChange={handleInputChange}
+                                                        placeholder="https://example.com/image.jpg or 'A hospital lobby with green accents'"
+                                                        className="w-full pl-12 pr-4 py-3.5 rounded-[2px] border border-slate-200 bg-white text-slate-900 placeholder-slate-400 focus:ring-2 focus:ring-[#26cece]/20 focus:border-[#26cece] transition-all duration-300 outline-none hover:border-slate-300 shadow-sm font-sans"
+                                                    />
+                                                </div>
+                                            </div>
+
+                                            {/* Custom Upload Logo Field */}
+                                            <div>
+                                                <div className="flex justify-between items-end mb-2">
+                                                    <label className="block text-sm font-medium text-slate-700">
+                                                        Brand Logo URL (Optional)
+                                                    </label>
+                                                    <label className="cursor-pointer text-xs font-medium text-[#26cece] hover:text-[#1ca0a0] flex items-center gap-1">
+                                                        {isUploadingLogo ? (
+                                                            <Loader2 className="h-3 w-3 animate-spin" />
+                                                        ) : (
+                                                            <Upload className="h-3 w-3" />
+                                                        )}
+                                                        Upload Logo
+                                                        <input 
+                                                            type="file" 
+                                                            className="hidden" 
+                                                            accept="image/*" 
+                                                            onChange={handleLogoUpload} 
+                                                            disabled={isUploadingLogo}
+                                                        />
+                                                    </label>
+                                                </div>
+                                                <div className="relative group">
+                                                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                                        <Upload className="h-5 w-5 text-slate-400 group-focus-within:text-[#26cece] transition-colors" />
+                                                    </div>
+                                                    <input
+                                                        type="text"
+                                                        name="logo_image"
+                                                        value={formData.logo_image}
+                                                        onChange={handleInputChange}
+                                                        placeholder="https://example.com/logo.jpg or upload logo from computer"
+                                                        className="w-full pl-12 pr-4 py-3.5 rounded-[2px] border border-slate-200 bg-white text-slate-900 placeholder-slate-400 focus:ring-2 focus:ring-[#26cece]/20 focus:border-[#26cece] transition-all duration-300 outline-none hover:border-slate-300 shadow-sm font-sans"
+                                                    />
+                                                </div>
+                                                {formData.logo_image && (
+                                                    <div className="mt-2 flex items-center gap-3 bg-slate-50 p-2 rounded border border-slate-100">
+                                                        <img src={formData.logo_image} alt="Logo preview" className="h-10 w-10 object-contain rounded bg-white border border-slate-200" />
+                                                        <span className="text-xs text-slate-500 truncate flex-1">{formData.logo_image}</span>
+                                                        <button 
+                                                            type="button" 
+                                                            onClick={() => setFormData(prev => ({ ...prev, logo_image: '' }))}
+                                                            className="text-xs text-rose-500 hover:text-rose-700 font-medium"
+                                                        >
+                                                            Remove
+                                                        </button>
+                                                    </div>
+                                                )}
+                                            </div>
                                         </div>
                                     </>
                                 ) : (
                                     <div className="space-y-6">
                                         <h3 className="text-[10px] font-bold tracking-widest text-slate-400 uppercase font-mono">Custom Design Prompt</h3>
                                         <div>
-                                            <label className="block text-sm font-medium text-slate-700 mb-2">
-                                                Describe your concept <span className="text-rose-500">*</span>
-                                            </label>
+                                            <div className="flex justify-between items-end mb-2">
+                                                <label className="block text-sm font-medium text-slate-700">
+                                                    Describe your concept <span className="text-rose-500">*</span>
+                                                </label>
+                                                <label className="cursor-pointer text-xs font-medium text-[#26cece] hover:text-[#1ca0a0] flex items-center gap-1">
+                                                    {isUploadingImage ? (
+                                                        <Loader2 className="h-3 w-3 animate-spin" />
+                                                    ) : (
+                                                        <Image className="h-3 w-3" />
+                                                    )}
+                                                    Upload Reference Image
+                                                    <input 
+                                                        type="file" 
+                                                        className="hidden" 
+                                                        accept="image/*" 
+                                                        onChange={(e) => handleImageUpload(e, true)} 
+                                                        disabled={isUploadingImage}
+                                                    />
+                                                </label>
+                                            </div>
                                             <textarea
                                                 value={promptText}
                                                 onChange={(e) => setPromptText(e.target.value)}
@@ -600,6 +787,56 @@ const GraphicDesignerPage = () => {
                                                 rows={8}
                                                 className="w-full p-4 rounded-[2px] border border-slate-200 bg-white text-slate-900 placeholder-slate-400 focus:ring-2 focus:ring-[#26cece]/20 focus:border-[#26cece] transition-all duration-300 outline-none hover:border-slate-300 shadow-sm resize-none font-sans"
                                             />
+                                        </div>
+
+                                        {/* Custom Upload Logo Field for Prompt Mode */}
+                                        <div>
+                                            <div className="flex justify-between items-end mb-2">
+                                                <label className="block text-sm font-medium text-slate-700">
+                                                    Brand Logo URL (Optional)
+                                                </label>
+                                                <label className="cursor-pointer text-xs font-medium text-[#26cece] hover:text-[#1ca0a0] flex items-center gap-1">
+                                                    {isUploadingLogo ? (
+                                                        <Loader2 className="h-3 w-3 animate-spin" />
+                                                    ) : (
+                                                        <Upload className="h-3 w-3" />
+                                                    )}
+                                                    Upload Logo
+                                                    <input 
+                                                        type="file" 
+                                                        className="hidden" 
+                                                        accept="image/*" 
+                                                        onChange={handleLogoUpload} 
+                                                        disabled={isUploadingLogo}
+                                                    />
+                                                </label>
+                                            </div>
+                                            <div className="relative group">
+                                                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                                    <Upload className="h-5 w-5 text-slate-400 group-focus-within:text-[#26cece] transition-colors" />
+                                                </div>
+                                                <input
+                                                    type="text"
+                                                    name="logo_image"
+                                                    value={formData.logo_image}
+                                                    onChange={handleInputChange}
+                                                    placeholder="https://example.com/logo.jpg or upload logo from computer"
+                                                    className="w-full pl-12 pr-4 py-3.5 rounded-[2px] border border-slate-200 bg-white text-slate-900 placeholder-slate-400 focus:ring-2 focus:ring-[#26cece]/20 focus:border-[#26cece] transition-all duration-300 outline-none hover:border-slate-300 shadow-sm font-sans"
+                                                />
+                                            </div>
+                                            {formData.logo_image && (
+                                                <div className="mt-2 flex items-center gap-3 bg-slate-50 p-2 rounded border border-slate-100">
+                                                    <img src={formData.logo_image} alt="Logo preview" className="h-10 w-10 object-contain rounded bg-white border border-slate-200" />
+                                                    <span className="text-xs text-slate-500 truncate flex-1">{formData.logo_image}</span>
+                                                    <button 
+                                                        type="button" 
+                                                        onClick={() => setFormData(prev => ({ ...prev, logo_image: '' }))}
+                                                        className="text-xs text-rose-500 hover:text-rose-700 font-medium"
+                                                    >
+                                                        Remove
+                                                    </button>
+                                                </div>
+                                            )}
                                         </div>
                                     </div>
                                 )}
@@ -633,6 +870,17 @@ const GraphicDesignerPage = () => {
                                                 { value: 'medium', label: 'Medium' },
                                                 { value: 'high', label: 'High (Detailed)' },
                                                 { value: 'auto', label: 'Auto' }
+                                            ]}
+                                        />
+                                        <SelectField
+                                            icon={Globe}
+                                            label="Language"
+                                            name="language"
+                                            value={formData.language}
+                                            onChange={handleInputChange}
+                                            options={[
+                                                { value: 'english', label: 'English' },
+                                                { value: 'hindi_marathi', label: 'Hindi + Marathi Approach' }
                                             ]}
                                         />
                                     </div>

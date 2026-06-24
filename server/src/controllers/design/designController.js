@@ -40,9 +40,12 @@ export const generateFlyer = async (req, res) => {
             image_quality,
             template_id = 'random', // Default to random for variety
             num_variants = 1,
-            theme_color
+            theme_color,
+            reference_image,
+            logo_image,
+            language
         } = req.body;
-
+        
         num_variants = parseInt(num_variants, 10);
         if (isNaN(num_variants) || num_variants < 1) num_variants = 1;
         if (num_variants > 4) num_variants = 4; // limit to max 4 to avoid huge costs
@@ -110,7 +113,7 @@ export const generateFlyer = async (req, res) => {
                 address,
                 status: 'pending',
                 credits_used: COST_PER_FLYER * num_variants,
-                metadata: { image_size, image_quality, niche, template_id, num_variants, theme_color }
+                metadata: { image_size, image_quality, niche, template_id, num_variants, theme_color, language }
             })
             .select()
             .single();
@@ -188,7 +191,10 @@ export const generateFlyer = async (req, res) => {
                 image_quality,
                 template_id,
                 num_variants,
-                theme_color
+                theme_color,
+                reference_image,
+                logo_image,
+                language
             };
 
             const response = await axios.post(`${GRAPHIC_API}/api/generate_from_details`, inputData);
@@ -529,7 +535,10 @@ export const generateFromPrompt = async (req, res) => {
         const {
             prompt,
             image_size = '1024x1024',
-            image_quality = 'low'
+            image_quality = 'low',
+            logo_image,
+            reference_image,
+            language
         } = req.body;
 
         const userId = req.user.id;
@@ -567,7 +576,7 @@ export const generateFromPrompt = async (req, res) => {
                 address: 'N/A',
                 status: 'pending',
                 credits_used: COST_PER_FLYER,
-                metadata: { prompt, image_size, image_quality }
+                metadata: { prompt, image_size, image_quality, language }
             })
             .select()
             .single();
@@ -597,7 +606,10 @@ export const generateFromPrompt = async (req, res) => {
         const response = await axios.post(`${GRAPHIC_API}/api/generate_from_prompt`, {
             prompt,
             image_size,
-            image_quality
+            image_quality,
+            logo_image,
+            reference_image,
+            language
         });
 
         const generatedResult = response.data;
