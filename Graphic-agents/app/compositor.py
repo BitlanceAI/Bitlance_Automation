@@ -61,4 +61,3 @@ def composite_reference_image(b64_string: str, filepath: str, ref_url: str) -> s
     except Exception as e:
         logger.error(f"Compositing failed: {e}")
         return b64_string
-

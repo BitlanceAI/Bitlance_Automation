@@ -1466,4 +1466,4 @@ def generate_flyer(layout: dict, ref_url: Optional[str] = None) -> str:
     elif template_id == 3:
         return _layout_minimal_dark(layout, ref_url)
     else:
-        return _layout_ai_dynamic(layout, ref_url)
+        return _layout_ai_dynamic(layout, ref_url)  

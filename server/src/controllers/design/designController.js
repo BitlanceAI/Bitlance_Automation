@@ -45,7 +45,7 @@ export const generateFlyer = async (req, res) => {
             logo_image,
             language
         } = req.body;
-        
+
         num_variants = parseInt(num_variants, 10);
         if (isNaN(num_variants) || num_variants < 1) num_variants = 1;
         if (num_variants > 4) num_variants = 4; // limit to max 4 to avoid huge costs
@@ -301,7 +301,7 @@ export const generateFlyer = async (req, res) => {
                 error: 'Insufficient credits to generate flyer'
             });
         }
-        
+
         // Handle Axios errors explicitly
         if (error.response) {
             return res.status(500).json({
@@ -442,7 +442,7 @@ export const generateSocialPost = async (req, res) => {
 
         // 3. Call Python Agent
         const GRAPHIC_AGENT_URL = process.env.GRAPHIC_AGENT_URL || process.env.GRAPHIC_GENERATOR_URL || 'http://localhost:8001';
-        
+
         let pyResponse;
         try {
             pyResponse = await axios.post(
@@ -648,7 +648,7 @@ export const generateFromPrompt = async (req, res) => {
 
     } catch (error) {
         console.error('Design Generation Error:', error);
-        
+
         // Handle Axios errors explicitly
         if (error.response) {
             return res.status(500).json({
@@ -656,7 +656,7 @@ export const generateFromPrompt = async (req, res) => {
                 error: `Graphic API returned an error: ${error.response.status} ${JSON.stringify(error.response.data)}`
             });
         }
-        
+
         res.status(500).json({ success: false, error: error.message });
     }
 };

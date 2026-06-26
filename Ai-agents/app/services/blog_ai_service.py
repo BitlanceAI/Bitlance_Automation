@@ -204,10 +204,16 @@ _GARBAGE_PATTERNS = [
 ]
 
 def clean_blog_output(text: str) -> str:
-    """Strip internal system artifacts, academic bracket citations, and footer garbage from AI-generated blog text."""
-    # Strip bracket citations like [1], [2], [10] etc.
+    """Strip internal system artifacts and footer garbage from AI-generated blog text.
+
+    NOTE: [n] citation markers are resolved to real URLs *before* this function
+    is called (see _inline_citations). Any remaining bare [n] markers that were
+    not resolved (e.g. from OpenAI fallback which has no citations array) are
+    removed here as a safety net.
+    """
+    # Safety-net: remove any leftover bare [n] markers that were not resolved
     text = _re.sub(r'\s*\[\d+\]', '', text)
-    
+
     lines = text.split('\n')
     cleaned = []
     for line in lines:
@@ -243,7 +249,36 @@ def _perplexity_call(user_prompt: str, system_msg: str = "You are an expert.", m
     }
     res = requests.post(PERPLEXITY_BASE_URL, headers=headers, json=payload, timeout=120)
     res.raise_for_status()
-    return res.json()["choices"][0]["message"]["content"]
+    data = res.json()
+    content = data["choices"][0]["message"]["content"]
+    # Perplexity sonar-pro returns a top-level "citations" list of URLs.
+    # Inline them so [1] → the actual URL, rather than dropping them.
+    citations = data.get("citations") or []
+    if citations:
+        content = _inline_citations(content, citations)
+    return content
+
+
+def _inline_citations(text: str, citations: list) -> str:
+    """Replace Perplexity's [n] markers with the real source URL as a Markdown link.
+
+    Single marker  : [3]          → [source](https://example.com)
+    Grouped markers: [1][2][3]    → [source](https://a.com) [source](https://b.com) [source](https://c.com)
+    Out-of-range   : index beyond citations list → removed silently
+    """
+    def _replace(match):
+        # match.group(0) may be a run like [1][2][3]; split into individual indices
+        raw = match.group(0)
+        indices = [int(n) for n in _re.findall(r'\d+', raw)]
+        parts = []
+        for idx in indices:
+            if 1 <= idx <= len(citations):
+                url = citations[idx - 1]  # Perplexity is 1-indexed
+                parts.append(f"[source]({url})")
+        return " ".join(parts) if parts else ""
+
+    # Match one or more consecutive [n] groups, e.g. [1][2] or [10]
+    return _re.sub(r'(\[\d+\])+', _replace, text)
 
 
 def _openai_chat_call(user_prompt: str, system_msg: str = "You are an expert.", max_tokens: int = 4000) -> str:
