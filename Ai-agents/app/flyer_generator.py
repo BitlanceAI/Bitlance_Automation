@@ -33,6 +33,21 @@ def _font(name: str, size: int) -> ImageFont.FreeTypeFont:
     return ImageFont.load_default()
 
 
+def _devanagari_font(size: int) -> ImageFont.FreeTypeFont:
+    # Look for NotoSansDevanagari fonts in NOTO_DIR
+    for name in ["NotoSansDevanagari-Bold.ttf", "NotoSansDevanagari-Medium.ttf", "NotoSansDevanagari-Regular.ttf"]:
+        p = os.path.join(NOTO_DIR, name)
+        if os.path.exists(p):
+            return ImageFont.truetype(p, size)
+    # Fallback to general noto font candidates if not found
+    for name in ["NotoSans-Bold.ttf", "NotoSans-Regular.ttf"]:
+        p = os.path.join(NOTO_DIR, name)
+        if os.path.exists(p):
+            return ImageFont.truetype(p, size)
+    return ImageFont.load_default()
+
+
+
 def _download_image(url: str) -> Optional[Image.Image]:
     try:
         if os.path.exists(url):
@@ -448,8 +463,8 @@ def _layout_split_curve(layout: dict, ref_url: Optional[str] = None) -> str:
         _draw_niche_logo(draw, niche, lcx, lcy, logo_r, GD, GB, WHT)
         nx = PAD + logo_r * 2 + int(W * 0.015)
     
-    fn_nm = _font("NotoSans-Black.ttf", sz_nm)
-    fn_sn = _font("NotoSans-Regular.ttf", sz_sub_nm)
+    fn_nm = (_devanagari_font(sz_nm) if layout.get("_use_devanagari_font", False) else _font("NotoSans-Black.ttf", sz_nm))
+    fn_sn = (_devanagari_font(sz_sub_nm) if layout.get("_use_devanagari_font", False) else _font("NotoSans-Regular.ttf", sz_sub_nm))
     
     draw.text((nx, y_logo), layout.get("brand_name") or layout.get("hospital_name") or "BRAND", font=fn_nm, fill=GD)
     draw.text((nx, y_logo + sz_nm + 2), layout.get("brand_sub") or layout.get("hospital_sub") or "", font=fn_sn, fill=GRY)
@@ -460,7 +475,7 @@ def _layout_split_curve(layout: dict, ref_url: Optional[str] = None) -> str:
         
     sz_h = max(28, int(H * 0.044)) if is_square else max(38, int(H * 0.072))
     y_head = y_logo + sz_nm + sz_sub_nm + int(H * (0.05 if is_square else 0.055))
-    fn_h = _font("NotoSans-Black.ttf", sz_h)
+    fn_h = (_devanagari_font(sz_h) if layout.get("_use_devanagari_font", False) else _font("NotoSans-Black.ttf", sz_h))
     
     for idx, hl in enumerate(headlines[:3]):
         color = GD if idx == 0 else BLK
@@ -470,7 +485,7 @@ def _layout_split_curve(layout: dict, ref_url: Optional[str] = None) -> str:
     sub = layout.get("subheadline", "Comprehensive healthcare under one roof for you & your family.")
     sz_s = max(12, int(H * (0.018 if is_square else 0.024)))
     y_sub = y_head + int(H * (0.012 if is_square else 0.018))
-    fn_s = _font("NotoSans-Regular.ttf", sz_s)
+    fn_s = (_devanagari_font(sz_s) if layout.get("_use_devanagari_font", False) else _font("NotoSans-Regular.ttf", sz_s))
     
     wrap_w = int(W * 0.48) if is_square else int(W * 0.41)
     for sl in _wrap(draw, sub, fn_s, wrap_w):
@@ -517,7 +532,7 @@ def _layout_split_curve(layout: dict, ref_url: Optional[str] = None) -> str:
         ic_cy = container_y0 + int(container_h * 0.35)
         _draw_niche_icon(draw, niche, idx, col_cx, ic_cy, container_h, GD, GB, WHT)
             
-        fn_ic = _font("NotoSans-Regular.ttf", sz_ic)
+        fn_ic = (_devanagari_font(sz_ic) if layout.get("_use_devanagari_font", False) else _font("NotoSans-Regular.ttf", sz_ic))
         lbl_lines = _wrap(draw, label, fn_ic, int(col_w - 8))
         lbl_h = len(lbl_lines) * (sz_ic + 2)
         ly = container_y1 - lbl_h - int(container_h * 0.08)
@@ -562,8 +577,8 @@ def _layout_split_curve(layout: dict, ref_url: Optional[str] = None) -> str:
     phone_lbl = layout.get("phone_label", "(WhatsApp Business)")
     
     tx = pill_x0 + int(pill_h * 1.05)
-    fn_ft = _font("NotoSans-Bold.ttf", max(14, int(pill_h * 0.35)))
-    fn_fl = _font("NotoSans-Regular.ttf", max(9, int(pill_h * 0.20)))
+    fn_ft = (_devanagari_font(max(14, int(pill_h * 0.35))) if layout.get("_use_devanagari_font", False) else _font("NotoSans-Bold.ttf", max(14, int(pill_h * 0.35))))
+    fn_fl = (_devanagari_font(max(9, int(pill_h * 0.20))) if layout.get("_use_devanagari_font", False) else _font("NotoSans-Regular.ttf", max(9, int(pill_h * 0.20))))
     
     draw.text((tx, pill_y0 + int(pill_h * 0.15)), phone, font=fn_ft, fill=WHT)
     lbl_color = (int(WHT[0]*0.7 + GB[0]*0.3), int(WHT[1]*0.7 + GB[1]*0.3), int(WHT[2]*0.7 + GB[2]*0.3))
@@ -583,7 +598,7 @@ def _layout_split_curve(layout: dict, ref_url: Optional[str] = None) -> str:
         badge_lines = ["Your Health", "Our Priority"]
         
     sz_bdg = max(12, int(H * (0.018 if is_square else 0.024)))
-    fn_bdg = _font("NotoSans-Bold.ttf", sz_bdg)
+    fn_bdg = (_devanagari_font(sz_bdg) if layout.get("_use_devanagari_font", False) else _font("NotoSans-Bold.ttf", sz_bdg))
     bdg_total_h = len(badge_lines) * (sz_bdg + 4) - 4
     by = badge_cy - bdg_total_h / 2
     for line in badge_lines:
@@ -674,8 +689,8 @@ def _layout_bold_banner(layout: dict, ref_url: Optional[str] = None) -> str:
         _draw_niche_logo(draw, niche, lcx, lcy, logo_r, WHT, GB, GD)
         nx = PAD + logo_r * 2 + int(W * 0.015)
         
-    fn_nm = _font("NotoSans-Black.ttf", sz_nm)
-    fn_sn = _font("NotoSans-Regular.ttf", sz_sub_nm)
+    fn_nm = (_devanagari_font(sz_nm) if layout.get("_use_devanagari_font", False) else _font("NotoSans-Black.ttf", sz_nm))
+    fn_sn = (_devanagari_font(sz_sub_nm) if layout.get("_use_devanagari_font", False) else _font("NotoSans-Regular.ttf", sz_sub_nm))
     
     draw.text((nx, y_logo), layout.get("brand_name") or layout.get("hospital_name") or "BRAND", font=fn_nm, fill=WHT)
     draw.text((nx, y_logo + sz_nm + 2), layout.get("brand_sub") or layout.get("hospital_sub") or "", font=fn_sn, fill=(int(WHT[0]*0.7 + GB[0]*0.3), int(WHT[1]*0.7 + GB[1]*0.3), int(WHT[2]*0.7 + GB[2]*0.3)))
@@ -686,7 +701,7 @@ def _layout_bold_banner(layout: dict, ref_url: Optional[str] = None) -> str:
         
     sz_h = max(28, int(H * 0.044)) if is_square else max(38, int(H * 0.072))
     y_head = H_head + int(H * (0.04 if is_square else 0.05))
-    fn_h = _font("NotoSans-Black.ttf", sz_h)
+    fn_h = (_devanagari_font(sz_h) if layout.get("_use_devanagari_font", False) else _font("NotoSans-Black.ttf", sz_h))
     
     for idx, hl in enumerate(headlines[:3]):
         color = GD if idx == 0 else BLK
@@ -696,7 +711,7 @@ def _layout_bold_banner(layout: dict, ref_url: Optional[str] = None) -> str:
     sub = layout.get("subheadline", "Comprehensive healthcare under one roof for you & your family.")
     sz_s = max(12, int(H * (0.018 if is_square else 0.024)))
     y_sub = y_head + int(H * (0.012 if is_square else 0.018))
-    fn_s = _font("NotoSans-Regular.ttf", sz_s)
+    fn_s = (_devanagari_font(sz_s) if layout.get("_use_devanagari_font", False) else _font("NotoSans-Regular.ttf", sz_s))
     
     wrap_w = int(W * 0.48) if is_square else int(W * 0.41)
     for sl in _wrap(draw, sub, fn_s, wrap_w):
@@ -743,7 +758,7 @@ def _layout_bold_banner(layout: dict, ref_url: Optional[str] = None) -> str:
         ic_cy = container_y0 + int(container_h * 0.35)
         _draw_niche_icon(draw, niche, idx, col_cx, ic_cy, container_h, GD, GB, WHT)
             
-        fn_ic = _font("NotoSans-Regular.ttf", sz_ic)
+        fn_ic = (_devanagari_font(sz_ic) if layout.get("_use_devanagari_font", False) else _font("NotoSans-Regular.ttf", sz_ic))
         lbl_lines = _wrap(draw, label, fn_ic, int(col_w - 8))
         lbl_h = len(lbl_lines) * (sz_ic + 2)
         ly = container_y1 - lbl_h - int(container_h * 0.08)
@@ -788,8 +803,8 @@ def _layout_bold_banner(layout: dict, ref_url: Optional[str] = None) -> str:
     phone_lbl = layout.get("phone_label", "(WhatsApp Business)")
     
     tx = pill_x0 + int(pill_h * 1.05)
-    fn_ft = _font("NotoSans-Bold.ttf", max(14, int(pill_h * 0.35)))
-    fn_fl = _font("NotoSans-Regular.ttf", max(9, int(pill_h * 0.20)))
+    fn_ft = (_devanagari_font(max(14, int(pill_h * 0.35))) if layout.get("_use_devanagari_font", False) else _font("NotoSans-Bold.ttf", max(14, int(pill_h * 0.35))))
+    fn_fl = (_devanagari_font(max(9, int(pill_h * 0.20))) if layout.get("_use_devanagari_font", False) else _font("NotoSans-Regular.ttf", max(9, int(pill_h * 0.20))))
     
     draw.text((tx, pill_y0 + int(pill_h * 0.15)), phone, font=fn_ft, fill=WHT)
     lbl_color = (int(WHT[0]*0.7 + GB[0]*0.3), int(WHT[1]*0.7 + GB[1]*0.3), int(WHT[2]*0.7 + GB[2]*0.3))
@@ -809,7 +824,7 @@ def _layout_bold_banner(layout: dict, ref_url: Optional[str] = None) -> str:
         badge_lines = ["Your Health", "Our Priority"]
         
     sz_bdg = max(12, int(H * (0.018 if is_square else 0.024)))
-    fn_bdg = _font("NotoSans-Bold.ttf", sz_bdg)
+    fn_bdg = (_devanagari_font(sz_bdg) if layout.get("_use_devanagari_font", False) else _font("NotoSans-Bold.ttf", sz_bdg))
     bdg_total_h = len(badge_lines) * (sz_bdg + 4) - 4
     by = badge_cy - bdg_total_h / 2
     for line in badge_lines:
@@ -904,8 +919,8 @@ def _layout_center_stage(layout: dict, ref_url: Optional[str] = None) -> str:
         _draw_niche_logo(draw, niche, lcx, lcy, logo_r, GD, GB, WHT)
         nx = PAD + logo_r * 2 + int(W * 0.015)
         
-    fn_nm = _font("NotoSans-Black.ttf", sz_nm)
-    fn_sn = _font("NotoSans-Regular.ttf", sz_sub_nm)
+    fn_nm = (_devanagari_font(sz_nm) if layout.get("_use_devanagari_font", False) else _font("NotoSans-Black.ttf", sz_nm))
+    fn_sn = (_devanagari_font(sz_sub_nm) if layout.get("_use_devanagari_font", False) else _font("NotoSans-Regular.ttf", sz_sub_nm))
     
     draw.text((nx, y_logo), layout.get("brand_name") or layout.get("hospital_name") or "BRAND", font=fn_nm, fill=GD)
     draw.text((nx, y_logo + sz_nm + 2), layout.get("brand_sub") or layout.get("hospital_sub") or "", font=fn_sn, fill=GRY)
@@ -916,7 +931,7 @@ def _layout_center_stage(layout: dict, ref_url: Optional[str] = None) -> str:
         
     sz_h = max(28, int(H * 0.044)) if is_square else max(38, int(H * 0.072))
     y_head = y_logo + sz_nm + sz_sub_nm + int(H * (0.05 if is_square else 0.065))
-    fn_h = _font("NotoSans-Black.ttf", sz_h)
+    fn_h = (_devanagari_font(sz_h) if layout.get("_use_devanagari_font", False) else _font("NotoSans-Black.ttf", sz_h))
     
     for idx, hl in enumerate(headlines[:3]):
         color = GD if idx == 0 else BLK
@@ -926,7 +941,7 @@ def _layout_center_stage(layout: dict, ref_url: Optional[str] = None) -> str:
     sub = layout.get("subheadline", "Comprehensive healthcare under one roof for you & your family.")
     sz_s = max(12, int(H * (0.018 if is_square else 0.024)))
     y_sub = y_head + int(H * (0.012 if is_square else 0.018))
-    fn_s = _font("NotoSans-Regular.ttf", sz_s)
+    fn_s = (_devanagari_font(sz_s) if layout.get("_use_devanagari_font", False) else _font("NotoSans-Regular.ttf", sz_s))
     
     wrap_w = int(W * 0.48) if is_square else int(W * 0.41)
     for sl in _wrap(draw, sub, fn_s, wrap_w):
@@ -973,7 +988,7 @@ def _layout_center_stage(layout: dict, ref_url: Optional[str] = None) -> str:
         ic_cy = container_y0 + int(container_h * 0.35)
         _draw_niche_icon(draw, niche, idx, col_cx, ic_cy, container_h, GD, GB, WHT)
             
-        fn_ic = _font("NotoSans-Regular.ttf", sz_ic)
+        fn_ic = (_devanagari_font(sz_ic) if layout.get("_use_devanagari_font", False) else _font("NotoSans-Regular.ttf", sz_ic))
         lbl_lines = _wrap(draw, label, fn_ic, int(col_w - 8))
         lbl_h = len(lbl_lines) * (sz_ic + 2)
         ly = container_y1 - lbl_h - int(container_h * 0.08)
@@ -1018,8 +1033,8 @@ def _layout_center_stage(layout: dict, ref_url: Optional[str] = None) -> str:
     phone_lbl = layout.get("phone_label", "(WhatsApp Business)")
     
     tx = pill_x0 + int(pill_h * 1.05)
-    fn_ft = _font("NotoSans-Bold.ttf", max(14, int(pill_h * 0.35)))
-    fn_fl = _font("NotoSans-Regular.ttf", max(9, int(pill_h * 0.20)))
+    fn_ft = (_devanagari_font(max(14, int(pill_h * 0.35))) if layout.get("_use_devanagari_font", False) else _font("NotoSans-Bold.ttf", max(14, int(pill_h * 0.35))))
+    fn_fl = (_devanagari_font(max(9, int(pill_h * 0.20))) if layout.get("_use_devanagari_font", False) else _font("NotoSans-Regular.ttf", max(9, int(pill_h * 0.20))))
     
     draw.text((tx, pill_y0 + int(pill_h * 0.15)), phone, font=fn_ft, fill=WHT)
     lbl_color = (int(WHT[0]*0.7 + GB[0]*0.3), int(WHT[1]*0.7 + GB[1]*0.3), int(WHT[2]*0.7 + GB[2]*0.3))
@@ -1039,7 +1054,7 @@ def _layout_center_stage(layout: dict, ref_url: Optional[str] = None) -> str:
         badge_lines = ["Your Health", "Our Priority"]
         
     sz_bdg = max(12, int(H * (0.018 if is_square else 0.024)))
-    fn_bdg = _font("NotoSans-Bold.ttf", sz_bdg)
+    fn_bdg = (_devanagari_font(sz_bdg) if layout.get("_use_devanagari_font", False) else _font("NotoSans-Bold.ttf", sz_bdg))
     bdg_total_h = len(badge_lines) * (sz_bdg + 4) - 4
     by = badge_cy - bdg_total_h / 2
     for line in badge_lines:
@@ -1121,8 +1136,8 @@ def _layout_minimal_dark(layout: dict, ref_url: Optional[str] = None) -> str:
         _draw_niche_logo(draw, niche, lcx, lcy, logo_r, WHT, GB, BLK)
         nx = PAD + logo_r * 2 + int(W * 0.015)
         
-    fn_nm = _font("NotoSans-Black.ttf", sz_nm)
-    fn_sn = _font("NotoSans-Regular.ttf", sz_sub_nm)
+    fn_nm = (_devanagari_font(sz_nm) if layout.get("_use_devanagari_font", False) else _font("NotoSans-Black.ttf", sz_nm))
+    fn_sn = (_devanagari_font(sz_sub_nm) if layout.get("_use_devanagari_font", False) else _font("NotoSans-Regular.ttf", sz_sub_nm))
     
     draw.text((nx, y_logo), layout.get("brand_name") or layout.get("hospital_name") or "BRAND", font=fn_nm, fill=WHT)
     draw.text((nx, y_logo + sz_nm + 2), layout.get("brand_sub") or layout.get("hospital_sub") or "", font=fn_sn, fill=GRY)
@@ -1133,7 +1148,7 @@ def _layout_minimal_dark(layout: dict, ref_url: Optional[str] = None) -> str:
         
     sz_h = max(28, int(H * 0.044)) if is_square else max(38, int(H * 0.072))
     y_head = y_logo + sz_nm + sz_sub_nm + int(H * (0.05 if is_square else 0.065))
-    fn_h = _font("NotoSans-Black.ttf", sz_h)
+    fn_h = (_devanagari_font(sz_h) if layout.get("_use_devanagari_font", False) else _font("NotoSans-Black.ttf", sz_h))
     
     for idx, hl in enumerate(headlines[:3]):
         color = GB if idx == 0 else WHT
@@ -1143,7 +1158,7 @@ def _layout_minimal_dark(layout: dict, ref_url: Optional[str] = None) -> str:
     sub = layout.get("subheadline", "Comprehensive healthcare under one roof for you & your family.")
     sz_s = max(12, int(H * (0.018 if is_square else 0.024)))
     y_sub = y_head + int(H * (0.012 if is_square else 0.018))
-    fn_s = _font("NotoSans-Regular.ttf", sz_s)
+    fn_s = (_devanagari_font(sz_s) if layout.get("_use_devanagari_font", False) else _font("NotoSans-Regular.ttf", sz_s))
     
     wrap_w = int(W_split - PAD * 2)
     for sl in _wrap(draw, sub, fn_s, wrap_w):
@@ -1190,7 +1205,7 @@ def _layout_minimal_dark(layout: dict, ref_url: Optional[str] = None) -> str:
         ic_cy = container_y0 + int(container_h * 0.35)
         _draw_niche_icon(draw, niche, idx, col_cx, ic_cy, container_h, GB, WHT, BLK)
             
-        fn_ic = _font("NotoSans-Regular.ttf", sz_ic)
+        fn_ic = (_devanagari_font(sz_ic) if layout.get("_use_devanagari_font", False) else _font("NotoSans-Regular.ttf", sz_ic))
         lbl_lines = _wrap(draw, label, fn_ic, int(col_w - 8))
         lbl_h = len(lbl_lines) * (sz_ic + 2)
         ly = container_y1 - lbl_h - int(container_h * 0.08)
@@ -1235,8 +1250,8 @@ def _layout_minimal_dark(layout: dict, ref_url: Optional[str] = None) -> str:
     phone_lbl = layout.get("phone_label", "(WhatsApp Business)")
     
     tx = pill_x0 + int(pill_h * 1.05)
-    fn_ft = _font("NotoSans-Bold.ttf", max(14, int(pill_h * 0.35)))
-    fn_fl = _font("NotoSans-Regular.ttf", max(9, int(pill_h * 0.20)))
+    fn_ft = (_devanagari_font(max(14, int(pill_h * 0.35))) if layout.get("_use_devanagari_font", False) else _font("NotoSans-Bold.ttf", max(14, int(pill_h * 0.35))))
+    fn_fl = (_devanagari_font(max(9, int(pill_h * 0.20))) if layout.get("_use_devanagari_font", False) else _font("NotoSans-Regular.ttf", max(9, int(pill_h * 0.20))))
     
     draw.text((tx, pill_y0 + int(pill_h * 0.15)), phone, font=fn_ft, fill=WHT)
     lbl_color = (int(WHT[0]*0.7 + GB[0]*0.3), int(WHT[1]*0.7 + GB[1]*0.3), int(WHT[2]*0.7 + GB[2]*0.3))
@@ -1256,7 +1271,7 @@ def _layout_minimal_dark(layout: dict, ref_url: Optional[str] = None) -> str:
         badge_lines = ["Your Health", "Our Priority"]
         
     sz_bdg = max(12, int(H * (0.018 if is_square else 0.024)))
-    fn_bdg = _font("NotoSans-Bold.ttf", sz_bdg)
+    fn_bdg = (_devanagari_font(sz_bdg) if layout.get("_use_devanagari_font", False) else _font("NotoSans-Bold.ttf", sz_bdg))
     bdg_total_h = len(badge_lines) * (sz_bdg + 4) - 4
     by = badge_cy - bdg_total_h / 2
     for line in badge_lines:
@@ -1363,8 +1378,8 @@ def _layout_ai_dynamic(layout: dict, ref_url: Optional[str] = None) -> str:
         _draw_niche_logo(draw, niche, lcx, lcy, logo_r, GD, GB, WHT)
         nx = text_x + logo_r * 2 + int(W * 0.015)
 
-    fn_nm = _font("NotoSans-Black.ttf", sz_nm)
-    fn_sn = _font("NotoSans-Regular.ttf", sz_sub_nm)
+    fn_nm = (_devanagari_font(sz_nm) if layout.get("_use_devanagari_font", False) else _font("NotoSans-Black.ttf", sz_nm))
+    fn_sn = (_devanagari_font(sz_sub_nm) if layout.get("_use_devanagari_font", False) else _font("NotoSans-Regular.ttf", sz_sub_nm))
 
     draw.text((nx, y_logo), layout.get("brand_name") or layout.get("hospital_name") or "BRAND", font=fn_nm, fill=GD)
     draw.text((nx, y_logo + sz_nm + 2), layout.get("brand_sub") or layout.get("hospital_sub") or "", font=fn_sn, fill=GRY)
@@ -1376,7 +1391,7 @@ def _layout_ai_dynamic(layout: dict, ref_url: Optional[str] = None) -> str:
 
     sz_h = max(28, int(H * 0.044)) if is_square else max(38, int(H * 0.072))
     y_head = y_logo + sz_nm + sz_sub_nm + int(H * (0.05 if is_square else 0.065))
-    fn_h = _font("NotoSans-Black.ttf", sz_h)
+    fn_h = (_devanagari_font(sz_h) if layout.get("_use_devanagari_font", False) else _font("NotoSans-Black.ttf", sz_h))
 
     for idx, hl in enumerate(headlines[:3]):
         color = GB if idx == 0 else BLK
@@ -1387,7 +1402,7 @@ def _layout_ai_dynamic(layout: dict, ref_url: Optional[str] = None) -> str:
     sub = layout.get("subheadline", "Providing exceptional service with passion and expertise.")
     sz_s = max(12, int(H * (0.018 if is_square else 0.024)))
     y_sub = y_head + int(H * (0.012 if is_square else 0.018))
-    fn_s = _font("NotoSans-Regular.ttf", sz_s)
+    fn_s = (_devanagari_font(sz_s) if layout.get("_use_devanagari_font", False) else _font("NotoSans-Regular.ttf", sz_s))
 
     for sl in _wrap(draw, sub, fn_s, text_w):
         draw.text((text_x, y_sub), sl, font=fn_s, fill=GD)
@@ -1401,7 +1416,7 @@ def _layout_ai_dynamic(layout: dict, ref_url: Optional[str] = None) -> str:
         icons = ["Expert Team", "Modern Tech", "24/7 Support", "Quality Care"]
 
     niche = layout.get("niche", "healthcare").lower()
-    fn_ic = _font("NotoSans-Bold.ttf", sz_ic)
+    fn_ic = (_devanagari_font(sz_ic) if layout.get("_use_devanagari_font", False) else _font("NotoSans-Bold.ttf", sz_ic))
     
     for idx, icon_text in enumerate(icons[:4]):
         iy = y_icons + idx * (sz_ic * 2 + int(H * 0.012))
@@ -1430,8 +1445,8 @@ def _layout_ai_dynamic(layout: dict, ref_url: Optional[str] = None) -> str:
         )
         _draw_phone_receiver(draw, phone_cx, phone_cy, int(phone_icon_r * 0.5), GB)
         
-        fn_p = _font("NotoSans-Black.ttf", int(pill_h * 0.38))
-        fn_pl = _font("NotoSans-Regular.ttf", int(pill_h * 0.22))
+        fn_p = (_devanagari_font(int(pill_h * 0.38)) if layout.get("_use_devanagari_font", False) else _font("NotoSans-Black.ttf", int(pill_h * 0.38)))
+        fn_pl = (_devanagari_font(int(pill_h * 0.22)) if layout.get("_use_devanagari_font", False) else _font("NotoSans-Regular.ttf", int(pill_h * 0.22)))
         
         pt_x = phone_cx + phone_icon_r + int(W * 0.02)
         draw.text((pt_x, y_phone + int(pill_h * 0.16)), phone, font=fn_p, fill=WHT)

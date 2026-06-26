@@ -539,6 +539,95 @@ class GraphicAgent:
             logger.warning("Failed to translate brand name to Hindi: %s", e)
             return text
 
+    def _run_multilingual(
+        self,
+        source_text: str,
+        logo_image: Optional[str] = None,
+        reference_image: Optional[str] = None,
+        image_size: str = "1024x1024",
+        image_quality: str = "low",
+        details: Optional[dict] = None
+    ) -> dict[str, Any]:
+        """
+        Custom execution pipeline for multilingual graphics (Hindi/Marathi) using Devanagari text overlay.
+        """
+        import base64
+        import os
+        import uuid
+        import json
+        from app.flyer_generator import generate_flyer
+        from app.config import StorageConfig
+        
+        # 1. Extract layout containing translated copy in Devanagari
+        logger.info("[Multilingual] Extracting Devanagari layout...")
+        layout = self._extract_layout(source_text)
+        
+        # 2. Merge user-provided fields
+        layout["logo_image"] = logo_image or layout.get("logo_image")
+        layout["image_size"] = image_size
+        layout["_use_devanagari_font"] = True
+        
+        # If details dict is provided, merge some specific fields if layout doesn't have them
+        if details:
+            for k in ["phone", "email", "address", "phone_label"]:
+                if k in details and details[k]:
+                    layout[k] = details[k]
+                    
+        # 3. Generate background canvas using DALL-E
+        bg_prompt = layout.get("dalle_bg_prompt")
+        if not bg_prompt:
+            bg_prompt = f"A beautiful professional real estate or business flyer background design without any text. Clean aesthetic."
+            
+        logger.info("[Multilingual] Generating background via DALL-E: %s", bg_prompt)
+        bg_filepath = self._generate_background_image(bg_prompt, size=image_size, quality=image_quality)
+        
+        # 4. Composite reference image onto background if present
+        if reference_image and bg_filepath:
+            from app.compositor import composite_reference_image
+            logger.info("[Multilingual] Compositing reference image onto background...")
+            try:
+                with open(bg_filepath, "rb") as f:
+                    bg_b64 = base64.b64encode(f.read()).decode("utf-8")
+                new_b64 = composite_reference_image(bg_b64, bg_filepath, reference_image)
+                with open(bg_filepath, "wb") as f:
+                    f.write(base64.b64decode(new_b64))
+            except Exception as e:
+                logger.warning("[Multilingual] Reference image composition failed: %s", e)
+                
+        # 5. Render Hindi/Marathi Devanagari flyer using flyer_generator
+        logger.info("[Multilingual] Rendering flyer using template_id=%s", layout.get("template_id"))
+        try:
+            final_b64 = generate_flyer(layout, ref_url=bg_filepath)
+        except Exception as e:
+            logger.error("[Multilingual] Flyer generation failed: %s", e, exc_info=True)
+            # Fallback: if template rendering fails, return the DALL-E background as is (encoded to b64)
+            if bg_filepath and os.path.exists(bg_filepath):
+                with open(bg_filepath, "rb") as f:
+                    final_b64 = base64.b64encode(f.read()).decode("utf-8")
+            else:
+                return {"success": False, "error": f"Rendering failed: {str(e)}"}
+                
+        # 6. Save final graphic to disk
+        filename = f"flyer_{uuid.uuid4().hex}.png"
+        os.makedirs(StorageConfig.OUTPUT_FOLDER, exist_ok=True)
+        filepath = os.path.join(StorageConfig.OUTPUT_FOLDER, filename)
+        with open(filepath, "wb") as f:
+            f.write(base64.b64decode(final_b64))
+            
+        logger.info("[Multilingual] Saved final graphic to %s", filepath)
+        
+        return {
+            "success": True,
+            "status": "success",
+            "image_url": f"/outputs/{filename}",
+            "image_base64": final_b64,
+            "images": [{
+                "filepath": filepath,
+                "filename": filename,
+                "b64_string": final_b64
+            }]
+        }
+
     def run_from_details(
         self,
         details: dict,
@@ -559,6 +648,21 @@ class GraphicAgent:
         logo_img = details.get("logo_image") or details.get("logo")
         brand_name = details.get("builder") or details.get("hospital_name") or details.get("brand_name") or details.get("hospital")
         language = details.get("language") or "english"
+
+        if language == "hindi_marathi":
+            import json
+            source_content = f"Business details for design generation:\n"
+            for k, v in details.items():
+                if v and k not in ["logo_image", "logo", "reference_image", "image_size", "image_quality", "language"]:
+                    source_content += f"- {k}: {v}\n"
+            return self._run_multilingual(
+                source_text=source_content,
+                logo_image=logo_img,
+                reference_image=details.get("reference_image"),
+                image_size=details.get("image_size") or "1024x1024",
+                image_quality=details.get("image_quality") or "low",
+                details=details
+            )
 
         if not brand_name:
             # Generate a brand name if missing
@@ -656,6 +760,15 @@ class GraphicAgent:
         """
         import base64
         import os
+
+        if language == "hindi_marathi":
+            return self._run_multilingual(
+                source_text=raw_prompt,
+                logo_image=logo_image,
+                reference_image=reference_image,
+                image_size=image_size,
+                image_quality=image_quality
+            )
         
         # Pre-analyze the reference image and append description to the prompt
         if reference_image:
