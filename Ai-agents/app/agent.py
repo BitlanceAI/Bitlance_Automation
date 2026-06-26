@@ -656,20 +656,8 @@ class GraphicAgent:
         brand_name = details.get("builder") or details.get("hospital_name") or details.get("brand_name") or details.get("hospital")
         language = details.get("language") or "english"
 
-        if language == "hindi_marathi":
-            import json
-            source_content = f"Business details for design generation:\n"
-            for k, v in details.items():
-                if v and k not in ["logo_image", "logo", "reference_image", "image_size", "image_quality", "language"]:
-                    source_content += f"- {k}: {v}\n"
-            return self._run_multilingual(
-                source_text=source_content,
-                logo_image=logo_img,
-                reference_image=details.get("reference_image"),
-                image_size=details.get("image_size") or "1024x1024",
-                image_quality=details.get("image_quality") or "low",
-                details=details
-            )
+        import json
+        # Removed _run_multilingual interception to allow dynamic DALL-E generation natively in Devanagari
 
         if not brand_name:
             # Generate a brand name if missing
@@ -694,6 +682,11 @@ class GraphicAgent:
             f"Make sure to use the image size: '{details.get('image_size') or '1024x1024'}' and image quality: '{details.get('image_quality') or 'low'}'.\n"
             f"The target language is: '{language}'.\n"
         )
+        if language == "hindi_marathi":
+            instruction += (
+                "CRITICAL MULTILINGUAL INSTRUCTION: You MUST translate the marketing copy and strictly instruct DALL-E "
+                "to write ALL text natively in Hindi/Marathi (Devanagari script) on the graphic. Ensure the visual prompt explicitly includes the translated text in Devanagari.\n"
+            )
         ref_img = details.get("reference_image")
         if ref_img:
             from app.services.prompt_service import PromptService
@@ -767,15 +760,7 @@ class GraphicAgent:
         """
         import base64
         import os
-
-        if language == "hindi_marathi":
-            return self._run_multilingual(
-                source_text=raw_prompt,
-                logo_image=logo_image,
-                reference_image=reference_image,
-                image_size=image_size,
-                image_quality=image_quality
-            )
+        import re
         
         # Pre-analyze the reference image and append description to the prompt
         if reference_image:
@@ -787,7 +772,6 @@ class GraphicAgent:
             except Exception as e:
                 logger.warning("Failed to pre-analyze reference image in run_from_prompt: %s", e)
 
-        import re
         brand_name = self._extract_brand_name(raw_prompt)
         if brand_name and brand_name.lower() != "none":
             # Sanitize the raw prompt to hide the name from DALL-E (case-insensitive)
