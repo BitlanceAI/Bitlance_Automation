@@ -121,8 +121,13 @@ class GraphicAgent:
         client = OpenAI(api_key=APIKeys.OPENAI)
 
         system = (
-            "You are a graphic design layout extractor. Given marketing content or a business prompt, "
-            "extract ALL text and design details needed for a professional flyer.\n"
+            "You are a master copywriter and graphic design layout extractor. Given marketing content or a business prompt, "
+            "extract OR CREATIVELY GENERATE ALL text and design details needed for a professional flyer.\n"
+            "CRITICAL INSTRUCTION FOR MISSING INFO: If the user provides a very short, vague, or incomplete prompt, "
+            "you MUST use your creativity to generate the BEST possible marketing copy (headline, subheadline, icons, badge, brand name, etc.) "
+            "that fits the context. DO NOT just return empty strings or placeholders. INVENT a professional, random brand name (e.g., 'Global Heights School', 'Luxe Living', etc.) if one is not explicitly provided.\n"
+            "MULTILINGUAL INSTRUCTION: If the source text indicates the language should be Hindi or Marathi, you MUST write the generated text "
+            "(headline, subheadline, icons, badge, brand_sub) in the requested language (using Devanagari script). "
             "Identify the brand niche: 'healthcare', 'real_estate', 'dental', 'fitness', 'education', or 'general'.\n"
             "Determine professional, aesthetic brand colors based on the niche (e.g. elegant blues/golds for real estate, "
             "vibrant teals/oranges for gym, professional greens/teals for hospital).\n"
@@ -134,8 +139,8 @@ class GraphicAgent:
             "  - 4: AI Dynamic Canvas (DALL-E designs the background, visual assets, shapes, and layout canvas; text and logo are overlaid on a glassmorphic card. Pick this by default whenever the user describes custom background designs, abstract shapes, custom composition, or unique positioning in their prompt, or when they want maximum creativity and uniqueness. Highly recommended for creative variations).\n"
             "If template_id is 4, you MUST also extract the alignment side for the text overlay ('left' or 'right') based on where the user wants the text or where DALL-E should leave negative space, and write a detailed DALL-E prompt in dalle_bg_prompt to generate the background design canvas.\n\n"
             "Return ONLY valid JSON with these keys:\n"
-            "  brand_name: string (short brand name in CAPS, e.g. 'SHRIKRISHNA', 'EMAAR', 'DENTOCARE')\n"
-            "  brand_sub: string (subtitle / description of business, e.g. 'Heart & Multispeciality Hospital, Nagpur')\n"
+            "  brand_name: string (short brand name in CAPS, e.g. 'SHRIKRISHNA', 'EMAAR'. If not provided, creatively INVENT ONE!)\n"
+            "  brand_sub: string (subtitle / description of business. If not provided, invent one!)\n"
             "  niche: string (one of: 'healthcare', 'real_estate', 'dental', 'fitness', 'education', 'general')\n"
             "  template_id: integer (0, 1, 2, 3, or 4)\n"
             "  text_align: string ('left' or 'right' - only used if template_id is 4. The side where the text overlay card will be placed. Choose 'left' if visuals are on the right, or 'right' if visuals are on the left)\n"
@@ -493,18 +498,18 @@ class GraphicAgent:
             resp = client.chat.completions.create(
                 model="gpt-4o-mini",
                 messages=[
-                    {"role": "system", "content": "You are a branding assistant. Given a prompt for a marketing graphic, extract the business, hospital, builder, or brand name (e.g. 'Shreekrishna Hospital' or 'Trump Towers'). Return ONLY the extracted name, or return 'None' if no specific brand or business name is mentioned. Do not include quotes or extra text."},
+                    {"role": "system", "content": "You are a branding assistant. Given a prompt for a marketing graphic, extract the business, hospital, builder, or brand name (e.g. 'Shreekrishna Hospital' or 'Trump Towers'). If the user has NOT provided a specific brand or business name in the prompt, you MUST invent a professional, context-appropriate brand name based on the prompt's subject (e.g., 'Global Heights School' for a school, 'Luxe Real Estate' for a property, 'Elite Fitness' for a gym). Return ONLY the extracted or invented name. Do not include quotes or extra text."},
                     {"role": "user", "content": prompt_text}
                 ],
                 temperature=0.0,
             )
             name = resp.choices[0].message.content.strip()
             if name.lower() == "none" or not name:
-                return None
+                return "Brand Name"
             return name
         except Exception as e:
-            logger.warning("Failed to extract brand name: %s", e)
-            return None
+            logger.warning("Failed to extract or generate brand name: %s", e)
+            return "Brand Name"
 
     @staticmethod
     def _translate_to_hindi(text: str) -> str:
@@ -554,6 +559,12 @@ class GraphicAgent:
         logo_img = details.get("logo_image") or details.get("logo")
         brand_name = details.get("builder") or details.get("hospital_name") or details.get("brand_name") or details.get("hospital")
         language = details.get("language") or "english"
+
+        if not brand_name:
+            # Generate a brand name if missing
+            niche = details.get("niche") or details.get("property_type") or "business"
+            brand_name = self._extract_brand_name(f"Generate a brand name for a {niche}")
+
         
         if language == "hindi_marathi" and brand_name:
             brand_name = self._translate_to_hindi(brand_name)
