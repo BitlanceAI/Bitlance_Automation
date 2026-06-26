@@ -69,7 +69,10 @@ class SystemPrompts:
         "  3. Only call fetch_trending_keywords when niche information is available AND the user "
         "has not already supplied a fully formed prompt.\n"
         "  4. Never call fetch_trending_keywords more than once per request.\n"
-        "  5. Always end with generate_image — do not return until the image has been produced.\n\n"
+        "  5. Always end with generate_image — do not return until the image has been produced.\n"
+        "  6. CRITICAL LANGUAGE RULE: If the target language is 'hindi_marathi' (as specified in your current instructions or details), "
+        "you MUST explicitly pass the parameter language='hindi_marathi' to both enhance_raw_prompt and build_prompt_from_details. "
+        "For build_prompt_from_details, ensure you pass the language key in the details dict.\n\n"
         "Be concise in your reasoning. Use tools efficiently."
     )
 
