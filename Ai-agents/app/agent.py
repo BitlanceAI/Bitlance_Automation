@@ -112,13 +112,17 @@ class GraphicAgent:
     """
 
     @staticmethod
-    def _extract_layout(source_text: str) -> dict:
+    def _extract_layout(source_text: str, language: str = "english") -> dict:
         """
         Uses GPT-4o-mini to extract fully dynamic flyer layout from any prompt or details dict.
         Returns a structured layout dict consumed by text_overlay.overlay_flyer_text().
         """
         from openai import OpenAI
         client = OpenAI(api_key=APIKeys.OPENAI)
+        
+        lang_instruction = ""
+        if language == "hindi_marathi":
+            lang_instruction = "CRITICAL MULTILINGUAL INSTRUCTION: You MUST translate and write ALL generated text (headline, subheadline, icons, badge, brand_sub) into Hindi/Marathi (using Devanagari script). DO NOT output English for these fields.\n"
 
         system = (
             "You are a master copywriter and graphic design layout extractor. Given marketing content or a business prompt, "
@@ -126,8 +130,7 @@ class GraphicAgent:
             "CRITICAL INSTRUCTION FOR MISSING INFO: If the user provides a very short, vague, or incomplete prompt, "
             "you MUST use your creativity to generate the BEST possible marketing copy (headline, subheadline, icons, badge, brand name, etc.) "
             "that fits the context. DO NOT just return empty strings or placeholders. INVENT a professional, random brand name (e.g., 'Global Heights School', 'Luxe Living', etc.) if one is not explicitly provided.\n"
-            "MULTILINGUAL INSTRUCTION: If the source text indicates the language should be Hindi or Marathi, you MUST write the generated text "
-            "(headline, subheadline, icons, badge, brand_sub) in the requested language (using Devanagari script). "
+            f"{lang_instruction}"
             "Identify the brand niche: 'healthcare', 'real_estate', 'dental', 'fitness', 'education', or 'general'.\n"
             "Determine professional, aesthetic brand colors based on the niche (e.g. elegant blues/golds for real estate, "
             "vibrant teals/oranges for gym, professional greens/teals for hospital).\n"
@@ -156,12 +159,16 @@ class GraphicAgent:
             "  background_color: [r,g,b] (very soft background tint color)\n"
             "Only output the JSON. No explanation."
         )
+        user_msg = f"Source content:\n{source_text}"
+        if language == "hindi_marathi":
+            user_msg += "\n\nCRITICAL MULTILINGUAL INSTRUCTION: You MUST translate and write ALL generated text (headline, subheadline, icons, badge, brand_sub) into Hindi/Marathi (using Devanagari script). DO NOT output English for these fields! I want the output in Devanagari."
+
         try:
             resp = client.chat.completions.create(
                 model="gpt-4o-mini",
                 messages=[
                     {"role": "system", "content": system},
-                    {"role": "user",   "content": f"Source content:\n{source_text}"},
+                    {"role": "user",   "content": user_msg},
                 ],
                 temperature=0.3,
                 response_format={"type": "json_object"},
@@ -560,7 +567,7 @@ class GraphicAgent:
         
         # 1. Extract layout containing translated copy in Devanagari
         logger.info("[Multilingual] Extracting Devanagari layout...")
-        layout = self._extract_layout(source_text)
+        layout = self._extract_layout(source_text, language="hindi_marathi")
         
         # 2. Merge user-provided fields
         layout["logo_image"] = logo_image or layout.get("logo_image")
