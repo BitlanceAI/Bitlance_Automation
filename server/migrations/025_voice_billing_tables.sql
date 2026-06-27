@@ -103,6 +103,11 @@ RETURNS TRIGGER AS $$
 DECLARE
     v_admin_id UUID;
 BEGIN
+    -- Prevent infinite recursion loop
+    IF pg_trigger_depth() > 1 THEN
+        RETURN NEW;
+    END IF;
+
     SELECT admin_id INTO v_admin_id 
     FROM public.organizations 
     WHERE id = NEW.organization_id;
@@ -130,23 +135,23 @@ RETURNS TRIGGER AS $$
 DECLARE
     v_org_id UUID;
 BEGIN
+    -- Prevent infinite recursion loop
+    IF pg_trigger_depth() > 1 THEN
+        RETURN NEW;
+    END IF;
+
     -- Find organization where this user is the admin
     SELECT id INTO v_org_id 
     FROM public.organizations 
     WHERE admin_id = NEW.user_id;
 
     IF v_org_id IS NOT NULL THEN
-        -- Temp disable trigger to prevent recursion
-        ALTER TABLE public.wallet DISABLE TRIGGER trg_sync_wallet_to_user_credits;
-        
         INSERT INTO public.wallet (organization_id, balance, updated_at)
         VALUES (v_org_id, NEW.balance, now())
         ON CONFLICT (organization_id) 
         DO UPDATE SET 
             balance = NEW.balance,
             updated_at = now();
-            
-        ALTER TABLE public.wallet ENABLE TRIGGER trg_sync_wallet_to_user_credits;
     END IF;
     RETURN NEW;
 END;
