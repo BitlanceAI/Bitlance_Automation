@@ -657,7 +657,22 @@ class GraphicAgent:
         language = details.get("language") or "english"
 
         import json
-        # Removed _run_multilingual interception to allow dynamic DALL-E generation natively in Devanagari
+        if language == "hindi_marathi":
+            logger.info("[GraphicAgent] Language is 'hindi_marathi'. Intercepting with programmatic flyer generator...")
+            # Construct a source text string from the details dict for _run_multilingual
+            source_parts = []
+            for k, v in details.items():
+                if v and k not in ["logo_image", "logo", "reference_image", "image_size", "image_quality", "language"]:
+                    source_parts.append(f"{k}: {v}")
+            source_text = "\n".join(source_parts)
+            return self._run_multilingual(
+                source_text=source_text,
+                logo_image=logo_img,
+                reference_image=details.get("reference_image"),
+                image_size=details.get("image_size") or "1024x1024",
+                image_quality=details.get("image_quality") or "low",
+                details=details
+            )
 
         if not brand_name:
             # Generate a brand name if missing
@@ -771,6 +786,20 @@ class GraphicAgent:
                     raw_prompt = f"{raw_prompt}\n\n[Visual Subject Reference: {desc}]"
             except Exception as e:
                 logger.warning("Failed to pre-analyze reference image in run_from_prompt: %s", e)
+
+        # Auto-detect language if specified in raw prompt text
+        if raw_prompt and any(k in raw_prompt.lower() for k in ["hindi_marathi", "hindi + marathi", "hindi marathi", "marathi"]):
+            language = "hindi_marathi"
+
+        if language == "hindi_marathi":
+            logger.info("[GraphicAgent] Language is 'hindi_marathi' in run_from_prompt. Intercepting with programmatic flyer generator...")
+            return self._run_multilingual(
+                source_text=raw_prompt,
+                logo_image=logo_image,
+                reference_image=reference_image,
+                image_size=image_size,
+                image_quality=image_quality,
+            )
 
         brand_name = self._extract_brand_name(raw_prompt)
         if brand_name and brand_name.lower() != "none":
