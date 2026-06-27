@@ -88,13 +88,12 @@ class PromptService:
             system += (
                 "\nCRITICAL MULTILINGUAL TEXT RULE: All text elements, headlines, subtitles, "
                 "or descriptive copy overlaid on the image MUST be written in the Devanagari script. "
-                "Specifically, use a hybrid of Hindi and Marathi language (mostly Hindi vocabulary with "
-                "Marathi/Hindi common phrasing/words, e.g. for price '₹10 Cr पासून' or '₹10 Cr पासुन', "
-                "for call-to-action 'त्वरित संपर्क करा' or 'त्वरित कॉल करा'). "
+                "Specifically, you MUST write the overall text such that approximately 50% of the lines/sentences are in pure Hindi and 50% are in pure Marathi. "
+                "Do NOT write bilingual side-by-side translations on the same line. Mix the two languages across different sections seamlessly. "
                 "Do NOT write any text in English alphabets; all text overlays must be rendered in beautiful, "
-                "highly legible Devanagari script. Ensure that the image generator generates the text overlays "
-                "in this exact Hindi/Marathi hybrid Devanagari script."
+                "highly legible Devanagari script."
             )
+
 
         import re
         urls = re.findall(r'https?://[^\s<>"]+|www\.[^\s<>"]+', raw_prompt)
@@ -142,11 +141,11 @@ class PromptService:
         language = language or details.get("language") or "english"
         if language == "hindi_marathi":
             try:
-                # Translate details to Hindi/Marathi hybrid in Devanagari
+                # Translate details to 50% Hindi and 50% Marathi mix in Devanagari
                 resp = self.client.chat.completions.create(
                     model="gpt-4o-mini",
                     messages=[
-                        {"role": "system", "content": "You are a professional Hindi and Marathi translator. Given a JSON object of property details, translate/transliterate all string values (including property_type, location, price, bhk, extra_details, and items in amenities list) into Hindi/Marathi hybrid language using the Devanagari script. Keep numbers and phone/email values as they are, but write currency words or labels (like 'BHK', 'Crore', 'Onwards', 'Amenities', etc.) in Hindi/Marathi hybrid using Devanagari. Return ONLY the translated JSON object, with no explanation and no markdown formatting."},
+                        {"role": "system", "content": "You are a professional Hindi and Marathi translator. Given a JSON object of details, translate/transliterate the string values such that EXACTLY HALF (50%) of the fields are translated into pure Hindi, and the OTHER HALF (50%) are translated into pure Marathi. You MUST ensure that Marathi language and vocabulary are used in at least half of the properties. Do NOT write bilingual side-by-side translations on the same line. Mix the languages across different fields (e.g., Headline in Hindi, Subheadline in Marathi, amenities split between both). All text must use the Devanagari script. Keep numbers, phone numbers, and email values unchanged. Return ONLY the translated JSON object, with no explanation and no markdown formatting."},
                         {"role": "user", "content": json.dumps(details)}
                     ],
                     temperature=0.0,
@@ -211,10 +210,9 @@ class PromptService:
         system_prompt = SystemPrompts.DETAILS_PROMPT_BUILDER_SYSTEM
         if language == "hindi_marathi":
             system_prompt += (
-                "\nCRITICAL MULTILINGUAL TEXT RULE: Since the details are provided in Devanagari, "
-                "you MUST explicitly instruct the image generator to render all text overlays and headings "
-                "in the Devanagari script using the Hindi/Marathi hybrid text provided. The generated flyer "
-                "MUST display the details in Devanagari script (e.g., 'लक्झरी अपार्टमेंट', '₹१० Cr पासून', etc.). "
+                "\nCRITICAL MULTILINGUAL TEXT RULE: Since the details are provided in a 50/50 mix of Hindi and Marathi Devanagari script, "
+                "you MUST explicitly instruct the image generator to render all text overlays and headings exactly as provided. "
+                "Do NOT translate them back to English or combine them. Just render the Devanagari text as provided. "
                 "Do NOT write any English text except for email/phone numbers."
             )
 

@@ -122,7 +122,7 @@ class GraphicAgent:
         
         lang_instruction = ""
         if language == "hindi_marathi":
-            lang_instruction = "CRITICAL MULTILINGUAL INSTRUCTION: You MUST translate and write ALL generated text (headline, subheadline, icons, badge, brand_sub) into Hindi/Marathi (using Devanagari script). DO NOT output English for these fields.\n"
+            lang_instruction = "CRITICAL MULTILINGUAL INSTRUCTION: You MUST translate and write ALL generated text such that approximately 50% of the fields are in pure Hindi and 50% are in pure Marathi. Do NOT write bilingual side-by-side translations. All text must use the Devanagari script. DO NOT output English for these fields.\n"
 
         system = (
             "You are a master copywriter and graphic design layout extractor. Given marketing content or a business prompt, "
@@ -161,7 +161,7 @@ class GraphicAgent:
         )
         user_msg = f"Source content:\n{source_text}"
         if language == "hindi_marathi":
-            user_msg += "\n\nCRITICAL MULTILINGUAL INSTRUCTION: You MUST translate and write ALL generated text (headline, subheadline, icons, badge, brand_sub) into Hindi/Marathi (using Devanagari script). DO NOT output English for these fields! I want the output in Devanagari."
+            user_msg += "\n\nCRITICAL MULTILINGUAL INSTRUCTION: You MUST translate and write ALL generated text (headline, subheadline, icons, badge, brand_sub) such that 50% of the text is in pure Hindi and 50% is in pure Marathi (using Devanagari script). Do NOT write bilingual side-by-side translations! I want the output in Devanagari."
 
         try:
             resp = client.chat.completions.create(
