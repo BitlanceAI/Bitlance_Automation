@@ -67,23 +67,36 @@ class PromptService:
         """
         logger.info("[PromptService.enhance_prompt] raw_prompt='%s', niche='%s'", raw_prompt, niche)
 
+        # Auto-detect language if specified in raw prompt text
+        if raw_prompt and any(k in raw_prompt.lower() for k in ["hindi_marathi", "hindi + marathi", "hindi marathi", "marathi"]):
+            language = "hindi_marathi"
+
+        translated_details_str = ""
         if language == "hindi_marathi":
             try:
-                # Translate the raw prompt to a 50/50 mix of Hindi and Marathi in Devanagari first
+                # Extract and translate the details to a 50/50 mix of Hindi and Marathi in Devanagari
                 resp = self.client.chat.completions.create(
                     model="gpt-4o-mini",
                     messages=[
-                        {"role": "system", "content": "You are an expert bilingual translator. Translate the given English text/prompt into a 50/50 mix of Hindi and Marathi in Devanagari script. Translate the main headline/title to Hindi, and the subheadline/subtitle to Marathi, and alternate the remaining details between Hindi and Marathi so that both languages are clearly represented on the flyer. DO NOT output any English text. Use Marathi words like 'शाळा', 'प्रवेश सुरू', 'मर्यादित जागा' for the Marathi portion, and Hindi words like 'स्कूल', 'प्रवेश प्रारंभ', 'सीमित सीटें' for the Hindi portion. Return ONLY the translated Devanagari text, with no explanation."},
+                        {"role": "system", "content": (
+                            "You are an expert bilingual translator. Extract the text details that should be written/overlaid on the graphic from the user prompt "
+                            "(such as Title, Price, Location, Features, Contact, etc.). Translate these details into a 50/50 mix of Hindi and Marathi in Devanagari script. "
+                            "Specifically, translate the main Title/Headline to Hindi, the Subtitle/Subheadline/BHK to Marathi, and alternate the other fields between Hindi and Marathi. "
+                            "Use proper Hindi words (like 'स्कूल', 'प्रवेश प्रारंभ', 'सीमित सीटें') and proper Marathi words (like 'शाळा', 'प्रवेश सुरू', 'मर्यादित जागा'). "
+                            "Do NOT use English characters. Return ONLY a JSON object representing the translated details."
+                        )},
                         {"role": "user", "content": raw_prompt}
                     ],
                     temperature=0.0,
                 )
-                translated_prompt = resp.choices[0].message.content.strip()
-                logger.info("[PromptService.enhance_prompt] Translated raw prompt to Devanagari mix: %s", translated_prompt)
-                raw_prompt = translated_prompt
+                translated_content = resp.choices[0].message.content.strip()
+                if translated_content.startswith("```"):
+                    translated_content = translated_content.strip("`").replace("json\n", "", 1).strip()
+                translated_details = json.loads(translated_content)
+                translated_details_str = json.dumps(translated_details, indent=2, ensure_ascii=False)
+                logger.info("[PromptService.enhance_prompt] Extracted and translated details to Devanagari mix: %s", translated_details_str)
             except Exception as e:
-                logger.warning("Failed to translate raw prompt in enhance_prompt: %s", e)
-
+                logger.warning("Failed to translate raw prompt details in enhance_prompt: %s", e)
 
         # Resolve trending keywords
         used_keywords: list[str] = []
@@ -109,9 +122,9 @@ class PromptService:
                 "Specifically, you MUST write the overall text such that approximately 50% of the lines/sentences are in pure Hindi and 50% are in pure Marathi. "
                 "Do NOT write bilingual side-by-side translations on the same line. Mix the two languages across different sections seamlessly. "
                 "Do NOT write any text in English alphabets; all text overlays must be rendered in beautiful, "
-                "highly legible Devanagari script."
+                "highly legible Devanagari script. "
+                "CRITICAL: When extracting and formatting the text details (such as Title, Price, Location, Features, etc.) to be overlaid, you MUST copy the exact Devanagari words and phrasing from the translated user prompt details. DO NOT translate, change, or normalize the Marathi words to Hindi. Keep the exact bilingual Devanagari mix from the input."
             )
-
 
         import re
         urls = re.findall(r'https?://[^\s<>"]+|www\.[^\s<>"]+', raw_prompt)
@@ -123,11 +136,21 @@ class PromptService:
             except Exception:
                 pass
 
+        user_msg = f"User Prompt: {raw_prompt}\n"
+        if translated_details_str:
+            user_msg += (
+                f"\nCRITICAL: You MUST instruct the image generator to overlay the following text details EXACTLY as provided in Devanagari script:\n"
+                f"{translated_details_str}\n"
+                f"Ensure the rest of the enhanced prompt instructions and scene descriptions are written in English. Do NOT translate the above Devanagari text details to English."
+            )
+        else:
+            user_msg += "Enhanced Prompt:"
+
         response = self.client.chat.completions.create(
             model=ModelConfig.LLM_MODEL,
             messages=[
                 {"role": "system", "content": system},
-                {"role": "user",   "content": f"User Prompt: {raw_prompt}\nEnhanced Prompt:"},
+                {"role": "user",   "content": user_msg},
             ],
             temperature=ModelConfig.LLM_TEMP,
         )

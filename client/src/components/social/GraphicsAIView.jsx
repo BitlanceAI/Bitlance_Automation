@@ -9,6 +9,7 @@ const GraphicsAIView = () => {
     const [promptText, setPromptText] = useState('');
     const [imageSize, setImageSize] = useState('1024x1024');
     const [imageQuality, setImageQuality] = useState('low');
+    const [language, setLanguage] = useState('english');
     const [loading, setLoading] = useState(false);
     const [jobs, setJobs] = useState([]);
     const [refreshing, setRefreshing] = useState(false);
@@ -74,7 +75,7 @@ const GraphicsAIView = () => {
             const res = await fetch(`${API_BASE_URL}/api/design/generate-from-prompt`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-                body: JSON.stringify({ prompt: promptText, image_size: imageSize, image_quality: imageQuality })
+                body: JSON.stringify({ prompt: promptText, image_size: imageSize, image_quality: imageQuality, language })
             });
             const data = await res.json();
             if (res.ok) {
@@ -148,7 +149,7 @@ const GraphicsAIView = () => {
                                 className="w-full bg-white border border-slate-200 text-slate-900 placeholder:text-gray-600 rounded-[2px] p-4 text-[14px] font-sans focus:outline-none focus:border-[#26cece] transition-colors resize-none"
                             />
                             {/* Settings row */}
-                            <div className="grid grid-cols-2 gap-4">
+                            <div className="grid grid-cols-3 gap-4">
                                 <div>
                                     <label className="block text-[11px] font-mono uppercase tracking-widest text-gray-500 mb-1.5">Dimensions</label>
                                     <select value={imageSize} onChange={e => setImageSize(e.target.value)}
@@ -167,6 +168,14 @@ const GraphicsAIView = () => {
                                         <option value="medium">Medium</option>
                                         <option value="high">High (Detailed)</option>
                                         <option value="auto">Auto</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label className="block text-[11px] font-mono uppercase tracking-widest text-gray-500 mb-1.5">Language</label>
+                                    <select value={language} onChange={e => setLanguage(e.target.value)}
+                                        className="w-full bg-white border border-slate-200 text-slate-900 rounded-[2px] px-3 py-2.5 text-[13px] font-mono focus:outline-none focus:border-[#26cece] transition-colors">
+                                        <option value="english">English</option>
+                                        <option value="hindi_marathi">Hindi + Marathi</option>
                                     </select>
                                 </div>
                             </div>
