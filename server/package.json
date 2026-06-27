@@ -28,6 +28,9 @@
         "nodemon": "^3.1.14",
         "openai": "^6.16.0",
         "prerender-node": "^3.8.3",
+        "razorpay": "^2.9.6",
+        "redis": "^6.0.1",
+        "socket.io": "^4.8.3",
         "twilio": "^5.12.2",
         "xlsx": "^0.18.5"
     },
