@@ -303,10 +303,14 @@ router.post('/subscribe-pages', async (req, res) => {
  */
 router.post('/post', async (req, res) => {
     try {
+        console.log(`[Meta API] Received POST request from User ID: ${req.user?.id}`);
+        console.log(`[Meta API] Request Body:`, JSON.stringify(req.body, null, 2));
+
         const { accountId, platform, text, mediaUrl } = req.body;
         const userId = req.user.id;
 
         if (!accountId || !platform || !text) {
+            console.warn(`[Meta API] Missing required fields. accountId: ${!!accountId}, platform: ${!!platform}, text: ${!!text}`);
             return res.status(400).json({ error: 'accountId, platform, and text are required' });
         }
 
@@ -318,6 +322,7 @@ router.post('/post', async (req, res) => {
             .single();
 
         if (dbError || !connection) {
+            console.warn(`[Meta API] No active Meta connection found for user ${userId}. DB Error:`, dbError?.message);
             return res.status(404).json({ error: 'Meta connection not found' });
         }
 
@@ -325,14 +330,18 @@ router.post('/post', async (req, res) => {
         const account = pages.find(p => p.accountId === accountId && p.platform === platform);
 
         if (!account) {
+            console.warn(`[Meta API] Specific account not found in user's connected pages. Requested: ${accountId} on ${platform}`);
             return res.status(404).json({ error: 'Specific Meta account not found' });
         }
+        
+        console.log(`[Meta API] Found account: ${account.name} (${account.accountId})`);
 
         const { decryptData } = await import('../../../utils/encryption.js');
         let accessToken;
         try {
             accessToken = decryptData(connection.access_token);
         } catch {
+            console.error(`[Meta API] Failed to decrypt access token for user ${userId}`);
             return res.status(500).json({ error: 'Failed to decrypt access token' });
         }
 
@@ -341,18 +350,25 @@ router.post('/post', async (req, res) => {
         const MetaServiceClass = (await import('../../services/social/metaService.js')).default;
         const metaService = new MetaServiceClass(pageToken);
 
+        console.log(`[Meta API] Initiating ${platform} post for account ${accountId}...`);
+        console.log(`[Meta API] Media URL included:`, !!mediaUrl);
+
         let result;
         if (platform === 'facebook') {
             result = await metaService.createFacebookPost(accountId, text, mediaUrl);
         } else if (platform === 'instagram') {
             result = await metaService.createInstagramPost(accountId, text, mediaUrl);
         } else {
+            console.warn(`[Meta API] Invalid platform requested: ${platform}`);
             return res.status(400).json({ error: 'Invalid platform' });
         }
 
         if (!result.success) {
+            console.error(`[Meta API] Failed to publish post:`, result.error);
             return res.status(400).json({ error: result.error });
         }
+
+        console.log(`[Meta API] ✅ Post published successfully! Post ID: ${result.postId}`);
 
         res.json({
             success: true,
@@ -361,7 +377,7 @@ router.post('/post', async (req, res) => {
         });
 
     } catch (error) {
-        console.error('Meta post error:', error);
+        console.error('[Meta API] 💥 Unhandled error in /post:', error);
         res.status(500).json({ error: error.message });
     }
 });

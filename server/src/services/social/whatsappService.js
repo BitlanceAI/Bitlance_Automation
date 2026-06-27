@@ -1,6 +1,7 @@
 import axios from 'axios';
 import { createClient } from '@supabase/supabase-js';
 import { decryptData } from '../../../utils/encryption.js';
+import { uploadBase64 } from '../../utils/bunnyStorage.js';
 import dotenv from 'dotenv';
 
 dotenv.config();
@@ -38,8 +39,6 @@ const whatsappService = {
             accessToken,
             pages: connection.pages || [],
             adAccounts: connection.ad_accounts || [],
-            // WhatsApp Phone Number ID and WABA ID will come from meta_connections
-            // or from whatsapp_config stored alongside the connection
             whatsappPhoneId: connection.whatsapp_phone_id || null,
             wabaId: connection.waba_id || null
         };
@@ -55,11 +54,7 @@ const whatsappService = {
             return { valid: false, reason: 'Invalid length' };
         }
 
-        if (!phone.startsWith('+')) {
-            cleanPhone = '+' + cleanPhone;
-        } else {
-            cleanPhone = '+' + cleanPhone;
-        }
+        cleanPhone = '+' + cleanPhone;
 
         return { valid: true, formatted: cleanPhone };
     },
@@ -210,38 +205,9 @@ const whatsappService = {
         // If 'mediaUrl' is actually a Base64 string from the frontend file picker
         if (finalMediaUrl.startsWith('data:')) {
             try {
-                // Parse the base64 string
-                const match = finalMediaUrl.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/);
-                if (!match || match.length !== 3) {
-                    throw new Error('Invalid base64 media format provided');
-                }
-                const mimeType = match[1];
-                const base64Data = match[2];
-                const buffer = Buffer.from(base64Data, 'base64');
-
-                // Determine file extension
-                const extension = mimeType.split('/')[1] || 'bin';
-                const filename = `broadcasts/${userId}_${Date.now()}.${extension}`;
-
-                // Upload to Supabase Storage (assuming a bucket named 'media' exists)
-                const { data, error } = await supabase.storage
-                    .from('media') // MUST HAVE a bucket named 'media' created
-                    .upload(filename, buffer, {
-                        contentType: mimeType,
-                        upsert: true
-                    });
-
-                if (error) {
-                    throw new Error(`Storage upload failed: ${error.message}`);
-                }
-
-                // Get Public URL
-                const { data: publicUrlData } = supabase.storage
-                    .from('media')
-                    .getPublicUrl(filename);
-
-                finalMediaUrl = publicUrlData.publicUrl;
-                console.log(`[WhatsApp] Base64 payload converted to Public URL: ${finalMediaUrl}`);
+                // Upload using Bunny.net Storage
+                finalMediaUrl = await uploadBase64(finalMediaUrl, 'broadcasts');
+                console.log(`[WhatsApp] Base64 payload uploaded to Bunny.net: ${finalMediaUrl}`);
             } catch (err) {
                 console.error('[WhatsApp] Failed converting base64 to URL:', err);
                 return { success: false, error: 'Failed converting base64 image to public URL.' };
@@ -249,8 +215,9 @@ const whatsappService = {
         }
 
         const mediaPayload = {};
-        if (mediaType === 'image') mediaPayload.image = { link: finalMediaUrl, caption };
-        else if (mediaType === 'video') {
+        if (mediaType === 'image') {
+            mediaPayload.image = { link: finalMediaUrl, caption };
+        } else if (mediaType === 'video') {
             // Cloudinary video transformation for WhatsApp compatibility
             // Ensures H.264 baseline codec and AAC audio
             let processedUrl = finalMediaUrl;
@@ -262,8 +229,9 @@ const whatsappService = {
                 console.log(`[WhatsApp] Transforming Cloudinary URL: ${finalMediaUrl} -> ${processedUrl}`);
             }
             mediaPayload.video = { link: processedUrl, caption };
+        } else if (mediaType === 'document') {
+            mediaPayload.document = { link: finalMediaUrl, caption, filename: 'document' };
         }
-        else if (mediaType === 'document') mediaPayload.document = { link: finalMediaUrl, caption, filename: 'document' };
 
         try {
             const response = await axios.post(

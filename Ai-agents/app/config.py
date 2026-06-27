@@ -19,6 +19,7 @@ class APIKeys:
     OPENAI:  str = os.getenv("OPENAI_API_KEY", "")
     SERPAPI: str = os.getenv("SERPAPI_API_KEY", "")
     GEMINI:  str = os.getenv("GEMINI_API_KEY", "")
+    PERPLEXITY: str = os.getenv("PERPLEXITY_API_KEY", "")
 
 
 # ─── Model Settings ───────────────────────────────────────────────────────────

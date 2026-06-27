@@ -2,18 +2,8 @@ import express from 'express';
 import { createCampaign, getCampaigns, serveCampaign, trackInteraction, getCampaignStats, stopCampaign, deleteCampaign } from '../../controllers/campaigns/campaignController.js';
 import { authenticateUser } from '../../middleware/authMiddleware.js';
 import multer from 'multer';
-import { createClient } from '@supabase/supabase-js';
 import path from 'path';
-import dotenv from 'dotenv';
-dotenv.config();
-
-// Initialize Supabase (reusing env vars, defaulting to service role if needed for storage policies, 
-// but usually authenticated user token is better. Here we use service role for backend upload to ensure it works, 
-// assuming RLS is handled or we want backend to have full write access to this bucket)
-const supabase = createClient(
-    process.env.SUPABASE_URL,
-    process.env.SUPABASE_SERVICE_ROLE_KEY // Use service role key for storage uploads from backend
-);
+import { uploadBuffer } from '../../utils/bunnyStorage.js';
 
 // Configure Multer
 const upload = multer({
@@ -50,25 +40,8 @@ router.post('/upload', authenticateUser, upload.single('file'), async (req, res)
         const fileExt = path.extname(file.originalname);
         const fileName = `${userId}/${Date.now()}-${Math.round(Math.random() * 1E9)}${fileExt}`;
 
-        // Upload to Supabase 'campaign-media' bucket
-        const { data, error } = await supabase
-            .storage
-            .from('campaign-media')
-            .upload(fileName, file.buffer, {
-                contentType: file.mimetype,
-                upsert: false
-            });
-
-        if (error) {
-            console.error('Supabase Storage Upload Error:', error);
-            throw error;
-        }
-
-        // Get Public URL
-        const { data: { publicUrl } } = supabase
-            .storage
-            .from('campaign-media')
-            .getPublicUrl(fileName);
+        // Upload to Bunny.net 'campaign-media' folder
+        const publicUrl = await uploadBuffer(file.buffer, `campaign-media/${fileName}`, file.mimetype);
 
         res.json({
             success: true,

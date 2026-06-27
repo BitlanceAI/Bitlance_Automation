@@ -1,6 +1,6 @@
 """
 Blog Storage Service
-Handles Supabase interactions, image upload to Supabase Storage,
+Handles Supabase interactions, image upload to Bunny.net Storage,
 credit ledger validation/deduction, and push notification forwarding.
 Ported from Node.js: articleController.js + blogController.js
 """
@@ -18,6 +18,12 @@ from supabase import create_client, Client
 SUPABASE_URL = os.getenv("SUPABASE_URL")
 SUPABASE_KEY = os.getenv("SUPABASE_KEY")          # anon key  (for scoped/user clients)
 SUPABASE_SERVICE_KEY = os.getenv("SUPABASE_SERVICE_ROLE_KEY") or os.getenv("SUPABASE_SERVICE_KEY")  # service-role key (for admin RPCs)
+
+# Bunny.net Storage credentials
+BUNNY_STORAGE_ZONE = os.getenv("BUNNY_STORAGE_ZONE")
+BUNNY_API_KEY      = os.getenv("BUNNY_API_KEY")
+BUNNY_PULL_ZONE    = os.getenv("BUNNY_PULL_ZONE_URL")  # e.g. https://bitlance.b-cdn.net
+BUNNY_REGION       = os.getenv("BUNNY_REGION", "")     # e.g. "ny." or leave blank for global
 
 ADMIN_ID = "0d396440-7d07-407c-89da-9cb93e353347"
 
@@ -161,38 +167,64 @@ def deduct_credits(
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# IMAGE STORAGE
+# IMAGE STORAGE — Bunny.net
 # ─────────────────────────────────────────────────────────────────────────────
 
-def upload_image_to_supabase(image_url: str, scoped_supabase: Client) -> str:
+def upload_image_to_bunny(image_url: str, directory: str = "blog-images") -> str:
     """
-    Download image from URL and upload to Supabase Storage 'blog-images' bucket.
-    Returns the public URL of the persisted image.
-    Falls back to original URL on any error.
+    Download an image (from URL or base64 data-URI) and upload it to Bunny.net Storage.
+    Returns the public CDN URL of the persisted image.
+    Falls back to the original URL on any error.
     """
+    if not BUNNY_STORAGE_ZONE or not BUNNY_API_KEY or not BUNNY_PULL_ZONE:
+        print("[Blog Storage] Bunny.net credentials not set — skipping upload, using original URL.")
+        return image_url
+
     try:
-        import base64
+        import base64 as _b64
+
+        # ── Decode image bytes ─────────────────────────────────────────────────
         if image_url.startswith("data:image"):
-            # Format: data:image/png;base64,iVBORw0KGgo...
             header, encoded = image_url.split(",", 1)
-            file_bytes = base64.b64decode(encoded)
+            file_bytes = _b64.b64decode(encoded)
         else:
             img_res = requests.get(image_url, timeout=30)
             img_res.raise_for_status()
             file_bytes = img_res.content
-        file_name = f"blog-{int(time.time())}-{random.randint(0, 999)}.png"
 
-        scoped_supabase.storage.from_("blog-images").upload(
-            file_name,
-            file_bytes,
-            {"content-type": "image/png", "upsert": "false"},
+        file_name = f"{directory}/blog-{int(time.time())}-{random.randint(0, 999)}.png"
+        clean_pull_zone = BUNNY_PULL_ZONE.rstrip("/")
+        base_url = f"https://{BUNNY_REGION}storage.bunnycdn.com/{BUNNY_STORAGE_ZONE}/{file_name}"
+
+        print(f"[Blog Storage] ☁️  Uploading blog image to Bunny.net → {file_name}")
+
+        resp = requests.put(
+            base_url,
+            data=file_bytes,
+            headers={
+                "AccessKey": BUNNY_API_KEY,
+                "Content-Type": "image/png",
+            },
+            timeout=60,
         )
 
-        public_url_res = scoped_supabase.storage.from_("blog-images").get_public_url(file_name)
-        return public_url_res if isinstance(public_url_res, str) else image_url
+        if resp.status_code in (200, 201):
+            public_url = f"{clean_pull_zone}/{file_name}"
+            print(f"[Blog Storage] ✅ Blog image uploaded successfully: {public_url}")
+            return public_url
+        else:
+            print(f"[Blog Storage] Bunny.net upload failed ({resp.status_code}): {resp.text}")
+            return image_url
+
     except Exception as e:
-        print(f"[Blog Storage] Image upload failed, using original URL: {e}")
+        print(f"[Blog Storage] Image upload to Bunny.net failed, using original URL: {e}")
         return image_url
+
+
+# Keep old name as an alias so no other callers break
+def upload_image_to_supabase(image_url: str, *args, **kwargs) -> str:
+    """Deprecated alias — delegates to upload_image_to_bunny."""
+    return upload_image_to_bunny(image_url)
 
 
 # ─────────────────────────────────────────────────────────────────────────────
