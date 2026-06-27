@@ -41,16 +41,9 @@ async function ensureOrgAndWallet(userId) {
     if (walletErr) throw walletErr;
 
     if (!wallet) {
-        // Get existing credits balance
-        const { data: creditsRow } = await supabaseAdmin
-            .from('user_credits')
-            .select('balance')
-            .eq('user_id', userId)
-            .maybeSingle();
+        // Seed wallet with 50 starting credits for the client organization
+        const initialBalance = 50;
 
-        const initialBalance = creditsRow?.balance || 500;
-
-        // Seed wallet
         const { data: newWallet, error: insertWalletErr } = await supabaseAdmin
             .from('wallet')
             .insert({
