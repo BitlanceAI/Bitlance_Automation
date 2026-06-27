@@ -337,11 +337,14 @@ class GraphicAgent:
 
             # 3. Helper to get font
             def get_font(font_size):
+                FONTS_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "fonts"))
                 NOTO_DIR = "/usr/share/fonts/truetype/noto"
                 DEJAVU_DIR = "/usr/share/fonts/truetype/dejavu"
                 is_devanagari = any('\u0900' <= c <= '\u097F' for c in (brand_name or ""))
                 if is_devanagari:
                     candidates = [
+                        os.path.join(FONTS_DIR, "NotoSansDevanagari-Bold.ttf"),
+                        os.path.join(FONTS_DIR, "NotoSansDevanagari-Regular.ttf"),
                         os.path.join(NOTO_DIR, "NotoSansDevanagari-Bold.ttf"),
                         os.path.join(NOTO_DIR, "NotoSansDevanagari-Regular.ttf"),
                         os.path.join(NOTO_DIR, "NotoSans-Bold.ttf"),
@@ -349,6 +352,8 @@ class GraphicAgent:
                     ]
                 else:
                     candidates = [
+                        os.path.join(FONTS_DIR, "NotoSans-Bold.ttf"),
+                        os.path.join(FONTS_DIR, "NotoSans-Regular.ttf"),
                         "/usr/share/fonts/truetype/liberation/LiberationSans-Bold.ttf",
                         "/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf",
                         os.path.join(NOTO_DIR, "NotoSans-Bold.ttf"),
