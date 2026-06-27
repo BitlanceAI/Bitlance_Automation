@@ -31,6 +31,17 @@ def _font(name: str, size: int) -> ImageFont.FreeTypeFont:
             return ImageFont.truetype(p, size)
     return ImageFont.load_default()
 
+def _devanagari_font(size: int) -> ImageFont.FreeTypeFont:
+    for name in ["NotoSansDevanagari-Bold.ttf", "NotoSansDevanagari-Medium.ttf", "NotoSansDevanagari-Regular.ttf"]:
+        p = os.path.join(NOTO_DIR, name)
+        if os.path.exists(p):
+            return ImageFont.truetype(p, size)
+    for name in ["NotoSans-Bold.ttf", "NotoSans-Regular.ttf"]:
+        p = os.path.join(NOTO_DIR, name)
+        if os.path.exists(p):
+            return ImageFont.truetype(p, size)
+    return ImageFont.load_default()
+
 
 def overlay_flyer_text(
     b64_string: str,
@@ -83,9 +94,10 @@ def overlay_flyer_text(
         sz_footer   = max(22, int(H * 0.036))
         sz_badge    = max(14, int(H * 0.024))
 
-        fn_black   = lambda s: _font("NotoSans-Black.ttf",   s)
-        fn_bold    = lambda s: _font("NotoSans-Bold.ttf",    s)
-        fn_regular = lambda s: _font("NotoSans-Regular.ttf", s)
+        use_deva = layout.get("_use_devanagari_font", False)
+        fn_black   = lambda s: _devanagari_font(s) if use_deva else _font("NotoSans-Black.ttf",   s)
+        fn_bold    = lambda s: _devanagari_font(s) if use_deva else _font("NotoSans-Bold.ttf",    s)
+        fn_regular = lambda s: _devanagari_font(s) if use_deva else _font("NotoSans-Regular.ttf", s)
 
         y = int(H * 0.04)
 
