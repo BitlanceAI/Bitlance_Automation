@@ -123,6 +123,7 @@ class PromptService:
         details: dict,
         niche: Optional[str] = None,
         trending_keywords: Optional[list[str]] = None,
+        language: Optional[str] = "english",
     ) -> tuple[str, list[str]]:
         """
         Construct an image generation prompt from structured property/business details.
@@ -131,13 +132,14 @@ class PromptService:
             details:           Dict matching PropertyDetailsRequest fields.
             niche:             Override or fallback niche string.
             trending_keywords: Pre-fetched keywords (skip internal fetch if provided).
+            language:          The target language of the flyer text ('english', 'hindi_marathi').
 
         Returns:
             (prompt, trending_keywords_used)
         """
-        logger.info("[PromptService.build_prompt_from_details] details keys=%s", list(details.keys()))
+        logger.info("[PromptService.build_prompt_from_details] details keys=%s, language=%s", list(details.keys()), language)
 
-        language = details.get("language") or "english"
+        language = language or details.get("language") or "english"
         if language == "hindi_marathi":
             try:
                 # Translate details to Hindi/Marathi hybrid in Devanagari

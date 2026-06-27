@@ -100,6 +100,7 @@ def enhance_raw_prompt(
 def build_prompt_from_details(
     details: dict,
     trending_keywords: Optional[list[str]] = None,
+    language: Optional[str] = "english",
 ) -> str:
     """
     Build a detailed image generation prompt from structured property/business details.
@@ -108,6 +109,7 @@ def build_prompt_from_details(
     Args:
         details: A dictionary containing business/property fields like property_type, location, price, phone, etc.
         trending_keywords: Optional pre-fetched list of design motif keywords.
+        language: The target language of the flyer text ('english', 'hindi_marathi').
 
     Returns:
         A JSON string: {"prompt": "...", "trending_keywords": [...]}
@@ -120,6 +122,7 @@ def build_prompt_from_details(
             details=details,
             niche=niche,
             trending_keywords=trending_keywords,
+            language=language or "english",
         )
         logger.info("[Tool: build_prompt_from_details] prompt built successfully.")
         return json.dumps({"prompt": prompt, "trending_keywords": used_keywords})
