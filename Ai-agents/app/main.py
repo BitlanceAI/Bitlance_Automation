@@ -36,6 +36,7 @@ from app.api.blog import router as blog_router
 from app.api.geo_tracker import router as geo_tracker_router
 from app.api.v1 import router as v1_router
 from app.api.v1.graphic import router as graphic_router
+from app.api.social import router as social_router
 
 app = FastAPI(
     title="Bitlance SEO/GEO API",
@@ -71,6 +72,7 @@ app.include_router(blog_router, prefix="/api/blog")
 app.include_router(geo_tracker_router, prefix="/api/geo-tracker")
 app.include_router(v1_router, prefix="/api/v1")
 app.include_router(graphic_router, prefix="/api")
+app.include_router(social_router, prefix="/api/social")
 
 # ==================================================
 # STATIC FILES (Graphic Agent Outputs)

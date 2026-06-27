@@ -127,6 +127,7 @@ export const startPostScheduler = () => {
         }
         checkAndPublishBlogPosts();
         checkAndPublishAutoBlogs();
+        checkAndPublishPostBundles();
     };
 
     // Run immediately on start
@@ -424,4 +425,91 @@ const checkAndPublishBlogPosts = async () => {
         }
     }
 }
+
+const checkAndPublishPostBundles = async () => {
+    try {
+        const now = new Date().toISOString();
+
+        // 1. Fetch approved bundles ready for publishing
+        const { data: bundles, error } = await supabase
+            .from('post_bundles')
+            .select('*, graphic_assets!post_bundles_graphic_asset_id_fkey(file_url)')
+            .eq('status', 'approved')
+            .lte('scheduled_for', now);
+
+        if (error) {
+            if (isHtmlError(error)) {
+                console.warn('⏸  [Scheduler] Supabase connection issue (HTML error received). Skipping Post Bundles fetch.');
+            } else {
+                console.error('❌ [Scheduler] Error fetching post_bundles:', error);
+            }
+            return;
+        }
+
+        if (!bundles || bundles.length === 0) return;
+
+        console.log(`⏰ [Scheduler] Found ${bundles.length} AI Post Bundles ready to publish.`);
+
+        const { decryptData } = await import('../../../utils/encryption.js');
+        const MetaServiceClass = (await import('../social/metaService.js')).default;
+
+        for (const bundle of bundles) {
+            const workspaceId = bundle.workspace_id;
+            const caption = `${bundle.generated_caption}\n\n${(bundle.generated_hashtags || []).join(' ')}`;
+            const mediaUrl = bundle.graphic_assets?.file_url;
+
+            if (!mediaUrl) {
+                console.warn(`⚠️ [Scheduler] Bundle ${bundle.id} missing graphic URL. Skipping.`);
+                await supabase.from('post_bundles').update({ status: 'failed' }).eq('id', bundle.id);
+                continue;
+            }
+
+            // 2. Fetch Meta connection for this workspace
+            const { data: connection, error: connError } = await supabase
+                .from('meta_connections')
+                .select('*')
+                .eq('workspace_id', workspaceId)
+                .eq('is_active', true)
+                .single();
+
+            if (connError || !connection || !connection.pages) {
+                console.warn(`⚠️ [Scheduler] No active Meta connection found for workspace ${workspaceId}.`);
+                await supabase.from('post_bundles').update({ status: 'failed' }).eq('id', bundle.id);
+                continue;
+            }
+
+            // Find an Instagram account
+            const igAccount = connection.pages.find(p => p.platform === 'instagram');
+            if (!igAccount) {
+                console.warn(`⚠️ [Scheduler] No linked Instagram account found for workspace ${workspaceId}.`);
+                await supabase.from('post_bundles').update({ status: 'failed' }).eq('id', bundle.id);
+                continue;
+            }
+
+            // 3. Publish to Instagram
+            try {
+                const accessToken = igAccount.accessToken || decryptData(connection.access_token);
+                const metaService = new MetaServiceClass(accessToken);
+                
+                const result = await metaService.createInstagramPost(igAccount.accountId, caption, mediaUrl);
+
+                if (result.success) {
+                    console.log(`✅ [Scheduler] Bundle ${bundle.id} published to Instagram! (Post ID: ${result.postId})`);
+                    await supabase
+                        .from('post_bundles')
+                        .update({ status: 'published', updated_at: new Date().toISOString() })
+                        .eq('id', bundle.id);
+                } else {
+                    console.error(`❌ [Scheduler] Failed to publish Bundle ${bundle.id}:`, result.error);
+                    await supabase.from('post_bundles').update({ status: 'failed' }).eq('id', bundle.id);
+                }
+            } catch (publishErr) {
+                console.error(`❌ [Scheduler] Crash publishing Bundle ${bundle.id}:`, publishErr.message);
+                await supabase.from('post_bundles').update({ status: 'failed' }).eq('id', bundle.id);
+            }
+        }
+    } catch (error) {
+        console.error('💥 [Scheduler] checkAndPublishPostBundles Critical error:', error);
+    }
+};
 

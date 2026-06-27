@@ -2,6 +2,7 @@ import { supabaseAdmin } from '../../config/supabaseClient.js';
 import axios from 'axios';
 import { createClient } from '@supabase/supabase-js';
 import CreditLedgerService from '../../services/credits/creditLedgerService.js';
+import { uploadBuffer } from '../../utils/bunnyStorage.js';
 import { spawn } from 'child_process';
 import path from 'path';
 import fs from 'fs';
@@ -206,7 +207,7 @@ export const generateFlyer = async (req, res) => {
                 throw new Error(generatedResult.error || 'External service reported failure');
             }
 
-            // 5. Upload Generated Image(s) to Supabase
+            // 5. Upload Generated Image(s) to Bunny.net
             const b64_list = generatedResult.images_base64 || (generatedResult.image_base64 ? [generatedResult.image_base64] : []);
             if (!b64_list.length) {
                 throw new Error('Service did not return any images');
@@ -218,27 +219,15 @@ export const generateFlyer = async (req, res) => {
                 if (!base64Data) continue;
 
                 const fileContent = Buffer.from(base64Data, 'base64');
-                const fileName = `flyer_${designJob.id}_var${i}_${Date.now()}.png`;
+                const fileName = `designs/flyer_${designJob.id}_var${i}_${Date.now()}.png`;
 
-                const { data: uploadData, error: uploadError } = await supabaseAdmin
-                    .storage
-                    .from('designs')
-                    .upload(fileName, fileContent, {
-                        contentType: 'image/png',
-                        upsert: false
-                    });
+                console.log(`☁️  [Design] Uploading variant ${i + 1}/${b64_list.length} to Bunny.net → ${fileName}`);
 
-                if (uploadError) {
-                    console.error(`Upload failed for variant ${i}:`, uploadError);
-                    throw uploadError;
-                }
+                const publicUrl = await uploadBuffer(fileContent, fileName, 'image/png');
 
-                const { data: publicUrlData } = supabaseAdmin
-                    .storage
-                    .from('designs')
-                    .getPublicUrl(fileName);
+                console.log(`✅ [Design] Variant ${i + 1} uploaded successfully: ${publicUrl}`);
 
-                uploadedUrls.push(publicUrlData.publicUrl);
+                uploadedUrls.push(publicUrl);
             }
 
             const flyerUrl = uploadedUrls[0];

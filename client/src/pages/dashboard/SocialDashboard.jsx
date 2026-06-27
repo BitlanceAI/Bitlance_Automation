@@ -1,56 +1,17 @@
-import React, { useState, useRef, useEffect } from 'react';
-import {
-    Send,
-    Calendar,
-    Library,
-    Users,
-    Inbox,
-    BarChart2,
-    MessageSquare,
-    HelpCircle,
-    AlertCircle,
-    MoreVertical,
-    Plus,
-    ChevronLeft,
-    Rocket,
-    TrendingUp,
-    Facebook,
-    Linkedin,
-    Instagram,
-    Edit2,
-    Layers,
-    Sparkles,
-    CalendarCheck,
-    Star,
-    CalendarDays,
-    X,
-    ImageIcon,
-    FileText,
-    Film,
-    Paperclip,
-    MessageCircle,
-    Link2,
-    Copy,
-    Check,
-    ExternalLink,
-    LogOut,
-    Loader2,
-    Download,
-    Eye,
-    RefreshCw,
-    CheckCircle2,
-    XCircle,
-    Clock,
-    Palette,
-    Zap
-} from 'lucide-react';
+import React, { useState, useRef, useEffect } from 'react'; // Force save 6
 import { useAuth } from '../../context/AuthContext';
 import { useWorkspace } from '../../context/WorkspaceContext';
 import { useNavigate } from 'react-router-dom';
-import Logo from '../../assets/logo.webp';
 import API_BASE_URL from '../../config.js';
-import { supabase } from '../../services/supabaseClient';
 import WorkspaceSwitcher from '../../components/workspace/WorkspaceSwitcher';
+import { Menu, Edit2, Layers, Sparkles, CalendarCheck, Star, CalendarDays, Zap } from 'lucide-react';
+
+const XIcon = ({ className }) => (
+    <svg viewBox="0 0 24 24" aria-hidden="true" className={className} fill="currentColor">
+        <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 22.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+    </svg>
+);
+// Import views
 import CalendarView from '../../components/social/CalendarView';
 import AITemplatesView from '../../components/social/AITemplatesView';
 import CreateWithAIView from '../../components/social/CreateWithAIView';
@@ -61,315 +22,232 @@ import UploadCSVView from '../../components/social/UploadCSVView';
 import InboxView from '../../components/social/InboxView';
 import SchedulePostView from '../../components/social/SchedulePostView';
 import GraphicsAIView from '../../components/social/GraphicsAIView';
+import AgentSettingsView from '../../components/social/AgentSettingsView';
+import HumanReviewView from '../../components/social/HumanReviewView';
 
-const XIcon = ({ className }) => (
-    <svg viewBox="0 0 24 24" aria-hidden="true" className={className} fill="currentColor">
-        <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 22.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
-    </svg>
-);
-
-// ─── Graphics AI View is imported from components ─────────
+// Import extracted dashboard components
+import Sidebar from '../../components/social/dashboard/Sidebar';
+import PostComposer from '../../components/social/dashboard/PostComposer';
+import PerformanceStats from '../../components/social/dashboard/PerformanceStats';
+import SocialProfilesView from '../../components/social/dashboard/SocialProfilesView';
+import {
+    AddProfileModal,
+    PostPreviewModal,
+    TrendingTopicsModal,
+    GraphicsAIPickerModal
+} from '../../components/social/dashboard/Modals';
 
 const SocialDashboard = () => {
     const { user, session } = useAuth();
     const { workspaceHeaders, loading: workspaceLoading, activeWorkspace } = useWorkspace();
     const navigate = useNavigate();
+
+    const shareMenuItems = [
+        { id: 'share', icon: Edit2, label: 'Create a Post Manually', description: 'Write, schedule and publish your post directly to your social profiles' },
+        { id: 'upload_csv', icon: Layers, label: 'Upload CSV file', description: 'Bulk schedule posts using a spreadsheet template' },
+        { id: 'create_ai', icon: Sparkles, label: 'Create a Post with AI', description: 'Let AI generate a high-converting post for your audience' },
+        { id: 'plan_weekly', icon: CalendarCheck, label: 'Plan Weekly Posts with AI', description: 'Automatically generate a full week of content' },
+        { id: 'ai_templates', icon: Star, label: 'Use AI Templates', description: 'Start from proven, high-performing post structures' },
+        { id: 'special_days', icon: CalendarDays, label: 'Special Days Posts (AI)', description: 'Create content for upcoming holidays and events' },
+        { id: 'twitter_thread', icon: XIcon, label: 'X (Twitter) Thread Builder', description: 'Craft engaging threads with automatic splitting' },
+        { id: 'smart_schedule', icon: Zap, label: 'Smart Post Scheduler (AI)', description: 'Let AI determine the best times to post' },
+        { id: 'approval_queue', icon: CalendarCheck, label: 'Agent Approval Queue', description: 'Review, edit, and approve AI-generated posts' },
+    ];
+    
+    // UI State
     const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [isShareMenuOpen, setIsShareMenuOpen] = useState(false);
     const [isLibraryMenuOpen, setIsLibraryMenuOpen] = useState(false);
+    const [activeView, setActiveView] = useState('share_menu'); // 'share_menu', 'share', 'profiles', 'calendar', etc.
     const [isAddProfileModalOpen, setIsAddProfileModalOpen] = useState(false);
+    
+    // Data State
     const [connectedProfiles, setConnectedProfiles] = useState([]);
     const [isLoadingProfiles, setIsLoadingProfiles] = useState(true);
-    const [activeView, setActiveView] = useState('share'); // 'share' or 'profiles'
+    const [recentPosts, setRecentPosts] = useState([]);
+    const [stats, setStats] = useState(null);
+    const [statsDays, setStatsDays] = useState(7);
+    const [postSuccessCount, setPostSuccessCount] = useState(0);
 
-    // Post composer state
+    // Post Composer State
     const [postText, setPostText] = useState('');
     const [selectedProfileIds, setSelectedProfileIds] = useState([]);
     const [postVisibility, setPostVisibility] = useState('PUBLIC');
     const [isPosting, setIsPosting] = useState(false);
-    const [postStatus, setPostStatus] = useState(null); // { type: 'success'|'error', message: string }
-    const [isPreviewOpen, setIsPreviewOpen] = useState(false);
-    const [previewStep, setPreviewStep] = useState(1); // 1 = platform select, 2 = preview
-    const [postTargets, setPostTargets] = useState([]); // profiles chosen in step 1
-    const [postSuccessCount, setPostSuccessCount] = useState(0);
-
-    // WhatsApp share (Step 1 optional section)
-    const [waShare, setWaShare] = useState({ enabled: false, mode: 'link', phone: '', sending: false, sent: false, copied: false, opened: false, error: null });
-    // Media attachment: { file: File, preview: string|null, mediaCategory: 'IMAGE'|'VIDEO'|'DOCUMENT' }
+    const [postStatus, setPostStatus] = useState(null);
     const [mediaAttachment, setMediaAttachment] = useState(null);
     const fileInputRef = useRef(null);
 
-    // Recent posts
-    const [recentPosts, setRecentPosts] = useState([]);
-    const [stats, setStats] = useState(null);
-    const [statsDays, setStatsDays] = useState(7);
+    // Preview / Share State
+    const [isPreviewOpen, setIsPreviewOpen] = useState(false);
+    const [previewStep, setPreviewStep] = useState(1);
+    const [postTargets, setPostTargets] = useState([]);
+    const [waShare, setWaShare] = useState({ enabled: false, mode: 'link', phone: '', sending: false, sent: false, copied: false, opened: false, error: null });
 
-    // AI Write
+    // AI Write State
     const [isAiWriteOpen, setIsAiWriteOpen] = useState(false);
     const [aiPrompt, setAiPrompt] = useState('');
     const [aiTone, setAiTone] = useState('professional');
     const [isAiLoading, setIsAiLoading] = useState(false);
     const [aiError, setAiError] = useState(null);
 
-    // Graphics AI Picker
-    const [isGraphicsPickerOpen, setIsGraphicsPickerOpen] = useState(false);
-    const [graphicsJobs, setGraphicsJobs] = useState([]);
-    const [graphicsLoading, setGraphicsLoading] = useState(false);
-
-    // Graphics Generate
+    // AI Graphics Generate State
     const [isGraphicsGenerateOpen, setIsGraphicsGenerateOpen] = useState(false);
     const [graphicsPrompt, setGraphicsPrompt] = useState('');
     const [isGraphicsGenerating, setIsGraphicsGenerating] = useState(false);
+    const [isGraphicsPickerOpen, setIsGraphicsPickerOpen] = useState(false);
+    const [graphicsLoading, setGraphicsLoading] = useState(false);
+    const [graphicsJobs, setGraphicsJobs] = useState([]);
 
-    // Trending Keywords
+    // Trending Modal State
     const [isTrendingModalOpen, setIsTrendingModalOpen] = useState(false);
     const [trendingTopics, setTrendingTopics] = useState([]);
     const [isTrendingLoading, setIsTrendingLoading] = useState(false);
     const [trendingNiche, setTrendingNiche] = useState('technology');
 
     const authToken = session?.access_token;
+    const userName = user?.user_metadata?.full_name || user?.email || 'User';
 
-    // Fetch existing connections and handle OAuth callback
-    React.useEffect(() => {
-        if (!authToken || workspaceLoading) return;
+    useEffect(() => {
+        if (!authToken) return;
+        fetchProfiles();
+        fetchLinkedInStats(7);
+    }, [authToken, postSuccessCount]);
 
-        // Build headers inline — avoids any stale closure on workspaceHeaders
-        const wsId = activeWorkspace?.id ?? null;
-        const authHeaders = {
-            'Authorization': `Bearer ${authToken}`,
-            ...(wsId ? { 'x-workspace-id': wsId } : {})
-        };
+    const fetchProfiles = async () => {
+        setIsLoadingProfiles(true);
+        try {
+            const [linkedinRes, metaRes, twitterRes] = await Promise.all([
+                fetch(`${API_BASE_URL}/api/linkedin/connection`, { headers: { 'Authorization': `Bearer ${authToken}` } }),
+                fetch(`${API_BASE_URL}/api/meta/connection`, { headers: { 'Authorization': `Bearer ${authToken}` } }),
+                fetch(`${API_BASE_URL}/api/twitter/connection`, { headers: { 'Authorization': `Bearer ${authToken}` } })
+            ]);
 
-        const fetchConnections = async () => {
-            try {
-                const [liRes, twRes, metaRes] = await Promise.all([
-                    fetch(`${API_BASE_URL}/api/linkedin/connection`, { headers: authHeaders }),
-                    fetch(`${API_BASE_URL}/api/twitter/connection`, { headers: authHeaders }),
-                    fetch(`${API_BASE_URL}/api/meta/connection`, { headers: authHeaders }),
-                ]);
-                const [liData, twData, metaData] = await Promise.all([liRes.json(), twRes.json(), metaRes.json()]);
+            const [linkedinData, metaData, twitterData] = await Promise.all([
+                linkedinRes.ok ? linkedinRes.json() : null,
+                metaRes.ok ? metaRes.json() : null,
+                twitterRes.ok ? twitterRes.json() : null
+            ]);
 
-                const profiles = [];
-
-                if (liData.connected && liData.profiles?.length > 0) {
-                    profiles.push(...liData.profiles.map(p => ({
-                        platform: 'linkedin',
-                        profileId: p.profileId,
-                        name: p.name,
-                        type: 'LinkedIn Profile',
-                        followers: 'Connected',
-                        avatar: p.profilePicture,
-                    })));
-                }
-
-                if (twData.connected && twData.profiles?.length > 0) {
-                    profiles.push(...twData.profiles.map(p => ({
-                        platform: 'twitter',
-                        profileId: p.twitterUserId,
-                        twitterUserId: p.twitterUserId,
-                        name: p.name,
-                        type: '@' + p.username,
-                        followers: 'Connected',
-                        avatar: p.profilePicture,
-                    })));
-                }
-
-                if (metaData.connected && metaData.profiles?.length > 0) {
-                    profiles.push(...metaData.profiles.map(p => ({
-                        platform: p.platform, // 'facebook' or 'instagram'
-                        profileId: p.profileId,
-                        name: p.name,
-                        type: p.type,
-                        followers: 'Connected',
-                        avatar: p.profilePicture,
-                    })));
-                }
-
-                setConnectedProfiles(profiles);
-            } catch (error) {
-                console.error('Error fetching connections:', error);
-            } finally {
-                setIsLoadingProfiles(false);
-            }
-        };
-
-        const fetchRecentPosts = async () => {
-            try {
-                const res = await fetch(`${API_BASE_URL}/api/linkedin/posts?limit=5`, {
-                    headers: { 'Authorization': `Bearer ${authToken}` }
+            const profiles = [];
+            
+            if (linkedinData?.connected && linkedinData.profiles) {
+                linkedinData.profiles.forEach(p => {
+                    profiles.push({ 
+                        platform: 'linkedin', 
+                        type: 'Personal Profile', 
+                        name: p.name, 
+                        avatar: p.profilePicture, 
+                        followers: '0', 
+                        profileId: p.profileId 
+                    });
                 });
-                const data = await res.json();
-                if (data.success) setRecentPosts(data.posts);
-            } catch { /* non-critical */ }
-        };
-
-        const fetchStats = async (days = 7) => {
-            try {
-                const res = await fetch(`${API_BASE_URL}/api/linkedin/stats?days=${days}`, {
-                    headers: { 'Authorization': `Bearer ${authToken}` }
-                });
-                const data = await res.json();
-                if (data.success) setStats(data.stats);
-            } catch { /* non-critical */ }
-        };
-        window._fetchLinkedInStats = fetchStats;
-        fetchStats(7);
-
-        const handleOAuthCallback = async () => {
-            const urlParams = new URLSearchParams(window.location.search);
-            const code = urlParams.get('code');
-            const state = urlParams.get('state');
-
-            if (code && state && state.startsWith('linkedin_connect')) {
-                window.history.replaceState({}, document.title, window.location.pathname);
-                setIsLoadingProfiles(true);
-
-                try {
-                    const response = await fetch(`${API_BASE_URL}/api/linkedin/connect`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json', ...authHeaders },
-                        body: JSON.stringify({ code })
-                    });
-                    const data = await response.json();
-                    if (data.success) {
-                        await fetchConnections();
-                        setIsAddProfileModalOpen(false);
-                    } else {
-                        alert(`LinkedIn Connection Failed: ${data.error}`);
-                        fetchConnections();
-                    }
-                } catch (error) {
-                    console.error('Error connecting linkedin:', error);
-                    alert('Error connecting LinkedIn account');
-                    fetchConnections();
-                }
-            } else if (code && state && state.startsWith('twitter_connect')) {
-                window.history.replaceState({}, document.title, window.location.pathname);
-                setIsLoadingProfiles(true);
-
-                try {
-                    const response = await fetch(`${API_BASE_URL}/api/twitter/connect`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json', ...authHeaders },
-                        body: JSON.stringify({ code, state })
-                    });
-                    const data = await response.json();
-                    if (data.success) {
-                        await fetchConnections();
-                        setIsAddProfileModalOpen(false);
-                    } else {
-                        alert(`Twitter Connection Failed: ${data.error}`);
-                        fetchConnections();
-                    }
-                } catch (error) {
-                    console.error('Error connecting twitter:', error);
-                    alert('Error connecting Twitter/X account');
-                    fetchConnections();
-                }
-            } else if (code && state && state.startsWith('meta_auth')) {
-                window.history.replaceState({}, document.title, window.location.pathname);
-                setIsLoadingProfiles(true);
-
-                try {
-                    const currentUrl = window.location.origin + window.location.pathname;
-                    const response = await fetch(`${API_BASE_URL}/api/meta/connect`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json', ...authHeaders },
-                        body: JSON.stringify({ code, redirect_uri: currentUrl })
-                    });
-                    const data = await response.json();
-                    if (data.success) {
-                        await fetchConnections();
-                        setIsAddProfileModalOpen(false);
-                    } else {
-                        alert(`Meta Connection Failed: ${data.error}`);
-                        fetchConnections();
-                    }
-                } catch (error) {
-                    console.error('Error connecting meta:', error);
-                    alert('Error connecting Meta accounts');
-                    fetchConnections();
-                }
-            } else {
-                fetchConnections();
             }
-        };
-
-        handleOAuthCallback();
-        fetchRecentPosts();
-    }, [authToken, workspaceLoading, activeWorkspace?.id]);
-
-    // Clear profiles instantly when workspace changes so stale data doesn't linger
-    React.useEffect(() => {
-        setConnectedProfiles([]);
-        setSelectedProfileIds([]);
-    }, [activeWorkspace?.id]);
-
-    // Default all connected profiles as post targets when they load
-    React.useEffect(() => {
-        setPostTargets(connectedProfiles);
-    }, [connectedProfiles]);
-
-    const userName = user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'User';
-
-    const linkedinProfiles = connectedProfiles.filter(p => p.platform === 'linkedin');
-
-    const toggleProfileSelection = (profileId) => {
-        setSelectedProfileIds(prev =>
-            prev.includes(profileId) ? prev.filter(id => id !== profileId) : [...prev, profileId]
-        );
+            
+            if (metaData?.connected && metaData.profiles) {
+                metaData.profiles.forEach(p => {
+                    profiles.push({ 
+                        platform: p.platform || 'facebook', 
+                        type: p.type || (p.platform === 'instagram' ? 'Instagram Business' : 'Facebook Page'), 
+                        name: p.name, 
+                        avatar: p.profilePicture, 
+                        followers: '0', 
+                        profileId: p.profileId 
+                    });
+                });
+            }
+            
+            if (twitterData?.connected && twitterData.profiles) {
+                twitterData.profiles.forEach(p => {
+                    profiles.push({ 
+                        platform: 'twitter', 
+                        type: 'X (Twitter) Profile', 
+                        name: p.name, 
+                        username: p.username, 
+                        avatar: p.profilePicture, 
+                        followers: '0', 
+                        profileId: p.twitterUserId 
+                    });
+                });
+            }
+            
+            setConnectedProfiles(profiles);
+        } catch (err) {
+            console.error('Error fetching profiles:', err);
+        } finally {
+            setIsLoadingProfiles(false);
+        }
     };
 
-    const togglePostTarget = (profile) => {
-        const key = profile.profileId || profile.name;
-        setPostTargets(prev => {
-            const exists = prev.find(p => (p.profileId || p.name) === key);
-            return exists ? prev.filter(p => (p.profileId || p.name) !== key) : [...prev, profile];
-        });
+    const fetchLinkedInStats = async (days) => {
+        try {
+            const res = await fetch(`${API_BASE_URL}/api/linkedin/stats?days=${days}`, { headers: { 'Authorization': `Bearer ${authToken}` } });
+            const data = await res.json();
+            if (data.success) {
+                setStats(data.stats);
+                setRecentPosts(data.recentPosts || []);
+            }
+        } catch (err) {
+            console.error('Failed to fetch stats:', err);
+        }
     };
 
-    const isPostTarget = (profile) => {
-        const key = profile.profileId || profile.name;
-        return postTargets.some(p => (p.profileId || p.name) === key);
-    };
+    // Make fetchLinkedInStats available globally for PerformanceStats component
+    window._fetchLinkedInStats = fetchLinkedInStats;
 
     const handleFileSelect = (e) => {
-        const file = e.target.files?.[0];
+        const file = e.target.files[0];
         if (!file) return;
 
-        let mediaCategory = 'IMAGE';
-        if (file.type.startsWith('video/')) mediaCategory = 'VIDEO';
-        else if (file.type === 'application/pdf') mediaCategory = 'DOCUMENT';
+        let category = 'DOCUMENT';
+        if (file.type.startsWith('image/')) category = 'IMAGE';
+        else if (file.type.startsWith('video/')) category = 'VIDEO';
 
-        const preview = (mediaCategory === 'IMAGE') ? URL.createObjectURL(file) : null;
-        setMediaAttachment({ file, preview, mediaCategory });
-        // reset input so same file can be re-selected
-        e.target.value = '';
+        if (category === 'IMAGE') {
+            const reader = new FileReader();
+            reader.onloadend = () => setMediaAttachment({ file, preview: reader.result, mediaCategory: category });
+            reader.readAsDataURL(file);
+        } else {
+            setMediaAttachment({ file, preview: null, mediaCategory: category });
+        }
     };
 
     const removeAttachment = () => {
-        if (mediaAttachment?.preview) URL.revokeObjectURL(mediaAttachment.preview);
         setMediaAttachment(null);
+        if (fileInputRef.current) fileInputRef.current.value = '';
+    };
+
+    const handleDisconnect = async (profile) => {
+        if (!window.confirm(`Are you sure you want to disconnect ${profile.name}?`)) return;
+        try {
+            const res = await fetch(`${API_BASE_URL}/api/${profile.platform}/disconnect`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${authToken}` },
+                body: JSON.stringify(profile.platform === 'facebook' || profile.platform === 'instagram' ? { pageId: profile.id } : {})
+            });
+            const data = await res.json();
+            if (data.success) fetchProfiles();
+            else alert(data.error || `Failed to disconnect ${profile.platform}`);
+        } catch (err) {
+            console.error('Disconnect error:', err);
+            alert('An error occurred while disconnecting');
+        }
     };
 
     const handleAiWrite = async () => {
-        if (!aiPrompt.trim() && !postText.trim()) return;
         setIsAiLoading(true);
         setAiError(null);
         try {
-            const body = aiPrompt.trim()
-                ? { prompt: aiPrompt, tone: aiTone }
-                : { existingText: postText, tone: aiTone };
-
-            const res = await fetch(`${API_BASE_URL}/api/linkedin/ai-write`, {
+            const promptText = postText.trim() ? `Rewrite the following social media post to make it more engaging. Tone: ${aiTone}. Post: "${postText}"` : `Write an engaging social media post about: "${aiPrompt}". Tone: ${aiTone}. Use relevant emojis and hashtags.`;
+            const res = await fetch(`${API_BASE_URL}/api/ai/generate`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${authToken}` },
-                body: JSON.stringify(body),
+                body: JSON.stringify({ prompt: promptText })
             });
             const data = await res.json();
-            if (!data.success) throw new Error(data.error || 'AI write failed');
-            const cleanedText = data.text ? data.text.replace(/\*/g, '') : '';
-            setPostText(cleanedText);
+            if (!res.ok) throw new Error(data.error || 'Failed to generate');
+            setPostText(data.text);
             setIsAiWriteOpen(false);
             setAiPrompt('');
         } catch (err) {
@@ -382,1703 +260,448 @@ const SocialDashboard = () => {
     const handleFetchTrending = async () => {
         setIsTrendingLoading(true);
         try {
-            const res = await fetch(`${API_BASE_URL}/api/linkedin/trending-keywords`, {
+            const res = await fetch(`${API_BASE_URL}/api/ai/generate`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${authToken}` },
-                body: JSON.stringify({ niche: trendingNiche }),
+                body: JSON.stringify({ prompt: `List 5 highly viral and trending topics right now in the "${trendingNiche}" space for social media. Format as JSON array of objects with keys: title, context, hashtags (array of strings).` })
             });
             const data = await res.json();
-            if (data.success) {
-                setTrendingTopics(data.topics || []);
-            } else {
-                alert(data.error || 'Failed to fetch trending keywords');
-            }
+            if (!res.ok) throw new Error();
+            const cleanStr = data.text.replace(/```json/g, '').replace(/```/g, '').trim();
+            const topics = JSON.parse(cleanStr);
+            setTrendingTopics(topics);
         } catch (err) {
-            alert('Error fetching trending keywords: ' + err.message);
+            setTrendingTopics([{ title: `Top 3 AI tools for ${trendingNiche}`, context: `Everyone is talking about how AI is transforming ${trendingNiche}. Let's break down the top tools.`, hashtags: ['AI', trendingNiche.replace(' ', ''), 'Tech'] }]);
         } finally {
             setIsTrendingLoading(false);
         }
     };
 
-    const handlePublish = async () => {
-        if (!postText.trim()) return;
-        const liTargets = postTargets.filter(p => p.platform === 'linkedin');
-        const twTargets = postTargets.filter(p => p.platform === 'twitter');
-        const fbTargets = postTargets.filter(p => p.platform === 'facebook');
-        const igTargets = postTargets.filter(p => p.platform === 'instagram');
+    const handleSendWhatsAppPreview = async () => {
+        if (waShare.phone.length < 10) return;
+        setWaShare(w => ({ ...w, sending: true, error: null }));
+        try {
+            const payload = {
+                to: waShare.phone,
+                message: `*Draft Preview*\n\n${postText}`
+            };
+            if (mediaAttachment && mediaAttachment.mediaCategory === 'IMAGE' && mediaAttachment.preview) {
+                payload.mediaUrl = mediaAttachment.preview;
+                payload.type = 'image';
+            } else {
+                payload.type = 'text';
+            }
 
-        if (liTargets.length === 0 && twTargets.length === 0 && fbTargets.length === 0 && igTargets.length === 0) {
-            setPostStatus({ type: 'error', message: 'No profile selected.' });
-            return;
+            const res = await fetch(`${API_BASE_URL}/api/social/whatsapp/send`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', ...workspaceHeaders },
+                body: JSON.stringify(payload)
+            });
+            const data = await res.json();
+            if (data.success) {
+                setWaShare(w => ({ ...w, sending: false, sent: true }));
+                setTimeout(() => setWaShare(w => ({ ...w, sent: false })), 3000);
+            } else throw new Error(data.error || 'Failed to send WhatsApp preview');
+        } catch (err) {
+            setWaShare(w => ({ ...w, sending: false, error: err.message }));
         }
+    };
 
+    const toggleProfileSelection = (id) => {
+        setSelectedProfileIds(prev => prev.includes(id) ? prev.filter(pId => pId !== id) : [...prev, id]);
+    };
+
+    const isPostTarget = (profile) => {
+        const key = profile.profileId || profile.name;
+        return postTargets.some(p => (p.profileId || p.name) === key);
+    };
+
+    const togglePostTarget = (profile) => {
+        const key = profile.profileId || profile.name;
+        setPostTargets(prev => {
+            const exists = prev.find(p => (p.profileId || p.name) === key);
+            return exists ? prev.filter(p => (p.profileId || p.name) !== key) : [...prev, profile];
+        });
+    };
+
+    const handleGraphicSelect = async (imageUrl) => {
+        try {
+            const res = await fetch(imageUrl);
+            const blob = await res.blob();
+            const file = new File([blob], `ai-graphic-${Date.now()}.jpg`, { type: blob.type });
+            const reader = new FileReader();
+            reader.onloadend = () => setMediaAttachment({ file, preview: reader.result, mediaCategory: 'IMAGE' });
+            reader.readAsDataURL(file);
+            setIsGraphicsPickerOpen(false);
+        } catch (err) {
+            alert('Failed to attach generated image');
+        }
+    };
+
+    const handlePost = async () => {
+        if (!postText.trim() || postTargets.length === 0) return;
         setIsPosting(true);
         setPostStatus(null);
+        let successCount = 0;
+        let errors = [];
 
         try {
-            let globalMediaUrl = null;
-            if (mediaAttachment && (fbTargets.length > 0 || igTargets.length > 0)) {
-                const formData = new FormData();
-                formData.append('file', mediaAttachment.file);
-                const uploadRes = await fetch(`${API_BASE_URL}/api/campaigns/upload`, {
-                    method: 'POST',
-                    headers: { 'Authorization': `Bearer ${authToken}`, ...workspaceHeaders },
-                    body: formData,
-                }).then(r => r.json());
-                
-                if (uploadRes.success) {
-                    globalMediaUrl = uploadRes.url;
-                } else {
-                    throw new Error(uploadRes.error || 'Failed to upload media for Meta posts.');
-                }
-            }
-
-            const results = await Promise.all([
-                // LinkedIn posts (with optional media upload)
-                ...liTargets.map(async (profile) => {
-                    let assetUrn = null;
-                    let mediaCategory = null;
-
-                    if (mediaAttachment) {
-                        const formData = new FormData();
-                        formData.append('file', mediaAttachment.file);
-                        formData.append('profileId', profile.profileId);
-                        formData.append('mediaCategory', mediaAttachment.mediaCategory);
-
-                        const uploadRes = await fetch(`${API_BASE_URL}/api/linkedin/upload-media`, {
+            // 1. Pre-upload media for Meta/Twitter if needed (they need a public URL)
+            let publicMediaUrl = null;
+            if (mediaAttachment && postTargets.some(t => ['facebook', 'instagram', 'twitter'].includes(t.platform))) {
+                if (mediaAttachment.preview && mediaAttachment.preview.startsWith('http')) {
+                    publicMediaUrl = mediaAttachment.preview;
+                } else if (mediaAttachment.file) {
+                    try {
+                        const uploadData = new FormData();
+                        uploadData.append('file', mediaAttachment.file);
+                        const uploadRes = await fetch(`${API_BASE_URL}/api/campaigns/upload`, {
                             method: 'POST',
-                            headers: { 'Authorization': `Bearer ${authToken}`, ...workspaceHeaders },
-                            body: formData,
-                        }).then(r => r.json());
+                            headers: { 'Authorization': `Bearer ${authToken}` },
+                            body: uploadData
+                        });
+                        const uploadJson = await uploadRes.json();
+                        if (uploadJson.success) {
+                            publicMediaUrl = uploadJson.url;
+                        } else {
+                            console.warn("Failed to upload media to public storage:", uploadJson.error);
+                        }
+                    } catch (err) {
+                        console.error("Failed to upload media:", err);
+                    }
+                }
+            }
 
-                        if (!uploadRes.success) return { success: false, error: uploadRes.error };
-                        assetUrn = uploadRes.assetUrn;
-                        mediaCategory = uploadRes.mediaCategory;
+            for (const target of postTargets) {
+                let endpoint = '';
+                let payload = {};
+                let fetchOptions = {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                };
+
+                if (target.platform === 'linkedin') {
+                    endpoint = `${API_BASE_URL}/api/linkedin/post`;
+                    payload = {
+                        profileId: target.profileId || 'urn:li:person:me',
+                        text: postText,
+                        visibility: postVisibility
+                    };
+                    
+                    // LinkedIn needs its own direct upload to get an assetUrn
+                    if (mediaAttachment && mediaAttachment.file) {
+                        try {
+                            const liUploadData = new FormData();
+                            liUploadData.append('file', mediaAttachment.file);
+                            liUploadData.append('profileId', payload.profileId);
+                            liUploadData.append('mediaCategory', mediaAttachment.mediaCategory || 'IMAGE');
+                            
+                            const liUploadRes = await fetch(`${API_BASE_URL}/api/linkedin/upload-media`, {
+                                method: 'POST',
+                                headers: { 'Authorization': `Bearer ${authToken}` },
+                                body: liUploadData
+                            });
+                            const liUploadJson = await liUploadRes.json();
+                            if (liUploadJson.success && liUploadJson.assetUrn) {
+                                payload.assetUrn = liUploadJson.assetUrn;
+                                payload.mediaCategory = liUploadJson.mediaCategory;
+                            }
+                        } catch (err) {
+                            console.error("LinkedIn media upload failed:", err);
+                        }
                     }
 
-                    return fetch(`${API_BASE_URL}/api/linkedin/post`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${authToken}`, ...workspaceHeaders },
-                        body: JSON.stringify({ profileId: profile.profileId, text: postText, visibility: postVisibility, assetUrn, mediaCategory, title: mediaAttachment?.file?.name }),
-                    }).then(r => r.json());
-                }),
-                // Twitter posts (text only, max 280 chars)
-                ...twTargets.map(profile =>
-                    fetch(`${API_BASE_URL}/api/twitter/post`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${authToken}`, ...workspaceHeaders },
-                        body: JSON.stringify({ twitterUserId: profile.twitterUserId, text: postText }),
-                    }).then(r => r.json())
-                ),
-                // Facebook posts
-                ...fbTargets.map(profile =>
-                    fetch(`${API_BASE_URL}/api/meta/post`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${authToken}`, ...workspaceHeaders },
-                        body: JSON.stringify({ accountId: profile.profileId, platform: 'facebook', text: postText, mediaUrl: globalMediaUrl }),
-                    }).then(r => r.json())
-                ),
-                // Instagram posts
-                ...igTargets.map(profile =>
-                    fetch(`${API_BASE_URL}/api/meta/post`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${authToken}`, ...workspaceHeaders },
-                        body: JSON.stringify({ accountId: profile.profileId, platform: 'instagram', text: postText, mediaUrl: globalMediaUrl }),
-                    }).then(r => r.json())
-                ),
-            ]);
+                    fetchOptions.headers['Content-Type'] = 'application/json';
+                    fetchOptions.body = JSON.stringify(payload);
 
-            setIsPosting(false);
+                } else if (target.platform === 'facebook' || target.platform === 'instagram') {
+                    endpoint = `${API_BASE_URL}/api/meta/post`;
+                    payload = {
+                        accountId: target.profileId || target.id,
+                        platform: target.platform,
+                        text: postText
+                    };
+                    
+                    if (publicMediaUrl) {
+                        payload.mediaUrl = publicMediaUrl;
+                    }
+                    
+                    fetchOptions.headers['Content-Type'] = 'application/json';
+                    fetchOptions.body = JSON.stringify(payload);
 
-            const failed = results.filter(r => !r.success);
-            if (failed.length === 0) {
-                const total = postTargets.length;
-                setPostSuccessCount(prev => prev + 1);
-                setPostStatus({ type: 'success', message: `Post published to ${total} profile${total > 1 ? 's' : ''}!` });
-                setPostText('');
-                setSelectedProfileIds([]);
-                removeAttachment();
-                if (liTargets.length > 0) {
-                    fetch(`${API_BASE_URL}/api/linkedin/posts?limit=5`, { headers: { 'Authorization': `Bearer ${authToken}` } })
-                        .then(r => r.json()).then(d => { if (d.success) setRecentPosts(d.posts); }).catch(() => {});
+                } else if (target.platform === 'twitter') {
+                    endpoint = `${API_BASE_URL}/api/twitter/post`;
+                    payload = {
+                        text: postText
+                    };
+                    
+                    // If backend ever supports passing mediaUrl to Twitter, pass it here
+                    if (publicMediaUrl) {
+                        payload.mediaUrl = publicMediaUrl; 
+                    }
+
+                    fetchOptions.headers['Content-Type'] = 'application/json';
+                    fetchOptions.body = JSON.stringify(payload);
                 }
-                setTimeout(() => { setIsPreviewOpen(false); setPostStatus(null); }, 1800);
-            } else {
-                setPostStatus({ type: 'error', message: failed[0].error || 'Failed to publish post.' });
+
+                if (!endpoint) continue;
+
+                const res = await fetch(endpoint, fetchOptions);
+                const data = await res.json();
+                
+                if (data.success || data.id || data.postId) {
+                    successCount++;
+                } else {
+                    errors.push(`${target.platform}: ${data.error || 'Failed'}`);
+                }
+            }
+
+            if (successCount > 0) {
+                setPostStatus({ type: 'success', message: `Successfully posted to ${successCount} profile(s)` });
+                setPostText('');
+                removeAttachment();
+                setPostTargets([]);
+                setIsPreviewOpen(false);
+                setPostSuccessCount(prev => prev + 1);
+            }
+            if (errors.length > 0) {
+                if (successCount === 0) {
+                    setPostStatus({ type: 'error', message: `Failed: ${errors.join(', ')}` });
+                } else {
+                    alert(`Some posts failed:\n${errors.join('\n')}`);
+                }
             }
         } catch (err) {
+            setPostStatus({ type: 'error', message: err.message || 'Failed to publish post' });
+        } finally {
             setIsPosting(false);
-            setPostStatus({ type: 'error', message: err.message || 'Unexpected error.' });
         }
     };
-
-    const sidebarItems = [
-        { icon: Send, label: 'Share a post', view: 'share', path: '/dashboard' },
-        { icon: Calendar, label: 'Calendar', view: 'calendar', path: '#' },
-        { icon: Library, label: 'Libraries', view: null, path: '#' },
-        { icon: Users, label: 'Social profiles', view: 'profiles', path: '#' },
-        { icon: Inbox, label: 'Inbox', view: 'inbox', path: '#' },
-        { icon: BarChart2, label: 'Reports', view: null, path: '#' },
-        { icon: MessageSquare, label: 'DM automations', view: null, path: '#' },
-    ];
-
-    const shareMenuItems = [
-        { id: 'share', icon: Edit2, label: 'Create a Post Manually' },
-        { id: 'upload_csv', icon: Layers, label: 'Upload CSV file' },
-        { divider: true },
-        { id: 'create_ai', icon: Sparkles, label: 'Create a Post with AI' },
-        { id: 'plan_weekly', icon: CalendarCheck, label: 'Plan Weekly Posts with AI' },
-        { id: 'ai_templates', icon: Star, label: 'Use AI Templates' },
-        { id: 'special_days', icon: CalendarDays, label: 'Special Days Posts (AI)' },
-        { divider: true },
-        { id: 'twitter_thread', icon: XIcon, label: 'X (Twitter) Thread Builder' },
-        { divider: true },
-        { id: 'smart_schedule', icon: Zap, label: 'Smart Post Scheduler (AI)' },
-    ];
-
-    const libraryMenuItems = [
-        { id: 'graphics_ai', icon: ImageIcon, label: 'Graphics AI Agent' },
-    ];
-
-    const bottomItems = [
-        { icon: HelpCircle, label: 'Help', path: '#' },
-        { icon: AlertCircle, label: 'Report an Issue', path: '#' },
-    ];
-
-    // ─── Disconnect a profile ────────────────────────────────────────────────
-    const handleDisconnect = async (profile) => {
-        if (!confirm(`Disconnect ${profile.name}?`)) return;
-        try {
-            const endpoint = profile.platform === 'twitter'
-                ? `${API_BASE_URL}/api/twitter/disconnect/${profile.twitterUserId}`
-                : `${API_BASE_URL}/api/linkedin/disconnect/${profile.profileId}`;
-            await fetch(endpoint, { method: 'DELETE', headers: { 'Authorization': `Bearer ${authToken}`, ...workspaceHeaders } });
-            setConnectedProfiles(prev => prev.filter(p => p.profileId !== profile.profileId));
-        } catch (err) {
-            console.error('Disconnect error:', err);
-        }
-    };
-
-    // ─── Reusable profile card (list style, used in Profiles view) ───────────
-    const ProfileListCard = ({ profile }) => (
-        <div className="bg-slate-50 border border-slate-200 rounded-[2px] p-5 flex items-center gap-5 hover:-translate-y-1 hover:shadow-[0_2px_16px_0_rgba(0,0,0,0.4)] hover:border-slate-200 transition-all duration-300">
-            <div className="relative">
-                {profile.avatar ? (
-                    <img src={profile.avatar} alt={profile.name} className="w-14 h-14 rounded-[2px] object-cover border-2 border-slate-200" />
-                ) : (
-                    <div className="w-14 h-14 rounded-[2px] bg-white flex items-center justify-center text-xl font-bold font-mono text-gray-400 border-2 border-slate-200">
-                        {profile.name?.charAt(0)}
-                    </div>
-                )}
-                <div className={`absolute -bottom-2 -right-2 w-6 h-6 rounded-[2px] flex items-center justify-center text-[#070707] shadow-md border-2 border-[#111111] ${profile.platform === 'linkedin' ? 'bg-[#26cece]' : profile.platform === 'twitter' ? 'bg-white' : 'bg-[#26cece]'}`}>
-                    {profile.platform === 'linkedin' ? <Linkedin className="w-3 h-3 fill-current" /> : profile.platform === 'twitter' ? <XIcon className="w-3 h-3" /> : <Facebook className="w-3 h-3 fill-current" />}
-                </div>
-            </div>
-            <div className="flex-1">
-                <h3 className="text-slate-900 font-bold font-['Space_Grotesk'] text-[16px] tracking-tight">{profile.name}</h3>
-                <p className="text-gray-500 font-mono text-[11px] uppercase tracking-widest mt-0.5">{profile.type}</p>
-                <div className="flex items-center gap-4 mt-2">
-                    <span className="text-[10px] uppercase tracking-widest text-gray-400 font-mono flex items-center gap-1.5 bg-white border border-slate-200 rounded-[2px] px-2.5 py-1">
-                        {profile.platform === 'linkedin' ? <Linkedin className="w-3 h-3" /> : profile.platform === 'twitter' ? <XIcon className="w-3 h-3" /> : <Facebook className="w-3 h-3" />}
-                        {profile.followers}
-                    </span>
-                    <span className="text-[10px] uppercase font-mono tracking-widest text-[#26cece] flex items-center gap-1">
-                        <div className="w-1.5 h-1.5 rounded-full bg-[#26cece]"></div>
-                        Active
-                    </span>
-                </div>
-            </div>
-            <button onClick={() => handleDisconnect(profile)} className="text-gray-500 hover:text-red-400 p-2 transition-colors cursor-pointer rounded-[2px] border border-transparent hover:border-red-400 hover:bg-red-400/10" title="Disconnect">
-                <LogOut className="w-4 h-4" />
-            </button>
-        </div>
-    );
-
-    // ─── Reusable profile card (grid style, used in Share/dashboard view) ────
-    const ProfileGridCard = ({ profile }) => (
-        <div className="bg-slate-50 border border-slate-200 rounded-[2px] p-5 flex items-start gap-4 hover:-translate-y-1 hover:shadow-[0_2px_16px_0_rgba(0,0,0,0.4)] hover:border-slate-200 transition-all duration-300">
-            <div className="relative">
-                <div className="w-12 h-12 rounded-[2px] bg-white overflow-hidden shadow-sm flex items-center justify-center text-lg font-bold font-mono text-gray-400 border border-slate-200">
-                    {profile.avatar
-                        ? <img src={profile.avatar} alt={profile.name} className="w-full h-full object-cover" />
-                        : profile.name.charAt(0)
-                    }
-                </div>
-                <div className={`absolute -bottom-2 -right-2 w-5 h-5 rounded-[2px] flex items-center justify-center text-[#070707] shadow-md border-2 border-[#111111] ${profile.platform === 'linkedin' ? 'bg-[#26cece]' : profile.platform === 'twitter' ? 'bg-white' : 'bg-[#26cece]'}`}>
-                    {profile.platform === 'linkedin' ? <Linkedin className="w-2.5 h-2.5 fill-current" /> : profile.platform === 'twitter' ? <XIcon className="w-2.5 h-2.5" /> : <Facebook className="w-2.5 h-2.5 fill-current" />}
-                </div>
-            </div>
-            <div className="flex-1 overflow-hidden">
-                <h3 className="text-slate-900 font-bold font-['Space_Grotesk'] text-[15px] truncate tracking-tight">{profile.name}</h3>
-                <p className="text-gray-500 font-mono uppercase tracking-widest text-[10px] mt-0.5">{profile.type}</p>
-                <div className="flex items-center gap-3 mt-3">
-                    <span className="text-[10px] uppercase font-mono tracking-widest text-gray-400 flex items-center gap-1.5">
-                        <Users className="w-3.5 h-3.5 text-[#26cece]" /> {profile.followers}
-                    </span>
-                </div>
-            </div>
-            <button onClick={() => handleDisconnect(profile)} className="text-gray-500 hover:text-red-400 p-1 ml-auto shrink-0 transition-colors cursor-pointer border border-transparent rounded-[2px] hover:border-red-400 hover:bg-red-400/10" title="Disconnect">
-                <LogOut className="w-4 h-4" />
-            </button>
-        </div>
-    );
-
-    // ─── Shared empty-state illustration ────────────────────────────────────
-    const EmptyIllustration = () => (
-        <div className="relative w-[340px] h-[240px] mb-8 flex justify-center items-center">
-            <div className="absolute top-4 right-14 w-10 h-10 bg-blue-900/30 text-blue-400 rounded-[10px] flex items-center justify-center transform rotate-[15deg] shadow-sm z-10">
-                <Facebook className="w-[20px] h-[20px]" />
-            </div>
-            <div className="absolute top-16 left-12 w-9 h-9 bg-pink-900/30 text-pink-400 rounded-full flex items-center justify-center transform -rotate-[15deg] shadow-sm z-10">
-                <Instagram className="w-[18px] h-[18px]" />
-            </div>
-            <div className="absolute bottom-16 right-6 w-9 h-9 bg-blue-900/30 text-blue-400 rounded-[8px] flex items-center justify-center shadow-sm z-10 scale-90 rotate-[-5deg]">
-                <Linkedin className="w-[18px] h-[18px]" />
-            </div>
-            <div className="absolute top-1/2 left-1/2 -translate-y-1/2 -translate-x-1/2 w-24 h-24 text-indigo-500 flex items-center justify-center z-20 drop-shadow-2xl">
-                <Rocket className="w-20 h-20 fill-current" />
-            </div>
-            <div className="absolute top-[22%] left-0 -translate-x-4 w-[120px] h-[68px] bg-slate-900 border border-slate-800 rounded-xl shadow-[0_8px_30px_rgba(0,0,0,0.5)] p-3 flex flex-col z-20">
-                <div className="text-[10px] text-slate-400 font-bold uppercase mb-0.5 tracking-wider">Conversions</div>
-                <div className="text-[16px] text-indigo-400 font-extrabold flex items-center"><TrendingUp className="w-3.5 h-3.5 mr-1" /> 251K</div>
-                <div className="mt-1.5 w-full bg-slate-800 h-1.5 rounded-full overflow-hidden">
-                    <div className="w-[65%] bg-indigo-500 h-full rounded-full"></div>
-                </div>
-            </div>
-            <div className="absolute bottom-6 right-6 w-[140px] h-[76px] bg-slate-900 border border-slate-800 rounded-xl shadow-[0_8px_30px_rgba(0,0,0,0.5)] p-3.5 flex flex-col z-20">
-                <div className="flex justify-between items-center mb-1">
-                    <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Result</span>
-                    <span className="text-[13px] text-emerald-400 font-extrabold flex items-center"><TrendingUp className="w-3 h-3 mr-0.5" /> 450K</span>
-                </div>
-                <div className="flex-1 w-full bg-slate-800/50 rounded mt-1.5 relative overflow-hidden flex items-end">
-                    <div className="w-full h-[65%] bg-emerald-500 rounded-t-[3px] border-t border-emerald-400"></div>
-                </div>
-            </div>
-        </div>
-    );
 
     return (
-        <div className="flex flex-col h-screen font-sans overflow-hidden bg-white" style={{ color: 'black' }}>
-            <div className="flex flex-1 overflow-hidden">
+        <div className="flex h-screen bg-[#115e59] overflow-hidden text-gray-100 font-sans relative">
+            {/* Mobile menu overlay */}
+            {isMobileMenuOpen && (
+                <div 
+                    className="fixed inset-0 bg-black/50 z-40 md:hidden"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                />
+            )}
 
-                {/* ── Sidebar ─────────────────────────────────────────────── */}
-                <aside className={`flex flex-col bg-slate-50 border-r border-slate-200 transition-all duration-300 relative ${isSidebarCollapsed ? 'w-20' : 'w-64'}`}>
+            <div className={`fixed inset-y-0 left-0 z-50 transform transition-transform duration-300 md:relative md:translate-x-0 ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+                <Sidebar 
+                    isSidebarCollapsed={isSidebarCollapsed}
+                    setIsSidebarCollapsed={setIsSidebarCollapsed}
+                    activeView={activeView}
+                    setActiveView={(view) => {
+                        setActiveView(view);
+                        setIsMobileMenuOpen(false);
+                    }}
+                    userName={userName}
+                    navigate={navigate}
+                    isShareMenuOpen={isShareMenuOpen}
+                    setIsShareMenuOpen={setIsShareMenuOpen}
+                    isLibraryMenuOpen={isLibraryMenuOpen}
+                    setIsLibraryMenuOpen={setIsLibraryMenuOpen}
+                />
+            </div>
 
-                    {/* Logo */}
-                    <div className="h-16 flex items-center px-4 border-b border-slate-200 mt-2">
-                        {!isSidebarCollapsed ? (
-                            <div className="flex items-center gap-2 group">
-                                <img
-                                    src={Logo}
-                                    alt="Bitlance.ai"
-                                    className="h-8 w-auto object-contain transition-transform duration-300 group-hover:scale-105"
-                                    onError={(e) => {
-                                        e.target.style.display = 'none';
-                                        e.target.parentElement.innerHTML = '<span class="text-xl font-bold text-indigo-400">Bitlance</span>';
-                                    }}
-                                />
-                            </div>
-                        ) : (
-                            <div className="flex items-center justify-center w-full">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-indigo-400">
-                                    <path d="M12 8V4H8" /><rect width="16" height="12" x="4" y="8" rx="2" /><path d="M2 14h2" /><path d="M20 14h2" /><path d="M15 13v2" /><path d="M9 13v2" />
-                                </svg>
-                            </div>
-                        )}
-                    </div>
-
-                    {/* Nav items */}
-                    <div className="flex-1 overflow-y-auto py-4 flex flex-col gap-1 px-3" style={{ overflow: 'visible' }}>
-                        {sidebarItems.map((item, index) => (
-                            <div key={index} className="relative">
-                                <button
-                                    onClick={() => {
-                                        if (item.label === 'Share a post') {
-                                            setIsShareMenuOpen(!isShareMenuOpen);
-                                            setIsLibraryMenuOpen(false);
-                                            setActiveView('share');
-                                        } else if (item.label === 'Libraries') {
-                                            setIsLibraryMenuOpen(!isLibraryMenuOpen);
-                                            setIsShareMenuOpen(false);
-                                        } else if (item.view) {
-                                            setActiveView(item.view);
-                                            setIsShareMenuOpen(false);
-                                            setIsLibraryMenuOpen(false);
-                                        } else if (item.path !== '#') {
-                                            navigate(item.path);
-                                            setIsShareMenuOpen(false);
-                                            setIsLibraryMenuOpen(false);
-                                        }
-                                    }}
-                                    className={`flex items-center w-full px-3 py-2.5 rounded-[2px] font-mono text-[12px] uppercase tracking-wider transition-colors ${item.view && activeView === item.view
-                                        ? 'bg-[#26cece]/10 text-[#26cece] border-l-2 border-[#26cece]'
-                                        : 'text-slate-600 hover:bg-[#e8f8f8] hover:text-[#26cece] border-l-2 border-transparent'
-                                        }`}
-                                >
-                                    <item.icon className={`w-[18px] h-[18px] flex-shrink-0 ${isSidebarCollapsed ? 'mx-auto' : 'mr-3'} ${item.view && activeView === item.view ? 'text-[#26cece]' : 'text-slate-500'}`} />
-                                    {!isSidebarCollapsed && <span>{item.label}</span>}
-                                </button>
-
-                                {/* Share post popup */}
-                                {item.label === 'Share a post' && isShareMenuOpen && (
-                                    <>
-                                        <div className="fixed inset-0 z-40" onClick={() => setIsShareMenuOpen(false)} />
-                                        <div className={`absolute top-0 z-50 w-[260px] bg-slate-50 border border-slate-200 shadow-[0_2px_16px_0_rgba(0,0,0,0.4)] rounded-[2px] py-2 ${isSidebarCollapsed ? 'left-[calc(100%+16px)]' : 'left-[calc(100%+8px)]'}`}>
-                                            {shareMenuItems.map((shareItem, idx) =>
-                                                shareItem.divider ? (
-                                                    <div key={idx} className="my-2 border-t border-slate-200" />
-                                                ) : (
-                                                    <button 
-                                                        key={idx} 
-                                                        onClick={() => { setActiveView(shareItem.id); setIsShareMenuOpen(false); }}
-                                                        className={`flex items-center w-full px-4 py-2.5 hover:bg-[#e8f8f8] text-left transition-colors group ${activeView === shareItem.id ? 'bg-[#e8f8f8]' : ''}`}
-                                                    >
-                                                        <shareItem.icon className={`w-[18px] h-[18px] mr-3 transition-colors ${activeView === shareItem.id ? 'text-[#26cece]' : 'text-slate-600 group-hover:text-[#26cece]'}`} />
-                                                        <span className={`text-[13px] font-mono transition-colors ${activeView === shareItem.id ? 'text-[#26cece]' : 'text-slate-600 group-hover:text-[#26cece]'}`}>{shareItem.label}</span>
-                                                    </button>
-                                                )
-                                            )}
-                                        </div>
-                                    </>
-                                )}
-
-                                {/* Libraries popup */}
-                                {item.label === 'Libraries' && isLibraryMenuOpen && (
-                                    <>
-                                        <div className="fixed inset-0 z-40" onClick={() => setIsLibraryMenuOpen(false)} />
-                                        <div className={`absolute top-0 z-50 w-[260px] bg-slate-50 border border-slate-200 shadow-[0_2px_16px_0_rgba(0,0,0,0.4)] rounded-[2px] py-2 ${isSidebarCollapsed ? 'left-[calc(100%+16px)]' : 'left-[calc(100%+8px)]'}`}>
-                                            {libraryMenuItems.map((libItem, idx) =>
-                                                libItem.divider ? (
-                                                    <div key={idx} className="my-2 border-t border-slate-200" />
-                                                ) : (
-                                                    <button 
-                                                        key={idx} 
-                                                        onClick={() => { 
-                                                            setActiveView(libItem.id); 
-                                                            setIsLibraryMenuOpen(false); 
-                                                        }}
-                                                        className={`flex items-center w-full px-4 py-2.5 hover:bg-[#e8f8f8] text-left transition-colors group ${activeView === libItem.id ? 'bg-[#e8f8f8]' : ''}`}
-                                                    >
-                                                        <libItem.icon className={`w-[18px] h-[18px] mr-3 transition-colors ${activeView === libItem.id ? 'text-[#26cece]' : 'text-slate-600 group-hover:text-[#26cece]'}`} />
-                                                        <span className={`text-[13px] font-mono transition-colors ${activeView === libItem.id ? 'text-[#26cece]' : 'text-slate-600 group-hover:text-[#26cece]'}`}>{libItem.label}</span>
-                                                    </button>
-                                                )
-                                            )}
-                                        </div>
-                                    </>
-                                )}
-                            </div>
-                        ))}
-
-                        <div className="my-2 border-t border-slate-200 w-8 mx-auto" />
-
-                        {bottomItems.map((item, index) => (
-                            <button key={index} className="flex items-center w-full px-3 py-2.5 rounded-[2px] text-[12px] font-mono uppercase tracking-wider text-slate-600 hover:bg-[#e8f8f8] hover:text-[#26cece] transition-colors">
-                                <item.icon className={`w-[18px] h-[18px] flex-shrink-0 ${isSidebarCollapsed ? 'mx-auto' : 'mr-3'} text-slate-500`} />
-                                {!isSidebarCollapsed && <span>{item.label}</span>}
-                            </button>
-                        ))}
-                    </div>
-
-                    {/* User profile */}
-                    <div className="p-3 border-t border-slate-200">
-                        <button className="flex items-center w-full p-2.5 rounded-[2px] hover:bg-[#e8f8f8] transition-colors">
-                            <div className="w-8 h-8 rounded-full bg-white border border-slate-200 flex items-center justify-center text-slate-500 flex-shrink-0">
-                                <Users className="w-4 h-4" />
-                            </div>
-                            {!isSidebarCollapsed && (
-                                <>
-                                    <span className="ml-3 text-[13px] font-mono text-slate-600 truncate">{userName}</span>
-                                    <MoreVertical className="w-4 h-4 ml-auto text-slate-500" />
-                                </>
-                            )}
+            <div className="flex-1 flex flex-col min-w-0">
+                <header className="h-16 border-b border-[#222] bg-[#115e59] flex items-center justify-between px-4 md:px-6 shrink-0 relative z-10">
+                    <div className="flex items-center gap-4">
+                        <button 
+                            className="md:hidden text-white hover:text-[#26cece] transition-colors"
+                            onClick={() => setIsMobileMenuOpen(true)}
+                        >
+                            <Menu className="w-6 h-6" />
                         </button>
-                    </div>
-
-                    {/* Collapse toggle */}
-                    <button
-                        onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
-                        className="absolute right-0 top-16 translate-x-1/2 z-10 bg-slate-50 border border-slate-200 rounded-full p-0.5 text-[#26cece] hover:text-[#1fb8b8] shadow-[2px_2px_0_0_#26cece] transition-transform hover:scale-110"
-                    >
-                        <ChevronLeft className={`w-[14px] h-[14px] transition-transform ${isSidebarCollapsed ? 'rotate-180' : ''}`} />
-                    </button>
-                </aside>
-
-                {/* ── Main content ─────────────────────────────────────────── */}
-                <main className="flex-1 flex flex-col relative w-full h-full overflow-y-auto bg-white">
-
-                    {/* Workspace switcher bar */}
-                    <div className="flex items-center justify-end px-5 py-2.5 border-b border-slate-200 bg-white shrink-0">
                         <WorkspaceSwitcher />
                     </div>
+                </header>
 
-                    {activeView === 'profiles' ? (
-                        /* ── PROFILES VIEW ─────────────────────────────────── */
-                        <div className="flex-1 p-8 bg-white overflow-y-auto w-full">
-                            <div className="max-w-4xl mx-auto space-y-8">
-                                <div className="flex justify-between items-center">
-                                    <div>
-                                        <h2 className="text-2xl font-bold font-['Space_Grotesk'] text-slate-900 uppercase tracking-tight">Social Profiles</h2>
-                                        <p className="text-sm font-mono text-gray-500 mt-1 uppercase tracking-widest">Manage your connected social accounts</p>
-                                    </div>
-                                    <button
-                                        onClick={() => setIsAddProfileModalOpen(true)}
-                                        className="bg-[#26cece] text-[#070707] border border-transparent px-5 py-2.5 rounded-[2px] font-bold font-['Space_Grotesk'] uppercase tracking-widest hover:bg-[#1fb8b8] hover:-translate-y-1 transition-all duration-200 flex items-center"
-                                    >
-                                        <Plus className="w-4 h-4 mr-2" /> Add Profile
-                                    </button>
-                                </div>
-
-                                {connectedProfiles.length === 0 ? (
-                                    <div className="flex flex-col items-center justify-center py-20 bg-slate-50 border border-slate-200 rounded-[2px]">
-                                        <div className="w-16 h-16 bg-white border border-slate-200 rounded-[2px] flex items-center justify-center mb-4">
-                                            <Users className="w-8 h-8 text-[#26cece]" />
-                                        </div>
-                                        <h3 className="text-xl font-bold font-['Space_Grotesk'] text-slate-900 uppercase tracking-tight mb-2">No profiles connected yet</h3>
-                                        <p className="text-sm font-sans text-gray-400 mb-6 text-center max-w-sm">Connect your LinkedIn or Facebook account to start managing your social media.</p>
-                                        <button
-                                            onClick={() => setIsAddProfileModalOpen(true)}
-                                            className="bg-[#26cece] text-[#070707] px-5 py-2.5 rounded-[2px] font-bold font-['Space_Grotesk'] uppercase tracking-widest hover:bg-[#1fb8b8] hover:-translate-y-1 transition-all duration-200 flex items-center"
-                                        >
-                                            <Plus className="w-4 h-4 mr-2" /> Connect a profile
-                                        </button>
-                                    </div>
-                                ) : (
-                                    <div className="space-y-4">
-                                        {connectedProfiles.map((profile, idx) => (
-                                            <ProfileListCard key={idx} profile={profile} />
-                                        ))}
-                                    </div>
-                                )}
+                <main className="flex-1 overflow-auto bg-transparent relative custom-scrollbar">
+                    {/* Render different views based on state */}
+                    {activeView === 'calendar' && <CalendarView />}
+                    {activeView === 'create_ai' && <CreateWithAIView />}
+                    {activeView === 'plan_weekly' && <PlanWeeklyAIView />}
+                    {activeView === 'special_days' && <SpecialDaysAIView />}
+                    {activeView === 'ai_templates' && <AITemplatesView />}
+                    {activeView === 'upload_csv' && <UploadCSVView />}
+                    {activeView === 'twitter_thread' && <TwitterThreadBuilderView />}
+                    {activeView === 'smart_schedule' && <SchedulePostView />}
+                    {activeView === 'inbox' && <InboxView />}
+                    { activeView === 'graphics_ai' && <GraphicsAIView /> }
+                    { activeView === 'agent_settings' && <AgentSettingsView setActiveView={setActiveView} /> }
+                    { activeView === 'approval_queue' && <HumanReviewView /> }
+                    
+                    {activeView === 'share_menu' && (
+                        <div className="p-8 max-w-[1200px] mx-auto flex flex-col h-full overflow-y-auto">
+                            <div className="mb-10 text-center relative">
+                                <h1 className="text-3xl md:text-4xl font-bold font-['Space_Grotesk'] text-white tracking-tight uppercase mb-3">Create a Post</h1>
+                                <p className="text-teal-50/80 font-mono tracking-widest text-sm uppercase">Choose how you want to create your content</p>
+                                
+                                <button 
+                                    onClick={() => setActiveView('agent_settings')}
+                                    className="absolute right-0 top-1/2 -translate-y-1/2 hidden md:flex items-center gap-2 px-4 py-2 bg-[#26cece]/10 text-[#26cece] hover:bg-[#26cece]/20 border border-[#26cece]/30 rounded-xl font-mono text-xs uppercase tracking-wider transition-colors"
+                                >
+                                    <Sparkles className="w-4 h-4" />
+                                    Agent Settings
+                                </button>
                             </div>
-                        </div>
+                            
+                            <div className="md:hidden flex justify-center mb-8">
+                                <button 
+                                    onClick={() => setActiveView('agent_settings')}
+                                    className="flex items-center gap-2 px-4 py-2 bg-[#26cece]/10 text-[#26cece] hover:bg-[#26cece]/20 border border-[#26cece]/30 rounded-xl font-mono text-xs uppercase tracking-wider transition-colors"
+                                >
+                                    <Sparkles className="w-4 h-4" />
+                                    Agent Settings
+                                </button>
+                            </div>
 
-                    ) : connectedProfiles.length === 0 ? (
-                        /* ── SHARE VIEW — empty state ───────────────────────── */
-                        <div className="flex-1 flex flex-col items-center justify-center p-8 bg-white">
-                            <EmptyIllustration />
-                            <h3 className="text-[28px] leading-[36px] font-bold font-['Space_Grotesk'] text-slate-900 mb-3 text-center tracking-tight uppercase">
-                                You haven&apos;t connected any social profiles<br />yet.
-                            </h3>
-                            <p className="text-[15px] text-gray-400 font-sans text-center mb-8 max-w-[440px] leading-relaxed">
-                                Connect your Meta or LinkedIn account to start boosting your posts with Paid Ads.
-                            </p>
-                            <button
-                                onClick={() => setIsAddProfileModalOpen(true)}
-                                className="bg-[#26cece] text-[#070707] px-6 py-3 rounded-[2px] font-bold font-['Space_Grotesk'] uppercase tracking-widest hover:bg-[#1fb8b8] hover:-translate-y-1 transition-all duration-200 flex items-center"
-                            >
-                                <Plus className="w-[20px] h-[20px] mr-2" />
-                                Add social profiles
-                            </button>
-                        </div>
-
-                    ) : activeView === 'calendar' ? (
-                        <CalendarView />
-                    ) : activeView === 'upload_csv' ? (
-                        <UploadCSVView />
-                    ) : activeView === 'create_ai' ? (
-                        <CreateWithAIView />
-                    ) : activeView === 'plan_weekly' ? (
-                        <PlanWeeklyAIView />
-                    ) : activeView === 'ai_templates' ? (
-                        <AITemplatesView />
-                    ) : activeView === 'special_days' ? (
-                        <SpecialDaysAIView />
-                    ) : activeView === 'twitter_thread' ? (
-                        <TwitterThreadBuilderView />
-                    ) : activeView === 'inbox' ? (
-                        <InboxView />
-                    ) : activeView === 'graphics_ai' ? (
-                        <GraphicsAIView />
-                    ) : activeView === 'smart_schedule' ? (
-                        <SchedulePostView 
-                            connectedProfiles={connectedProfiles}
-                            setPostText={setPostText}
-                            setMediaAttachment={setMediaAttachment}
-                            setIsPreviewOpen={setIsPreviewOpen}
-                            setPostTargets={setPostTargets}
-                            setPreviewStep={setPreviewStep}
-                            postSuccessCount={postSuccessCount}
-                        />
-                    ) : (
-                        /* ── SHARE VIEW — dashboard ─────────────────────────── */
-                        <div className="flex-1 p-8 bg-white overflow-y-auto w-full">
-                            <div className="max-w-5xl mx-auto space-y-8">
-
-                                {/* Connected profiles grid */}
-                                <div>
-                                    <div className="flex justify-between items-center mb-5">
-                                        <h2 className="text-xl font-bold font-['Space_Grotesk'] text-slate-900 uppercase tracking-tight">Connected Profiles</h2>
-                                        <button
-                                            onClick={() => setIsAddProfileModalOpen(true)}
-                                            className="text-[12px] text-[#26cece] hover:text-[#1fb8b8] font-mono uppercase tracking-widest bg-[#26cece]/10 hover:bg-[#26cece]/20 border border-transparent hover:border-[#26cece]/30 px-3.5 py-2 rounded-[2px] transition-colors flex items-center gap-1.5"
-                                        >
-                                            <Plus className="w-[14px] h-[14px]" /> Add another
-                                        </button>
-                                    </div>
-                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                        {connectedProfiles.map((profile, idx) => (
-                                            <ProfileGridCard key={idx} profile={profile} />
-                                        ))}
-                                    </div>
-                                </div>
-
-                                {/* Create post */}
-                                <div className="bg-slate-50 border border-slate-200 rounded-[2px] p-6 shadow-[0_4px_24px_0_rgba(0,0,0,0.4)]">
-                                    <h2 className="text-[16px] font-bold font-['Space_Grotesk'] tracking-tight text-slate-900 mb-4 uppercase flex items-center gap-2">
-                                        <Sparkles className="w-5 h-5 text-[#26cece]" />
-                                        Create a new post
-                                    </h2>
-
-                                    {/* Profile selector */}
-                                    {linkedinProfiles.length > 1 && (
-                                        <div className="mb-4 flex flex-wrap gap-2">
-                                            {linkedinProfiles.map(profile => {
-                                                const isSelected = selectedProfileIds.length === 0 || selectedProfileIds.includes(profile.profileId);
-                                                return (
-                                                    <button
-                                                        key={profile.profileId}
-                                                        onClick={() => toggleProfileSelection(profile.profileId)}
-                                                        className={`flex items-center gap-2 px-3 py-1.5 rounded-[2px] font-mono text-[11px] uppercase tracking-widest border transition-all cursor-pointer ${isSelected ? 'bg-[#26cece]/10 border-[#26cece] text-[#26cece]' : 'bg-white border-slate-200 text-gray-500 hover:text-slate-900 hover:border-slate-200'}`}
-                                                    >
-                                                        <Linkedin className="w-3.5 h-3.5" />
-                                                        {profile.name}
-                                                    </button>
-                                                );
-                                            })}
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                                {shareMenuItems.map((item, idx) => (
+                                    <button
+                                        key={idx}
+                                        onClick={() => setActiveView(item.id)}
+                                        className="flex flex-col items-center justify-center text-center gap-4 p-6 rounded-2xl bg-white/5 border border-white/10 hover:border-[#26cece]/50 hover:bg-white/10 hover:-translate-y-1 hover:shadow-[0_8px_24px_rgba(38,206,206,0.15)] transition-all duration-300 group"
+                                    >
+                                        <div className="w-14 h-14 rounded-full bg-[#26cece]/10 flex items-center justify-center group-hover:bg-[#26cece]/20 transition-colors shrink-0">
+                                            <item.icon className="w-7 h-7 text-[#26cece]" />
                                         </div>
-                                    )}
-
-                                    <div className="border border-slate-200 bg-white rounded-[2px] p-4 focus-within:border-[#26cece] transition-all">
-                                        <textarea
-                                            value={postText}
-                                            onChange={e => { setPostText(e.target.value); setPostStatus(null); }}
-                                            placeholder="What do you want to share with your audience?"
-                                            className="w-full bg-transparent border-none text-slate-900 resize-none focus:outline-none min-h-[120px] text-[15px] placeholder:text-gray-600 font-sans"
-                                        />
-
-                                        {/* Attachment preview */}
-                                        {mediaAttachment && (
-                                            <div className="mt-3 relative inline-flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-[2px] px-3 py-2 max-w-full">
-                                                {mediaAttachment.mediaCategory === 'IMAGE' && mediaAttachment.preview ? (
-                                                    <img src={mediaAttachment.preview} alt="preview" className="w-12 h-12 rounded-[2px] object-cover shrink-0" />
-                                                ) : mediaAttachment.mediaCategory === 'VIDEO' ? (
-                                                    <Film className="w-8 h-8 text-[#26cece] shrink-0" />
-                                                ) : (
-                                                    <FileText className="w-8 h-8 text-[#26cece] shrink-0" />
-                                                )}
-                                                <div className="flex-1 min-w-0">
-                                                    <p className="text-slate-900 text-[11px] font-mono tracking-widest truncate">{mediaAttachment.file.name}</p>
-                                                    <p className="text-gray-500 font-mono text-[10px] tracking-widest uppercase">{mediaAttachment.mediaCategory} · {(mediaAttachment.file.size / 1024 / 1024).toFixed(1)} MB</p>
-                                                </div>
-                                                <button onClick={removeAttachment} className="ml-1 text-gray-500 hover:text-red-400 transition-colors shrink-0 cursor-pointer">
-                                                    <X className="w-4 h-4" />
-                                                </button>
-                                            </div>
-                                        )}
-
-                                        {/* AI Write panel */}
-                                        {isAiWriteOpen && (
-                                            <div className="mt-3 p-3 bg-[#26cece]/5 border border-[#26cece]/20 rounded-[2px] space-y-3">
-                                                <div className="flex items-center gap-2 text-[#26cece] font-mono uppercase tracking-widest text-[11px]">
-                                                    <Sparkles className="w-3.5 h-3.5" />
-                                                    {postText.trim() ? 'Rewrite with AI' : 'Generate with AI'}
-                                                </div>
-
-                                                {!postText.trim() && (
-                                                    <textarea
-                                                        value={aiPrompt}
-                                                        onChange={e => setAiPrompt(e.target.value)}
-                                                        placeholder="What do you want to post about? (e.g. product launch, industry insight, career win…)"
-                                                        className="w-full bg-white border border-slate-200 text-slate-900 rounded-[2px] p-2.5 text-[13px] font-sans resize-none focus:outline-none focus:border-[#26cece] min-h-[72px] placeholder:text-gray-600"
-                                                    />
-                                                )}
-                                                {postText.trim() && (
-                                                    <p className="text-[10px] font-mono tracking-widest uppercase text-[#26cece]">Your current draft will be improved and rewritten.</p>
-                                                )}
-
-                                                <div className="flex items-center gap-2">
-                                                    <span className="text-[10px] font-mono tracking-widest text-gray-500 shrink-0 uppercase">Tone:</span>
-                                                    {['professional', 'casual', 'inspiring', 'witty'].map(t => (
-                                                        <button
-                                                            key={t}
-                                                            onClick={() => setAiTone(t)}
-                                                            className={`px-2.5 py-1 rounded-[2px] font-mono text-[10px] uppercase tracking-widest border transition-all cursor-pointer ${aiTone === t ? 'bg-[#26cece]/10 border-[#26cece] text-[#26cece]' : 'bg-white border-slate-200 text-gray-500 hover:text-slate-900 hover:border-slate-200'}`}
-                                                        >
-                                                            {t}
-                                                        </button>
-                                                    ))}
-                                                </div>
-
-                                                {aiError && (
-                                                    <p className="text-[12px] font-mono text-red-500">✕ {aiError}</p>
-                                                )}
-
-                                                <div className="flex gap-2 justify-end mt-2">
-                                                    <button
-                                                        onClick={() => { setIsAiWriteOpen(false); setAiPrompt(''); setAiError(null); }}
-                                                        className="px-3 py-1.5 text-gray-500 hover:text-slate-900 rounded-[2px] font-mono text-[11px] uppercase tracking-widest hover:bg-[#333] transition-colors cursor-pointer"
-                                                    >
-                                                        Cancel
-                                                    </button>
-                                                    <button
-                                                        onClick={handleAiWrite}
-                                                        disabled={isAiLoading || (!aiPrompt.trim() && !postText.trim())}
-                                                        className="px-4 py-1.5 bg-[#26cece] hover:bg-white disabled:opacity-50 disabled:cursor-not-allowed text-[#070707] font-bold font-['Space_Grotesk'] uppercase tracking-widest text-[12px] rounded-[2px] flex items-center gap-1.5 transition-colors cursor-pointer"
-                                                    >
-                                                        {isAiLoading ? (
-                                                            <><span className="w-3 h-3 border-2 border-[#070707]/30 border-t-[#070707] rounded-full animate-spin" /> Generating...</>
-                                                        ) : (
-                                                            <><Sparkles className="w-3.5 h-3.5" /> Generate</>
-                                                        )}
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        )}
-
-                                        {/* Graphics Generate panel */}
-                                        {isGraphicsGenerateOpen && (
-                                            <div className="mt-3 p-3 bg-[#26cece]/5 border border-[#26cece]/20 rounded-[2px] space-y-3">
-                                                <div className="flex items-center gap-2 text-[#26cece] font-mono uppercase tracking-widest text-[11px]">
-                                                    <Palette className="w-3.5 h-3.5" />
-                                                    Generate Image with AI
-                                                </div>
-
-                                                <textarea
-                                                    value={graphicsPrompt}
-                                                    onChange={e => setGraphicsPrompt(e.target.value)}
-                                                    placeholder="Describe the image you want to generate (e.g. A futuristic city skyline at sunset)..."
-                                                    className="w-full bg-white border border-slate-200 text-slate-900 rounded-[2px] p-2.5 text-[13px] font-sans resize-none focus:outline-none focus:border-[#26cece] min-h-[72px] placeholder:text-gray-600"
-                                                />
-
-                                                <div className="flex gap-2 justify-end mt-2">
-                                                    <button
-                                                        onClick={() => { setIsGraphicsGenerateOpen(false); setGraphicsPrompt(''); }}
-                                                        className="px-3 py-1.5 text-gray-500 hover:text-slate-900 rounded-[2px] font-mono text-[11px] uppercase tracking-widest hover:bg-[#333] transition-colors cursor-pointer"
-                                                    >
-                                                        Cancel
-                                                    </button>
-                                                    <button
-                                                        onClick={async () => {
-                                                            if (!graphicsPrompt.trim()) return;
-                                                            setIsGraphicsGenerating(true);
-                                                            try {
-                                                                const res = await fetch(`${API_BASE_URL}/api/design/generate-from-prompt`, {
-                                                                    method: 'POST',
-                                                                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${authToken}` },
-                                                                    body: JSON.stringify({ prompt: graphicsPrompt, image_size: '1024x1024', image_quality: 'low' })
-                                                                });
-                                                                const data = await res.json();
-                                                                if (!res.ok) throw new Error(data.error || 'Failed to generate image');
-                                                                
-                                                                setIsGraphicsGenerateOpen(false);
-                                                                setGraphicsPrompt('');
-                                                                
-                                                                // Open the picker
-                                                                setIsGraphicsPickerOpen(true);
-                                                                setGraphicsLoading(true);
-                                                                try {
-                                                                    const resJobs = await fetch(`${API_BASE_URL}/api/design/jobs`, {
-                                                                        headers: { 'Authorization': `Bearer ${authToken}` }
-                                                                    });
-                                                                    const dataJobs = await resJobs.json();
-                                                                    setGraphicsJobs(dataJobs.jobs || []);
-                                                                } catch { /* non-critical */ } finally {
-                                                                    setGraphicsLoading(false);
-                                                                }
-                                                            } catch (err) {
-                                                                alert(err.message);
-                                                            } finally {
-                                                                setIsGraphicsGenerating(false);
-                                                            }
-                                                        }}
-                                                        disabled={isGraphicsGenerating || !graphicsPrompt.trim()}
-                                                        className="px-4 py-1.5 bg-[#26cece] hover:bg-white disabled:opacity-50 disabled:cursor-not-allowed text-[#070707] font-bold font-['Space_Grotesk'] uppercase tracking-widest text-[12px] rounded-[2px] flex items-center gap-1.5 transition-colors cursor-pointer"
-                                                    >
-                                                        {isGraphicsGenerating ? (
-                                                            <><span className="w-3 h-3 border-2 border-[#070707]/30 border-t-[#070707] rounded-full animate-spin" /> Generating...</>
-                                                        ) : (
-                                                            <><Sparkles className="w-3.5 h-3.5" /> Generate</>
-                                                        )}
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        )}
-
-                                        {/* Twitter char counter */}
-                                        {connectedProfiles.some(p => p.platform === 'twitter') && (
-                                            <div className={`mt-2 text-right text-[12px] font-mono tracking-widest uppercase ${postText.length > 280 ? 'text-[#FF4A4A]' : postText.length > 240 ? 'text-[#FFCA4A]' : 'text-gray-600'}`}>
-                                                <XIcon className="inline w-3 h-3 mr-1 opacity-70" />
-                                                {postText.length}/280{postText.length > 280 && ' · over limit for tweet'}
-                                            </div>
-                                        )}
-
-                                        <div className="flex justify-between items-center mt-3 pt-3 border-t border-slate-200">
-                                            <div className="flex gap-1 items-center">
-                                                <button
-                                                    onClick={() => { setIsAiWriteOpen(v => !v); setIsGraphicsGenerateOpen(false); setAiError(null); }}
-                                                    className={`p-2 rounded-[2px] transition-colors cursor-pointer flex items-center gap-1.5 text-[11px] font-mono uppercase tracking-widest border border-transparent ${isAiWriteOpen ? 'bg-[#26cece]/10 text-[#26cece] border-[#26cece]' : 'text-gray-400 hover:text-slate-900 hover:border-slate-200 hover:bg-slate-50'}`}
-                                                >
-                                                    <Sparkles className="w-4 h-4" /> AI Write
-                                                </button>
-                                                
-                                                <button
-                                                    onClick={() => { setIsGraphicsGenerateOpen(v => !v); setIsAiWriteOpen(false); }}
-                                                    className={`p-2 rounded-[2px] transition-colors cursor-pointer flex items-center gap-1.5 text-[11px] font-mono uppercase tracking-widest border border-transparent ${isGraphicsGenerateOpen ? 'bg-[#26cece]/10 text-[#26cece] border-[#26cece]' : 'text-gray-400 hover:text-slate-900 hover:border-slate-200 hover:bg-slate-50'}`}
-                                                >
-                                                    <Palette className="w-4 h-4" /> <span className="hidden sm:inline">Generate Image</span>
-                                                </button>
-                                                
-                                                <button
-                                                    onClick={() => { setIsTrendingModalOpen(true); handleFetchTrending(); }}
-                                                    className="p-2 text-gray-400 hover:text-[#26cece] rounded-[2px] transition-colors cursor-pointer flex items-center gap-1.5 text-[11px] font-mono uppercase tracking-widest border border-transparent hover:border-slate-200 hover:bg-slate-50"
-                                                >
-                                                    <TrendingUp className="w-4 h-4" /> Trends
-                                                </button>
-
-                                                {/* Attach file button */}
-                                                <input
-                                                    ref={fileInputRef}
-                                                    type="file"
-                                                    accept="image/jpeg,image/png,image/gif,image/webp,video/mp4,video/quicktime,application/pdf"
-                                                    className="hidden"
-                                                    onChange={handleFileSelect}
-                                                />
-                                                <button
-                                                    onClick={() => fileInputRef.current?.click()}
-                                                    title="Attach image, video or PDF"
-                                                    className="p-2 text-gray-500 hover:text-slate-900 rounded-[2px] transition-colors cursor-pointer flex items-center gap-1.5 hover:bg-slate-50 hover:shadow-[2px_2px_0_0_#333]"
-                                                >
-                                                    <Paperclip className="w-4 h-4" />
-                                                </button>
-
-                                                {/* Import from Graphics AI */}
-                                                <button
-                                                    onClick={async () => {
-                                                        setIsGraphicsPickerOpen(true);
-                                                        setGraphicsLoading(true);
-                                                        try {
-                                                            const res = await fetch(`${API_BASE_URL}/api/design/jobs`, {
-                                                                headers: { 'Authorization': `Bearer ${authToken}` }
-                                                            });
-                                                            const data = await res.json();
-                                                            setGraphicsJobs(data.jobs || []);
-                                                        } catch { /* non-critical */ } finally {
-                                                            setGraphicsLoading(false);
-                                                        }
-                                                    }}
-                                                    title="Import image from Graphics AI"
-                                                    className="p-2 text-gray-500 hover:text-[#26cece] rounded-[2px] transition-colors cursor-pointer flex items-center gap-1.5 hover:bg-slate-50 font-mono text-[11px] uppercase tracking-widest border border-transparent hover:border-slate-200"
-                                                >
-                                                    <ImageIcon className="w-4 h-4" />
-                                                    <span className="hidden sm:inline">AI Art</span>
-                                                </button>
-
-                                                {/* Visibility toggle */}
-                                                <select
-                                                    value={postVisibility}
-                                                    onChange={e => setPostVisibility(e.target.value)}
-                                                    className="bg-slate-50 border border-slate-200 text-gray-400 font-mono text-[10px] uppercase tracking-widest rounded-[2px] px-2.5 py-1.5 focus:outline-none focus:border-[#26cece] cursor-pointer"
-                                                >
-                                                    <option value="PUBLIC">Public</option>
-                                                    <option value="CONNECTIONS">Connections only</option>
-                                                </select>
-                                            </div>
-                                            <button
-                                                onClick={() => {
-                                                    setPostStatus(null);
-                                                    setPreviewStep(1);
-                                                    setWaShare({ enabled: false, mode: 'link', phone: '', sending: false, sent: false, copied: false, opened: false, error: null });
-                                                    setIsPreviewOpen(true);
-                                                }}
-                                                disabled={!postText.trim() || postTargets.length === 0}
-                                                className="bg-[#26cece] text-[#070707] px-5 py-2.5 rounded-[2px] font-bold font-['Space_Grotesk'] uppercase tracking-widest hover:bg-white hover:-translate-y-1 hover:shadow-[4px_4px_0_0_#333] transition-all duration-200 flex items-center disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:hover:shadow-none"
-                                            >
-                                                <Send className="w-4 h-4 mr-2" /> Preview & Publish
-                                            </button>
+                                        <div>
+                                            <h3 className="text-[15px] font-bold font-['Space_Grotesk'] text-white mb-2">{item.label}</h3>
+                                            <p className="text-[11px] font-mono text-white/50 leading-relaxed group-hover:text-white/70 transition-colors line-clamp-3">{item.description}</p>
                                         </div>
-                                    </div>
-
-                                    {/* Platform / profile selection */}
-                                    <div className="mt-5 flex flex-wrap items-center gap-2">
-                                        <span className="text-[10px] font-mono tracking-widest text-gray-500 uppercase shrink-0">Post to:</span>
-                                        {connectedProfiles.map(profile => {
-                                            const selected = isPostTarget(profile);
-                                            const activeStyle = 'bg-[#26cece]/10 border-[#26cece] text-[#26cece]';
-                                            const inactiveStyle = 'bg-white border-slate-200 text-gray-500 hover:text-slate-900 hover:border-slate-200';
-                                            return (
-                                                <button
-                                                    key={profile.profileId || profile.name}
-                                                    onClick={() => togglePostTarget(profile)}
-                                                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-[2px] font-mono uppercase tracking-widest text-[11px] border transition-all cursor-pointer ${selected ? activeStyle : inactiveStyle}`}
-                                                >
-                                                    {profile.platform === 'linkedin' && <Linkedin className="w-3 h-3" />}
-                                                    {profile.platform === 'twitter' && <XIcon className="w-3 h-3" />}
-                                                    {profile.platform === 'facebook' && <Facebook className="w-3 h-3" />}
-                                                    {profile.platform === 'instagram' && <Instagram className="w-3 h-3" />}
-                                                    <span className="truncate max-w-[100px]">{profile.name}</span>
-                                                    {selected && <Check className="w-3 h-3 shrink-0" />}
-                                                </button>
-                                            );
-                                        })}
-                                        {postTargets.length === 0 && (
-                                            <span className="text-[10px] font-mono tracking-widest text-[#FFCA4A] uppercase">Select at least one profile</span>
-                                        )}
-                                    </div>
-
-                                    {/* Status message */}
-                                    {postStatus && (
-                                        <div className={`mt-3 px-4 py-3 rounded-[2px] font-mono text-[11px] uppercase tracking-widest flex items-center gap-2 ${postStatus.type === 'success' ? 'bg-[#26cece]/10 border border-[#26cece] text-[#26cece]' : 'bg-[#FF4A4A]/10 border border-[#FF4A4A] text-[#FF4A4A]'}`}>
-                                            {postStatus.type === 'success' ? '✓' : '✕'} {postStatus.message}
-                                        </div>
-                                    )}
-                                </div>
-
-                                {/* Stats grid */}
-                                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                                    <div className="bg-slate-50 border border-slate-200 rounded-[2px] p-6 shadow-[0_2px_16px_0_rgba(0,0,0,0.4)]">
-                                        <div className="flex items-center justify-between mb-6 border-b border-slate-200 pb-3">
-                                            <h3 className="text-[15px] font-bold font-['Space_Grotesk'] tracking-tight text-slate-900 uppercase flex items-center gap-2">
-                                                <CalendarDays className="w-4 h-4 text-gray-500" /> Recent Posts
-                                            </h3>
-                                            <button className="text-[11px] font-mono tracking-widest text-[#26cece] uppercase hover:text-slate-900 transition-colors cursor-pointer">View all</button>
-                                        </div>
-                                        {recentPosts.length === 0 ? (
-                                            <div className="flex flex-col items-center justify-center py-8 text-center bg-white border border-slate-200 rounded-[2px]">
-                                                <div className="w-10 h-10 bg-slate-50 border border-slate-200 rounded-[2px] flex items-center justify-center mb-3">
-                                                    <Send className="w-4 h-4 text-[#26cece]" />
-                                                </div>
-                                                <p className="font-mono text-[11px] tracking-widest uppercase text-gray-500 px-4">No posts yet. Publish your first post above.</p>
-                                            </div>
-                                        ) : (
-                                            <div className="space-y-3">
-                                                {recentPosts.map((post) => (
-                                                    <div key={post.id} className="flex gap-3 p-3.5 rounded-[2px] border border-slate-200 bg-white hover:border-slate-200 hover:-translate-y-1 hover:shadow-[4px_4px_0_0_#333] transition-all duration-300">
-                                                        <div className={`w-9 h-9 rounded-[2px] border border-slate-200 shrink-0 flex items-center justify-center text-slate-900 ${post.media_category === 'IMAGE' ? 'bg-[#26cece]/10' : post.media_category === 'VIDEO' ? 'bg-[#26cece]/10' : post.media_category === 'DOCUMENT' ? 'bg-[#26cece]/10' : 'bg-[#26cece]/10'}`}>
-                                                            {post.media_category === 'VIDEO' ? <Film className="w-4 h-4 text-[#26cece]" /> : post.media_category === 'DOCUMENT' ? <FileText className="w-4 h-4 text-[#26cece]" /> : post.media_category === 'IMAGE' ? <ImageIcon className="w-4 h-4 text-[#26cece]" /> : <Linkedin className="w-4 h-4 text-[#26cece]" />}
-                                                        </div>
-                                                        <div className="flex-1 min-w-0">
-                                                            <p className="text-[11px] font-mono tracking-widest text-slate-900 leading-snug line-clamp-2">{post.text}</p>
-                                                            <div className="flex items-center gap-2 mt-2">
-                                                                <span className="text-[10px] font-mono uppercase tracking-widest text-gray-500">{new Date(post.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
-                                                                <span className="text-gray-700">·</span>
-                                                                <span className={`text-[10px] font-mono tracking-widest uppercase ${post.visibility === 'PUBLIC' ? 'text-[#26cece]' : 'text-gray-400'}`}>{post.visibility === 'PUBLIC' ? '🌐 Public' : '🔒 Connections'}</span>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        )}
-                                    </div>
-
-                                    <div className="bg-slate-50 border border-slate-200 rounded-[2px] p-6 shadow-[0_2px_16px_0_rgba(0,0,0,0.4)]">
-                                        <div className="flex items-center justify-between mb-5 border-b border-slate-200 pb-3">
-                                            <h3 className="text-[15px] font-bold font-['Space_Grotesk'] tracking-tight text-slate-900 uppercase flex items-center gap-2">
-                                                <BarChart2 className="w-4 h-4 text-gray-500" /> Performance Overview
-                                            </h3>
-                                            <select
-                                                value={statsDays}
-                                                onChange={e => {
-                                                    const d = Number(e.target.value);
-                                                    setStatsDays(d);
-                                                    window._fetchLinkedInStats?.(d);
-                                                }}
-                                                className="bg-white border border-slate-200 font-mono uppercase tracking-widest text-gray-400 text-[10px] rounded-[2px] px-2.5 py-1.5 focus:outline-none focus:border-[#26cece] cursor-pointer"
-                                            >
-                                                <option value={7}>Last 7 days</option>
-                                                <option value={30}>Last 30 days</option>
-                                            </select>
-                                        </div>
-
-                                        {!stats ? (
-                                            <div className="grid grid-cols-2 gap-4 animate-pulse">
-                                                {[1,2,3,4].map(i => <div key={i} className="h-20 bg-white border border-slate-200 rounded-[2px]" />)}
-                                            </div>
-                                        ) : (
-                                            <>
-                                                <div className="grid grid-cols-2 gap-3 mb-4">
-                                                    {/* Posts this period */}
-                                                    <div className="p-4 rounded-[2px] border border-slate-200 bg-white hover:border-slate-200 transition-colors">
-                                                        <div className="text-[10px] font-mono tracking-widest text-gray-500 uppercase mb-1">Posts Published</div>
-                                                        <div className="text-2xl font-bold font-['Space_Grotesk'] tracking-tight text-slate-900">{stats.periodPosts}</div>
-                                                        <div className={`flex items-center text-[10px] font-mono tracking-widest uppercase mt-2 ${stats.periodPct === null ? 'text-gray-500' : stats.periodPct >= 0 ? 'text-[#26cece]' : 'text-[#FF4A4A]'}`}>
-                                                            <TrendingUp className="w-3 h-3 mr-1" />
-                                                            {stats.periodPct === null ? 'No previous data' : `${stats.periodPct > 0 ? '+' : ''}${stats.periodPct}% vs prev`}
-                                                        </div>
-                                                    </div>
-                                                    {/* Total all time */}
-                                                    <div className="p-4 rounded-[2px] border border-slate-200 bg-white hover:border-slate-200 transition-colors">
-                                                        <div className="text-[10px] font-mono tracking-widest text-gray-500 uppercase mb-1">Total Posts</div>
-                                                        <div className="text-2xl font-bold font-['Space_Grotesk'] tracking-tight text-slate-900">{stats.totalPosts}</div>
-                                                        <div className="text-[10px] font-mono tracking-widest uppercase text-gray-500 mt-2">All time</div>
-                                                    </div>
-                                                    {/* Public vs Connections */}
-                                                    <div className="p-4 rounded-[2px] border border-slate-200 bg-white hover:border-slate-200 transition-colors">
-                                                        <div className="text-[10px] font-mono tracking-widest text-gray-500 uppercase mb-2">Visibility</div>
-                                                        <div className="flex items-center gap-2">
-                                                            <span className="text-[11px] font-mono text-[#26cece]">🌐 {stats.publicPosts}</span>
-                                                            <span className="text-gray-600">·</span>
-                                                            <span className="text-[11px] font-mono text-gray-400">🔒 {stats.connectionPosts}</span>
-                                                        </div>
-                                                        <div className="text-[10px] font-mono uppercase tracking-widest text-gray-500 mt-2">Public · Conn</div>
-                                                    </div>
-                                                    {/* Media vs text */}
-                                                    <div className="p-4 rounded-[2px] border border-slate-200 bg-white hover:border-slate-200 transition-colors">
-                                                        <div className="text-[10px] font-mono tracking-widest text-gray-500 uppercase mb-2">Post Type</div>
-                                                        <div className="flex items-center gap-2">
-                                                            <span className="text-[11px] font-mono text-slate-900">📎 {stats.withMedia}</span>
-                                                            <span className="text-gray-600">·</span>
-                                                            <span className="text-[11px] font-mono text-gray-400">📝 {stats.textOnly}</span>
-                                                        </div>
-                                                        <div className="text-[10px] font-mono uppercase tracking-widest text-gray-500 mt-2">Media · Text</div>
-                                                    </div>
-                                                </div>
-
-                                                {/* Spark bar chart */}
-                                                {stats.byDay?.length > 0 && (
-                                                    <div className="bg-white border border-slate-200 rounded-[2px] p-4">
-                                                        <div className="text-[10px] font-mono tracking-widest uppercase text-gray-500 mb-2">Posts per day</div>
-                                                        <div className="flex items-end gap-1 h-10">
-                                                            {stats.byDay.map(({ date, count }) => {
-                                                                const max = Math.max(...stats.byDay.map(d => d.count), 1);
-                                                                const h = Math.max((count / max) * 100, count > 0 ? 15 : 4);
-                                                                return (
-                                                                    <div key={date} className="flex-1 flex flex-col items-center gap-0.5 group relative">
-                                                                        <div
-                                                                            className={`w-full rounded-sm transition-all border border-slate-200 ${count > 0 ? 'bg-[#26cece] hover:bg-white border-none' : 'bg-slate-50'}`}
-                                                                            style={{ height: `${h}%` }}
-                                                                        />
-                                                                        <div className="absolute -top-6 left-1/2 -translate-x-1/2 bg-[#26cece] text-[#070707] text-[10px] font-mono px-1.5 py-0.5 rounded-[2px] opacity-0 group-hover:opacity-100 whitespace-nowrap pointer-events-none z-10 font-bold uppercase">
-                                                                            {date.slice(5)}: {count}
-                                                                        </div>
-                                                                    </div>
-                                                                );
-                                                            })}
-                                                        </div>
-                                                    </div>
-                                                )}
-                                            </>
-                                        )}
-                                    </div>
-                                </div>
-
+                                    </button>
+                                ))}
                             </div>
                         </div>
                     )}
 
+                    {activeView === 'profiles' && (
+                        <SocialProfilesView 
+                            connectedProfiles={connectedProfiles} 
+                            setIsAddProfileModalOpen={setIsAddProfileModalOpen} 
+                            handleDisconnect={handleDisconnect} 
+                        />
+                    )}
+
+                    {activeView === 'share' && (
+                        <div className="p-8 max-w-[1400px] mx-auto flex flex-col h-full overflow-y-auto">
+                            <div className="mb-8">
+                                <h1 className="text-3xl font-bold font-['Space_Grotesk'] text-gray-100 tracking-tight uppercase">Social Dashboard</h1>
+                                <p className="text-gray-400 font-mono mt-2 tracking-widest text-sm uppercase">Manage and publish content across your networks</p>
+                            </div>
+
+                            <div className="grid grid-cols-1 xl:grid-cols-[1fr_400px] gap-8">
+                                <PostComposer 
+                                    linkedinProfiles={connectedProfiles.filter(p => p.platform === 'linkedin')}
+                                    connectedProfiles={connectedProfiles}
+                                    selectedProfileIds={selectedProfileIds}
+                                    toggleProfileSelection={toggleProfileSelection}
+                                    postText={postText}
+                                    setPostText={setPostText}
+                                    setPostStatus={setPostStatus}
+                                    mediaAttachment={mediaAttachment}
+                                    removeAttachment={removeAttachment}
+                                    isAiWriteOpen={isAiWriteOpen}
+                                    setIsAiWriteOpen={setIsAiWriteOpen}
+                                    aiPrompt={aiPrompt}
+                                    setAiPrompt={setAiPrompt}
+                                    aiTone={aiTone}
+                                    setAiTone={setAiTone}
+                                    aiError={aiError}
+                                    setAiError={setAiError}
+                                    handleAiWrite={handleAiWrite}
+                                    isAiLoading={isAiLoading}
+                                    isGraphicsGenerateOpen={isGraphicsGenerateOpen}
+                                    setIsGraphicsGenerateOpen={setIsGraphicsGenerateOpen}
+                                    graphicsPrompt={graphicsPrompt}
+                                    setGraphicsPrompt={setGraphicsPrompt}
+                                    isGraphicsGenerating={isGraphicsGenerating}
+                                    setIsGraphicsGenerating={setIsGraphicsGenerating}
+                                    setIsGraphicsPickerOpen={setIsGraphicsPickerOpen}
+                                    setGraphicsLoading={setGraphicsLoading}
+                                    setGraphicsJobs={setGraphicsJobs}
+                                    setIsTrendingModalOpen={setIsTrendingModalOpen}
+                                    handleFetchTrending={handleFetchTrending}
+                                    fileInputRef={fileInputRef}
+                                    handleFileSelect={handleFileSelect}
+                                    postVisibility={postVisibility}
+                                    setPostVisibility={setPostVisibility}
+                                    setPreviewStep={setPreviewStep}
+                                    setWaShare={setWaShare}
+                                    setIsPreviewOpen={setIsPreviewOpen}
+                                    postTargets={postTargets}
+                                    togglePostTarget={togglePostTarget}
+                                    isPostTarget={isPostTarget}
+                                    postStatus={postStatus}
+                                    authToken={authToken}
+                                />
+                                
+                                <div>
+                                    <PerformanceStats 
+                                        recentPosts={recentPosts}
+                                        stats={stats}
+                                        statsDays={statsDays}
+                                        setStatsDays={setStatsDays}
+                                    />
+                                </div>
+                            </div>
+                        </div>
+                    )}
                 </main>
             </div>
 
-            {/* ── Add Profile Modal ────────────────────────────────────────── */}
-            {isAddProfileModalOpen && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-                    <div
-                        className="absolute inset-0 bg-white/90 backdrop-blur-sm"
-                        onClick={() => setIsAddProfileModalOpen(false)}
-                    />
-                    <div className="relative bg-slate-50 border border-slate-200 rounded-[2px] shadow-[0_8px_32px_0_rgba(0,0,0,0.6)] w-full max-w-sm overflow-hidden z-10 animate-in fade-in zoom-in-95 duration-200">
-                        <div className="px-5 py-4 border-b border-slate-200 flex justify-between items-center bg-slate-50">
-                            <h3 className="text-[14px] font-bold font-['Space_Grotesk'] uppercase tracking-widest text-[#26cece]">Connect Profile</h3>
-                            <button
-                                onClick={() => setIsAddProfileModalOpen(false)}
-                                className="text-gray-500 hover:text-slate-900 transition-colors cursor-pointer"
-                            >
-                                <X className="w-5 h-5" />
-                            </button>
-                        </div>
-                        <div className="p-5 space-y-3">
-                            {/* Facebook */}
-                            <button
-                                onClick={async () => {
-                                    try {
-                                        const currentUrl = window.location.origin + window.location.pathname;
-                                        const response = await fetch(`${API_BASE_URL}/api/meta/oauth/url?redirect_uri=${encodeURIComponent(currentUrl)}`, {
-                                            headers: { 'Authorization': `Bearer ${authToken}` }
-                                        });
-                                        const data = await response.json();
-                                        if (data.success && data.url) {
-                                            window.location.href = data.url;
-                                        } else {
-                                            alert(data.error || 'Failed to get Meta auth URL');
-                                        }
-                                    } catch (err) {
-                                        console.error('Meta connect init error:', err);
-                                        alert('Failed to initiate Meta connection');
-                                    }
-                                }}
-                                className="w-full flex items-center gap-4 p-4 rounded-[2px] border border-slate-200 bg-white hover:border-slate-200 hover:-translate-y-1 hover:shadow-[4px_4px_0_0_#333] transition-all group cursor-pointer text-left"
-                            >
-                                <div className="w-10 h-10 rounded-[2px] border border-slate-200 bg-[#26cece]/10 flex items-center justify-center text-[#26cece] shrink-0">
-                                    <Facebook className="w-5 h-5 fill-current" />
-                                </div>
-                                <div className="flex-1">
-                                    <div className="text-[13px] font-mono tracking-widest text-slate-900 uppercase group-hover:text-[#26cece]">Facebook</div>
-                                    <div className="text-[10px] font-mono tracking-widest text-gray-500 uppercase mt-1">Connect page or group</div>
-                                </div>
-                                <Plus className="w-5 h-5 text-gray-500 group-hover:text-slate-900" />
-                            </button>
+            <AddProfileModal 
+                isAddProfileModalOpen={isAddProfileModalOpen}
+                setIsAddProfileModalOpen={setIsAddProfileModalOpen}
+                authToken={authToken}
+            />
+            
+            <PostPreviewModal 
+                isPreviewOpen={isPreviewOpen}
+                setIsPreviewOpen={setIsPreviewOpen}
+                previewStep={previewStep}
+                setPreviewStep={setPreviewStep}
+                postTargets={postTargets}
+                setPostTargets={setPostTargets}
+                connectedProfiles={connectedProfiles}
+                postText={postText}
+                mediaAttachment={mediaAttachment}
+                postVisibility={postVisibility}
+                isPosting={isPosting}
+                handlePost={handlePost}
+                postSuccessCount={postSuccessCount}
+                waShare={waShare}
+                setWaShare={setWaShare}
+                handleSendWhatsAppPreview={handleSendWhatsAppPreview}
+            />
 
-                            {/* Instagram */}
-                            <button
-                                onClick={async () => {
-                                    try {
-                                        const currentUrl = window.location.origin + window.location.pathname;
-                                        const response = await fetch(`${API_BASE_URL}/api/meta/oauth/url?redirect_uri=${encodeURIComponent(currentUrl)}`, {
-                                            headers: { 'Authorization': `Bearer ${authToken}` }
-                                        });
-                                        const data = await response.json();
-                                        if (data.success && data.url) {
-                                            window.location.href = data.url;
-                                        } else {
-                                            alert(data.error || 'Failed to get Meta auth URL');
-                                        }
-                                    } catch (err) {
-                                        console.error('Meta connect init error:', err);
-                                        alert('Failed to initiate Meta connection');
-                                    }
-                                }}
-                                className="w-full flex items-center gap-4 p-4 rounded-[2px] border border-slate-200 bg-white hover:border-slate-200 hover:-translate-y-1 hover:shadow-[4px_4px_0_0_#333] transition-all group cursor-pointer text-left"
-                            >
-                                <div className="w-10 h-10 rounded-[2px] border border-slate-200 bg-[#26cece]/10 flex items-center justify-center text-[#26cece] shrink-0">
-                                    <Instagram className="w-5 h-5 fill-current" />
-                                </div>
-                                <div className="flex-1">
-                                    <div className="text-[13px] font-mono tracking-widest text-slate-900 uppercase group-hover:text-[#26cece]">Instagram</div>
-                                    <div className="text-[10px] font-mono tracking-widest text-gray-500 uppercase mt-1">Connect Instagram Business</div>
-                                </div>
-                                <Plus className="w-5 h-5 text-gray-500 group-hover:text-slate-900" />
-                            </button>
+            <TrendingTopicsModal 
+                isTrendingModalOpen={isTrendingModalOpen}
+                setIsTrendingModalOpen={setIsTrendingModalOpen}
+                isTrendingLoading={isTrendingLoading}
+                trendingTopics={trendingTopics}
+                trendingNiche={trendingNiche}
+                setTrendingNiche={setTrendingNiche}
+                handleFetchTrending={handleFetchTrending}
+                setPostText={setPostText}
+                setIsAiWriteOpen={setIsAiWriteOpen}
+                setAiPrompt={setAiPrompt}
+            />
 
-                            {/* LinkedIn */}
-                            <button
-                                onClick={async () => {
-                                    try {
-                                        const response = await fetch(`${API_BASE_URL}/api/linkedin/oauth/url`, {
-                                            headers: { 'Authorization': `Bearer ${authToken}` }
-                                        });
-                                        const data = await response.json();
-                                        if (data.success && data.url) {
-                                            window.location.href = data.url;
-                                        } else {
-                                            alert(data.error || 'Failed to get LinkedIn auth URL');
-                                        }
-                                    } catch (err) {
-                                        console.error('LinkedIn connect init error:', err);
-                                        alert('Failed to initiate LinkedIn connection');
-                                    }
-                                }}
-                                className="w-full flex items-center gap-4 p-4 rounded-[2px] border border-slate-200 bg-white hover:border-slate-200 hover:-translate-y-1 hover:shadow-[4px_4px_0_0_#333] transition-all group cursor-pointer text-left"
-                            >
-                                <div className="w-10 h-10 rounded-[2px] border border-slate-200 bg-[#26cece]/10 flex items-center justify-center text-[#26cece] shrink-0">
-                                    <Linkedin className="w-5 h-5 fill-current" />
-                                </div>
-                                <div className="flex-1">
-                                    <div className="text-[13px] font-mono tracking-widest text-slate-900 uppercase group-hover:text-[#26cece]">LinkedIn</div>
-                                    <div className="text-[10px] font-mono tracking-widest text-gray-500 uppercase mt-1">Connect profile or page</div>
-                                </div>
-                                <Plus className="w-5 h-5 text-gray-500 group-hover:text-slate-900" />
-                            </button>
+            <GraphicsAIPickerModal 
+                isGraphicsPickerOpen={isGraphicsPickerOpen}
+                setIsGraphicsPickerOpen={setIsGraphicsPickerOpen}
+                graphicsLoading={graphicsLoading}
+                graphicsJobs={graphicsJobs}
+                handleGraphicSelect={handleGraphicSelect}
+            />
 
-                            {/* X (Twitter) */}
-                            <button
-                                onClick={async () => {
-                                    try {
-                                        const response = await fetch(`${API_BASE_URL}/api/twitter/oauth/url`, {
-                                            headers: { 'Authorization': `Bearer ${authToken}` }
-                                        });
-                                        const data = await response.json();
-                                        if (data.success && data.url) {
-                                            window.location.href = data.url;
-                                        } else {
-                                            alert(data.error || 'Failed to get Twitter auth URL');
-                                        }
-                                    } catch (err) {
-                                        console.error('Twitter connect init error:', err);
-                                        alert('Failed to initiate Twitter/X connection');
-                                    }
-                                }}
-                                className="w-full flex items-center gap-4 p-4 rounded-[2px] border border-slate-200 bg-white hover:border-slate-200 hover:-translate-y-1 hover:shadow-[4px_4px_0_0_#333] transition-all group cursor-pointer text-left"
-                            >
-                                <div className="w-10 h-10 rounded-[2px] border border-slate-200 bg-[#26cece]/10 flex items-center justify-center text-[#26cece] shrink-0">
-                                    <XIcon className="w-5 h-5" />
-                                </div>
-                                <div className="flex-1">
-                                    <div className="text-[13px] font-mono tracking-widest text-slate-900 uppercase group-hover:text-[#26cece]">X (Twitter)</div>
-                                    <div className="text-[10px] font-mono tracking-widest text-gray-500 uppercase mt-1">Connect your X account</div>
-                                </div>
-                                <Plus className="w-5 h-5 text-gray-500 group-hover:text-slate-900" />
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
-
-            {/* ── Post Modal (2-step) ───────────────────────────────────────── */}
-            {isPreviewOpen && (() => {
-                const platformMeta = {
-                    linkedin: { label: 'LinkedIn', color: '#0A66C2', bg: 'bg-[#0A66C2]', ring: 'ring-[#0A66C2]/40', icon: <Linkedin className="w-4 h-4 fill-current" /> },
-                    facebook: { label: 'Facebook', color: '#1877F2', bg: 'bg-[#1877F2]', ring: 'ring-[#1877F2]/40', icon: <Facebook className="w-4 h-4 fill-current text-white" /> },
-                    instagram: { label: 'Instagram', color: '#E1306C', bg: 'bg-[#E1306C]', ring: 'ring-[#E1306C]/40', icon: <Instagram className="w-4 h-4 text-white" /> },
-                    twitter: { label: 'X (Twitter)', color: '#000000', bg: 'bg-black', ring: 'ring-black/40', icon: <XIcon className="w-4 h-4 text-white" /> },
-                };
-
-                const toggleTarget = togglePostTarget;
-                const isTargeted = (profile) => {
-                    const key = profile.profileId || profile.name;
-                    return postTargets.some(p => (p.profileId || p.name) === key);
-                };
-
-                const grouped = connectedProfiles.reduce((acc, p) => {
-                    (acc[p.platform] = acc[p.platform] || []).push(p);
-                    return acc;
-                }, {});
-
-                const previewProfile = postTargets.find(p => p.platform === 'linkedin') || postTargets.find(p => p.platform === 'twitter') || linkedinProfiles[0];
-                const formatText = (text) => {
-                    const MAX = 280;
-                    const display = text.length > MAX ? text.slice(0, MAX) : text;
-                    return display.split('\n').map((line, i) => (
-                        <span key={i}>{line}{i < display.split('\n').length - 1 && <br />}</span>
-                    ));
-                };
-
-                return (
-                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-                        <div className="absolute inset-0 bg-white/90 backdrop-blur-sm" onClick={() => !isPosting && setIsPreviewOpen(false)} />
-                        <div className="relative z-10 w-full max-w-lg flex flex-col gap-4 animate-in fade-in zoom-in-95 duration-200">
-
-                            {/* Header */}
-                            <div className="flex items-center gap-3 px-1">
-                                {previewStep === 2 && (
-                                    <button onClick={() => setPreviewStep(1)} className="text-gray-500 hover:text-slate-900 transition-colors shrink-0 cursor-pointer">
-                                        <ChevronLeft className="w-5 h-5" />
-                                    </button>
-                                )}
-                                <div className="flex-1">
-                                    <h3 className="text-[#26cece] font-bold font-['Space_Grotesk'] tracking-widest uppercase text-[14px]">
-                                        {previewStep === 1 ? 'Where do you want to post?' : 'Post Preview'}
-                                    </h3>
-                                    <div className="flex items-center gap-1.5 mt-2">
-                                        {[1, 2].map(s => (
-                                            <div key={s} className={`h-1 flex-1 rounded-[2px] transition-all ${s === previewStep ? 'bg-[#26cece]' : 'bg-[#333]'}`} />
-                                        ))}
-                                    </div>
-                                </div>
-                                <button onClick={() => !isPosting && setIsPreviewOpen(false)} className="text-gray-500 hover:text-slate-900 transition-colors shrink-0 cursor-pointer">
-                                    <X className="w-5 h-5" />
-                                </button>
-                            </div>
-
-                            {previewStep === 1 ? (
-                                /* ── Step 1: Platform / Profile selection ── */
-                                <div className="bg-slate-50 border border-slate-200 rounded-[2px] shadow-[0_4px_24px_0_rgba(0,0,0,0.5)] overflow-hidden">
-                                    <div className="p-5 space-y-5">
-                                        {Object.entries(grouped).map(([platform, profiles]) => {
-                                            const meta = platformMeta[platform] || platformMeta.linkedin;
-                                            return (
-                                                <div key={platform}>
-                                                    <div className="flex items-center justify-between mb-3 border-b border-slate-200 pb-2">
-                                                        <div className="flex items-center gap-2">
-                                                            <div className={`w-5 h-5 rounded-[2px] flex items-center justify-center text-slate-900 ${meta.bg}`}>
-                                                                {meta.icon}
-                                                            </div>
-                                                            <span className="font-mono text-[11px] tracking-widest text-slate-900 uppercase">{meta.label}</span>
-                                                        </div>
-                                                        <span className="font-mono text-[10px] tracking-widest text-[#26cece] uppercase">{profiles.length} profile{profiles.length > 1 ? 's' : ''}</span>
-                                                    </div>
-                                                    <div className="space-y-2">
-                                                        {profiles.map((profile, idx) => {
-                                                            const selected = isTargeted(profile);
-                                                            return (
-                                                                <button
-                                                                    key={idx}
-                                                                    onClick={() => toggleTarget(profile)}
-                                                                    className={`w-full flex items-center gap-3 p-3 rounded-[2px] border transition-all cursor-pointer text-left ${selected ? 'border-[#26cece] bg-[#26cece]/10' : 'border-slate-200 bg-white hover:border-slate-200'}`}
-                                                                >
-                                                                    <div className="relative shrink-0">
-                                                                        {profile.avatar ? (
-                                                                            <img src={profile.avatar} alt={profile.name} className="w-10 h-10 rounded-[2px] object-cover border border-slate-200" />
-                                                                        ) : (
-                                                                            <div className={`w-10 h-10 rounded-[2px] ${meta.bg} flex items-center justify-center text-slate-900 font-bold font-mono`}>
-                                                                                {profile.name?.charAt(0)}
-                                                                            </div>
-                                                                        )}
-                                                                        <div className={`absolute -bottom-1 -right-1 w-4 h-4 rounded-[2px] ${meta.bg} flex items-center justify-center border-2 border-[#111111]`}>
-                                                                            {meta.icon}
-                                                                        </div>
-                                                                    </div>
-                                                                    <div className="flex-1 min-w-0 flex flex-col justify-center">
-                                                                        <p className="text-[12px] font-mono tracking-widest text-slate-900 uppercase truncate">{profile.name}</p>
-                                                                        <p className="text-[10px] font-mono text-gray-500 uppercase mt-1">{profile.type}</p>
-                                                                    </div>
-                                                                    <div className={`w-4 h-4 rounded-[2px] border flex items-center justify-center shrink-0 transition-all ${selected ? 'border-[#26cece] bg-[#26cece]' : 'border-slate-200 bg-transparent'}`}>
-                                                                        {selected && <Check className="w-3 h-3 text-[#070707] stroke-[3]" />}
-                                                                    </div>
-                                                                </button>
-                                                            );
-                                                        })}
-                                                    </div>
-                                                </div>
-                                            );
-                                        })}
-                                    </div>
-
-                                    {/* ── Optional WhatsApp share ── */}
-                                    <div className="mx-5 mb-5 border border-slate-200 rounded-[2px] overflow-hidden bg-white">
-                                        <button
-                                            onClick={() => setWaShare(s => ({ ...s, enabled: !s.enabled, error: null }))}
-                                            className="w-full flex items-center gap-3 px-4 py-3 hover:bg-[#1E1E1E] transition-colors cursor-pointer"
-                                        >
-                                            <div className="w-7 h-7 rounded-[2px] border border-[#25D366] bg-[#25D366]/10 flex items-center justify-center shrink-0">
-                                                <MessageCircle className="w-4 h-4 text-[#25D366]" />
-                                            </div>
-                                            <div className="flex-1 text-left">
-                                                <p className="text-[11px] font-mono tracking-widest text-slate-900 uppercase">Share to WhatsApp first</p>
-                                                <p className="text-[10px] font-mono tracking-widest text-[#25D366] uppercase mt-1">Optional · via link or API</p>
-                                            </div>
-                                            <div className={`w-8 h-4 rounded-[2px] transition-colors relative border ${waShare.enabled ? 'bg-[#25D366]/20 border-[#25D366]' : 'bg-white border-slate-200'}`}>
-                                                <div className={`absolute top-0.5 w-3 h-3 rounded-[2px] transition-all ${waShare.enabled ? 'left-4 bg-[#25D366]' : 'left-0.5 bg-gray-500'}`} />
-                                            </div>
-                                        </button>
-
-                                        {waShare.enabled && (
-                                            <div className="border-t border-slate-200 p-4 space-y-3 bg-white">
-                                                {/* Mode tabs */}
-                                                <div className="flex gap-1 bg-slate-50 border border-slate-200 rounded-[2px] p-1">
-                                                    {[{ id: 'link', icon: Link2, label: 'Share Link' }, { id: 'api', icon: MessageCircle, label: 'Send via API' }].map(({ id, icon: Icon, label }) => (
-                                                        <button
-                                                            key={id}
-                                                            onClick={() => setWaShare(s => ({ ...s, mode: id, error: null, sent: false }))}
-                                                            className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-[2px] text-[10px] font-mono tracking-widest uppercase transition-all cursor-pointer ${waShare.mode === id ? 'bg-[#26cece]/10 text-[#26cece]' : 'text-gray-500 hover:text-slate-900'}`}
-                                                        >
-                                                            <Icon className="w-3.5 h-3.5" />{label}
-                                                        </button>
-                                                    ))}
-                                                </div>
-
-                                                {waShare.mode === 'link' ? (
-                                                    /* Share Link mode */
-                                                    <div className="space-y-3">
-                                                        <p className="font-mono text-[10px] tracking-widest text-gray-500 uppercase">Opens WhatsApp with your post pre-filled. Works without any API setup.</p>
-                                                        <div className="flex flex-col sm:flex-row gap-2">
-                                                            <button
-                                                                onClick={() => {
-                                                                    const url = `https://wa.me/?text=${encodeURIComponent(postText)}`;
-                                                                    navigator.clipboard.writeText(url);
-                                                                    setWaShare(s => ({ ...s, copied: true, opened: true }));
-                                                                    setTimeout(() => setWaShare(s => ({ ...s, copied: false })), 2000);
-                                                                }}
-                                                                className="flex-1 flex items-center justify-center gap-1.5 py-2.5 bg-slate-50 hover:bg-[#1E1E1E] text-slate-900 text-[10px] font-mono uppercase tracking-widest rounded-[2px] border border-slate-200 transition-colors cursor-pointer"
-                                                            >
-                                                                {waShare.copied ? <><Check className="w-3.5 h-3.5 text-emerald-400" /> Copied!</> : <><Copy className="w-3.5 h-3.5" /> Copy Link</>}
-                                                            </button>
-                                                            <a
-                                                                href={`https://wa.me/?text=${encodeURIComponent(postText)}`}
-                                                                target="_blank"
-                                                                rel="noopener noreferrer"
-                                                                onClick={() => setWaShare(s => ({ ...s, opened: true }))}
-                                                                className="flex-1 flex items-center justify-center gap-1.5 py-2.5 bg-[#25D366]/10 hover:bg-[#25D366]/20 text-[#25D366] text-[10px] font-mono uppercase tracking-widest rounded-[2px] border border-[#25D366] transition-colors cursor-pointer"
-                                                            >
-                                                                <ExternalLink className="w-3.5 h-3.5" /> Open WhatsApp
-                                                            </a>
-                                                        </div>
-                                                    </div>
-                                                ) : (
-                                                    /* Send via API mode — uses 'acknowledgement' template */
-                                                    <div className="space-y-2">
-                                                        <p className="font-mono text-[10px] tracking-widest text-gray-500 uppercase">Sends a post preview with <span className="text-[#25D366] font-medium">✓ Approve</span> / <span className="text-[#FF4A4A] font-medium">✕ Disapprove</span> buttons via WhatsApp template.</p>
-                                                        <input
-                                                            type="text"
-                                                            value={waShare.recipientName || ''}
-                                                            onChange={e => setWaShare(s => ({ ...s, recipientName: e.target.value, error: null }))}
-                                                            placeholder="Recipient name (e.g. Rahul)"
-                                                            className="w-full bg-slate-50 border border-slate-200 text-slate-900 text-[11px] font-mono uppercase tracking-widest rounded-[2px] px-3 py-2.5 focus:outline-none focus:border-[#25D366] placeholder:text-gray-600"
-                                                        />
-                                                        <div className="flex gap-2">
-                                                            <input
-                                                                type="tel"
-                                                                value={waShare.phone}
-                                                                onChange={e => setWaShare(s => ({ ...s, phone: e.target.value, error: null }))}
-                                                                placeholder="Phone (e.g. 9876543210)"
-                                                                className="flex-1 bg-slate-50 border border-slate-200 text-slate-900 text-[11px] font-mono uppercase tracking-widest rounded-[2px] px-3 py-2.5 focus:outline-none focus:border-[#25D366] placeholder:text-gray-600"
-                                                            />
-                                                            <button
-                                                                onClick={async () => {
-                                                                    if (!waShare.phone.trim()) return;
-                                                                    setWaShare(s => ({ ...s, sending: true, error: null }));
-                                                                    try {
-                                                                        const res = await fetch(`${API_BASE_URL}/api/linkedin/whatsapp-share`, {
-                                                                            method: 'POST',
-                                                                            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${authToken}` },
-                                                                            body: JSON.stringify({
-                                                                                phone: waShare.phone,
-                                                                                name: waShare.recipientName || waShare.phone,
-                                                                                text: postText,
-                                                                                title: postText.split('\n')[0].slice(0, 60) || 'LinkedIn Post',
-                                                                                niche: mediaAttachment?.mediaCategory || 'General',
-                                                                                profileId: selectedProfileIds[0] || null,
-                                                                                visibility: postVisibility,
-                                                                                assetUrn: mediaAttachment?.assetUrn || null,
-                                                                                mediaCategory: mediaAttachment?.mediaCategory || null,
-                                                                            }),
-                                                                        }).then(r => r.json());
-                                                                        if (!res.success) throw new Error(res.error);
-                                                                        setWaShare(s => ({ ...s, sending: false, sent: true }));
-                                                                    } catch (err) {
-                                                                        setWaShare(s => ({ ...s, sending: false, error: err.message }));
-                                                                    }
-                                                                }}
-                                                                disabled={waShare.sending || !waShare.phone.trim() || waShare.sent}
-                                                                className="px-4 py-2 bg-[#25D366]/10 hover:bg-[#25D366]/20 disabled:opacity-50 disabled:cursor-not-allowed text-[#25D366] text-[11px] font-mono font-bold uppercase tracking-widest rounded-[2px] border border-[#25D366] flex items-center justify-center gap-1.5 transition-colors cursor-pointer whitespace-nowrap"
-                                                            >
-                                                                {waShare.sending ? <span className="w-3 h-3 border border-[#25D366]/30 border-t-[#25D366] rounded-full animate-spin" /> : waShare.sent ? <><Check className="w-3.5 h-3.5" /> Sent!</> : <><MessageCircle className="w-3.5 h-3.5" /> Send</>}
-                                                            </button>
-                                                        </div>
-                                                        {waShare.error && <p className="text-[10px] font-mono tracking-widest text-[#FF4A4A] uppercase mt-2">✕ {waShare.error}</p>}
-                                                    </div>
-                                                )}
-                                            </div>
-                                        )}
-                                    </div>
-
-                                    <div className="px-5 pb-5 flex gap-3">
-                                        <button onClick={() => setIsPreviewOpen(false)} className="flex-1 px-4 py-3 rounded-[2px] border border-slate-200 text-slate-900 hover:bg-[#1E1E1E] font-bold font-['Space_Grotesk'] uppercase tracking-widest text-[14px] transition-colors cursor-pointer">
-                                            Cancel
-                                        </button>
-                                        <button
-                                            onClick={() => setPreviewStep(2)}
-                                            disabled={postTargets.length === 0}
-                                            className="flex-1 bg-[#26cece] hover:bg-white disabled:bg-[#333] disabled:text-gray-500 disabled:shadow-none text-[#070707] px-4 py-3 rounded-[2px] font-bold font-['Space_Grotesk'] uppercase tracking-widest text-[14px] flex items-center justify-center gap-2 transition-all cursor-pointer hover:-translate-y-1 hover:shadow-[4px_4px_0_0_#333]"
-                                        >
-                                            Preview Post →
-                                        </button>
-                                    </div>
-                                </div>
-
-                            ) : (
-                                /* ── Step 2: Preview ── */
-                                <>
-                                    <div className="bg-slate-50 border border-slate-200 rounded-[2px] overflow-hidden shadow-[0_4px_24px_0_rgba(0,0,0,0.5)]">
-                                        <div className="px-4 pt-4 pb-3">
-                                            <div className="flex items-start gap-3">
-                                                <div className="relative shrink-0">
-                                                    {previewProfile?.avatar ? (
-                                                        <img src={previewProfile.avatar} alt={previewProfile?.name} className="w-12 h-12 rounded-[2px] object-cover border border-slate-200" />
-                                                    ) : (
-                                                        <div className="w-12 h-12 rounded-[2px] bg-[#0A66C2]/10 border border-[#0A66C2]/30 flex items-center justify-center text-[#0A66C2] font-bold text-lg font-mono">
-                                                            {previewProfile?.name?.charAt(0) || 'U'}
-                                                        </div>
-                                                    )}
-                                                </div>
-                                                <div className="flex-1 min-w-0">
-                                                    <div className="font-mono uppercase tracking-widest text-[13px] text-slate-900 leading-tight truncate">{previewProfile?.name || userName}</div>
-                                                    <div className="text-[10px] font-mono tracking-widest uppercase text-gray-500 mt-1">LinkedIn Member</div>
-                                                    <div className="flex items-center gap-1 mt-1">
-                                                        <span className="text-[10px] font-mono uppercase tracking-widest text-gray-500">Just now ·</span>
-                                                        {postVisibility === 'PUBLIC'
-                                                            ? <svg className="w-3 h-3 text-gray-500" fill="currentColor" viewBox="0 0 16 16"><path d="M8 0a8 8 0 100 16A8 8 0 008 0zM1.07 9h2.93a13.07 13.07 0 00.39 2.65A7.02 7.02 0 011.07 9zM4 7H1.07A7.02 7.02 0 013.39 4.35 13.07 13.07 0 004 7zm1 2h6a11.09 11.09 0 01-.43 2.81A11.1 11.1 0 018 12.99a11.1 11.1 0 01-2.57-.18A11.09 11.09 0 015 9zm0-2a11.09 11.09 0 01.43-2.81A11.1 11.1 0 018 3.01a11.1 11.1 0 012.57.18A11.09 11.09 0 0111 7H5zm7 2h2.93a7.02 7.02 0 01-2.32 2.65A13.07 13.07 0 0012 9zm0-2a13.07 13.07 0 00-.39-2.65A7.02 7.02 0 0113.93 7H12z"/></svg>
-                                                            : <svg className="w-3 h-3 text-gray-500" fill="currentColor" viewBox="0 0 16 16"><path d="M13 6a5 5 0 00-10 0v1H2a1 1 0 00-1 1v6a1 1 0 001 1h12a1 1 0 001-1V8a1 1 0 00-1-1h-1V6zm-7 0a3 3 0 016 0v1H6V6zm3 5.5a1 1 0 110-2 1 1 0 010 2z"/></svg>
-                                                        }
-                                                    </div>
-                                                </div>
-                                                <svg className="w-6 h-6 shrink-0" viewBox="0 0 24 24" fill="#0A66C2"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
-                                            </div>
-                                        </div>
-
-                                        <div className="px-4 pb-3 text-[12px] font-mono text-gray-300 leading-relaxed whitespace-pre-wrap">
-                                            {formatText(postText)}
-                                            {postText.length > 280 && <span className="text-[#26cece] hover:underline cursor-pointer"> …see more</span>}
-                                        </div>
-
-                                        {mediaAttachment && (
-                                            <div className="mx-4 mb-3 rounded-[2px] overflow-hidden border border-slate-200 bg-white">
-                                                {mediaAttachment.mediaCategory === 'IMAGE' && mediaAttachment.preview
-                                                    ? <img src={mediaAttachment.preview} alt="attachment" className="w-full max-h-72 object-cover" />
-                                                    : mediaAttachment.mediaCategory === 'VIDEO'
-                                                        ? <div className="flex items-center gap-3 p-3"><div className="w-10 h-10 rounded-[2px] bg-[#26cece]/10 flex items-center justify-center"><Film className="w-5 h-5 text-[#26cece]" /></div><div><p className="font-mono text-[12px] tracking-widest text-[#26cece] uppercase truncate">{mediaAttachment.file.name}</p><p className="text-[10px] font-mono text-gray-500 uppercase mt-1">Video · {(mediaAttachment.file.size / 1024 / 1024).toFixed(1)} MB</p></div></div>
-                                                        : <div className="flex items-center gap-3 p-3"><div className="w-10 h-10 rounded-[2px] bg-[#26cece]/10 flex items-center justify-center"><FileText className="w-5 h-5 text-[#26cece]" /></div><div><p className="font-mono text-[12px] tracking-widest text-[#26cece] uppercase truncate">{mediaAttachment.file.name}</p><p className="text-[10px] font-mono text-gray-500 uppercase mt-1">Document · {(mediaAttachment.file.size / 1024 / 1024).toFixed(1)} MB</p></div></div>
-                                                }
-                                            </div>
-                                        )}
-
-                                        <div className="border-t border-slate-200 px-4 py-2 flex items-center justify-between">
-                                            {[{ label: 'Like', icon: '👍' }, { label: 'Comment', icon: '💬' }, { label: 'Repost', icon: '🔁' }, { label: 'Send', icon: '✉️' }].map(({ label, icon }) => (
-                                                <button key={label} className="flex items-center gap-1.5 px-3 py-2 rounded-[2px] text-gray-500 hover:text-slate-900 hover:bg-[#1E1E1E] text-[10px] font-mono tracking-widest uppercase transition-colors cursor-pointer">
-                                                    <span className="text-base leading-none">{icon}</span>{label}
-                                                </button>
-                                            ))}
-                                        </div>
-                                    </div>
-
-                                    {/* Publishing to summary */}
-                                    <div className="bg-slate-50 border border-slate-200 rounded-[2px] px-4 py-3 flex flex-wrap gap-2 items-center">
-                                        <span className="text-[10px] font-mono text-gray-500 uppercase shrink-0">Publishing to:</span>
-                                        {postTargets.map((p, i) => {
-                                            const meta = platformMeta[p.platform] || platformMeta.linkedin;
-                                            return (
-                                                <span key={i} className="flex items-center gap-1.5 text-[10px] font-mono text-slate-900 tracking-widest uppercase border border-slate-200 bg-white px-2.5 py-1.5 rounded-[2px]">
-                                                    <span className={`w-3.5 h-3.5 rounded-[2px] flex items-center justify-center text-slate-900 ${meta.bg}`} style={{ fontSize: 8 }}>{meta.icon}</span>
-                                                    {p.name}
-                                                </span>
-                                            );
-                                        })}
-                                        <span className="ml-auto text-[10px] font-mono uppercase tracking-widest text-[#26cece]">{postVisibility === 'PUBLIC' ? '🌐 Public' : '🔒 Connections'}</span>
-                                    </div>
-
-                                    {/* WhatsApp gate / status */}
-                                    {waShare.enabled && (() => {
-                                        // Approved if: sent successfully, OR send was attempted but failed (they tried)
-                                        const waApproved = waShare.mode === 'api'
-                                            ? (waShare.sent || !!waShare.error)
-                                            : waShare.opened;
-
-                                        if (!waApproved) {
-                                            // Not attempted yet — block and prompt
-                                            return (
-                                                <div className="flex items-center gap-2.5 px-4 py-3 bg-[#25D366]/10 border border-[#25D366] rounded-[2px]">
-                                                    <MessageCircle className="w-4 h-4 text-[#25D366] shrink-0" />
-                                                    <p className="text-[11px] font-mono tracking-widest text-[#25D366] uppercase leading-relaxed">
-                                                        {waShare.mode === 'api'
-                                                            ? 'Send the WhatsApp message first — go back to Step 1.'
-                                                            : 'Open or copy the WhatsApp link first — go back to Step 1.'}
-                                                    </p>
-                                                    <button onClick={() => setPreviewStep(1)} className="ml-auto text-[10px] font-mono tracking-widest text-[#25D366] uppercase underline underline-offset-4 cursor-pointer whitespace-nowrap">
-                                                        ← Back
-                                                    </button>
-                                                </div>
-                                            );
-                                        }
-
-                                        if (waShare.mode === 'api' && waShare.error) {
-                                            // Attempted but failed — warn but allow publish
-                                            return (
-                                                <div className="flex items-start gap-2.5 px-4 py-3 bg-[#FFCA4A]/10 border border-[#FFCA4A] rounded-[2px]">
-                                                    <MessageCircle className="w-4 h-4 text-[#FFCA4A] shrink-0 mt-0.5" />
-                                                    <div className="flex-1 min-w-0">
-                                                        <p className="font-mono tracking-widest text-[#FFCA4A] uppercase text-[11px]">WhatsApp send failed</p>
-                                                        <p className="font-mono tracking-widest text-gray-500 uppercase text-[10px] mt-1 break-words">{waShare.error}</p>
-                                                        <p className="font-mono tracking-widest text-slate-900 uppercase text-[10px] mt-2">You can still publish to social media.</p>
-                                                    </div>
-                                                </div>
-                                            );
-                                        }
-
-                                        if (waShare.sent) {
-                                            return (
-                                                <div className="flex items-start gap-2.5 px-4 py-3 bg-[#25D366]/10 border border-[#25D366] rounded-[2px]">
-                                                    <Check className="w-4 h-4 text-[#25D366] shrink-0 mt-0.5" />
-                                                    <div>
-                                                        <p className="font-mono tracking-widest uppercase text-[#25D366] text-[11px]">Approval request sent via WhatsApp</p>
-                                                        <p className="font-mono tracking-widest uppercase text-gray-500 text-[10px] mt-1">Post will be published to LinkedIn automatically when approved. You can also publish manually below.</p>
-                                                    </div>
-                                                </div>
-                                            );
-                                        }
-
-                                        return null;
-                                    })()}
-
-                                    <div className="flex gap-3">
-                                        <button onClick={() => setIsPreviewOpen(false)} disabled={isPosting} className="flex-1 px-4 py-3 rounded-[2px] border border-slate-200 text-slate-900 hover:bg-[#1E1E1E] transition-colors cursor-pointer font-bold font-['Space_Grotesk'] uppercase tracking-widest text-[14px] disabled:opacity-50">
-                                            Edit Post
-                                        </button>
-                                        <button
-                                            onClick={async () => { await handlePublish(); }}
-                                            disabled={isPosting || (waShare.enabled && !(waShare.mode === 'api' ? (waShare.sent || !!waShare.error) : waShare.opened))}
-                                            className="flex-1 bg-[#26cece] hover:bg-white text-[#070707] px-4 py-3 rounded-[2px] shadow-none hover:-translate-y-1 hover:shadow-[4px_4px_0_0_#333] font-bold font-['Space_Grotesk'] uppercase tracking-widest text-[14px] transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:hover:shadow-none bg-[#26cece] disabled:bg-[#333] disabled:text-gray-500"
-                                        >
-                                            {isPosting ? <><span className="w-4 h-4 border-[3px] border-[#070707]/30 border-t-[#070707] rounded-full animate-spin" /> Publishing...</> : <><Send className="w-4 h-4" /> Confirm & Publish</>}
-                                        </button>
-                                    </div>
-
-                                    {postStatus && (
-                                        <div className={`px-4 py-3 rounded-[2px] font-mono tracking-widest uppercase text-[11px] flex items-center gap-2 ${postStatus.type === 'success' ? 'bg-[#25D366]/10 border border-[#25D366] text-[#25D366]' : 'bg-[#FF4A4A]/10 border border-[#FF4A4A] text-[#FF4A4A]'}`}>
-                                            {postStatus.type === 'success' ? '✓' : '✕'} {postStatus.message}
-                                        </div>
-                                    )}
-                                </>
-                            )}
-                        </div>
-                    </div>
-                );
-            })()}
-
-            {/* ── Trending Topics Modal ─────────────────────────────────────── */}
-            {isTrendingModalOpen && (
-                <div className="fixed inset-0 z-[150] flex items-center justify-center p-4">
-                    <div className="absolute inset-0 bg-white/90 backdrop-blur-sm" onClick={() => setIsTrendingModalOpen(false)} />
-                    <div className="relative z-10 w-full max-w-2xl bg-white border border-slate-200 rounded-[2px] shadow-[0_8px_32px_0_rgba(0,0,0,0.1)] flex flex-col max-h-[85vh] animate-in fade-in zoom-in-95 duration-200">
-                        <div className="px-6 py-4 border-b border-slate-200 flex justify-between items-center shrink-0">
-                            <div className="flex items-center gap-2">
-                                <TrendingUp className="w-5 h-5 text-[#26cece]" />
-                                <h3 className="text-[14px] font-bold font-['Space_Grotesk'] uppercase tracking-widest text-slate-900">Trending Post Ideas</h3>
-                            </div>
-                            <button onClick={() => setIsTrendingModalOpen(false)} className="text-gray-500 hover:text-slate-900 transition-colors cursor-pointer">
-                                <X className="w-5 h-5" />
-                            </button>
-                        </div>
-
-                        <div className="p-6 overflow-y-auto custom-scrollbar">
-                            <div className="flex gap-2 mb-6">
-                                <input 
-                                    type="text" 
-                                    value={trendingNiche} 
-                                    onChange={(e) => setTrendingNiche(e.target.value)}
-                                    placeholder="Enter niche (e.g. Real Estate, SaaS)..."
-                                    className="flex-1 bg-slate-50 border border-slate-200 text-slate-900 px-4 py-2.5 rounded-[2px] font-mono text-[13px] focus:outline-none focus:border-[#26cece]"
-                                />
-                                <button 
-                                    onClick={handleFetchTrending}
-                                    disabled={isTrendingLoading}
-                                    className="px-4 py-2.5 bg-[#26cece] text-[#070707] font-bold font-mono text-[12px] uppercase tracking-widest rounded-[2px] hover:bg-[#1AA8A8] hover:text-white transition-all disabled:opacity-50"
-                                >
-                                    {isTrendingLoading ? <RefreshCw className="w-4 h-4 animate-spin" /> : 'Search'}
-                                </button>
-                            </div>
-
-                            {isTrendingLoading ? (
-                                <div className="flex flex-col items-center justify-center py-20 gap-4">
-                                    <Loader2 className="w-8 h-8 text-[#26cece] animate-spin" />
-                                    <p className="font-mono text-[11px] uppercase tracking-widest text-gray-500">Analyzing trends and generating ideas...</p>
-                                </div>
-                            ) : trendingTopics.length === 0 ? (
-                                <div className="text-center py-20 bg-slate-50 border border-slate-200 rounded-[2px]">
-                                    <p className="font-mono text-[11px] uppercase tracking-widest text-gray-500">No trends found. Try another niche.</p>
-                                </div>
-                            ) : (
-                                <div className="space-y-4">
-                                    {trendingTopics.map((topic, i) => (
-                                        <div key={i} className="group p-5 bg-white border border-slate-200 rounded-[2px] hover:border-[#26cece] transition-all hover:shadow-[0_4px_20px_rgba(38,206,206,0.05)]">
-                                            <h4 className="text-[#26cece] font-bold font-['Space_Grotesk'] uppercase tracking-tight text-[16px] mb-2">{topic.keyword}</h4>
-                                            <p className="text-slate-600 text-[13px] mb-4 leading-relaxed italic">"{topic.hook}"</p>
-                                            <div className="flex flex-wrap gap-2 mb-5">
-                                                {topic.hashtags?.map((tag, j) => (
-                                                    <span key={j} className="text-[10px] font-mono text-gray-500 uppercase tracking-widest bg-slate-50 px-2 py-1 rounded-[2px] border border-slate-200">#{tag.replace('#','')}</span>
-                                                ))}
-                                            </div>
-                                            <button 
-                                                onClick={() => {
-                                                    setAiPrompt(`Write a post about ${topic.keyword} with this hook: ${topic.hook}. Include these hashtags: ${topic.hashtags.join(', ')}`);
-                                                    setIsTrendingModalOpen(false);
-                                                    setIsAiWriteOpen(true);
-                                                }}
-                                                className="w-full py-2.5 border border-[#26cece] text-[#26cece] font-bold font-mono text-[11px] uppercase tracking-widest rounded-[2px] hover:bg-[#26cece] hover:text-white transition-all flex items-center justify-center gap-2"
-                                            >
-                                                <Sparkles className="w-3.5 h-3.5" /> Draft Post with AI
-                                            </button>
-                                        </div>
-                                    ))}
-                                </div>
-                            )}
-                        </div>
-                    </div>
-                </div>
-            )}
-
-            {/* ─── Graphics AI Image Picker Modal ─────────────────────────── */}
-            {isGraphicsPickerOpen && (
-                <div className="fixed inset-0 z-[300] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4" onClick={() => setIsGraphicsPickerOpen(false)}>
-                    <div className="relative w-full max-w-3xl bg-slate-50 border border-slate-200 rounded-[2px] overflow-hidden" onClick={e => e.stopPropagation()}>
-
-                        {/* Header */}
-                        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200">
-                            <div className="flex items-center gap-2.5">
-                                <ImageIcon className="w-5 h-5 text-[#26cece]" />
-                                <div>
-                                    <h3 className="font-bold font-['Space_Grotesk'] text-slate-900 uppercase tracking-tight text-[15px]">Import from Graphics AI</h3>
-                                    <p className="text-[10px] font-mono text-gray-500 uppercase tracking-widest mt-0.5">Select a generated image to attach to your post</p>
-                                </div>
-                            </div>
-                            <div className="flex items-center gap-2">
-                                <button 
-                                    onClick={async () => {
-                                        setGraphicsLoading(true);
-                                        try {
-                                            const res = await fetch(`${API_BASE_URL}/api/design/jobs`, {
-                                                headers: { 'Authorization': `Bearer ${authToken}` }
-                                            });
-                                            const data = await res.json();
-                                            setGraphicsJobs(data.jobs || []);
-                                        } catch { /* non-critical */ } finally {
-                                            setGraphicsLoading(false);
-                                        }
-                                    }}
-                                    className="p-2 text-gray-400 hover:text-[#26cece] border border-transparent hover:border-slate-200 rounded-[2px] transition-colors"
-                                    title="Refresh images"
-                                >
-                                    <RefreshCw className="w-4 h-4" />
-                                </button>
-                                <button onClick={() => setIsGraphicsPickerOpen(false)} className="p-2 text-gray-400 hover:text-slate-900 border border-transparent hover:border-slate-200 rounded-[2px] transition-colors">
-                                    <X className="w-5 h-5" />
-                                </button>
-                            </div>
-                        </div>
-
-                        {/* Body */}
-                        <div className="p-5 max-h-[65vh] overflow-y-auto">
-                            {graphicsLoading ? (
-                                <div className="flex flex-col items-center justify-center py-16 gap-3">
-                                    <Loader2 className="w-8 h-8 text-[#26cece] animate-spin" />
-                                    <p className="font-mono text-gray-500 uppercase tracking-widest text-[11px]">Loading generated images...</p>
-                                </div>
-                            ) : graphicsJobs.length === 0 ? (
-                                <div className="flex flex-col items-center justify-center py-16 gap-3">
-                                    <ImageIcon className="w-10 h-10 text-gray-700" />
-                                    <p className="font-mono text-gray-500 uppercase tracking-widest text-[11px]">No completed graphics yet</p>
-                                    <p className="font-mono text-gray-600 text-[10px]">Generate images in Libraries → Graphics AI Agent first</p>
-                                </div>
-                            ) : (
-                                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                                    {graphicsJobs.flatMap(job => {
-                                        if (job.status !== 'completed' || (!job.flyer_url && !job.metadata?.flyer_urls)) {
-                                            return [(
-                                                <div key={job.id} className="group relative aspect-square overflow-hidden rounded-[2px] border border-slate-200 bg-slate-100 flex flex-col items-center justify-center">
-                                                    <Loader2 className="w-6 h-6 text-[#26cece] animate-spin mb-2" />
-                                                    <span className="font-mono text-[10px] uppercase tracking-widest text-[#26cece] text-center px-2">{job.status}</span>
-                                                </div>
-                                            )];
-                                        }
-                                        const urls = job.metadata?.flyer_urls || [job.flyer_url];
-                                        return urls.map((url, idx) => (
-                                            <button
-                                                key={`${job.id}-${idx}`}
-                                                onClick={async () => {
-                                                    try {
-                                                        const res = await fetch(url);
-                                                        const blob = await res.blob();
-                                                        const ext = blob.type.includes('png') ? 'png' : 'jpg';
-                                                        const file = new File([blob], `ai_graphic_${idx + 1}.${ext}`, { type: blob.type });
-                                                        setMediaAttachment({ file, mediaCategory: 'IMAGE', preview: URL.createObjectURL(blob) });
-                                                        setIsGraphicsPickerOpen(false);
-                                                    } catch {
-                                                        alert('Could not load image. Please try again.');
-                                                    }
-                                                }}
-                                                className="group relative aspect-square overflow-hidden rounded-[2px] border border-[#1E1E1E] hover:border-[#26cece] transition-all duration-200 focus:outline-none"
-                                            >
-                                                <img src={url} alt="Generated graphic" className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" />
-                                                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors duration-200 flex items-center justify-center">
-                                                    <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center gap-1.5 bg-[#26cece] text-[#070707] font-bold font-mono text-[10px] uppercase tracking-widest px-3 py-1.5 rounded-[2px]">
-                                                        <Check className="w-3.5 h-3.5" /> Select
-                                                    </div>
-                                                </div>
-                                                {urls.length > 1 && (
-                                                    <div className="absolute top-1.5 left-1.5 px-2 py-0.5 bg-black/60 backdrop-blur-md rounded-[2px] font-mono text-[9px] text-white uppercase tracking-widest">
-                                                        Var {idx + 1}
-                                                    </div>
-                                                )}
-                                            </button>
-                                        ));
-                                    })}
-                                </div>
-                            )}
-                        </div>
-                    </div>
-                </div>
-            )}
         </div>
     );
 };
-
 
 export default SocialDashboard;
