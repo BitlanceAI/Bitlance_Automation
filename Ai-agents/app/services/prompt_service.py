@@ -67,6 +67,24 @@ class PromptService:
         """
         logger.info("[PromptService.enhance_prompt] raw_prompt='%s', niche='%s'", raw_prompt, niche)
 
+        if language == "hindi_marathi":
+            try:
+                # Translate the raw prompt to a 50/50 mix of Hindi and Marathi in Devanagari first
+                resp = self.client.chat.completions.create(
+                    model="gpt-4o-mini",
+                    messages=[
+                        {"role": "system", "content": "You are an expert bilingual translator. Translate the given English text/prompt into a 50/50 mix of Hindi and Marathi in Devanagari script. Translate the main headline/title to Hindi, and the subheadline/subtitle to Marathi, and alternate the remaining details between Hindi and Marathi so that both languages are clearly represented on the flyer. DO NOT output any English text. Use Marathi words like 'शाळा', 'प्रवेश सुरू', 'मर्यादित जागा' for the Marathi portion, and Hindi words like 'स्कूल', 'प्रवेश प्रारंभ', 'सीमित सीटें' for the Hindi portion. Return ONLY the translated Devanagari text, with no explanation."},
+                        {"role": "user", "content": raw_prompt}
+                    ],
+                    temperature=0.0,
+                )
+                translated_prompt = resp.choices[0].message.content.strip()
+                logger.info("[PromptService.enhance_prompt] Translated raw prompt to Devanagari mix: %s", translated_prompt)
+                raw_prompt = translated_prompt
+            except Exception as e:
+                logger.warning("Failed to translate raw prompt in enhance_prompt: %s", e)
+
+
         # Resolve trending keywords
         used_keywords: list[str] = []
         trending_info = ""
@@ -145,7 +163,7 @@ class PromptService:
                 resp = self.client.chat.completions.create(
                     model="gpt-4o-mini",
                     messages=[
-                        {"role": "system", "content": "You are a professional Hindi and Marathi translator. Given a JSON object of details, translate/transliterate the string values such that EXACTLY HALF (50%) of the fields are translated into pure Hindi, and the OTHER HALF (50%) are translated into pure Marathi. You MUST ensure that Marathi language and vocabulary are used in at least half of the properties. Do NOT write bilingual side-by-side translations on the same line. Mix the languages across different fields (e.g., Headline in Hindi, Subheadline in Marathi, amenities split between both). All text must use the Devanagari script. Keep numbers, phone numbers, and email values unchanged. Return ONLY the translated JSON object, with no explanation and no markdown formatting."},
+                        {"role": "system", "content": "You are an expert bilingual translator. Given a JSON object, you must translate all English string values into Devanagari script. CRITICAL: You must translate exactly 50% of the fields into pure Marathi (using proper Marathi words like 'शाळा', 'प्रवेश सुरू', 'मर्यादित जागा') and the other 50% into pure Hindi (e.g. 'स्कूल', 'प्रवेश प्रारंभ', 'सीमित सीटें'). For example, translate the main headline/title to Hindi, the subheadline to Marathi, and alternate the other fields to ensure a clear, prominent mix of both languages. DO NOT leave any text in English (except emails and phone numbers). Do NOT write bilingual side-by-side translations on the same line. Return ONLY the translated JSON object, with no explanation and no markdown formatting."},
                         {"role": "user", "content": json.dumps(details)}
                     ],
                     temperature=0.0,
