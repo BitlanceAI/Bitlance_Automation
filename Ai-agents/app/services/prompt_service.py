@@ -93,8 +93,11 @@ class PromptService:
                 if translated_content.startswith("```"):
                     translated_content = translated_content.strip("`").replace("json\n", "", 1).strip()
                 translated_details = json.loads(translated_content)
+                for k in list(translated_details.keys()):
+                    if k.lower() in ["builder", "brand", "brand_name", "school_name", "hospital_name", "hospital", "school", "name", "brandname", "schoolname", "hospitalname"]:
+                        translated_details.pop(k, None)
                 translated_details_str = json.dumps(translated_details, indent=2, ensure_ascii=False)
-                logger.info("[PromptService.enhance_prompt] Extracted and translated details to Devanagari mix: %s", translated_details_str)
+                logger.info("[PromptService.enhance_prompt] Extracted, cleaned, and translated details to Devanagari mix: %s", translated_details_str)
             except Exception as e:
                 logger.warning("Failed to translate raw prompt details in enhance_prompt: %s", e)
 

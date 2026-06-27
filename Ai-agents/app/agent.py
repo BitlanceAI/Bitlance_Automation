@@ -650,29 +650,10 @@ class GraphicAgent:
         Returns:
             Parsed result dict.
         """
-        import base64
-        import os
+        import json
         logo_img = details.get("logo_image") or details.get("logo")
         brand_name = details.get("builder") or details.get("hospital_name") or details.get("brand_name") or details.get("hospital")
         language = details.get("language") or "english"
-
-        import json
-        if language == "hindi_marathi":
-            logger.info("[GraphicAgent] Language is 'hindi_marathi'. Intercepting with programmatic flyer generator...")
-            # Construct a source text string from the details dict for _run_multilingual
-            source_parts = []
-            for k, v in details.items():
-                if v and k not in ["logo_image", "logo", "reference_image", "image_size", "image_quality", "language"]:
-                    source_parts.append(f"{k}: {v}")
-            source_text = "\n".join(source_parts)
-            return self._run_multilingual(
-                source_text=source_text,
-                logo_image=logo_img,
-                reference_image=details.get("reference_image"),
-                image_size=details.get("image_size") or "1024x1024",
-                image_quality=details.get("image_quality") or "low",
-                details=details
-            )
 
         if not brand_name:
             # Generate a brand name if missing
@@ -687,7 +668,7 @@ class GraphicAgent:
         # If DALL-E never sees the hospital name, it is physically impossible for it 
         # to hallucinate or duplicate the name in the footer or background.
         safe_details = details.copy()
-        for k in ["builder", "hospital_name", "brand_name", "hospital"]:
+        for k in ["builder", "hospital_name", "brand_name", "hospital", "school_name", "school", "brand", "name"]:
             safe_details.pop(k, None)
             
         # Build the agent instruction
@@ -719,9 +700,10 @@ class GraphicAgent:
             except Exception as e:
                 logger.warning("Failed to analyze reference image in run_from_details: %s", e)
 
-        if logo_img:
+        if brand_name:
+            branding_str = brand_name
             instruction += (
-                f"\n\nIMPORTANT: The branding logo and brand name container ('{brand_name}') will be programmatically overlaid at the top-left corner of the final image. "
+                f"\n\nIMPORTANT: The branding logo and brand name container ('{branding_str}') will be programmatically overlaid at the top-left corner of the final image. "
                 "Ensure that the DALL-E prompt you generate explicitly instructs DALL-E to push ALL headlines, subheadlines, and context DOWN, "
                 "leaving the top 20% of the image (especially the top-left quadrant) COMPLETELY EMPTY (e.g., solid color, sky, or soft gradient) "
                 "to accommodate the programmatic overlay without overlapping ANY context for God's sake. "
@@ -733,7 +715,7 @@ class GraphicAgent:
         result = self._invoke(instruction, session_id=session_id)
 
         # Post-process: Overlay logo if present
-        if logo_img and result.get("success") and result.get("images"):
+        if brand_name and result.get("success") and result.get("images"):
             for img_data in result["images"]:
                 b64 = img_data.get("b64_string")
                 if b64:
@@ -791,27 +773,11 @@ class GraphicAgent:
         if raw_prompt and any(k in raw_prompt.lower() for k in ["hindi_marathi", "hindi + marathi", "hindi marathi", "marathi"]):
             language = "hindi_marathi"
 
-        if language == "hindi_marathi":
-            logger.info("[GraphicAgent] Language is 'hindi_marathi' in run_from_prompt. Intercepting with programmatic flyer generator...")
-            return self._run_multilingual(
-                source_text=raw_prompt,
-                logo_image=logo_image,
-                reference_image=reference_image,
-                image_size=image_size,
-                image_quality=image_quality,
-            )
-
         brand_name = self._extract_brand_name(raw_prompt)
         if brand_name and brand_name.lower() != "none":
-            if language == "hindi_marathi":
-                # Translate brand name to Devanagari first
-                brand_name_translated = self._translate_to_hindi(brand_name)
-                # Replace the English brand name with the translated Devanagari brand name in the prompt
-                raw_prompt = re.sub(re.escape(brand_name), brand_name_translated, raw_prompt, flags=re.IGNORECASE)
-                brand_name = brand_name_translated
-            else:
-                # Sanitize the raw prompt to hide the name from DALL-E (case-insensitive)
-                raw_prompt = re.sub(re.escape(brand_name), "the business", raw_prompt, flags=re.IGNORECASE)
+            # Sanitize the raw prompt to hide the name from DALL-E (case-insensitive)
+            replacement = "the school" if "school" in raw_prompt.lower() or "education" in raw_prompt.lower() else "the business"
+            raw_prompt = re.sub(re.escape(brand_name), replacement, raw_prompt, flags=re.IGNORECASE)
         else:
             brand_name = None
         
@@ -825,15 +791,20 @@ class GraphicAgent:
             f"Make sure to use the image size: '{image_size}' and image quality: '{image_quality}'.\n"
             f"The target language is: '{language}'.\n"
         )
+        if language == "hindi_marathi":
+            instruction += (
+                "CRITICAL MULTILINGUAL INSTRUCTION: You MUST translate the marketing copy and strictly instruct DALL-E "
+                "to write ALL text natively in Hindi/Marathi (Devanagari script) on the graphic. Ensure the visual prompt explicitly includes the translated text in Devanagari.\n"
+            )
         if niche:
             instruction += f"The niche is: '{niche}'.\n"
-        if logo_image or brand_name:
-            branding_str = brand_name if brand_name else "the logo"
+        if brand_name:
+            branding_str = brand_name
             instruction += (
                 f"\n\nIMPORTANT: The branding/logo container ('{branding_str}') will be programmatically overlaid at the top-left corner of the final image. "
-                "CRITICAL BULLETPROOF RULE: You MUST COMPLETELY OMIT the brand name / hospital name from the final DALL-E prompt you generate. "
-                "If DALL-E sees the hospital name in the prompt, it will hallucinate and duplicate it on the background canvas. "
-                "Instead of the name, just use generic terms like 'the hospital' or 'the business' in the DALL-E prompt. "
+                "CRITICAL BULLETPROOF RULE: You MUST COMPLETELY OMIT the brand name / hospital name / school name from the final DALL-E prompt you generate. "
+                "If DALL-E sees the name in the prompt, it will hallucinate and duplicate it on the background canvas. "
+                "Instead of the name, just use generic terms like 'the school' or 'the business' in the DALL-E prompt. "
                 "Ensure that the DALL-E prompt you generate explicitly instructs DALL-E to push ALL headlines, subheadlines, and context DOWN, "
                 "leaving the top 20% of the image (especially the top-left quadrant) COMPLETELY EMPTY (e.g., solid color, sky, or soft gradient) "
                 "to accommodate the programmatic overlay without overlapping ANY context for God's sake. "
@@ -843,8 +814,8 @@ class GraphicAgent:
         # Run ReAct agent
         result = self._invoke(instruction, session_id=session_id)
 
-        # Post-process: Overlay logo/brand if present
-        if (logo_image or brand_name) and result.get("success") and result.get("images"):
+        # Post-process: Overlay logo if present
+        if brand_name and result.get("success") and result.get("images"):
             for img_data in result["images"]:
                 b64 = img_data.get("b64_string")
                 if b64:
