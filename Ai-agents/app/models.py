@@ -20,6 +20,7 @@ class PropertyDetailsRequest(BaseModel):
     logo_image: Optional[str] = Field(default=None, description="Optional logo image URL or base64")
     reference_image: Optional[str] = Field(default=None, description="Optional reference image URL or base64")
     language: Optional[str] = Field(default="english", example="hindi_marathi", description="Language of the flyer text ('english', 'hindi_marathi')")
+    template_id: Optional[str] = Field(default="random", description="Specific layout template id to use for Pillow generation")
 
 class PromptEnhanceRequest(BaseModel):
     raw_prompt: str = Field(..., example="make a poster for an apartment")

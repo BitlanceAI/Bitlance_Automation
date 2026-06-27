@@ -82,7 +82,16 @@ class ImageService:
             logger.error("[ImageService] OpenAI API call failed: %s", exc)
             raise Exception(f"OpenAI Image Generation Error: {exc}") from exc
 
+        # DEBUG: Save the prompt to a text file for inspection
+        import time
+        try:
+            with open(f"outputs/debug_prompt_{int(time.time())}.txt", "w") as f:
+                f.write(prompt)
+        except Exception:
+            pass
+
         output_list: list[dict] = []
+
         for img_data in api_result.data:
             result = self._process_image_data(img_data, quality)
             if result:
