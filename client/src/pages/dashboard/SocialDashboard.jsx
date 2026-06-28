@@ -528,7 +528,17 @@ const SocialDashboard = () => {
                     {activeView === 'ai_templates' && <AITemplatesView />}
                     {activeView === 'upload_csv' && <UploadCSVView />}
                     {activeView === 'twitter_thread' && <TwitterThreadBuilderView />}
-                    {activeView === 'smart_schedule' && <SchedulePostView />}
+                    {activeView === 'smart_schedule' && (
+                        <SchedulePostView 
+                            connectedProfiles={connectedProfiles}
+                            setPostText={setPostText}
+                            setMediaAttachment={setMediaAttachment}
+                            setIsPreviewOpen={setIsPreviewOpen}
+                            setPostTargets={setPostTargets}
+                            setPreviewStep={setPreviewStep}
+                            postSuccessCount={postSuccessCount}
+                        />
+                    )}
                     {activeView === 'inbox' && <InboxView />}
                     { activeView === 'graphics_ai' && <GraphicsAIView /> }
                     { activeView === 'agent_settings' && <AgentSettingsView setActiveView={setActiveView} /> }
