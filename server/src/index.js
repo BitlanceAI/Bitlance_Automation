@@ -15,6 +15,8 @@ import cors from 'cors';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import dns from 'dns';
+import { createServer } from 'http';
+import SocketService from './services/socket/socketService.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -23,6 +25,7 @@ const __dirname = path.dirname(__filename);
 dns.setDefaultResultOrder('ipv4first');
 
 const app = express();
+const server = createServer(app);
 const PORT = process.env.PORT || 3001;
 
 // Middleware
@@ -49,6 +52,9 @@ app.use(cors({
 app.use(express.json({
     verify: (req, _res, buf) => { req.rawBody = buf; },
 }));
+
+// Initialize Socket Service for Real-time Billing Updates
+SocketService.init(server, allowedOrigins);
 
 // Routes will be imported here
 
@@ -148,6 +154,12 @@ app.use('/api/payment', paymentRoutes);
 import razorpayRoutes from './routes/payments/razorpayRoutes.js';
 app.use('/api/razorpay', razorpayRoutes);
 
+import dashboardRoutes from './routes/billing/dashboardRoutes.js';
+app.use('/api/billing', dashboardRoutes);
+
+import dograhWebhookRoutes from './routes/billing/dograhRoutes.js';
+app.use('/webhooks/dograh', dograhWebhookRoutes);
+
 import videoRoutes from './routes/video/videoRoutes.js';
 app.use('/api/video', videoRoutes);
 
@@ -227,7 +239,7 @@ import { startCreditMonitorCron } from './services/scheduler/creditMonitorCron.j
 const scheduler = new SchedulerService();
 scheduler.start();
 
-app.listen(PORT, () => {
+server.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
 
     // Start the background scheduler

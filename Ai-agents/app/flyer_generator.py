@@ -18,12 +18,14 @@ from PIL import Image, ImageDraw, ImageFont, ImageOps
 
 logger = logging.getLogger(__name__)
 
+FONTS_DIR  = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "fonts"))
 NOTO_DIR   = "/usr/share/fonts/truetype/noto"
 DEJAVU_DIR = "/usr/share/fonts/truetype/dejavu"
 
 
 def _font(name: str, size: int) -> ImageFont.FreeTypeFont:
     for p in [
+        os.path.join(FONTS_DIR, name),
         os.path.join(NOTO_DIR, name),
         os.path.join(DEJAVU_DIR, name.replace("NotoSans", "DejaVuSans")),
         os.path.join(DEJAVU_DIR, "DejaVuSans-Bold.ttf"),
@@ -34,16 +36,18 @@ def _font(name: str, size: int) -> ImageFont.FreeTypeFont:
 
 
 def _devanagari_font(size: int) -> ImageFont.FreeTypeFont:
-    # Look for NotoSansDevanagari fonts in NOTO_DIR
+    # Look for NotoSansDevanagari fonts in FONTS_DIR and NOTO_DIR
     for name in ["NotoSansDevanagari-Bold.ttf", "NotoSansDevanagari-Medium.ttf", "NotoSansDevanagari-Regular.ttf"]:
-        p = os.path.join(NOTO_DIR, name)
-        if os.path.exists(p):
-            return ImageFont.truetype(p, size)
+        for d in [FONTS_DIR, NOTO_DIR]:
+            p = os.path.join(d, name)
+            if os.path.exists(p):
+                return ImageFont.truetype(p, size)
     # Fallback to general noto font candidates if not found
     for name in ["NotoSans-Bold.ttf", "NotoSans-Regular.ttf"]:
-        p = os.path.join(NOTO_DIR, name)
-        if os.path.exists(p):
-            return ImageFont.truetype(p, size)
+        for d in [FONTS_DIR, NOTO_DIR]:
+            p = os.path.join(d, name)
+            if os.path.exists(p):
+                return ImageFont.truetype(p, size)
     return ImageFont.load_default()
 
 
@@ -1458,6 +1462,20 @@ def _layout_ai_dynamic(layout: dict, ref_url: Optional[str] = None) -> str:
 # ── DISPATCHER ENTRYPOINT ───────────────────────────────────────────────────
 
 def generate_flyer(layout: dict, ref_url: Optional[str] = None) -> str:
+    # Auto-detect if any field contains Devanagari characters
+    all_text = " ".join([
+        str(layout.get("brand_name", "")),
+        str(layout.get("brand_sub", "")),
+        str(layout.get("hospital_name", "")),
+        str(layout.get("hospital_sub", "")),
+        str(layout.get("subheadline", "")),
+        " ".join(str(x) for x in layout.get("headline", [])),
+        " ".join(str(x) for x in layout.get("icons", [])),
+        " ".join(str(x) for x in layout.get("badge_text", []))
+    ])
+    if any(0x0900 <= ord(c) <= 0x097F for c in all_text):
+        layout["_use_devanagari_font"] = True
+
     # 1. Deterministic template selection
     # Check if a specific template_id (0-4) is explicitly set in layout
     template_id = layout.get("template_id")

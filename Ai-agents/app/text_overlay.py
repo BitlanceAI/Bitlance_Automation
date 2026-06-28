@@ -18,11 +18,13 @@ from PIL import Image, ImageDraw, ImageFont
 logger = logging.getLogger(__name__)
 
 # ── Font Paths ────────────────────────────────────────────────────────────────
+FONTS_DIR  = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "fonts"))
 NOTO_DIR   = "/usr/share/fonts/truetype/noto"
 DEJAVU_DIR = "/usr/share/fonts/truetype/dejavu"
 
 def _font(name: str, size: int) -> ImageFont.FreeTypeFont:
     candidates = [
+        os.path.join(FONTS_DIR, name),
         os.path.join(NOTO_DIR, name),
         os.path.join(DEJAVU_DIR, name.replace("NotoSans", "DejaVuSans")),
     ]
@@ -33,13 +35,15 @@ def _font(name: str, size: int) -> ImageFont.FreeTypeFont:
 
 def _devanagari_font(size: int) -> ImageFont.FreeTypeFont:
     for name in ["NotoSansDevanagari-Bold.ttf", "NotoSansDevanagari-Medium.ttf", "NotoSansDevanagari-Regular.ttf"]:
-        p = os.path.join(NOTO_DIR, name)
-        if os.path.exists(p):
-            return ImageFont.truetype(p, size)
+        for d in [FONTS_DIR, NOTO_DIR]:
+            p = os.path.join(d, name)
+            if os.path.exists(p):
+                return ImageFont.truetype(p, size)
     for name in ["NotoSans-Bold.ttf", "NotoSans-Regular.ttf"]:
-        p = os.path.join(NOTO_DIR, name)
-        if os.path.exists(p):
-            return ImageFont.truetype(p, size)
+        for d in [FONTS_DIR, NOTO_DIR]:
+            p = os.path.join(d, name)
+            if os.path.exists(p):
+                return ImageFont.truetype(p, size)
     return ImageFont.load_default()
 
 
@@ -94,7 +98,16 @@ def overlay_flyer_text(
         sz_footer   = max(22, int(H * 0.036))
         sz_badge    = max(14, int(H * 0.024))
 
-        use_deva = layout.get("_use_devanagari_font", False)
+        all_text = " ".join([
+            str(layout.get("hospital_name", "")),
+            str(layout.get("hospital_sub", "")),
+            str(layout.get("tagline", "")),
+            str(layout.get("subheadline", "")),
+            " ".join(str(x) for x in layout.get("headline", [])),
+            " ".join(str(x) for x in layout.get("icons", [])),
+            " ".join(str(x) for x in layout.get("badge_text", []))
+        ])
+        use_deva = layout.get("_use_devanagari_font", False) or any(0x0900 <= ord(c) <= 0x097F for c in all_text)
         fn_black   = lambda s: _devanagari_font(s) if use_deva else _font("NotoSans-Black.ttf",   s)
         fn_bold    = lambda s: _devanagari_font(s) if use_deva else _font("NotoSans-Bold.ttf",    s)
         fn_regular = lambda s: _devanagari_font(s) if use_deva else _font("NotoSans-Regular.ttf", s)
