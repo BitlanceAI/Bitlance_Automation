@@ -258,6 +258,8 @@ export const triggerCall = async (req, res) => {
                 to_phone_number: phoneNumber,
                 customer_number: phoneNumber,
                 from_number: callerId || undefined,
+                webhook_url: `${process.env.SERVER_URL}/webhooks/dograh`,
+                server_url: `${process.env.SERVER_URL}/webhooks/dograh`,
                 initial_context: {
                     organization_id: org.id
                 },
