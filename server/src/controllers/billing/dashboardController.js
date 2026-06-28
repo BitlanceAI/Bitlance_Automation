@@ -1,6 +1,11 @@
 import { supabaseAdmin } from '../../config/supabaseClient.js';
 import axios from 'axios';
 import crypto from 'crypto';
+import SocketService from '../../services/socket/socketService.js';
+import { deductDbCredits, terminateDograhCall, fetchDograhRun, isDograhRunCompleted, extractRecordingUrl, finalizeActiveCall } from './dograhController.js';
+
+// Global object to track active call billing intervals in memory
+global.activeCallBilling = global.activeCallBilling || {};
 
 /**
  * Helper to ensure organization and wallet exist for the client admin user.
@@ -248,33 +253,215 @@ export const triggerCall = async (req, res) => {
 
         console.log(`📞 [TriggerCall] Initiating Dograh Vobiz outbound call to ${phoneNumber} using agent/trigger path UUID: ${agentId}`);
 
-        // 4. Send POST request to Dograh workflow trigger endpoint
-        const triggerUrl = `${dograhApiUrl}/api/v1/workflows/trigger/${agentId}`;
+        // 4. Send POST request to Dograh API Trigger endpoint using Agent UUID
+        const triggerUrl = `${dograhApiUrl}/api/v1/public/agent/workflow/${agentId}`;
         const response = await axios.post(
             triggerUrl,
             {
                 phone_number: phoneNumber,
-                to_number: phoneNumber,
-                to_phone_number: phoneNumber,
-                customer_number: phoneNumber,
-                from_number: callerId || undefined,
-                webhook_url: `${process.env.SERVER_URL}/webhooks/dograh`,
-                server_url: `${process.env.SERVER_URL}/webhooks/dograh`,
                 initial_context: {
-                    organization_id: org.id
-                },
-                metadata: {
-                    organization_id: org.id
+                    organization_id: org.id,
+                    webhook_url: `${process.env.SERVER_URL}/webhooks/dograh`,
+                    server_url: `${process.env.SERVER_URL}/webhooks/dograh`
                 }
             },
             {
                 headers: {
-                    Authorization: `Bearer ${dograhApiKey}`,
                     'X-API-Key': dograhApiKey,
                     'Content-Type': 'application/json'
                 }
             }
         );
+
+        const callId = response.data.workflow_run_id
+            ? response.data.workflow_run_id.toString()
+            : (response.data.id ? response.data.id.toString() : crypto.randomUUID());
+        const workflowId = response.data.workflow_id || process.env.DOGRAH_WORKFLOW_ID || null;
+        const telephonyCallId = response.data.call_id ? String(response.data.call_id) : null;
+        const callRecordId = crypto.randomUUID();
+
+        console.log(`📞 [TriggerCall] Dograh run started | run_id=${callId} | workflow_id=${workflowId || 'resolved-on-poll'} | response=${JSON.stringify(response.data)}`);
+
+        // 5. Fetch current wallet balance
+        const { data: currentWallet } = await supabaseAdmin
+            .from('wallet')
+            .select('balance')
+            .eq('organization_id', org.id)
+            .single();
+        const startBalance = currentWallet ? parseFloat(currentWallet.balance) : 0.00;
+
+        // 6. Insert into active_calls
+        const { data: activeCall, error } = await supabaseAdmin
+            .from('active_calls')
+            .insert({
+                call_id: callId,
+                organization_id: org.id,
+                customer_number: phoneNumber,
+                agent_id: agentId,
+                agent_name: 'Dograh Voice Agent',
+                started_at: new Date().toISOString()
+            })
+            .select()
+            .single();
+
+        if (error && error.code !== '23505') {
+            console.error('[TriggerCall] Active call DB error:', error.message);
+        }
+
+        // 7. Setup in-memory billing interval immediately
+        if (global.activeCallBilling[callId]) {
+            clearInterval(global.activeCallBilling[callId].intervalId);
+        }
+
+        const session = {
+            callRecordId,
+            startBalance,
+            startedAt: Date.now(),
+            orgId: org.id,
+            adminId: org.admin_id || req.user.id,
+            creditsDeductedSoFar: 0,
+            lastIntegerBalance: Math.floor(startBalance),
+            tickCount: 0,
+            workflowId,
+            phoneNumber,
+            agentId,
+            telephonyCallId,
+            lastTranscriptSnippet: '',
+            lastRecordingUrl: null
+        };
+
+        session.intervalId = setInterval(async () => {
+            try {
+                const elapsedSeconds = Math.round((Date.now() - session.startedAt) / 1000);
+                const currentCreditsUsed = (elapsedSeconds / 60) * 5;
+                const currentFloatBalance = session.startBalance - currentCreditsUsed;
+
+                console.log(`⏱️ [LiveBilling Tick] Call ${callId} | Duration: ${elapsedSeconds}s | Used: ${currentCreditsUsed.toFixed(4)} | Balance: ${currentFloatBalance.toFixed(4)}`);
+
+                if (currentFloatBalance <= 0) {
+                    console.log(`🚨 [LiveBilling] Balance reached <= 0. Terminating call ${callId}!`);
+                    clearInterval(session.intervalId);
+
+                    const finalToDeduct = session.startBalance - session.creditsDeductedSoFar;
+                    if (finalToDeduct > 0) {
+                        const deducted = await deductDbCredits(session.adminId, finalToDeduct, session.callRecordId, session.orgId);
+                        session.creditsDeductedSoFar += deducted;
+                    }
+
+                    await terminateDograhCall(callId, session.telephonyCallId);
+
+                    let runData = {};
+                    try {
+                        runData = await fetchDograhRun(callId, session.workflowId);
+                    } catch (fetchErr) {
+                        console.warn(`[LiveBilling] Could not fetch final run data for ${callId}:`, fetchErr.message);
+                    }
+
+                    await finalizeActiveCall({
+                        sessionKey: callId,
+                        session,
+                        callId,
+                        runData,
+                        phoneNumber: session.phoneNumber,
+                        agentId: session.agentId,
+                        orgId: session.orgId,
+                        adminId: session.adminId,
+                        forcedCreditsUsed: session.startBalance
+                    });
+                    return;
+                }
+
+                // Check crossed integer boundary
+                const currentIntegerBalance = Math.floor(currentFloatBalance);
+                if (currentIntegerBalance < session.lastIntegerBalance) {
+                    const diff = session.lastIntegerBalance - currentIntegerBalance;
+                    const deducted = await deductDbCredits(session.adminId, diff, session.callRecordId, session.orgId);
+                    session.creditsDeductedSoFar += deducted;
+                    session.lastIntegerBalance = currentIntegerBalance;
+                }
+
+                // Emit progress with live credits, transcript, and recording when available
+                const progressPayload = {
+                    call_id: callId,
+                    duration: elapsedSeconds,
+                    credits_used: parseFloat(currentCreditsUsed.toFixed(4)),
+                    balance: parseFloat(currentFloatBalance.toFixed(4))
+                };
+                if (session.lastTranscriptSnippet) {
+                    progressPayload.transcript_preview = session.lastTranscriptSnippet;
+                }
+                if (session.lastRecordingUrl) {
+                    progressPayload.recording_url = session.lastRecordingUrl;
+                }
+
+                SocketService.emitLiveCall(session.orgId, {
+                    event: 'call_progress',
+                    call: progressPayload
+                });
+
+                SocketService.emitWalletUpdate(session.orgId, parseFloat(currentFloatBalance.toFixed(4)));
+
+                // Poll Dograh run status every 5 ticks (5 seconds)
+                session.tickCount += 1;
+                if (session.tickCount % 5 === 0) {
+                    try {
+                        const runData = await fetchDograhRun(callId, session.workflowId);
+                        if (runData.workflow_id && !session.workflowId) {
+                            session.workflowId = runData.workflow_id;
+                        }
+                        if (runData.gathered_context?.call_id && !session.telephonyCallId) {
+                            session.telephonyCallId = String(runData.gathered_context.call_id);
+                        }
+
+                        const recordingUrl = extractRecordingUrl(runData);
+                        if (recordingUrl && recordingUrl !== session.lastRecordingUrl) {
+                            session.lastRecordingUrl = recordingUrl;
+                        }
+
+                        const transcriptPreview = runData.transcript || runData.transcript_object;
+                        if (transcriptPreview) {
+                            const snippet = typeof transcriptPreview === 'string'
+                                ? transcriptPreview.slice(0, 500)
+                                : JSON.stringify(transcriptPreview).slice(0, 500);
+                            session.lastTranscriptSnippet = snippet;
+                        }
+
+                        if (isDograhRunCompleted(runData)) {
+                            console.log(`✅ [Polling] Call ${callId} ended. Finalizing billing session.`);
+                            await finalizeActiveCall({
+                                sessionKey: callId,
+                                session,
+                                callId,
+                                runData,
+                                phoneNumber: session.phoneNumber,
+                                agentId: session.agentId,
+                                orgId: session.orgId,
+                                adminId: session.adminId
+                            });
+                            return;
+                        }
+                    } catch (pollErr) {
+                        console.error(`❌ [Polling] Error checking run status for call ${callId}:`, pollErr.response?.data || pollErr.message);
+                    }
+                }
+
+            } catch (timerErr) {
+                console.error('[LiveBilling Timer] Error:', timerErr.message);
+            }
+        }, 1000);
+
+        global.activeCallBilling[callId] = session;
+
+        // 8. Broadcast call_started to socket
+        SocketService.emitLiveCall(org.id, {
+            event: 'call_started',
+            call: activeCall || {
+                call_id: callId,
+                customer_number: phoneNumber,
+                agent_name: 'Dograh Voice Agent',
+                started_at: new Date().toISOString()
+            }
+        });
 
         res.json({
             success: true,
