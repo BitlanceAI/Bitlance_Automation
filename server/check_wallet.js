@@ -30,12 +30,7 @@ async function main() {
     }
     
     console.log('Sales Calls Total:', calls.length);
-    console.log('Sales Calls:', calls.map(c => ({
-        started_at: c.started_at,
-        duration: c.duration,
-        credits_used: c.credits_used,
-        status: c.status
-    })));
+    console.log('Latest Call Details:', JSON.stringify(calls[0], null, 2));
     
     process.exit(0);
 }

@@ -141,9 +141,11 @@ export function extractRecordingUrl(runData) {
 
     if (url && typeof url === 'string') {
         url = url.trim();
-        if (url.startsWith('/')) {
+        if (!url.startsWith('http://') && !url.startsWith('https://')) {
             const { apiUrl } = getDograhConfig();
-            return `${apiUrl}${url}`;
+            const base = apiUrl.endsWith('/') ? apiUrl.slice(0, -1) : apiUrl;
+            const path = url.startsWith('/') ? url : `/${url}`;
+            return `${base}${path}`;
         }
     }
     return url;
