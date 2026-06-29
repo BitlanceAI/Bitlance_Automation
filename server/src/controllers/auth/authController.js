@@ -90,7 +90,7 @@ export const signup = async (req, res) => {
                     .from('user_credits')
                     .upsert({
                         user_id: data.user.id,
-                        balance: 500, // Initial credits
+                        balance: 200, // Initial credits
                         updated_at: new Date().toISOString()
                     }, { onConflict: 'user_id' });
 

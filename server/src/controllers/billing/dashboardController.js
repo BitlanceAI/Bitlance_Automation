@@ -47,7 +47,7 @@ async function ensureOrgAndWallet(userId) {
 
     if (!wallet) {
         // Seed wallet with 500 starting credits for the client organization
-        const initialBalance = 500;
+        const initialBalance = 200;
 
         const { data: newWallet, error: insertWalletErr } = await supabaseAdmin
             .from('wallet')
