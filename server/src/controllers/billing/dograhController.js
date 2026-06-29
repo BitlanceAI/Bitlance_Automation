@@ -157,8 +157,18 @@ async function fetchTranscriptContent(runData) {
         return formatTranscript(inlineTranscript);
     }
 
-    const transcriptUrl = runData?.transcript_url || runData?.transcript_public_url;
+    let transcriptUrl = runData?.transcript_public_url || runData?.transcript_url;
     if (!transcriptUrl) return '';
+
+    if (typeof transcriptUrl === 'string') {
+        transcriptUrl = transcriptUrl.trim();
+        if (!transcriptUrl.startsWith('http://') && !transcriptUrl.startsWith('https://')) {
+            const { apiUrl } = getDograhConfig();
+            const base = apiUrl.endsWith('/') ? apiUrl.slice(0, -1) : apiUrl;
+            const path = transcriptUrl.startsWith('/') ? transcriptUrl : `/${transcriptUrl}`;
+            transcriptUrl = `${base}${path}`;
+        }
+    }
 
     try {
         const { apiKey } = getDograhConfig();
@@ -167,7 +177,7 @@ async function fetchTranscriptContent(runData) {
         });
         return formatTranscript(res.data);
     } catch (err) {
-        console.warn('[Dograh] Failed to fetch transcript URL:', err.message);
+        console.warn('[Dograh] Failed to fetch transcript URL:', transcriptUrl, err.message);
         return '';
     }
 }
@@ -194,6 +204,27 @@ export async function finalizeActiveCall({
         session.finalizing = true;
     }
 
+    // If recording/transcript URLs are missing from webhook payload, poll Dograh API for up to 12 seconds
+    let finalRunData = runData;
+    const isCompleted = isDograhRunCompleted(runData);
+    if (isCompleted) {
+        let attempts = 0;
+        const maxAttempts = 6; // Poll every 2 seconds for up to 12 seconds
+        while (attempts < maxAttempts && (!finalRunData?.recording_url || !finalRunData?.transcript_url)) {
+            console.log(`[Dograh Poll] Recording/Transcript missing. Polling run ${callId} (attempt ${attempts + 1}/${maxAttempts})...`);
+            await new Promise(resolve => setTimeout(resolve, 2000));
+            try {
+                const polledData = await fetchDograhRun(callId);
+                if (polledData) {
+                    finalRunData = polledData;
+                }
+            } catch (err) {
+                console.warn(`[Dograh Poll] Failed to poll run ${callId}:`, err.message);
+            }
+            attempts++;
+        }
+    }
+
     if (session) {
         clearActiveCallSession(sessionKey);
     }
@@ -204,7 +235,7 @@ export async function finalizeActiveCall({
         .eq('call_id', callId)
         .maybeSingle();
 
-    const durationSeconds = extractRunDurationSeconds(runData, session?.startedAt || (existingCall ? new Date(existingCall.started_at).getTime() : null));
+    const durationSeconds = extractRunDurationSeconds(finalRunData, session?.startedAt || (existingCall ? new Date(existingCall.started_at).getTime() : null));
     const finalCreditsNeeded = forcedCreditsUsed != null
         ? forcedCreditsUsed
         : (durationSeconds / 60) * 5;
@@ -228,7 +259,7 @@ export async function finalizeActiveCall({
         finalDeducted = await deductDbCredits(adminId, finalCreditsNeeded, callRecordId, orgId);
     }
 
-    const transcriptRaw = await fetchTranscriptContent(runData);
+    const transcriptRaw = await fetchTranscriptContent(finalRunData);
     const aiAnalysis = await analyzeCallTranscript(transcriptRaw);
     const transcriptJsonBundle = JSON.stringify({
         raw: transcriptRaw,
@@ -253,10 +284,10 @@ export async function finalizeActiveCall({
             .update({
                 duration: durationSeconds,
                 credits_used: finalDeducted,
-                status: extractRunStatus(runData),
-                recording_url: extractRecordingUrl(runData) || existingCall.recording_url,
+                status: extractRunStatus(finalRunData),
+                recording_url: extractRecordingUrl(finalRunData) || existingCall.recording_url,
                 transcript: transcriptJsonBundle,
-                ended_at: new Date(runData?.end_timestamp || Date.now()).toISOString()
+                ended_at: new Date(finalRunData?.end_timestamp || Date.now()).toISOString()
             })
             .eq('id', existingCall.id)
             .select()
@@ -270,16 +301,16 @@ export async function finalizeActiveCall({
                 id: callRecordId,
                 call_id: callId,
                 organization_id: orgId,
-                customer_number: phoneNumber || runData?.initial_context?.phone_number || 'Unknown',
-                agent_id: agentId || runData?.initial_context?.workflow_uuid || runData?.initial_context?.agent_identifier || 'Unknown',
+                customer_number: phoneNumber || finalRunData?.initial_context?.phone_number || 'Unknown',
+                agent_id: agentId || finalRunData?.initial_context?.workflow_uuid || finalRunData?.initial_context?.agent_identifier || 'Unknown',
                 agent_name: agentName,
                 duration: durationSeconds,
                 credits_used: finalDeducted,
-                status: extractRunStatus(runData),
-                recording_url: extractRecordingUrl(runData),
+                status: extractRunStatus(finalRunData),
+                recording_url: extractRecordingUrl(finalRunData),
                 transcript: transcriptJsonBundle,
-                started_at: new Date(runData?.created_at || runData?.start_timestamp || session?.startedAt || Date.now()).toISOString(),
-                ended_at: new Date(runData?.end_timestamp || Date.now()).toISOString()
+                started_at: new Date(finalRunData?.created_at || finalRunData?.start_timestamp || session?.startedAt || Date.now()).toISOString(),
+                ended_at: new Date(finalRunData?.end_timestamp || Date.now()).toISOString()
             })
             .select()
             .single();
@@ -308,8 +339,8 @@ export async function finalizeActiveCall({
             duration: durationSeconds,
             credits_used: finalDeducted,
             balance: finalBalance,
-            status: extractRunStatus(runData),
-            recording_url: extractRecordingUrl(runData),
+            status: extractRunStatus(finalRunData),
+            recording_url: extractRecordingUrl(finalRunData),
             transcript: transcriptJsonBundle
         }
     });
