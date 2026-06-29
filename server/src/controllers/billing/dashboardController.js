@@ -785,12 +785,12 @@ export const getUserWorkflows = async (req, res) => {
                         is_fallback: true,
                         workflows: [
                             {
-                                workflow_id: '0ae47ce1-5ada-411c-85ff-e28105a374e6',
-                                workflow_name: 'Lotlite'
+                                workflow_id: '45b42390-369b-49b5-9a26-21a099dc843e',
+                                workflow_name: 'Property Buyer Lead Call'
                             },
                             {
-                                workflow_id: '7ef7deb5-7e2d-4616-8ea5-93914314bccf',
-                                workflow_name: 'Real Estate- Outbound'
+                                workflow_id: '0ae47ce1-5ada-411c-85ff-e28105a374e6',
+                                workflow_name: 'Lotlite follow up and real estate'
                             }
                         ]
                     });
@@ -799,16 +799,7 @@ export const getUserWorkflows = async (req, res) => {
                 return res.json({
                     success: true,
                     is_fallback: true,
-                    workflows: [
-                        {
-                            workflow_id: '45b42390-369b-49b5-9a26-21a099dc843e',
-                            workflow_name: 'Property Buyer Lead Call'
-                        },
-                        {
-                            workflow_id: '7ef7deb5-7e2d-4616-8ea5-93914314bccf',
-                            workflow_name: 'Seller Followup Call'
-                        }
-                    ]
+                    workflows: []
                 });
             }
             throw fetchErr;
@@ -821,12 +812,12 @@ export const getUserWorkflows = async (req, res) => {
                     success: true,
                     workflows: [
                         {
-                            workflow_id: '0ae47ce1-5ada-411c-85ff-e28105a374e6',
-                            workflow_name: 'Lotlite'
+                            workflow_id: '45b42390-369b-49b5-9a26-21a099dc843e',
+                            workflow_name: 'Property Buyer Lead Call'
                         },
                         {
-                            workflow_id: '7ef7deb5-7e2d-4616-8ea5-93914314bccf',
-                            workflow_name: 'Real Estate- Outbound'
+                            workflow_id: '0ae47ce1-5ada-411c-85ff-e28105a374e6',
+                            workflow_name: 'Lotlite'
                         }
                     ]
                 });
@@ -834,16 +825,7 @@ export const getUserWorkflows = async (req, res) => {
 
             return res.json({
                 success: true,
-                workflows: [
-                    {
-                        workflow_id: '45b42390-369b-49b5-9a26-21a099dc843e',
-                        workflow_name: 'Property Buyer Lead Call'
-                    },
-                    {
-                        workflow_id: '7ef7deb5-7e2d-4616-8ea5-93914314bccf',
-                        workflow_name: 'Seller Followup Call'
-                    }
-                ]
+                workflows: []
             });
         }
 
