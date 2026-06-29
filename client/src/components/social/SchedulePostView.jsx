@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import {
     Sparkles, TrendingUp, Loader2, CheckCircle2, XCircle,
     Send, Linkedin, Facebook, Instagram, Copy, Check, RefreshCw,
-    Zap, Clock, ChevronDown, ChevronUp, ImageIcon, X, MessageSquare
+    Zap, Clock, ChevronDown, ChevronUp, ImageIcon, X, MessageSquare, Edit2
 } from 'lucide-react';
 import API_BASE_URL from '../../config.js';
 import { supabase } from '../../services/supabaseClient';
@@ -62,7 +62,8 @@ const SchedulePostView = ({
     setIsPreviewOpen, 
     setPostTargets, 
     setPreviewStep,
-    postSuccessCount = 0
+    postSuccessCount = 0,
+    setIsScheduling
 }) => {
     const { workspaceHeaders } = useWorkspace();
 
@@ -70,6 +71,13 @@ const SchedulePostView = ({
     const [activeTab, setActiveTab] = useState('create');
     const [history, setHistory] = useState([]);
     const [loadingHistory, setLoadingHistory] = useState(false);
+    const [scheduledPosts, setScheduledPosts] = useState([]);
+    const [loadingScheduled, setLoadingScheduled] = useState(false);
+    
+    // Edit Time State
+    const [editingTimeId, setEditingTimeId] = useState(null);
+    const [editTimeValue, setEditTimeValue] = useState('');
+    const [isUpdatingTime, setIsUpdatingTime] = useState(false);
 
     // Step 1: Config
     const [category, setCategory] = useState('');
@@ -127,6 +135,58 @@ const SchedulePostView = ({
             console.error("Failed to fetch history:", err);
         } finally {
             setLoadingHistory(false);
+        }
+    };
+
+    const fetchScheduledPosts = async () => {
+        setLoadingScheduled(true);
+        try {
+            const token = await getToken();
+            const res = await fetch(`${API_BASE_URL}/api/social/schedule`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    ...workspaceHeaders,
+                }
+            });
+            const data = await res.json();
+            if (data.success) {
+                setScheduledPosts(data.data || []);
+            }
+        } catch (err) {
+            console.error("Failed to fetch scheduled posts:", err);
+        } finally {
+            setLoadingScheduled(false);
+        }
+    };
+
+    const handleUpdateScheduledTime = async (id) => {
+        if (!editTimeValue) return;
+        setIsUpdatingTime(true);
+        try {
+            const token = await getToken();
+            const res = await fetch(`${API_BASE_URL}/api/social/schedule/${id}`, {
+                method: 'PUT',
+                headers: { 
+                    'Authorization': `Bearer ${token}`, 
+                    'Content-Type': 'application/json', 
+                    ...workspaceHeaders 
+                },
+                body: JSON.stringify({ 
+                    scheduledAt: new Date(editTimeValue).toISOString(),
+                    timezone: Intl.DateTimeFormat().resolvedOptions().timeZone
+                })
+            });
+            const data = await res.json();
+            if (data.success) {
+                setEditingTimeId(null);
+                fetchScheduledPosts();
+            } else {
+                alert(data.message || 'Failed to update time');
+            }
+        } catch (err) {
+            console.error('Failed to update scheduled time:', err);
+        } finally {
+            setIsUpdatingTime(false);
         }
     };
 
@@ -211,7 +271,8 @@ const SchedulePostView = ({
         const targets = connectedProfiles.filter(p => selectedPlatforms.includes(p.platform));
         setPostTargets(targets);
 
-        // 4. Open Modal
+        // 4. Open Modal & Enable Scheduling
+        if (setIsScheduling) setIsScheduling(true);
         setPreviewStep(1);
         setIsPreviewOpen(true);
     };
@@ -535,11 +596,11 @@ const SchedulePostView = ({
                         onClick={handlePrepareForPost}
                         className="w-full flex items-center justify-center gap-2 bg-[#26cece] hover:bg-white/5 text-[#070707] font-bold font-['Space_Grotesk'] uppercase tracking-widest py-4 rounded-[2px] shadow-none hover:-translate-y-1 hover:shadow-[4px_4px_0_0_#333] transition-all duration-200 cursor-pointer"
                     >
-                        <Send className="w-5 h-5" />
-                        Publish to Social Media
+                        <Clock className="w-5 h-5" />
+                        Preview & Schedule Post
                     </button>
                     <p className="mt-3 text-center text-[11px] font-mono text-white/40 uppercase tracking-widest">
-                        This will open the preview & publishing modal
+                        This will open the preview & scheduling modal
                     </p>
                 </div>
             </div>
@@ -599,6 +660,129 @@ const SchedulePostView = ({
         </div>
     );
 
+    const renderScheduledPosts = () => (
+        <div className="space-y-6">
+            <div className="grid grid-cols-1 gap-4">
+                {loadingScheduled ? (
+                    <div className="py-20 text-center"><Loader2 className="w-8 h-8 text-[#26cece] animate-spin mx-auto" /></div>
+                ) : scheduledPosts.length === 0 ? (
+                    <div className="col-span-full py-20 text-center space-y-3">
+                        <div className="w-16 h-16 rounded-full bg-black/20 flex items-center justify-center mx-auto">
+                            <Clock className="w-8 h-8 text-gray-300" />
+                        </div>
+                        <p className="text-[13px] font-mono text-white/50 uppercase tracking-widest">
+                            No scheduled posts found
+                        </p>
+                    </div>
+                ) : (
+                    scheduledPosts.map((item) => (
+                        <div 
+                            key={item.id}
+                            className="bg-white/5 border border-white/10 rounded-[2px] overflow-hidden"
+                        >
+                            <div className="p-4 flex gap-4">
+                                {item.media_url && (
+                                    <div className="w-24 h-24 rounded-xl overflow-hidden shrink-0">
+                                        <img src={item.media_url} alt="" className="w-full h-full object-cover" />
+                                    </div>
+                                )}
+                                <div className="flex-1 space-y-2">
+                                    <div className="flex items-center justify-between">
+                                        <div className="flex items-center gap-2">
+                                            {item.platforms?.map(p => (
+                                                <span key={p} className="text-[10px] font-mono uppercase bg-white/10 px-2 py-1 rounded-full text-white/80">{p}</span>
+                                            ))}
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                            <span className={`text-[10px] font-mono uppercase tracking-widest px-2 py-1 rounded-[2px] border ${
+                                                item.status === 'approved' || item.status === 'scheduled' ? 'bg-[#26cece]/10 border-[#26cece] text-[#26cece]' :
+                                                item.status === 'rejected' ? 'bg-red-500/10 border-red-500 text-red-500' :
+                                                'bg-[#FFCA4A]/10 border-[#FFCA4A] text-[#FFCA4A]'
+                                            }`}>
+                                                {item.status.replace('_', ' ')}
+                                            </span>
+                                            {editingTimeId === item.id ? (
+                                                <div className="flex items-center gap-2 ml-2">
+                                                    <input 
+                                                        type="datetime-local" 
+                                                        value={editTimeValue}
+                                                        onChange={e => setEditTimeValue(e.target.value)}
+                                                        className="bg-white/5 border border-white/10 text-white px-2 py-1 rounded-sm font-mono text-[11px] outline-none"
+                                                    />
+                                                    <button onClick={() => handleUpdateScheduledTime(item.id)} disabled={isUpdatingTime} className="text-[#25D366] hover:text-white transition-colors cursor-pointer">
+                                                        {isUpdatingTime ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
+                                                    </button>
+                                                    <button onClick={() => setEditingTimeId(null)} className="text-red-400 hover:text-white transition-colors cursor-pointer">
+                                                        <X className="w-4 h-4" />
+                                                    </button>
+                                                </div>
+                                            ) : (
+                                                <div className="flex items-center gap-2">
+                                                    <span className="text-[11px] font-mono text-white/60">
+                                                        {new Date(item.scheduled_at).toLocaleString()}
+                                                    </span>
+                                                    {(item.status === 'pending_approval' || item.status === 'scheduled' || item.status === 'approved') && (
+                                                        <button 
+                                                            onClick={() => {
+                                                                setEditingTimeId(item.id);
+                                                                // Convert ISO string back to local datetime-local format
+                                                                const localDate = new Date(item.scheduled_at);
+                                                                const tzOffset = localDate.getTimezoneOffset() * 60000;
+                                                                const localISOTime = (new Date(localDate - tzOffset)).toISOString().slice(0,16);
+                                                                setEditTimeValue(localISOTime);
+                                                            }}
+                                                            className="text-[#26cece]/60 hover:text-[#26cece] transition-colors cursor-pointer"
+                                                        >
+                                                            <Edit2 className="w-3.5 h-3.5" />
+                                                        </button>
+                                                    )}
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                    <p className="text-[13px] text-white/80 font-sans line-clamp-2">
+                                        {item.text}
+                                    </p>
+                                    <div className="text-[10px] font-mono text-white/40 pt-2 flex justify-between">
+                                        <span>Approver: {item.approver_phone || 'None'}</span>
+                                        {item.status === 'pending_approval' && (
+                                            <button 
+                                                onClick={async () => {
+                                                    try {
+                                                        const token = await getToken();
+                                                        const res = await fetch(`${API_BASE_URL}/api/social/schedule/${item.id}/resend-approval`, {
+                                                            method: 'POST',
+                                                            headers: { 
+                                                                'Authorization': `Bearer ${token}`, 
+                                                                ...workspaceHeaders 
+                                                            }
+                                                        });
+                                                        const data = await res.json();
+                                                        if (data.success) {
+                                                            alert('Approval request sent via WhatsApp!');
+                                                        } else {
+                                                            alert(data.message || 'Failed to resend approval');
+                                                        }
+                                                    } catch (err) {
+                                                        console.error('Failed to resend approval:', err);
+                                                        alert('An error occurred');
+                                                    }
+                                                }}
+                                                className="text-[#26cece] hover:underline cursor-pointer transition-all"
+                                            >
+                                                Resend Approval Request
+                                            </button>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    ))
+                )}
+            </div>
+        </div>
+    );
+
     return (
         <div className="flex-1 p-8 bg-white/5 overflow-y-auto w-full">
             <div className="max-w-3xl mx-auto space-y-6">
@@ -609,7 +793,7 @@ const SchedulePostView = ({
                             Smart Post Scheduler
                         </h2>
                         <p className="text-[13px] text-white/50 font-mono mt-1">
-                            {activeTab === 'create' ? 'Category → Google Trends → AI Captions → Graphic → Publish' : 'Access your past AI-generated social content'}
+                            {activeTab === 'create' ? 'Category → Google Trends → AI Captions → Graphic → Publish' : activeTab === 'scheduled' ? 'Manage your upcoming AI-generated posts' : 'Access your past AI-generated social content'}
                         </p>
                     </div>
 
@@ -632,6 +816,17 @@ const SchedulePostView = ({
                             }`}
                         >
                             History
+                        </button>
+                        <button
+                            onClick={() => {
+                                setActiveTab('scheduled');
+                                fetchScheduledPosts();
+                            }}
+                            className={`px-4 py-1.5 text-[11px] font-mono uppercase tracking-widest rounded-[1px] transition-all cursor-pointer ${
+                                activeTab === 'scheduled' ? 'bg-white/5 text-[#26cece] shadow-sm font-bold' : 'text-white/50 hover:text-white'
+                            }`}
+                        >
+                            Scheduled
                         </button>
                     </div>
                 </div>
@@ -680,6 +875,15 @@ const SchedulePostView = ({
                             {step === 3 && renderReview()}
                         </div>
                     </>
+                ) : activeTab === 'scheduled' ? (
+                    <div className="bg-white/5 border border-white/10 rounded-[2px] p-6 shadow-[0_4px_24px_0_rgba(0,0,0,0.08)]">
+                        {loadingScheduled ? (
+                            <div className="py-20 flex flex-col items-center justify-center space-y-4">
+                                <Loader2 className="w-8 h-8 text-[#26cece] animate-spin" />
+                                <p className="text-[12px] font-mono text-white/50 uppercase tracking-widest">Loading Scheduled Posts...</p>
+                            </div>
+                        ) : renderScheduledPosts()}
+                    </div>
                 ) : (
                     <div className="bg-white/5 border border-white/10 rounded-[2px] p-6 shadow-[0_4px_24px_0_rgba(0,0,0,0.08)]">
                         {loadingHistory ? (

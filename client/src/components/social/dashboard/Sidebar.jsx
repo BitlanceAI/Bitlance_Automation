@@ -7,6 +7,7 @@ import {
     Inbox,
     BarChart2,
     MessageSquare,
+    MessageCircle,
     HelpCircle,
     AlertCircle,
     MoreVertical,
@@ -48,6 +49,7 @@ const Sidebar = ({
         { icon: Library, label: 'Libraries', view: null, path: '#' },
         { icon: Users, label: 'Social profiles', view: 'profiles', path: '#' },
         { icon: Inbox, label: 'Inbox', view: 'inbox', path: '#' },
+        { icon: MessageCircle, label: 'Comments', view: 'comments', path: '#' },
         { icon: BarChart2, label: 'Reports', view: null, path: '#' },
         { icon: MessageSquare, label: 'DM automations', view: null, path: '#' },
     ];

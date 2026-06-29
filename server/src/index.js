@@ -110,6 +110,9 @@ app.use('/api/whatsapp', whatsappRoutes);
 import agentRoutes from './routes/social/agentRoutes.js';
 app.use('/api/agent', agentRoutes);
 
+import scheduleRoutes from './routes/social/scheduleRoutes.js';
+app.use('/api/social/schedule', scheduleRoutes);
+
 app.use('/api', articleRoutes); // blog generation + CRUD + public blog routes
 app.use('/api/gemini', geminiRoutes); // Gemini AI endpoints
 
