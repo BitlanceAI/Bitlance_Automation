@@ -125,7 +125,7 @@ export function extractRunStatus(runData) {
     return runData?.gathered_context?.mapped_call_disposition
         || runData?.gathered_context?.call_disposition
         || runData?.disconnection_reason
-        || (runData?.is_completed ? 'completed' : 'active');
+        || 'completed';
 }
 
 export function extractRecordingUrl(runData) {
