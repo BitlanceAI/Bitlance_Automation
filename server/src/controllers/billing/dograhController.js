@@ -187,14 +187,22 @@ export async function finalizeActiveCall({
         clearActiveCallSession(sessionKey);
     }
 
-    const durationSeconds = extractRunDurationSeconds(runData, session?.startedAt);
+    const { data: existingCall } = await supabaseAdmin
+        .from('sales_calls')
+        .select('*')
+        .eq('call_id', callId)
+        .maybeSingle();
+
+    const durationSeconds = extractRunDurationSeconds(runData, session?.startedAt || (existingCall ? new Date(existingCall.started_at).getTime() : null));
     const finalCreditsNeeded = forcedCreditsUsed != null
         ? forcedCreditsUsed
         : (durationSeconds / 60) * 5;
-    const callRecordId = session?.callRecordId || crypto.randomUUID();
+    const callRecordId = session?.callRecordId || existingCall?.id || crypto.randomUUID();
 
     let finalDeducted = finalCreditsNeeded;
-    if (session) {
+    if (existingCall) {
+        finalDeducted = existingCall.credits_used;
+    } else if (session) {
         const adjustment = session.creditsDeductedSoFar - finalCreditsNeeded;
         if (adjustment > 0) {
             await refundDbCredits(session.adminId, adjustment, callRecordId, session.orgId);
@@ -225,25 +233,48 @@ export async function finalizeActiveCall({
         .single();
     const finalBalance = finalWallet ? parseFloat(finalWallet.balance) : 0;
 
-    const { data: callHistoryRow, error: historyErr } = await supabaseAdmin
-        .from('sales_calls')
-        .insert({
-            id: callRecordId,
-            call_id: callId,
-            organization_id: orgId,
-            customer_number: phoneNumber || runData?.initial_context?.phone_number || 'Unknown',
-            agent_id: agentId || runData?.initial_context?.workflow_uuid || runData?.initial_context?.agent_identifier || 'Unknown',
-            agent_name: agentName,
-            duration: durationSeconds,
-            credits_used: finalDeducted,
-            status: extractRunStatus(runData),
-            recording_url: extractRecordingUrl(runData),
-            transcript: transcriptJsonBundle,
-            started_at: new Date(runData?.created_at || runData?.start_timestamp || session?.startedAt || Date.now()).toISOString(),
-            ended_at: new Date(runData?.end_timestamp || Date.now()).toISOString()
-        })
-        .select()
-        .single();
+    let callHistoryRow = null;
+    let historyErr = null;
+
+    if (existingCall) {
+        const { data: updatedRow, error: updateErr } = await supabaseAdmin
+            .from('sales_calls')
+            .update({
+                duration: durationSeconds,
+                credits_used: finalDeducted,
+                status: extractRunStatus(runData),
+                recording_url: extractRecordingUrl(runData) || existingCall.recording_url,
+                transcript: transcriptJsonBundle,
+                ended_at: new Date(runData?.end_timestamp || Date.now()).toISOString()
+            })
+            .eq('id', existingCall.id)
+            .select()
+            .single();
+        callHistoryRow = updatedRow;
+        historyErr = updateErr;
+    } else {
+        const { data: insertedRow, error: insertErr } = await supabaseAdmin
+            .from('sales_calls')
+            .insert({
+                id: callRecordId,
+                call_id: callId,
+                organization_id: orgId,
+                customer_number: phoneNumber || runData?.initial_context?.phone_number || 'Unknown',
+                agent_id: agentId || runData?.initial_context?.workflow_uuid || runData?.initial_context?.agent_identifier || 'Unknown',
+                agent_name: agentName,
+                duration: durationSeconds,
+                credits_used: finalDeducted,
+                status: extractRunStatus(runData),
+                recording_url: extractRecordingUrl(runData),
+                transcript: transcriptJsonBundle,
+                started_at: new Date(runData?.created_at || runData?.start_timestamp || session?.startedAt || Date.now()).toISOString(),
+                ended_at: new Date(runData?.end_timestamp || Date.now()).toISOString()
+            })
+            .select()
+            .single();
+        callHistoryRow = insertedRow;
+        historyErr = insertErr;
+    }
 
     if (historyErr) {
         console.error('[Call Finalize] History insert failed:', historyErr.message);
@@ -484,7 +515,7 @@ export async function analyzeCallTranscript(transcriptText) {
 Extract the following information in JSON format:
 {
   "summary": "A brief 2-3 sentence summary of the call",
-  "sentiment": "😊 Positive, 😐 Neutral, or 😞 Negative (choose exactly one, including the emoji and text)",
+  "sentiment": "A dynamic one-line result (under 15 words) starting with a suitable emoji (e.g. 😊, 😐, 😞, 😠) summarizing what the customer/user said and how they responded (e.g. '😊 Inquired about pediatric appointments and responded cooperatively' or '😠 Complained about long wait times and hung up in frustration')",
   "entities": {
     "patient_name": "Name of the patient/customer (if mentioned, otherwise null)",
     "mobile": "Contact number (if mentioned, otherwise null)",
