@@ -34,10 +34,11 @@ const allowedOrigins = process.env.ALLOWED_ORIGINS
     ? process.env.ALLOWED_ORIGINS.split(',').map(o => o.trim())
     : ['http://localhost:5173', 'http://localhost:5174', 'https://nice-water-02854560f.7.azurestaticapps.net', 'http://localhost:5176', 'http://localhost:3000', 'https://bitlance-automation-app.azurewebsites.net', 'https://bitlance-backend-gucrd2dcgng8dkch.eastasia-01.azurewebsites.net', 'https://automation-dashboard-ten.vercel.app', 'https://automation-dashboard-git-main-bitlanceais-projects.vercel.app', 'https://bitlancetechhub.com', 'https://www.bitlancetechhub.com'];
 
-// Allow all Vercel preview deployments for this project
+// Allow all Vercel preview deployments for this project and any bitlancetechhub subdomains
 const allowedOriginPatterns = [
     /^https:\/\/automation-dashboard-.*-bitlanceais-projects\.vercel\.app$/,
-    /^https:\/\/.*\.vercel\.app$/
+    /^https:\/\/.*\.vercel\.app$/,
+    /^https:\/\/.*\.bitlancetechhub\.com$/
 ];
 
 app.use(cors({
