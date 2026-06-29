@@ -54,7 +54,7 @@ export const AddProfileModal = ({ isAddProfileModalOpen, setIsAddProfileModalOpe
                         onClick={async () => {
                             try {
                                 const currentUrl = window.location.origin + window.location.pathname;
-                                const response = await fetch(`${API_BASE_URL}/api/meta/oauth/url?redirect_uri=${encodeURIComponent(currentUrl)}`, {
+                                const response = await fetch(`${API_BASE_URL}/api/meta/oauth/url?redirect_uri=${encodeURIComponent(currentUrl)}&platform=facebook`, {
                                     headers: { 'Authorization': `Bearer ${authToken}` }
                                 });
                                 const data = await response.json();
@@ -85,18 +85,18 @@ export const AddProfileModal = ({ isAddProfileModalOpen, setIsAddProfileModalOpe
                         onClick={async () => {
                             try {
                                 const currentUrl = window.location.origin + window.location.pathname;
-                                const response = await fetch(`${API_BASE_URL}/api/meta/oauth/url?redirect_uri=${encodeURIComponent(currentUrl)}`, {
+                                const response = await fetch(`${API_BASE_URL}/api/meta/instagram/url?redirect_uri=${encodeURIComponent(currentUrl)}`, {
                                     headers: { 'Authorization': `Bearer ${authToken}` }
                                 });
                                 const data = await response.json();
                                 if (data.success && data.url) {
                                     window.location.href = data.url;
                                 } else {
-                                    alert(data.error || 'Failed to get Meta auth URL');
+                                    alert(data.error || 'Failed to get Instagram auth URL');
                                 }
                             } catch (err) {
-                                console.error('Meta connect init error:', err);
-                                alert('Failed to initiate Meta connection');
+                                console.error('Instagram connect init error:', err);
+                                alert('Failed to initiate Instagram connection');
                             }
                         }}
                         className="w-full flex items-center gap-4 p-4 -[2px] border border-white/10 bg-white/5 backdrop-blur-md hover:border-white/20 hover:-translate-y-1 hover:shadow-[4px_4px_0_0_#444] transition-all group cursor-pointer text-left rounded-2xl"
@@ -106,7 +106,7 @@ export const AddProfileModal = ({ isAddProfileModalOpen, setIsAddProfileModalOpe
                         </div>
                         <div className="flex-1">
                             <div className="text-[13px] font-mono tracking-widest text-white uppercase group-hover:text-[#26cece]">Instagram</div>
-                            <div className="text-[10px] font-mono tracking-widest text-white/60 uppercase mt-1">Connect Instagram Business</div>
+                            <div className="text-[10px] font-mono tracking-widest text-white/60 uppercase mt-1">Connect via Facebook · Instagram Business</div>
                         </div>
                         <Plus className="w-5 h-5 text-white/60 group-hover:text-white" />
                     </button>
@@ -192,7 +192,14 @@ export const PostPreviewModal = ({
     postSuccessCount,
     waShare,
     setWaShare,
-    handleSendWhatsAppPreview
+    handleSendWhatsAppPreview,
+    isScheduling,
+    setIsScheduling,
+    scheduledAt,
+    setScheduledAt,
+    approverPhone,
+    setApproverPhone,
+    authToken
 }) => {
     if (!isPreviewOpen) return null;
 
@@ -385,7 +392,46 @@ export const PostPreviewModal = ({
                                         );
                                     })}
                                 </div>
-                            )}
+                        )}
+
+                            <div className="mt-6 bg-white/10 border border-white/10 rounded-2xl p-6">
+                                <div className="flex items-center justify-between mb-4">
+                                    <h3 className="text-[14px] font-bold font-['Space_Grotesk'] text-white uppercase tracking-widest flex items-center gap-2">
+                                        <Clock className="w-4 h-4 text-[#26cece]" /> Schedule for Later
+                                    </h3>
+                                    <div className="relative inline-block w-10 mr-2 align-middle select-none transition duration-200 ease-in">
+                                        <input type="checkbox" id="schedule-toggle" className="toggle-checkbox absolute block w-5 h-5 rounded-full bg-white border-4 appearance-none cursor-pointer border-white/10" checked={isScheduling} onChange={(e) => setIsScheduling(e.target.checked)} />
+                                        <label htmlFor="schedule-toggle" className={`toggle-label block overflow-hidden h-5 rounded-full cursor-pointer transition-colors duration-200 ease-in ${isScheduling ? 'bg-[#26cece]' : 'bg-[#333]'}`}></label>
+                                    </div>
+                                </div>
+                                {isScheduling && (
+                                    <div className="space-y-4 animate-in fade-in slide-in-from-top-2 pt-2 border-t border-white/10">
+                                        <div className="flex flex-col gap-1">
+                                            <label className="text-[11px] font-mono uppercase tracking-widest text-white/60">Date & Time *</label>
+                                            <div className="flex gap-2 items-center">
+                                                <input type="datetime-local" value={scheduledAt} onChange={e => setScheduledAt(e.target.value)} className="flex-1 bg-white/5 border border-white/10 text-white p-2 rounded-xl font-mono text-[13px] focus:border-[#26cece] outline-none" min={new Date().toISOString().slice(0, 16)} />
+                                                <button onClick={async () => {
+                                                    try {
+                                                        const res = await fetch(`${API_BASE_URL}/api/social/schedule/ai-suggest`, {
+                                                            method: 'POST', headers: { 'Authorization': `Bearer ${authToken}`, 'Content-Type': 'application/json' },
+                                                            body: JSON.stringify({ niche: 'General', platforms: postTargets.map(t=>t.platform), timezone: Intl.DateTimeFormat().resolvedOptions().timeZone })
+                                                        });
+                                                        const data = await res.json();
+                                                        if (data.success && data.data.length > 0) {
+                                                            setScheduledAt(data.data[0].timeSlot.slice(0,16));
+                                                        }
+                                                    } catch (err) {}
+                                                }} className="px-3 py-2 bg-[#26cece]/10 text-[#26cece] hover:bg-[#26cece] hover:text-[#115e59] rounded-xl text-[11px] font-mono uppercase tracking-widest transition-colors flex items-center gap-1 cursor-pointer"><Sparkles className="w-3 h-3"/> Suggest Time</button>
+                                            </div>
+                                        </div>
+                                        <div className="flex flex-col gap-1">
+                                            <label className="text-[11px] font-mono uppercase tracking-widest text-white/60">Approver WhatsApp Number *</label>
+                                            <input type="text" placeholder="e.g. 919876543210" value={approverPhone} onChange={e => setApproverPhone(e.target.value.replace(/\D/g, ''))} className="w-full bg-white/5 border border-white/10 text-white p-2 rounded-xl font-mono text-[13px] focus:border-[#26cece] outline-none" />
+                                            <p className="text-[10px] font-mono text-[#25D366]">An interactive approval request will be sent here.</p>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
                         </div>
                     )}
                 </div>
@@ -414,13 +460,13 @@ export const PostPreviewModal = ({
                         ) : (
                             <button
                                 onClick={handlePost}
-                                disabled={isPosting || postTargets.length === 0}
+                                disabled={isPosting || postTargets.length === 0 || (isScheduling && (!scheduledAt || !approverPhone))}
                                 className="bg-[#26cece] text-[#115e59] px-8 py-2.5 rounded-full font-bold font-['Space_Grotesk'] uppercase tracking-widest hover:bg-white hover:-translate-y-1 hover:shadow-[4px_4px_0_0_#444] transition-all duration-200 flex items-center disabled:opacity-50 disabled:cursor-not-allowed"
                             >
                                 {isPosting ? (
-                                    <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Publishing...</>
+                                    <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> {isScheduling ? 'Scheduling...' : 'Publishing...'}</>
                                 ) : (
-                                    <><Send className="w-4 h-4 mr-2" /> Publish Now</>
+                                    isScheduling ? <><Clock className="w-4 h-4 mr-2" /> Schedule Post</> : <><Send className="w-4 h-4 mr-2" /> Publish Now</>
                                 )}
                             </button>
                         )}

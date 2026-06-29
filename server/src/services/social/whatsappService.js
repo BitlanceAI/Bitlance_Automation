@@ -26,21 +26,22 @@ const whatsappService = {
             .eq('is_active', true)
             .single();
 
-        if (error || !connection) {
-            throw new Error('No active Meta connection found. Please connect your Meta account first.');
+        let accessToken = null;
+        if (connection && connection.access_token) {
+            accessToken = decryptData(connection.access_token);
         }
 
-        const accessToken = decryptData(connection.access_token);
-        if (!accessToken) {
-            throw new Error('Failed to decrypt Meta access token. Please reconnect your account.');
+        // If no user connection, but system vars exist, use those gracefully.
+        if (!accessToken && !process.env.WHATSAPP_GLOBAL_TOKEN) {
+            throw new Error('No Meta connection found and system WhatsApp token is missing.');
         }
 
         return {
-            accessToken,
-            pages: connection.pages || [],
-            adAccounts: connection.ad_accounts || [],
-            whatsappPhoneId: connection.whatsapp_phone_id || null,
-            wabaId: connection.waba_id || null
+            accessToken: process.env.WHATSAPP_GLOBAL_TOKEN || accessToken,
+            pages: connection?.pages || [],
+            adAccounts: connection?.ad_accounts || [],
+            whatsappPhoneId: process.env.WHATSAPP_PHONE_ID || connection?.whatsapp_phone_id || null,
+            wabaId: process.env.WABA_ID || connection?.waba_id || null
         };
     },
 
@@ -106,6 +107,74 @@ const whatsappService = {
         }
     },
 
+    // ──────────────────────────────────────────
+    // Send Approval Template Message
+    // ──────────────────────────────────────────
+    sendApprovalTemplate: async (userId, to, postPreview, postId, imageUrl) => {
+        const creds = await whatsappService.getMetaCredentials(userId);
+
+        if (!creds.whatsappPhoneId) {
+            console.warn('[WhatsApp] WhatsApp Phone ID not configured. Simulating approval send.');
+            return { success: true, simulated: true, messageId: 'wamid_SIM_' + Date.now() };
+        }
+
+        const formattedPhone = to.replace('+', '');
+        
+        // Truncate preview if it's too long (WhatsApp body parameter limit)
+        const truncatedPreview = postPreview.length > 100 
+            ? postPreview.substring(0, 97) + '...' 
+            : postPreview;
+
+        const payload = {
+            messaging_product: 'whatsapp',
+            recipient_type: 'individual',
+            to: formattedPhone,
+            type: 'template',
+            template: {
+                name: 'post_approval_template', // Needs to be approved in Meta Manager
+                language: { code: 'en' },
+                components: [
+                    ...(imageUrl ? [{
+                        type: 'header',
+                        parameters: [
+                            { type: 'image', image: { link: imageUrl } }
+                        ]
+                    }] : []),
+                    {
+                        type: 'body',
+                        parameters: [
+                            { type: 'text', text: truncatedPreview }
+                        ]
+                    },
+                    {
+                        type: 'button',
+                        sub_type: 'quick_reply',
+                        index: 0,
+                        parameters: [{ type: 'payload', payload: `SCHED_APPROVE_${postId}` }]
+                    },
+                    {
+                        type: 'button',
+                        sub_type: 'quick_reply',
+                        index: 1,
+                        parameters: [{ type: 'payload', payload: `SCHED_REJECT_${postId}` }]
+                    }
+                ]
+            }
+        };
+
+        try {
+            const response = await axios.post(
+                `${META_API_BASE}/${creds.whatsappPhoneId}/messages`,
+                payload,
+                { headers: { 'Authorization': `Bearer ${creds.accessToken}`, 'Content-Type': 'application/json' } }
+            );
+            return { success: true, messageId: response.data.messages?.[0]?.id };
+        } catch (error) {
+            const errData = error.response?.data?.error;
+            console.error('[WhatsApp] Send Approval Error:', errData || error.message);
+            return { success: false, error: errData?.message || error.message, errorCode: errData?.code };
+        }
+    },
     // ──────────────────────────────────────────
     // Send System Template Message via Meta Cloud API (Bypasses DB, uses env vars)
     // ──────────────────────────────────────────
