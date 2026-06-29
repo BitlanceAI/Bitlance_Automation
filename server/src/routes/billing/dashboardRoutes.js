@@ -8,7 +8,8 @@ import {
     forceTerminateCall,
     createRazorpayOrder,
     verifyRazorpayPayment,
-    failRazorpayPayment
+    failRazorpayPayment,
+    getUserWorkflows
 } from '../../controllers/billing/dashboardController.js';
 import { authenticateUser } from '../../middleware/authMiddleware.js';
 
@@ -19,6 +20,7 @@ router.get('/stats', authenticateUser, getDashboardStats);
 router.get('/active-calls', authenticateUser, getActiveCalls);
 router.get('/call-history', authenticateUser, getCallHistory);
 router.get('/payment-history', authenticateUser, getPaymentHistory);
+router.get('/workflows', authenticateUser, getUserWorkflows);
 router.post('/trigger-call', authenticateUser, triggerCall);
 router.post('/force-terminate/:callId', authenticateUser, forceTerminateCall);
 

@@ -759,3 +759,101 @@ export const failRazorpayPayment = async (req, res) => {
         res.status(500).json({ success: false, error: err.message || 'Failed to update payment status.' });
     }
 };
+
+/**
+ * Fetch Dograh workflows/agents associated with the user
+ */
+export const getUserWorkflows = async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const userEmail = req.user?.email || '';
+
+        // Try fetching from user_workflows table
+        const { data: dbWorkflows, error: fetchErr } = await supabaseAdmin
+            .from('user_workflows')
+            .select('*')
+            .eq('user_id', userId);
+
+        if (fetchErr) {
+            // If table doesn't exist, fall back to default workflows based on email
+            if (fetchErr.message && (fetchErr.message.includes('relation') || fetchErr.message.includes('does not exist') || fetchErr.message.includes('schema cache'))) {
+                console.log(`[getUserWorkflows] Table public.user_workflows not found. Using email-based workflows fallback for ${userEmail}.`);
+                
+                if (userEmail === 'itm.lotlite@gmail.com') {
+                    return res.json({
+                        success: true,
+                        is_fallback: true,
+                        workflows: [
+                            {
+                                workflow_id: '0ae47ce1-5ada-411c-85ff-e28105a374e6',
+                                workflow_name: 'Lotlite'
+                            },
+                            {
+                                workflow_id: '7ef7deb5-7e2d-4616-8ea5-93914314bccf',
+                                workflow_name: 'Real Estate- Outbound'
+                            }
+                        ]
+                    });
+                }
+
+                return res.json({
+                    success: true,
+                    is_fallback: true,
+                    workflows: [
+                        {
+                            workflow_id: '45b42390-369b-49b5-9a26-21a099dc843e',
+                            workflow_name: 'Property Buyer Lead Call'
+                        },
+                        {
+                            workflow_id: '7ef7deb5-7e2d-4616-8ea5-93914314bccf',
+                            workflow_name: 'Seller Followup Call'
+                        }
+                    ]
+                });
+            }
+            throw fetchErr;
+        }
+
+        // If the table exists but is empty, also fallback to email-based ones
+        if (!dbWorkflows || dbWorkflows.length === 0) {
+            if (userEmail === 'itm.lotlite@gmail.com') {
+                return res.json({
+                    success: true,
+                    workflows: [
+                        {
+                            workflow_id: '0ae47ce1-5ada-411c-85ff-e28105a374e6',
+                            workflow_name: 'Lotlite'
+                        },
+                        {
+                            workflow_id: '7ef7deb5-7e2d-4616-8ea5-93914314bccf',
+                            workflow_name: 'Real Estate- Outbound'
+                        }
+                    ]
+                });
+            }
+
+            return res.json({
+                success: true,
+                workflows: [
+                    {
+                        workflow_id: '45b42390-369b-49b5-9a26-21a099dc843e',
+                        workflow_name: 'Property Buyer Lead Call'
+                    },
+                    {
+                        workflow_id: '7ef7deb5-7e2d-4616-8ea5-93914314bccf',
+                        workflow_name: 'Seller Followup Call'
+                    }
+                ]
+            });
+        }
+
+        res.json({
+            success: true,
+            workflows: dbWorkflows
+        });
+
+    } catch (err) {
+        console.error('[getUserWorkflows] Error fetching workflows:', err.message);
+        res.status(500).json({ success: false, error: err.message || 'Failed to fetch workflows.' });
+    }
+};
