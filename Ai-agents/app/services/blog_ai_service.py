@@ -1790,11 +1790,11 @@ def format_markdown_to_html(text: str) -> str:
     html = html.strip()
 
     # Headings — order matters: longest prefix first to avoid partial matches
-    html = re.sub(r'^#### (.+)$', r'<h4>\1</h4>', html, flags=re.MULTILINE)
-    html = re.sub(r'^### (.+)$',  r'<h3>\1</h3>',  html, flags=re.MULTILINE)
-    html = re.sub(r'^## (.+)$',   r'<h2>\1</h2>',   html, flags=re.MULTILINE)
+    html = re.sub(r'^####\s*(?:H4\s*[-:]?\s*)?(.+)$', r'<h4>\1</h4>', html, flags=re.MULTILINE | re.IGNORECASE)
+    html = re.sub(r'^###\s*(?:H3\s*[-:]?\s*)?(.+)$',  r'<h3>\1</h3>',  html, flags=re.MULTILINE | re.IGNORECASE)
+    html = re.sub(r'^##\s*(?:H2\s*[-:]?\s*)?(.+)$',   r'<h2>\1</h2>',   html, flags=re.MULTILINE | re.IGNORECASE)
     # H1: convert to <h1> and strip any stray leading '#' that wasn't converted
-    html = re.sub(r'^# (.+)$',    r'<h1>\1</h1>',    html, flags=re.MULTILINE)
+    html = re.sub(r'^#\s*(?:H1\s*[-:]?\s*)?(.+)$',    r'<h1>\1</h1>',    html, flags=re.MULTILINE | re.IGNORECASE)
 
     # Inline formatting
     html = re.sub(r'\*\*(.+?)\*\*', r'<strong>\1</strong>', html)
