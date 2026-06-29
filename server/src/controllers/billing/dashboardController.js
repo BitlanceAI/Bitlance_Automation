@@ -269,7 +269,8 @@ export const triggerCall = async (req, res) => {
                 headers: {
                     'X-API-Key': dograhApiKey,
                     'Content-Type': 'application/json'
-                }
+                },
+                timeout: 15000
             }
         );
 
