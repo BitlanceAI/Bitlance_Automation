@@ -553,16 +553,17 @@ export async function analyzeCallTranscript(transcriptText) {
             messages: [
                 {
                     role: "system",
-                    content: `You are an AI assistant that analyzes call transcripts for a hospital/business dashboard.
+                    content: `You are an AI assistant that analyzes call transcripts for a business dashboard.
+Identify the AI assistant (caller) and the recipient/customer (client). In the summary and sentiment, refer to the recipient/customer as the "client" or by their name, not as the "caller".
 Extract the following information in JSON format:
 {
-  "summary": "A brief 2-3 sentence summary of the call",
-  "sentiment": "A dynamic one-line result (under 15 words) starting with a suitable emoji (e.g. 😊, 😐, 😞, 😠) summarizing what the customer/user said and how they responded (e.g. '😊 Inquired about pediatric appointments and responded cooperatively' or '😠 Complained about long wait times and hung up in frustration')",
+  "summary": "A brief 2-3 sentence summary of the call, stating what the client wanted or did",
+  "sentiment": "A dynamic one-line result (under 15 words) starting with a suitable emoji (e.g. 😊, 😐, 😞, 😠) summarizing what the client said and how they responded (e.g. '😊 Interested in property listings and cooperated' or '😐 Declined to discuss property requirements due to time constraints')",
   "entities": {
-    "patient_name": "Name of the patient/customer (if mentioned, otherwise null)",
+    "client_name": "Name of the client/customer (if mentioned, otherwise null)",
     "mobile": "Contact number (if mentioned, otherwise null)",
-    "department": "Department requested like ENT, Pediatrics, General (if mentioned, otherwise null)",
-    "appointment_date": "Date and time of appointment (if mentioned, otherwise null)",
+    "department": "Inquiry category or department like Sales, Support, Real Estate, General (if mentioned, otherwise null)",
+    "appointment_date": "Date and time of appointment or callback (if mentioned, otherwise null)",
     "email": "Email address (if mentioned, otherwise null)"
   }
 }`
@@ -576,6 +577,9 @@ Extract the following information in JSON format:
         });
 
         const result = JSON.parse(response.choices[0].message.content);
+        if (result.entities && result.entities.client_name) {
+            result.entities.patient_name = result.entities.client_name;
+        }
         console.log("🤖 [AI Analysis] Completed successfully:", result);
         return result;
     } catch (err) {

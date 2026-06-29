@@ -3,7 +3,7 @@ import { finalizeActiveCall, fetchDograhRun } from './src/controllers/billing/do
 
 async function main() {
     process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
-    const runId = '555235';
+    const runId = '555251';
     console.log(`Refinalizing call ${runId} to fetch transcript and recording...`);
     try {
         const runData = await fetchDograhRun(runId);
