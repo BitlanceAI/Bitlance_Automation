@@ -46,8 +46,8 @@ async function ensureOrgAndWallet(userId) {
     if (walletErr) throw walletErr;
 
     if (!wallet) {
-        // Seed wallet with 50 starting credits for the client organization
-        const initialBalance = 50;
+        // Seed wallet with 500 starting credits for the client organization
+        const initialBalance = 500;
 
         const { data: newWallet, error: insertWalletErr } = await supabaseAdmin
             .from('wallet')
@@ -475,6 +475,54 @@ export const triggerCall = async (req, res) => {
             success: false, 
             error: err.response?.data?.error || err.response?.data?.message || err.message || 'Failed to trigger call' 
         });
+    }
+};
+
+/**
+ * Force terminate an active call from the dashboard (Manual stop)
+ */
+export const forceTerminateCall = async (req, res) => {
+    try {
+        const { callId } = req.params;
+        const session = global.activeCallBilling[callId];
+        
+        if (!session) {
+            // Might be an orphaned active call in DB but no memory session
+            const { data: activeCall } = await supabaseAdmin.from('active_calls').select('*').eq('call_id', callId).maybeSingle();
+            if (!activeCall) return res.status(404).json({ success: false, error: 'Active call not found' });
+            
+            await supabaseAdmin.from('active_calls').delete().eq('call_id', callId);
+            return res.json({ success: true, message: 'Cleaned up orphaned call' });
+        }
+
+        console.log(`🚨 [Force Terminate] User requested force termination for call ${callId}`);
+        clearInterval(session.intervalId);
+
+        // Terminate on Dograh's side
+        await terminateDograhCall(callId, session.telephonyCallId);
+
+        // Fetch final data if possible
+        let runData = {};
+        try {
+            runData = await fetchDograhRun(callId, session.workflowId);
+        } catch (err) {}
+
+        const result = await finalizeActiveCall({
+            sessionKey: callId,
+            session,
+            callId,
+            runData,
+            phoneNumber: session.phoneNumber,
+            agentId: session.agentId,
+            orgId: session.orgId,
+            adminId: session.adminId,
+            forcedCreditsUsed: null // Will calculate based on exact seconds used so far
+        });
+
+        res.json({ success: true, message: 'Call forcefully terminated.', result });
+    } catch (err) {
+        console.error('[ForceTerminate] Error:', err.message);
+        res.status(500).json({ success: false, error: err.message });
     }
 };
 

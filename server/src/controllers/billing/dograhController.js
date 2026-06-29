@@ -186,7 +186,7 @@ export async function finalizeActiveCall({
     const durationSeconds = extractRunDurationSeconds(runData, session?.startedAt);
     const finalCreditsNeeded = forcedCreditsUsed != null
         ? forcedCreditsUsed
-        : Math.ceil(durationSeconds / 60) * 5;
+        : (durationSeconds / 60) * 5;
     const callRecordId = session?.callRecordId || crypto.randomUUID();
 
     let finalDeducted = finalCreditsNeeded;
@@ -408,7 +408,7 @@ export async function deductDbCredits(adminId, amount, callId, orgId) {
             p_agent_type: 'voice',
             p_reference_id: callId,
             p_reference_table: 'sales_calls',
-            p_usage_quantity: Math.max(1, Math.round(amount)),
+            p_usage_quantity: Number(amount.toFixed(4)),
             p_metadata: { call_id: callId, is_partial: true }
         });
         if (error) {
