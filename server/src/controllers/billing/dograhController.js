@@ -133,10 +133,10 @@ export function extractRunStatus(runData) {
 }
 
 export function extractRecordingUrl(runData) {
-    let url = runData?.recording_url
-        || runData?.recording_public_url
-        || runData?.user_recording_url
+    let url = runData?.recording_public_url
+        || runData?.recording_url
         || runData?.user_recording_public_url
+        || runData?.user_recording_url
         || null;
 
     if (url && typeof url === 'string') {
