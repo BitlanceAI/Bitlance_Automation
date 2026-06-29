@@ -1,6 +1,11 @@
 import { supabaseAdmin } from '../../config/supabaseClient.js';
 import axios from 'axios';
 import crypto from 'crypto';
+import SocketService from '../../services/socket/socketService.js';
+import { deductDbCredits, terminateDograhCall, fetchDograhRun, isDograhRunCompleted, extractRecordingUrl, finalizeActiveCall } from './dograhController.js';
+
+// Global object to track active call billing intervals in memory
+global.activeCallBilling = global.activeCallBilling || {};
 
 /**
  * Helper to ensure organization and wallet exist for the client admin user.
@@ -41,8 +46,8 @@ async function ensureOrgAndWallet(userId) {
     if (walletErr) throw walletErr;
 
     if (!wallet) {
-        // Seed wallet with 50 starting credits for the client organization
-        const initialBalance = 50;
+        // Seed wallet with 500 starting credits for the client organization
+        const initialBalance = 200;
 
         const { data: newWallet, error: insertWalletErr } = await supabaseAdmin
             .from('wallet')
@@ -237,7 +242,10 @@ export const triggerCall = async (req, res) => {
         }
 
         // 3. Prepare Dograh API configuration
-        const dograhApiUrl = (process.env.DOGRAH_API_URL || 'https://voice.bitlancetechhub.com').replace(/\/$/, '');
+        let dograhApiUrl = (process.env.DOGRAH_API_URL || 'https://voice.bitlancetechhub.com').trim().replace(/\/$/, '');
+        if (!/^https?:\/\//i.test(dograhApiUrl)) {
+            dograhApiUrl = `https://${dograhApiUrl}`;
+        }
         const dograhApiKey = process.env.DOGRAH_API_KEY || process.env.RETELL_API_KEY;
         const callerId = fromNumber || process.env.DOGRAH_FROM_NUMBER || process.env.RETELL_FROM_NUMBER;
 
@@ -248,33 +256,223 @@ export const triggerCall = async (req, res) => {
 
         console.log(`📞 [TriggerCall] Initiating Dograh Vobiz outbound call to ${phoneNumber} using agent/trigger path UUID: ${agentId}`);
 
-        // 4. Send POST request to Dograh workflow trigger endpoint
-        const triggerUrl = `${dograhApiUrl}/api/v1/workflows/trigger/${agentId}`;
+        let serverUrl = (process.env.SERVER_URL || process.env.SERVER || '').trim().replace(/\/$/, '');
+        if (!serverUrl) {
+            serverUrl = 'https://backend.bitlancetechhub.com';
+        } else if (!/^https?:\/\//i.test(serverUrl)) {
+            serverUrl = `https://${serverUrl}`;
+        }
+
+        // 4. Send POST request to Dograh API Trigger endpoint using Agent UUID
+        const triggerUrl = `${dograhApiUrl}/api/v1/public/agent/workflow/${agentId}`;
         const response = await axios.post(
             triggerUrl,
             {
                 phone_number: phoneNumber,
-                to_number: phoneNumber,
-                to_phone_number: phoneNumber,
-                customer_number: phoneNumber,
-                from_number: callerId || undefined,
-                webhook_url: `${process.env.SERVER_URL}/webhooks/dograh`,
-                server_url: `${process.env.SERVER_URL}/webhooks/dograh`,
                 initial_context: {
-                    organization_id: org.id
-                },
-                metadata: {
-                    organization_id: org.id
+                    organization_id: org.id,
+                    webhook_url: `${serverUrl}/webhooks/dograh`,
+                    server_url: `${serverUrl}/webhooks/dograh`
                 }
             },
             {
                 headers: {
-                    Authorization: `Bearer ${dograhApiKey}`,
                     'X-API-Key': dograhApiKey,
                     'Content-Type': 'application/json'
-                }
+                },
+                timeout: 15000
             }
         );
+
+        const callId = response.data.workflow_run_id
+            ? response.data.workflow_run_id.toString()
+            : (response.data.id ? response.data.id.toString() : crypto.randomUUID());
+        const workflowId = response.data.workflow_id || process.env.DOGRAH_WORKFLOW_ID || null;
+        const telephonyCallId = response.data.call_id ? String(response.data.call_id) : null;
+        const callRecordId = crypto.randomUUID();
+
+        console.log(`📞 [TriggerCall] Dograh run started | run_id=${callId} | workflow_id=${workflowId || 'resolved-on-poll'} | response=${JSON.stringify(response.data)}`);
+
+        // 5. Fetch current wallet balance
+        const { data: currentWallet } = await supabaseAdmin
+            .from('wallet')
+            .select('balance')
+            .eq('organization_id', org.id)
+            .single();
+        const startBalance = currentWallet ? parseFloat(currentWallet.balance) : 0.00;
+
+        // 6. Insert into active_calls
+        const { data: activeCall, error } = await supabaseAdmin
+            .from('active_calls')
+            .insert({
+                call_id: callId,
+                organization_id: org.id,
+                customer_number: phoneNumber,
+                agent_id: agentId,
+                agent_name: 'Dograh Voice Agent',
+                started_at: new Date().toISOString()
+            })
+            .select()
+            .single();
+
+        if (error && error.code !== '23505') {
+            console.error('[TriggerCall] Active call DB error:', error.message);
+        }
+
+        // 7. Setup in-memory billing interval immediately
+        if (global.activeCallBilling[callId]) {
+            clearInterval(global.activeCallBilling[callId].intervalId);
+        }
+
+        const session = {
+            callRecordId,
+            startBalance,
+            startedAt: Date.now(),
+            orgId: org.id,
+            adminId: org.admin_id || req.user.id,
+            creditsDeductedSoFar: 0,
+            lastIntegerBalance: Math.floor(startBalance),
+            tickCount: 0,
+            workflowId,
+            phoneNumber,
+            agentId,
+            telephonyCallId,
+            lastTranscriptSnippet: '',
+            lastRecordingUrl: null
+        };
+
+        session.intervalId = setInterval(async () => {
+            try {
+                const elapsedSeconds = Math.round((Date.now() - session.startedAt) / 1000);
+                const currentCreditsUsed = (elapsedSeconds / 60) * 5;
+                const currentFloatBalance = session.startBalance - currentCreditsUsed;
+
+                console.log(`⏱️ [LiveBilling Tick] Call ${callId} | Duration: ${elapsedSeconds}s | Used: ${currentCreditsUsed.toFixed(4)} | Balance: ${currentFloatBalance.toFixed(4)}`);
+
+                if (currentFloatBalance <= 0) {
+                    console.log(`🚨 [LiveBilling] Balance reached <= 0. Terminating call ${callId}!`);
+                    clearInterval(session.intervalId);
+
+                    const finalToDeduct = session.startBalance - session.creditsDeductedSoFar;
+                    if (finalToDeduct > 0) {
+                        const deducted = await deductDbCredits(session.adminId, finalToDeduct, session.callRecordId, session.orgId);
+                        session.creditsDeductedSoFar += deducted;
+                    }
+
+                    await terminateDograhCall(callId, session.telephonyCallId);
+
+                    let runData = {};
+                    try {
+                        runData = await fetchDograhRun(callId, session.workflowId);
+                    } catch (fetchErr) {
+                        console.warn(`[LiveBilling] Could not fetch final run data for ${callId}:`, fetchErr.message);
+                    }
+
+                    await finalizeActiveCall({
+                        sessionKey: callId,
+                        session,
+                        callId,
+                        runData,
+                        phoneNumber: session.phoneNumber,
+                        agentId: session.agentId,
+                        orgId: session.orgId,
+                        adminId: session.adminId,
+                        forcedCreditsUsed: session.startBalance
+                    });
+                    return;
+                }
+
+                // Check crossed integer boundary
+                const currentIntegerBalance = Math.floor(currentFloatBalance);
+                if (currentIntegerBalance < session.lastIntegerBalance) {
+                    const diff = session.lastIntegerBalance - currentIntegerBalance;
+                    const deducted = await deductDbCredits(session.adminId, diff, session.callRecordId, session.orgId);
+                    session.creditsDeductedSoFar += deducted;
+                    session.lastIntegerBalance = currentIntegerBalance;
+                }
+
+                // Emit progress with live credits, transcript, and recording when available
+                const progressPayload = {
+                    call_id: callId,
+                    duration: elapsedSeconds,
+                    credits_used: parseFloat(currentCreditsUsed.toFixed(4)),
+                    balance: parseFloat(currentFloatBalance.toFixed(4))
+                };
+                if (session.lastTranscriptSnippet) {
+                    progressPayload.transcript_preview = session.lastTranscriptSnippet;
+                }
+                if (session.lastRecordingUrl) {
+                    progressPayload.recording_url = session.lastRecordingUrl;
+                }
+
+                SocketService.emitLiveCall(session.orgId, {
+                    event: 'call_progress',
+                    call: progressPayload
+                });
+
+                SocketService.emitWalletUpdate(session.orgId, parseFloat(currentFloatBalance.toFixed(4)));
+
+                // Poll Dograh run status every 5 ticks (5 seconds)
+                session.tickCount += 1;
+                if (session.tickCount % 5 === 0) {
+                    try {
+                        const runData = await fetchDograhRun(callId, session.workflowId);
+                        if (runData.workflow_id && !session.workflowId) {
+                            session.workflowId = runData.workflow_id;
+                        }
+                        if (runData.gathered_context?.call_id && !session.telephonyCallId) {
+                            session.telephonyCallId = String(runData.gathered_context.call_id);
+                        }
+
+                        const recordingUrl = extractRecordingUrl(runData);
+                        if (recordingUrl && recordingUrl !== session.lastRecordingUrl) {
+                            session.lastRecordingUrl = recordingUrl;
+                        }
+
+                        const transcriptPreview = runData.transcript || runData.transcript_object;
+                        if (transcriptPreview) {
+                            const snippet = typeof transcriptPreview === 'string'
+                                ? transcriptPreview.slice(0, 500)
+                                : JSON.stringify(transcriptPreview).slice(0, 500);
+                            session.lastTranscriptSnippet = snippet;
+                        }
+
+                        if (isDograhRunCompleted(runData)) {
+                            console.log(`✅ [Polling] Call ${callId} ended. Finalizing billing session.`);
+                            await finalizeActiveCall({
+                                sessionKey: callId,
+                                session,
+                                callId,
+                                runData,
+                                phoneNumber: session.phoneNumber,
+                                agentId: session.agentId,
+                                orgId: session.orgId,
+                                adminId: session.adminId
+                            });
+                            return;
+                        }
+                    } catch (pollErr) {
+                        console.error(`❌ [Polling] Error checking run status for call ${callId}:`, pollErr.response?.data || pollErr.message);
+                    }
+                }
+
+            } catch (timerErr) {
+                console.error('[LiveBilling Timer] Error:', timerErr.message);
+            }
+        }, 1000);
+
+        global.activeCallBilling[callId] = session;
+
+        // 8. Broadcast call_started to socket
+        SocketService.emitLiveCall(org.id, {
+            event: 'call_started',
+            call: activeCall || {
+                call_id: callId,
+                customer_number: phoneNumber,
+                agent_name: 'Dograh Voice Agent',
+                started_at: new Date().toISOString()
+            }
+        });
 
         res.json({
             success: true,
@@ -288,6 +486,54 @@ export const triggerCall = async (req, res) => {
             success: false, 
             error: err.response?.data?.error || err.response?.data?.message || err.message || 'Failed to trigger call' 
         });
+    }
+};
+
+/**
+ * Force terminate an active call from the dashboard (Manual stop)
+ */
+export const forceTerminateCall = async (req, res) => {
+    try {
+        const { callId } = req.params;
+        const session = global.activeCallBilling[callId];
+        
+        if (!session) {
+            // Might be an orphaned active call in DB but no memory session
+            const { data: activeCall } = await supabaseAdmin.from('active_calls').select('*').eq('call_id', callId).maybeSingle();
+            if (!activeCall) return res.status(404).json({ success: false, error: 'Active call not found' });
+            
+            await supabaseAdmin.from('active_calls').delete().eq('call_id', callId);
+            return res.json({ success: true, message: 'Cleaned up orphaned call' });
+        }
+
+        console.log(`🚨 [Force Terminate] User requested force termination for call ${callId}`);
+        clearInterval(session.intervalId);
+
+        // Terminate on Dograh's side
+        await terminateDograhCall(callId, session.telephonyCallId);
+
+        // Fetch final data if possible
+        let runData = {};
+        try {
+            runData = await fetchDograhRun(callId, session.workflowId);
+        } catch (err) {}
+
+        const result = await finalizeActiveCall({
+            sessionKey: callId,
+            session,
+            callId,
+            runData,
+            phoneNumber: session.phoneNumber,
+            agentId: session.agentId,
+            orgId: session.orgId,
+            adminId: session.adminId,
+            forcedCreditsUsed: null // Will calculate based on exact seconds used so far
+        });
+
+        res.json({ success: true, message: 'Call forcefully terminated.', result });
+    } catch (err) {
+        console.error('[ForceTerminate] Error:', err.message);
+        res.status(500).json({ success: false, error: err.message });
     }
 };
 
@@ -465,5 +711,131 @@ export const verifyRazorpayPayment = async (req, res) => {
     } catch (err) {
         console.error('[Razorpay Verify] Error verifying payment:', err.message);
         res.status(500).json({ success: false, error: err.message || 'Verification failed.' });
+    }
+};
+
+/**
+ * Mark Razorpay payment as FAILED
+ */
+export const failRazorpayPayment = async (req, res) => {
+    try {
+        const { order_id } = req.body;
+        if (!order_id) {
+            return res.status(400).json({ success: false, error: 'Missing order_id.' });
+        }
+
+        // Fetch payment details
+        const { data: payment, error: fetchErr } = await supabaseAdmin
+            .from('payments')
+            .select('*')
+            .eq('order_id', order_id)
+            .maybeSingle();
+
+        if (fetchErr) throw fetchErr;
+        if (!payment) {
+            return res.status(404).json({ success: false, error: 'Payment order record not found.' });
+        }
+
+        if (payment.status === 'SUCCESS') {
+            return res.json({ success: true, message: 'Payment was already processed successfully.' });
+        }
+
+        // Update payment record to FAILED
+        const { error: payErr } = await supabaseAdmin
+            .from('payments')
+            .update({
+                status: 'FAILED',
+                updated_at: new Date().toISOString()
+            })
+            .eq('order_id', order_id);
+
+        if (payErr) throw payErr;
+
+        console.log(`[Razorpay Fail] Order ${order_id} marked as FAILED`);
+        res.json({ success: true, message: 'Payment marked as failed.' });
+
+    } catch (err) {
+        console.error('[Razorpay Fail] Error marking payment as failed:', err.message);
+        res.status(500).json({ success: false, error: err.message || 'Failed to update payment status.' });
+    }
+};
+
+/**
+ * Fetch Dograh workflows/agents associated with the user
+ */
+export const getUserWorkflows = async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const userEmail = req.user?.email || '';
+
+        // Try fetching from user_workflows table
+        const { data: dbWorkflows, error: fetchErr } = await supabaseAdmin
+            .from('user_workflows')
+            .select('*')
+            .eq('user_id', userId);
+
+        if (fetchErr) {
+            // If table doesn't exist, fall back to default workflows based on email
+            if (fetchErr.message && (fetchErr.message.includes('relation') || fetchErr.message.includes('does not exist') || fetchErr.message.includes('schema cache'))) {
+                console.log(`[getUserWorkflows] Table public.user_workflows not found. Using email-based workflows fallback for ${userEmail}.`);
+                
+                if (userEmail === 'itm.lotlite@gmail.com') {
+                    return res.json({
+                        success: true,
+                        is_fallback: true,
+                        workflows: [
+                            {
+                                workflow_id: '45b42390-369b-49b5-9a26-21a099dc843e',
+                                workflow_name: 'Property Buyer Lead Call'
+                            },
+                            {
+                                workflow_id: '0ae47ce1-5ada-411c-85ff-e28105a374e6',
+                                workflow_name: 'Lotlite follow up and real estate'
+                            }
+                        ]
+                    });
+                }
+
+                return res.json({
+                    success: true,
+                    is_fallback: true,
+                    workflows: []
+                });
+            }
+            throw fetchErr;
+        }
+
+        // If the table exists but is empty, also fallback to email-based ones
+        if (!dbWorkflows || dbWorkflows.length === 0) {
+            if (userEmail === 'itm.lotlite@gmail.com') {
+                return res.json({
+                    success: true,
+                    workflows: [
+                        {
+                            workflow_id: '45b42390-369b-49b5-9a26-21a099dc843e',
+                            workflow_name: 'Property Buyer Lead Call'
+                        },
+                        {
+                            workflow_id: '0ae47ce1-5ada-411c-85ff-e28105a374e6',
+                            workflow_name: 'Lotlite'
+                        }
+                    ]
+                });
+            }
+
+            return res.json({
+                success: true,
+                workflows: []
+            });
+        }
+
+        res.json({
+            success: true,
+            workflows: dbWorkflows
+        });
+
+    } catch (err) {
+        console.error('[getUserWorkflows] Error fetching workflows:', err.message);
+        res.status(500).json({ success: false, error: err.message || 'Failed to fetch workflows.' });
     }
 };

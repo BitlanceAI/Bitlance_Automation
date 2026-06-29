@@ -8,15 +8,407 @@ import SocketService from '../../services/socket/socketService.js';
 // Global object to track active call billing intervals in memory
 global.activeCallBilling = global.activeCallBilling || {};
 
+const DOGRAH_POLL_WORKFLOW_PLACEHOLDER = 1;
+
 // Initialize OpenAI client
 const openai = new OpenAI({
     apiKey: process.env.OPENAI_API_KEY
 });
 
+export function getDograhConfig() {
+    let apiUrl = (process.env.DOGRAH_API_URL || 'https://api.dograh.com').trim().replace(/\/$/, '');
+    if (!/^https?:\/\//i.test(apiUrl)) {
+        apiUrl = `https://${apiUrl}`;
+    }
+    return {
+        apiUrl,
+        apiKey: process.env.DOGRAH_API_KEY || process.env.RETELL_API_KEY
+    };
+}
+
+/**
+ * Resolve the billing session key from Dograh/Retell webhook or polling payloads.
+ * Billing keys sessions by workflow_run_id, while telephony uses a separate call UUID.
+ */
+export function resolveBillingCallId(payload = {}) {
+    const candidates = [
+        payload.workflow_run_id,
+        payload.run_id,
+        payload.call_id,
+        payload.id
+    ];
+
+    for (const candidate of candidates) {
+        if (candidate != null && candidate !== '') {
+            return String(candidate);
+        }
+    }
+
+    return null;
+}
+
+export function findActiveCallSession(payload = {}) {
+    const keys = new Set();
+
+    const billingCallId = resolveBillingCallId(payload);
+    if (billingCallId) keys.add(billingCallId);
+    if (payload.gathered_context?.call_id) keys.add(String(payload.gathered_context.call_id));
+    if (payload.initial_context?.mps_correlation_id) keys.add(String(payload.initial_context.mps_correlation_id));
+
+    for (const key of keys) {
+        if (global.activeCallBilling[key]) {
+            return { sessionKey: key, session: global.activeCallBilling[key] };
+        }
+    }
+
+    return { sessionKey: billingCallId, session: null };
+}
+
+export function clearActiveCallSession(sessionKey) {
+    const session = global.activeCallBilling[sessionKey];
+    if (session?.intervalId) {
+        clearInterval(session.intervalId);
+    }
+    delete global.activeCallBilling[sessionKey];
+}
+
+/**
+ * Dograh accepts any integer workflow_id in the poll path and returns the real run record.
+ */
+export async function fetchDograhRun(runId, workflowId = null) {
+    const { apiUrl, apiKey } = getDograhConfig();
+    if (!apiKey) {
+        throw new Error('Dograh API key not configured');
+    }
+
+    const pollWorkflowId = workflowId || process.env.DOGRAH_WORKFLOW_ID || DOGRAH_POLL_WORKFLOW_PLACEHOLDER;
+    const pollUrl = `${apiUrl}/api/v1/workflow/${pollWorkflowId}/runs/${runId}`;
+    const runRes = await axios.get(pollUrl, {
+        headers: { 'X-API-Key': apiKey }
+    });
+
+    return runRes.data;
+}
+
+export function isDograhRunCompleted(runData) {
+    if (!runData) return false;
+    if (runData.is_completed === true) return true;
+
+    const status = String(runData.status || '').toLowerCase();
+    return ['completed', 'failed', 'busy', 'no-answer', 'no_answer', 'cancelled'].includes(status);
+}
+
+export function extractRunDurationSeconds(runData, fallbackStartedAt = null) {
+    let durationSeconds = runData?.usage_info?.call_duration_seconds
+        ?? runData?.cost_info?.call_duration_seconds
+        ?? runData?.duration_seconds
+        ?? 0;
+
+    if (durationSeconds === 0 && runData?.end_timestamp && runData?.start_timestamp) {
+        durationSeconds = Math.round((runData.end_timestamp - runData.start_timestamp) / 1000);
+    }
+
+    const callbacks = runData?.logs?.telephony_status_callbacks;
+    if (durationSeconds === 0 && Array.isArray(callbacks) && callbacks.length > 0) {
+        const firstTs = callbacks[0]?.timestamp || callbacks[0]?.StartTime || callbacks[0]?.SessionStart;
+        const lastCallback = callbacks[callbacks.length - 1];
+        const lastTs = lastCallback?.timestamp || lastCallback?.EndTime;
+        if (firstTs && lastTs) {
+            durationSeconds = Math.max(0, Math.round((new Date(lastTs) - new Date(firstTs)) / 1000));
+        }
+    }
+
+    if (durationSeconds === 0 && fallbackStartedAt) {
+        durationSeconds = Math.round((Date.now() - fallbackStartedAt) / 1000);
+    }
+
+    return Math.max(0, durationSeconds);
+}
+
+export function extractRunStatus(runData) {
+    return runData?.gathered_context?.mapped_call_disposition
+        || runData?.gathered_context?.call_disposition
+        || runData?.disconnection_reason
+        || 'completed';
+}
+
+export function extractRecordingUrl(runData) {
+    let url = runData?.recording_public_url
+        || runData?.recording_url
+        || runData?.user_recording_public_url
+        || runData?.user_recording_url
+        || null;
+
+    if (url && typeof url === 'string') {
+        url = url.trim();
+        if (!url.startsWith('http://') && !url.startsWith('https://')) {
+            const { apiUrl } = getDograhConfig();
+            const base = apiUrl.endsWith('/') ? apiUrl.slice(0, -1) : apiUrl;
+            const path = url.startsWith('/') ? url : `/${url}`;
+            return `${base}${path}`;
+        }
+    }
+    return url;
+}
+
+async function fetchTranscriptContent(runData) {
+    const inlineTranscript = runData?.transcript || runData?.transcript_object;
+    if (inlineTranscript) {
+        return formatTranscript(inlineTranscript);
+    }
+
+    let transcriptUrl = runData?.transcript_public_url || runData?.transcript_url;
+    if (!transcriptUrl) return '';
+
+    if (typeof transcriptUrl === 'string') {
+        transcriptUrl = transcriptUrl.trim();
+        if (!transcriptUrl.startsWith('http://') && !transcriptUrl.startsWith('https://')) {
+            const { apiUrl } = getDograhConfig();
+            const base = apiUrl.endsWith('/') ? apiUrl.slice(0, -1) : apiUrl;
+            const path = transcriptUrl.startsWith('/') ? transcriptUrl : `/${transcriptUrl}`;
+            transcriptUrl = `${base}${path}`;
+        }
+    }
+
+    try {
+        const { apiKey } = getDograhConfig();
+        const res = await axios.get(transcriptUrl, {
+            headers: apiKey ? { 'X-API-Key': apiKey } : undefined
+        });
+        return formatTranscript(res.data);
+    } catch (err) {
+        console.warn('[Dograh] Failed to fetch transcript URL:', transcriptUrl, err.message);
+        return '';
+    }
+}
+
+/**
+ * Shared cleanup: reconcile credits, persist history, remove active call, emit socket events.
+ */
+export async function finalizeActiveCall({
+    sessionKey,
+    session,
+    callId,
+    runData = {},
+    phoneNumber,
+    agentId,
+    agentName = 'Dograh Voice Agent',
+    orgId,
+    adminId,
+    forcedCreditsUsed = null
+}) {
+    if (session?.finalizing) {
+        return null;
+    }
+    if (session) {
+        session.finalizing = true;
+    }
+
+    // If recording/transcript URLs are missing from webhook payload, poll Dograh API for up to 12 seconds
+    let finalRunData = runData;
+    const isCompleted = isDograhRunCompleted(runData);
+    if (isCompleted) {
+        let attempts = 0;
+        const maxAttempts = 6; // Poll every 2 seconds for up to 12 seconds
+        while (attempts < maxAttempts && (!finalRunData?.recording_url || !finalRunData?.transcript_url)) {
+            console.log(`[Dograh Poll] Recording/Transcript missing. Polling run ${callId} (attempt ${attempts + 1}/${maxAttempts})...`);
+            await new Promise(resolve => setTimeout(resolve, 2000));
+            try {
+                const polledData = await fetchDograhRun(callId);
+                if (polledData) {
+                    finalRunData = polledData;
+                }
+            } catch (err) {
+                console.warn(`[Dograh Poll] Failed to poll run ${callId}:`, err.message);
+            }
+            attempts++;
+        }
+    }
+
+    if (session) {
+        clearActiveCallSession(sessionKey);
+    }
+
+    const { data: existingCall } = await supabaseAdmin
+        .from('sales_calls')
+        .select('*')
+        .eq('call_id', callId)
+        .maybeSingle();
+
+    const durationSeconds = extractRunDurationSeconds(finalRunData, session?.startedAt || (existingCall ? new Date(existingCall.started_at).getTime() : null));
+    const finalCreditsNeeded = forcedCreditsUsed != null
+        ? forcedCreditsUsed
+        : (durationSeconds / 60) * 5;
+    const callRecordId = session?.callRecordId || existingCall?.id || crypto.randomUUID();
+
+    let finalDeducted = finalCreditsNeeded;
+    if (existingCall) {
+        finalDeducted = existingCall.credits_used;
+    } else if (session) {
+        const adjustment = session.creditsDeductedSoFar - finalCreditsNeeded;
+        if (adjustment > 0) {
+            await refundDbCredits(session.adminId, adjustment, callRecordId, session.orgId);
+            finalDeducted = finalCreditsNeeded;
+        } else if (adjustment < 0) {
+            const extraDeducted = await deductDbCredits(session.adminId, Math.abs(adjustment), callRecordId, session.orgId);
+            finalDeducted = session.creditsDeductedSoFar + extraDeducted;
+        } else {
+            finalDeducted = session.creditsDeductedSoFar;
+        }
+    } else if (finalCreditsNeeded > 0 && adminId) {
+        finalDeducted = await deductDbCredits(adminId, finalCreditsNeeded, callRecordId, orgId);
+    }
+
+    const transcriptRaw = await fetchTranscriptContent(finalRunData);
+    const aiAnalysis = await analyzeCallTranscript(transcriptRaw);
+    const transcriptJsonBundle = JSON.stringify({
+        raw: transcriptRaw,
+        summary: aiAnalysis.summary,
+        sentiment: aiAnalysis.sentiment,
+        entities: aiAnalysis.entities
+    });
+
+    const { data: finalWallet } = await supabaseAdmin
+        .from('wallet')
+        .select('balance')
+        .eq('organization_id', orgId)
+        .single();
+    const finalBalance = finalWallet ? parseFloat(finalWallet.balance) : 0;
+
+    let callHistoryRow = null;
+    let historyErr = null;
+
+    if (existingCall) {
+        const { data: updatedRow, error: updateErr } = await supabaseAdmin
+            .from('sales_calls')
+            .update({
+                duration: durationSeconds,
+                credits_used: finalDeducted,
+                status: extractRunStatus(finalRunData),
+                recording_url: extractRecordingUrl(finalRunData) || existingCall.recording_url,
+                transcript: transcriptJsonBundle,
+                ended_at: new Date(finalRunData?.end_timestamp || Date.now()).toISOString()
+            })
+            .eq('id', existingCall.id)
+            .select()
+            .single();
+        callHistoryRow = updatedRow;
+        historyErr = updateErr;
+    } else {
+        const { data: insertedRow, error: insertErr } = await supabaseAdmin
+            .from('sales_calls')
+            .insert({
+                id: callRecordId,
+                call_id: callId,
+                organization_id: orgId,
+                customer_number: phoneNumber || finalRunData?.initial_context?.phone_number || 'Unknown',
+                agent_id: agentId || finalRunData?.initial_context?.workflow_uuid || finalRunData?.initial_context?.agent_identifier || 'Unknown',
+                agent_name: agentName,
+                duration: durationSeconds,
+                credits_used: finalDeducted,
+                status: extractRunStatus(finalRunData),
+                recording_url: extractRecordingUrl(finalRunData),
+                transcript: transcriptJsonBundle,
+                started_at: new Date(finalRunData?.created_at || finalRunData?.start_timestamp || session?.startedAt || Date.now()).toISOString(),
+                ended_at: new Date(finalRunData?.end_timestamp || Date.now()).toISOString()
+            })
+            .select()
+            .single();
+        callHistoryRow = insertedRow;
+        historyErr = insertErr;
+    }
+
+    if (historyErr) {
+        console.error('[Call Finalize] History insert failed:', historyErr.message);
+    }
+
+    const { error: deleteErr } = await supabaseAdmin
+        .from('active_calls')
+        .delete()
+        .eq('call_id', callId);
+
+    if (deleteErr) {
+        console.error('[Call Finalize] Active call delete failed:', deleteErr.message);
+    }
+
+    SocketService.emitLiveCall(orgId, {
+        event: 'call_ended',
+        call_id: callId,
+        call: callHistoryRow || {
+            call_id: callId,
+            duration: durationSeconds,
+            credits_used: finalDeducted,
+            balance: finalBalance,
+            status: extractRunStatus(finalRunData),
+            recording_url: extractRecordingUrl(finalRunData),
+            transcript: transcriptJsonBundle
+        }
+    });
+
+    SocketService.emitWalletUpdate(orgId, finalBalance);
+
+    return {
+        callHistoryRow,
+        durationSeconds,
+        finalDeducted,
+        finalBalance
+    };
+}
+
+/**
+ * On server startup, finalize any active calls that already ended in Dograh
+ * but were left behind due to polling failures or server restarts.
+ */
+export async function recoverStaleActiveCalls() {
+    try {
+        const { data: activeCalls, error } = await supabaseAdmin
+            .from('active_calls')
+            .select('*');
+
+        if (error) throw error;
+        if (!activeCalls?.length) return;
+
+        console.log(`🔄 [Recovery] Checking ${activeCalls.length} stale active call(s)...`);
+
+        for (const activeCall of activeCalls) {
+            try {
+                const runData = await fetchDograhRun(activeCall.call_id);
+                if (!isDograhRunCompleted(runData)) {
+                    console.log(`🔄 [Recovery] Call ${activeCall.call_id} still active in Dograh, skipping.`);
+                    continue;
+                }
+
+                const { data: org } = await supabaseAdmin
+                    .from('organizations')
+                    .select('admin_id')
+                    .eq('id', activeCall.organization_id)
+                    .maybeSingle();
+
+                console.log(`🔄 [Recovery] Finalizing stale call ${activeCall.call_id}`);
+                await finalizeActiveCall({
+                    sessionKey: activeCall.call_id,
+                    session: global.activeCallBilling[activeCall.call_id] || null,
+                    callId: activeCall.call_id,
+                    runData,
+                    phoneNumber: activeCall.customer_number,
+                    agentId: activeCall.agent_id,
+                    agentName: activeCall.agent_name || 'Dograh Voice Agent',
+                    orgId: activeCall.organization_id,
+                    adminId: org?.admin_id || null
+                });
+            } catch (callErr) {
+                console.warn(`[Recovery] Could not recover call ${activeCall.call_id}:`, callErr.message);
+            }
+        }
+    } catch (err) {
+        console.error('[Recovery] Stale active call recovery failed:', err.message);
+    }
+}
+
 /**
  * Helper to find organization ID and Admin ID.
  */
-async function getOrgAndAdmin(payload) {
+export async function getOrgAndAdmin(payload) {
     const metadata = payload.metadata || payload.custom_variables || {};
     const orgId = metadata.organization_id;
 
@@ -45,20 +437,24 @@ async function getOrgAndAdmin(payload) {
 /**
  * Helper to terminate an active call via Dograh API (Vobiz integration)
  */
-async function terminateDograhCall(callId) {
-    const dograhApiUrl = (process.env.DOGRAH_API_URL || 'https://voice.bitlancetechhub.com').replace(/\/$/, '');
-    const dograhApiKey = process.env.DOGRAH_API_KEY || process.env.RETELL_API_KEY;
+export async function terminateDograhCall(callId, telephonyCallId = null) {
+    const { apiUrl: dograhApiUrl, apiKey: dograhApiKey } = getDograhConfig();
     if (!dograhApiKey) {
         console.error('[TerminateCall] No API key configured for Dograh Call Termination');
         return false;
     }
 
-    const endpoints = [
-        `${dograhApiUrl}/api/v1/calls/end-call/${callId}`,
-        `${dograhApiUrl}/api/v1/calls/end/${callId}`,
-        `${dograhApiUrl}/api/v1/calls/terminate/${callId}`,
-        `${dograhApiUrl}/v2/calls/end-call/${callId}`
-    ];
+    const idsToTry = [telephonyCallId, callId].filter(Boolean);
+    const endpoints = [];
+
+    for (const id of idsToTry) {
+        endpoints.push(
+            `${dograhApiUrl}/api/v1/calls/end-call/${id}`,
+            `${dograhApiUrl}/api/v1/calls/end/${id}`,
+            `${dograhApiUrl}/api/v1/calls/terminate/${id}`,
+            `${dograhApiUrl}/v2/calls/end-call/${id}`
+        );
+    }
 
     for (const url of endpoints) {
         try {
@@ -81,7 +477,7 @@ async function terminateDograhCall(callId) {
 /**
  * Helper to deduct credits from database wallet
  */
-async function deductDbCredits(adminId, amount, callId, orgId) {
+export async function deductDbCredits(adminId, amount, callId, orgId) {
     if (amount <= 0) return 0;
     try {
         const { data, error } = await supabaseAdmin.rpc('deduct_credits_with_ledger', {
@@ -89,7 +485,7 @@ async function deductDbCredits(adminId, amount, callId, orgId) {
             p_agent_type: 'voice',
             p_reference_id: callId,
             p_reference_table: 'sales_calls',
-            p_usage_quantity: Math.max(1, Math.round(amount)),
+            p_usage_quantity: Number(amount.toFixed(4)),
             p_metadata: { call_id: callId, is_partial: true }
         });
         if (error) {
@@ -106,7 +502,7 @@ async function deductDbCredits(adminId, amount, callId, orgId) {
 /**
  * Helper to refund credits back to database wallet
  */
-async function refundDbCredits(adminId, amount, callId, orgId) {
+export async function refundDbCredits(adminId, amount, callId, orgId) {
     if (amount <= 0) return;
     try {
         const { data: wallet } = await supabaseAdmin
@@ -140,7 +536,7 @@ async function refundDbCredits(adminId, amount, callId, orgId) {
 /**
  * Helper to perform AI analysis on call transcript
  */
-async function analyzeCallTranscript(transcriptText) {
+export async function analyzeCallTranscript(transcriptText) {
     if (!transcriptText) {
         return {
             summary: "No transcript available.",
@@ -157,16 +553,17 @@ async function analyzeCallTranscript(transcriptText) {
             messages: [
                 {
                     role: "system",
-                    content: `You are an AI assistant that analyzes call transcripts for a hospital/business dashboard.
+                    content: `You are an AI assistant that analyzes call transcripts for a business dashboard.
+Identify the AI assistant (caller) and the recipient/customer (client). In the summary and sentiment, refer to the recipient/customer as the "client" or by their name, not as the "caller".
 Extract the following information in JSON format:
 {
-  "summary": "A brief 2-3 sentence summary of the call",
-  "sentiment": "😊 Positive, 😐 Neutral, or 😞 Negative (choose exactly one, including the emoji and text)",
+  "summary": "A brief 2-3 sentence summary of the call, stating what the client wanted or did",
+  "sentiment": "A dynamic one-line result (under 15 words) starting with a suitable emoji (e.g. 😊, 😐, 😞, 😠) summarizing what the client said and how they responded (e.g. '😊 Interested in property listings and cooperated' or '😐 Declined to discuss property requirements due to time constraints')",
   "entities": {
-    "patient_name": "Name of the patient/customer (if mentioned, otherwise null)",
+    "client_name": "Name of the client/customer (if mentioned, otherwise null)",
     "mobile": "Contact number (if mentioned, otherwise null)",
-    "department": "Department requested like ENT, Pediatrics, General (if mentioned, otherwise null)",
-    "appointment_date": "Date and time of appointment (if mentioned, otherwise null)",
+    "department": "Inquiry category or department like Sales, Support, Real Estate, General (if mentioned, otherwise null)",
+    "appointment_date": "Date and time of appointment or callback (if mentioned, otherwise null)",
     "email": "Email address (if mentioned, otherwise null)"
   }
 }`
@@ -180,6 +577,9 @@ Extract the following information in JSON format:
         });
 
         const result = JSON.parse(response.choices[0].message.content);
+        if (result.entities && result.entities.client_name) {
+            result.entities.patient_name = result.entities.client_name;
+        }
         console.log("🤖 [AI Analysis] Completed successfully:", result);
         return result;
     } catch (err) {
@@ -195,7 +595,7 @@ Extract the following information in JSON format:
 /**
  * Format transcripts if they arrive as structured array
  */
-function formatTranscript(transcriptInput) {
+export function formatTranscript(transcriptInput) {
     if (!transcriptInput) return "";
     if (typeof transcriptInput === 'string') return transcriptInput;
     if (Array.isArray(transcriptInput)) {
@@ -215,243 +615,41 @@ function formatTranscript(transcriptInput) {
  */
 export const handleDograhWebhook = async (req, res) => {
     try {
-        const event = req.body.event || req.body.event_type;
-        const payload = req.body.call || req.body;
+        const body = req.body || {};
+        const event = body.event || body.event_type || body.status;
+        const payload = body.call || body;
 
-        console.log(`📞 [Dograh Webhook] Received event: ${event} for call_id: ${payload.call_id}`);
+        const callId = resolveBillingCallId(payload);
+        console.log(`📞 [Dograh Webhook] Received event: ${event} for billing call_id: ${callId}`);
 
-        if (!payload.call_id) {
-            return res.status(400).json({ success: false, error: 'Missing call_id in webhook payload' });
+        if (!callId) {
+            return res.status(400).json({ success: false, error: 'Missing call identifier in webhook payload' });
         }
 
-        // Get organization and admin info
         const orgInfo = await getOrgAndAdmin(payload);
         const orgId = orgInfo.id;
         const adminId = orgInfo.admin_id;
 
-        if (event === 'call_started') {
-            const callRecordId = crypto.randomUUID();
+        const endEvents = ['call_ended', 'call_finished', 'call_analyzed', 'completed', 'failed', 'busy', 'no-answer'];
+        const normalizedEvent = String(event || '').toLowerCase();
+        const shouldFinalize = endEvents.includes(normalizedEvent)
+            || payload.is_completed === true
+            || isDograhRunCompleted(payload);
 
-            // Fetch current wallet balance
-            const { data: wallet } = await supabaseAdmin
-                .from('wallet')
-                .select('balance')
-                .eq('organization_id', orgId)
-                .single();
-            const startBalance = wallet ? parseFloat(wallet.balance) : 0.00;
+        if (shouldFinalize) {
+            const { sessionKey, session } = findActiveCallSession(payload);
 
-            // 1. Insert into active_calls
-            const { data: activeCall, error } = await supabaseAdmin
-                .from('active_calls')
-                .insert({
-                    call_id: payload.call_id,
-                    organization_id: orgId,
-                    customer_number: payload.from_number || payload.customer_number || 'Unknown',
-                    agent_id: payload.agent_id || 'Unknown',
-                    agent_name: payload.agent_name || 'AI Voice Agent',
-                    started_at: new Date(payload.start_timestamp || Date.now()).toISOString()
-                })
-                .select()
-                .single();
-
-            if (error && error.code !== '23505') {
-                console.error('[Dograh Webhook] Active call DB error:', error.message);
-            }
-
-            // 2. Setup in-memory billing interval
-            if (global.activeCallBilling[payload.call_id]) {
-                clearInterval(global.activeCallBilling[payload.call_id].intervalId);
-            }
-
-            const session = {
-                callRecordId,
-                startBalance,
-                startedAt: Date.now(),
-                orgId,
-                adminId,
-                creditsDeductedSoFar: 0,
-                lastIntegerBalance: Math.floor(startBalance)
-            };
-
-            session.intervalId = setInterval(async () => {
-                try {
-                    const elapsedSeconds = Math.round((Date.now() - session.startedAt) / 1000);
-                    const currentCreditsUsed = (elapsedSeconds / 60) * 5;
-                    const currentFloatBalance = session.startBalance - currentCreditsUsed;
-
-                    console.log(`⏱️ [CallBilling Tick] Call ${payload.call_id} | Duration: ${elapsedSeconds}s | Used: ${currentCreditsUsed.toFixed(4)} | Balance: ${currentFloatBalance.toFixed(4)}`);
-
-                    if (currentFloatBalance <= 0) {
-                        console.log(`🚨 [RealTimeBilling] Balance reached <= 0. Terminating call ${payload.call_id}!`);
-                        clearInterval(session.intervalId);
-                        delete global.activeCallBilling[payload.call_id];
-
-                        const finalToDeduct = session.startBalance - session.creditsDeductedSoFar;
-                        if (finalToDeduct > 0) {
-                            await deductDbCredits(session.adminId, finalToDeduct, session.callRecordId, session.orgId);
-                        }
-
-                        SocketService.emitWalletUpdate(session.orgId, 0);
-                        SocketService.emitLiveCall(session.orgId, {
-                            event: 'call_progress',
-                            call: {
-                                call_id: payload.call_id,
-                                duration: elapsedSeconds,
-                                credits_used: session.startBalance,
-                                balance: 0
-                            }
-                        });
-
-                        await terminateDograhCall(payload.call_id);
-                        return;
-                    }
-
-                    // Check crossed integer boundary
-                    const currentIntegerBalance = Math.floor(currentFloatBalance);
-                    if (currentIntegerBalance < session.lastIntegerBalance) {
-                        const diff = session.lastIntegerBalance - currentIntegerBalance;
-                        const deducted = await deductDbCredits(session.adminId, diff, session.callRecordId, session.orgId);
-                        session.creditsDeductedSoFar += deducted;
-                        session.lastIntegerBalance = currentIntegerBalance;
-                    }
-
-                    // Emit progress
-                    SocketService.emitLiveCall(session.orgId, {
-                        event: 'call_progress',
-                        call: {
-                            call_id: payload.call_id,
-                            duration: elapsedSeconds,
-                            credits_used: parseFloat(currentCreditsUsed.toFixed(4)),
-                            balance: parseFloat(currentFloatBalance.toFixed(4))
-                        }
-                    });
-
-                    SocketService.emitWalletUpdate(session.orgId, parseFloat(currentFloatBalance.toFixed(4)));
-
-                } catch (timerErr) {
-                    console.error('[RealTimeBilling Timer] Error:', timerErr.message);
-                }
-            }, 1000);
-
-            global.activeCallBilling[payload.call_id] = session;
-
-            // 3. Broadcast call_started to socket
-            SocketService.emitLiveCall(orgId, {
-                event: 'call_started',
-                call: activeCall || {
-                    call_id: payload.call_id,
-                    customer_number: payload.from_number || payload.customer_number || 'Unknown',
-                    agent_name: payload.agent_name || 'AI Voice Agent',
-                    started_at: new Date().toISOString()
-                }
+            await finalizeActiveCall({
+                sessionKey: sessionKey || callId,
+                session,
+                callId,
+                runData: payload,
+                phoneNumber: payload.from_number || payload.customer_number || payload.initial_context?.phone_number,
+                agentId: payload.agent_id || payload.initial_context?.workflow_uuid || payload.initial_context?.agent_identifier,
+                agentName: payload.agent_name || 'Dograh Voice Agent',
+                orgId: session?.orgId || orgId,
+                adminId: session?.adminId || adminId
             });
-
-        } else if (event === 'call_ended' || event === 'call_finished' || event === 'call_analyzed') {
-            const session = global.activeCallBilling[payload.call_id];
-            if (session) {
-                clearInterval(session.intervalId);
-                delete global.activeCallBilling[payload.call_id];
-            }
-
-            // Calculate final duration
-            let durationSeconds = payload.duration_seconds || 0;
-            if (durationSeconds === 0 && payload.end_timestamp && payload.start_timestamp) {
-                durationSeconds = Math.round((payload.end_timestamp - payload.start_timestamp) / 1000);
-            }
-            if (durationSeconds === 0 && session) {
-                durationSeconds = Math.round((Date.now() - session.startedAt) / 1000);
-            }
-            durationSeconds = Math.max(0, durationSeconds);
-
-            const finalCreditsNeeded = Math.ceil(durationSeconds / 60) * 5;
-            const callRecordId = session ? session.callRecordId : crypto.randomUUID();
-
-            // Reconcile database billing
-            let finalDeducted = finalCreditsNeeded;
-            if (session) {
-                const adjustment = session.creditsDeductedSoFar - finalCreditsNeeded;
-                if (adjustment > 0) {
-                    // Refund over-deducted credits
-                    await refundDbCredits(session.adminId, adjustment, callRecordId, session.orgId);
-                } else if (adjustment < 0) {
-                    // Deduct remaining under-deducted credits
-                    const extraDeducted = await deductDbCredits(session.adminId, Math.abs(adjustment), callRecordId, session.orgId);
-                    finalDeducted = session.creditsDeductedSoFar + extraDeducted;
-                } else {
-                    finalDeducted = session.creditsDeductedSoFar;
-                }
-            } else {
-                // If no session started (e.g. webhook skipped call_started), perform complete deduction
-                if (finalCreditsNeeded > 0 && adminId) {
-                    finalDeducted = await deductDbCredits(adminId, finalCreditsNeeded, callRecordId, orgId);
-                }
-            }
-
-            // Parse and format raw transcript text
-            const transcriptRaw = formatTranscript(payload.transcript || payload.transcript_object);
-
-            // Perform AI analysis on call transcript
-            const aiAnalysis = await analyzeCallTranscript(transcriptRaw);
-
-            // Bundle transcript details as a single structured JSON string inside the transcript column
-            const transcriptJsonBundle = JSON.stringify({
-                raw: transcriptRaw,
-                summary: aiAnalysis.summary,
-                sentiment: aiAnalysis.sentiment,
-                entities: aiAnalysis.entities
-            });
-
-            // Fetch current final wallet balance for broadcasting
-            const { data: finalWallet } = await supabaseAdmin
-                .from('wallet')
-                .select('balance')
-                .eq('organization_id', orgId)
-                .single();
-            const finalBalance = finalWallet ? parseFloat(finalWallet.balance) : 0;
-
-            // 4. Insert into sales_calls history
-            const { data: callHistoryRow, error: historyErr } = await supabaseAdmin
-                .from('sales_calls')
-                .insert({
-                    id: callRecordId,
-                    call_id: payload.call_id,
-                    organization_id: orgId,
-                    customer_number: payload.from_number || payload.customer_number || 'Unknown',
-                    agent_id: payload.agent_id || 'Unknown',
-                    agent_name: payload.agent_name || 'AI Voice Agent',
-                    duration: durationSeconds,
-                    credits_used: finalDeducted,
-                    status: payload.disconnection_reason || 'completed',
-                    recording_url: payload.recording_url || null,
-                    transcript: transcriptJsonBundle,
-                    started_at: new Date(payload.start_timestamp || Date.now()).toISOString(),
-                    ended_at: new Date(payload.end_timestamp || Date.now()).toISOString()
-                })
-                .select()
-                .single();
-
-            if (historyErr) {
-                console.error('[Dograh Webhook] History insert failed:', historyErr.message);
-            }
-
-            // 5. Remove from active_calls
-            const { error: deleteErr } = await supabaseAdmin
-                .from('active_calls')
-                .delete()
-                .eq('call_id', payload.call_id);
-
-            if (deleteErr) {
-                console.error('[Dograh Webhook] Active call delete failed:', deleteErr.message);
-            }
-
-            // 6. Broadcast ended and wallet updates to sockets
-            SocketService.emitLiveCall(orgId, {
-                event: 'call_ended',
-                call_id: payload.call_id,
-                call: callHistoryRow
-            });
-
-            SocketService.emitWalletUpdate(orgId, finalBalance);
         }
 
         return res.json({ success: true });

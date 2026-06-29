@@ -163,6 +163,8 @@ app.use('/api/billing', dashboardRoutes);
 import dograhWebhookRoutes from './routes/billing/dograhRoutes.js';
 app.use('/webhooks/dograh', dograhWebhookRoutes);
 
+import { recoverStaleActiveCalls } from './controllers/billing/dograhController.js';
+
 import videoRoutes from './routes/video/videoRoutes.js';
 app.use('/api/video', videoRoutes);
 
@@ -256,6 +258,9 @@ server.listen(PORT, () => {
 
     // Start credit monitor cron (alerts at 50%, 75%, 90%, 100% usage)
     startCreditMonitorCron();
+
+    // Recover billing sessions for calls that ended while the server was down
+    recoverStaleActiveCalls();
 });
 
 export default app;
