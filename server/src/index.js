@@ -37,6 +37,7 @@ const allowedOrigins = process.env.ALLOWED_ORIGINS
 // Allow all Vercel preview deployments for this project
 const allowedOriginPatterns = [
     /^https:\/\/automation-dashboard-.*-bitlanceais-projects\.vercel\.app$/,
+    /^https:\/\/.*\.vercel\.app$/
 ];
 
 app.use(cors({

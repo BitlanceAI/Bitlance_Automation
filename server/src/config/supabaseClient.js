@@ -9,7 +9,7 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 const SUPABASE_URL = process.env.SUPABASE_URL;
-const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_KEY;
+const SUPABASE_KEY = process.env.SUPABASE_KEY;
 
 console.log('🔹 initializing Supabase Client with URL:', SUPABASE_URL);
 
