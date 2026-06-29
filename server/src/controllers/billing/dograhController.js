@@ -133,11 +133,20 @@ export function extractRunStatus(runData) {
 }
 
 export function extractRecordingUrl(runData) {
-    return runData?.recording_url
+    let url = runData?.recording_url
         || runData?.recording_public_url
         || runData?.user_recording_url
         || runData?.user_recording_public_url
         || null;
+
+    if (url && typeof url === 'string') {
+        url = url.trim();
+        if (url.startsWith('/')) {
+            const { apiUrl } = getDograhConfig();
+            return `${apiUrl}${url}`;
+        }
+    }
+    return url;
 }
 
 async function fetchTranscriptContent(runData) {
