@@ -16,8 +16,12 @@ const openai = new OpenAI({
 });
 
 export function getDograhConfig() {
+    let apiUrl = (process.env.DOGRAH_API_URL || 'https://api.dograh.com').trim().replace(/\/$/, '');
+    if (!/^https?:\/\//i.test(apiUrl)) {
+        apiUrl = `https://${apiUrl}`;
+    }
     return {
-        apiUrl: (process.env.DOGRAH_API_URL || 'https://voice.bitlancetechhub.com').replace(/\/$/, ''),
+        apiUrl,
         apiKey: process.env.DOGRAH_API_KEY || process.env.RETELL_API_KEY
     };
 }
