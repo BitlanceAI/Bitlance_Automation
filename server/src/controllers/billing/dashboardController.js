@@ -242,7 +242,10 @@ export const triggerCall = async (req, res) => {
         }
 
         // 3. Prepare Dograh API configuration
-        const dograhApiUrl = (process.env.DOGRAH_API_URL || 'https://voice.bitlancetechhub.com').replace(/\/$/, '');
+        let dograhApiUrl = (process.env.DOGRAH_API_URL || 'https://voice.bitlancetechhub.com').trim().replace(/\/$/, '');
+        if (!/^https?:\/\//i.test(dograhApiUrl)) {
+            dograhApiUrl = `https://${dograhApiUrl}`;
+        }
         const dograhApiKey = process.env.DOGRAH_API_KEY || process.env.RETELL_API_KEY;
         const callerId = fromNumber || process.env.DOGRAH_FROM_NUMBER || process.env.RETELL_FROM_NUMBER;
 
@@ -253,6 +256,13 @@ export const triggerCall = async (req, res) => {
 
         console.log(`📞 [TriggerCall] Initiating Dograh Vobiz outbound call to ${phoneNumber} using agent/trigger path UUID: ${agentId}`);
 
+        let serverUrl = (process.env.SERVER_URL || process.env.SERVER || '').trim().replace(/\/$/, '');
+        if (!serverUrl) {
+            serverUrl = 'https://backend.bitlancetechhub.com';
+        } else if (!/^https?:\/\//i.test(serverUrl)) {
+            serverUrl = `https://${serverUrl}`;
+        }
+
         // 4. Send POST request to Dograh API Trigger endpoint using Agent UUID
         const triggerUrl = `${dograhApiUrl}/api/v1/public/agent/workflow/${agentId}`;
         const response = await axios.post(
@@ -261,8 +271,8 @@ export const triggerCall = async (req, res) => {
                 phone_number: phoneNumber,
                 initial_context: {
                     organization_id: org.id,
-                    webhook_url: `${process.env.SERVER_URL}/webhooks/dograh`,
-                    server_url: `${process.env.SERVER_URL}/webhooks/dograh`
+                    webhook_url: `${serverUrl}/webhooks/dograh`,
+                    server_url: `${serverUrl}/webhooks/dograh`
                 }
             },
             {
