@@ -7,7 +7,8 @@ import {
     triggerCall,
     forceTerminateCall,
     createRazorpayOrder,
-    verifyRazorpayPayment
+    verifyRazorpayPayment,
+    failRazorpayPayment
 } from '../../controllers/billing/dashboardController.js';
 import { authenticateUser } from '../../middleware/authMiddleware.js';
 
@@ -24,5 +25,6 @@ router.post('/force-terminate/:callId', authenticateUser, forceTerminateCall);
 // Custom Razorpay integration for billing wallet recharges
 router.post('/razorpay/create-order', authenticateUser, createRazorpayOrder);
 router.post('/razorpay/verify',       authenticateUser, verifyRazorpayPayment);
+router.post('/razorpay/fail',         authenticateUser, failRazorpayPayment);
 
 export default router;

@@ -713,3 +713,49 @@ export const verifyRazorpayPayment = async (req, res) => {
         res.status(500).json({ success: false, error: err.message || 'Verification failed.' });
     }
 };
+
+/**
+ * Mark Razorpay payment as FAILED
+ */
+export const failRazorpayPayment = async (req, res) => {
+    try {
+        const { order_id } = req.body;
+        if (!order_id) {
+            return res.status(400).json({ success: false, error: 'Missing order_id.' });
+        }
+
+        // Fetch payment details
+        const { data: payment, error: fetchErr } = await supabaseAdmin
+            .from('payments')
+            .select('*')
+            .eq('order_id', order_id)
+            .maybeSingle();
+
+        if (fetchErr) throw fetchErr;
+        if (!payment) {
+            return res.status(404).json({ success: false, error: 'Payment order record not found.' });
+        }
+
+        if (payment.status === 'SUCCESS') {
+            return res.json({ success: true, message: 'Payment was already processed successfully.' });
+        }
+
+        // Update payment record to FAILED
+        const { error: payErr } = await supabaseAdmin
+            .from('payments')
+            .update({
+                status: 'FAILED',
+                updated_at: new Date().toISOString()
+            })
+            .eq('order_id', order_id);
+
+        if (payErr) throw payErr;
+
+        console.log(`[Razorpay Fail] Order ${order_id} marked as FAILED`);
+        res.json({ success: true, message: 'Payment marked as failed.' });
+
+    } catch (err) {
+        console.error('[Razorpay Fail] Error marking payment as failed:', err.message);
+        res.status(500).json({ success: false, error: err.message || 'Failed to update payment status.' });
+    }
+};
