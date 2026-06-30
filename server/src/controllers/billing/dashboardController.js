@@ -1,4 +1,11 @@
-import { supabaseAdmin } from '../../config/supabaseClient.js';
+import { oldSupabaseAdmin, newSupabaseAdmin } from '../../config/supabaseClient.js';
+
+// newDb = voice dashboard client activity (organizations, wallet, sales_calls, active_calls)
+// oldDb = billing only (user_credits, credit_ledger, payment_orders)
+const newDb = newSupabaseAdmin;
+const oldDb = oldSupabaseAdmin;
+// supabaseAdmin alias points to newDb for all client activity in this controller
+const supabaseAdmin = newDb;
 import axios from 'axios';
 import crypto from 'crypto';
 import SocketService from '../../services/socket/socketService.js';
@@ -46,8 +53,8 @@ async function ensureOrgAndWallet(userId) {
     if (walletErr) throw walletErr;
 
     if (!wallet) {
-        // Seed wallet with 500 starting credits for the client organization
-        const initialBalance = 200;
+        // Seed wallet with 10 starting credits for the client organization
+        const initialBalance = 10;
 
         const { data: newWallet, error: insertWalletErr } = await supabaseAdmin
             .from('wallet')
@@ -339,7 +346,7 @@ export const triggerCall = async (req, res) => {
                 organization_id: org.id,
                 customer_number: phoneNumber,
                 agent_id: agentId,
-                agent_name: 'Dograh Voice Agent',
+                agent_name: 'Voice Agent',
                 started_at: new Date().toISOString()
             })
             .select()
@@ -499,7 +506,7 @@ export const triggerCall = async (req, res) => {
             call: activeCall || {
                 call_id: callId,
                 customer_number: phoneNumber,
-                agent_name: 'Dograh Voice Agent',
+                agent_name: 'Voice Agent',
                 started_at: new Date().toISOString()
             }
         });
@@ -512,9 +519,27 @@ export const triggerCall = async (req, res) => {
 
     } catch (err) {
         console.error('[TriggerCall] Error initiating call:', err.response?.data || err.message);
-        res.status(err.response?.status || 500).json({ 
+        
+        const status = err.response?.status;
+        if (status === 401 || status === 402) {
+            return res.status(status).json({ 
+                success: false, 
+                error: 'INTERNAL_SERVER_ERROR',
+                message: 'Internal server error' 
+            });
+        }
+
+        let errMsg = err.response?.data?.error || err.response?.data?.message || err.message || 'Failed to trigger call';
+        if (typeof errMsg === 'string') {
+            errMsg = errMsg
+                .replace(/dograh/gi, 'telephony provider')
+                .replace(/retell/gi, 'telephony provider')
+                .replace(/vobiz/gi, 'telephony provider');
+        }
+
+        res.status(status || 500).json({ 
             success: false, 
-            error: err.response?.data?.error || err.response?.data?.message || err.message || 'Failed to trigger call' 
+            error: errMsg 
         });
     }
 };

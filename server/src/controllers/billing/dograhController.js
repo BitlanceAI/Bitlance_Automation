@@ -1,7 +1,12 @@
 import crypto from 'crypto';
 import axios from 'axios';
 import { OpenAI } from 'openai';
-import { supabaseAdmin } from '../../config/supabaseClient.js';
+import { oldSupabaseAdmin, newSupabaseAdmin, supabaseStore } from '../../config/supabaseClient.js';
+
+// newDb = voice dashboard client activity (calls, transcripts, analytics, leads)
+// oldDb = billing only (credit deductions, ledger)
+const newDb = newSupabaseAdmin;
+const oldDb = oldSupabaseAdmin;
 import CreditLedgerService from '../../services/credits/creditLedgerService.js';
 import SocketService from '../../services/socket/socketService.js';
 
@@ -192,7 +197,7 @@ export async function finalizeActiveCall({
     runData = {},
     phoneNumber,
     agentId,
-    agentName = 'Dograh Voice Agent',
+    agentName = 'Voice Agent',
     orgId,
     adminId,
     forcedCreditsUsed = null
@@ -229,7 +234,7 @@ export async function finalizeActiveCall({
         clearActiveCallSession(sessionKey);
     }
 
-    const { data: existingCall } = await supabaseAdmin
+    const { data: existingCall } = await newDb
         .from('sales_calls')
         .select('*')
         .eq('call_id', callId)
@@ -265,10 +270,62 @@ export async function finalizeActiveCall({
         raw: transcriptRaw,
         summary: aiAnalysis.summary,
         sentiment: aiAnalysis.sentiment,
-        entities: aiAnalysis.entities
+        overall_sentiment: aiAnalysis.overall_sentiment,
+        sentiment_score: aiAnalysis.sentiment_score,
+        confidence: aiAnalysis.confidence,
+        customer_emotion: aiAnalysis.customer_emotion,
+        interest_level: aiAnalysis.interest_level,
+        buying_intent: aiAnalysis.buying_intent,
+        call_outcome: aiAnalysis.call_outcome,
+        customer_satisfaction: aiAnalysis.customer_satisfaction,
+        objections: aiAnalysis.objections,
+        complaints: aiAnalysis.complaints,
+        key_topics: aiAnalysis.key_topics,
+        positive_signals: aiAnalysis.positive_signals,
+        negative_signals: aiAnalysis.negative_signals,
+        customer_name: aiAnalysis.customer_name
     });
 
-    const { data: finalWallet } = await supabaseAdmin
+    const targetCustomerPhone = phoneNumber || finalRunData?.initial_context?.phone_number || finalRunData?.customer_phone || 'Unknown';
+
+    if (newSupabaseAdmin) {
+        try {
+            console.log('🤖 [newSupabaseAdmin] Saving call analytics to new Supabase for customer:', targetCustomerPhone);
+            const { error: newSbError } = await newSupabaseAdmin
+                .from('call_analytics')
+                .insert({
+                    call_id: callId,
+                    overall_sentiment: aiAnalysis.overall_sentiment || 'neutral',
+                    sentiment_score: aiAnalysis.sentiment_score || 50,
+                    confidence: aiAnalysis.confidence || 80,
+                    customer_emotion: aiAnalysis.customer_emotion || 'Neutral',
+                    customer_name: aiAnalysis.customer_name || null,
+                    customer_phone: targetCustomerPhone,
+                    interest_level: aiAnalysis.interest_level || 'medium',
+                    buying_intent: aiAnalysis.buying_intent || 'medium',
+                    call_outcome: aiAnalysis.call_outcome || 'Completed',
+                    customer_satisfaction: aiAnalysis.customer_satisfaction || 'medium',
+                    objections: aiAnalysis.objections || [],
+                    complaints: aiAnalysis.complaints || [],
+                    key_topics: aiAnalysis.key_topics || [],
+                    positive_signals: aiAnalysis.positive_signals || [],
+                    negative_signals: aiAnalysis.negative_signals || [],
+                    summary: aiAnalysis.summary || '',
+                    created_at: new Date(finalRunData?.created_at || finalRunData?.start_timestamp || session?.startedAt || Date.now()).toISOString()
+                });
+            if (newSbError) {
+                console.error('❌ [newSupabaseAdmin] Failed to write call_analytics:', newSbError.message);
+            } else {
+                console.log('✅ [newSupabaseAdmin] Successfully saved call_analytics');
+            }
+        } catch (err) {
+            console.error('❌ [newSupabaseAdmin] Exception writing call_analytics:', err.message);
+        }
+    } else {
+        console.warn('⚠️ [newSupabaseAdmin] not configured, skipping call_analytics save');
+    }
+
+    const { data: finalWallet } = await newDb
         .from('wallet')
         .select('balance')
         .eq('organization_id', orgId)
@@ -279,7 +336,7 @@ export async function finalizeActiveCall({
     let historyErr = null;
 
     if (existingCall) {
-        const { data: updatedRow, error: updateErr } = await supabaseAdmin
+        const { data: updatedRow, error: updateErr } = await newDb
             .from('sales_calls')
             .update({
                 duration: durationSeconds,
@@ -295,7 +352,7 @@ export async function finalizeActiveCall({
         callHistoryRow = updatedRow;
         historyErr = updateErr;
     } else {
-        const { data: insertedRow, error: insertErr } = await supabaseAdmin
+        const { data: insertedRow, error: insertErr } = await newDb
             .from('sales_calls')
             .insert({
                 id: callRecordId,
@@ -322,7 +379,7 @@ export async function finalizeActiveCall({
         console.error('[Call Finalize] History insert failed:', historyErr.message);
     }
 
-    const { error: deleteErr } = await supabaseAdmin
+    const { error: deleteErr } = await newDb
         .from('active_calls')
         .delete()
         .eq('call_id', callId);
@@ -360,31 +417,45 @@ export async function finalizeActiveCall({
  * but were left behind due to polling failures or server restarts.
  */
 export async function recoverStaleActiveCalls() {
+    // 1. Recover from the old/default database
+    await supabaseStore.run({ origin: 'https://www.bitlancetechhub.com', referer: '' }, async () => {
+        await recoverFromDb('Default DB');
+    });
+
+    // 2. Recover from the new database (if configured)
+    if (process.env.NEW_SUPABASE_URL) {
+        await supabaseStore.run({ origin: 'https://lotlite.bitlancetechhub.com', referer: '' }, async () => {
+            await recoverFromDb('New DB (Lotlite)');
+        });
+    }
+}
+
+async function recoverFromDb(dbName) {
     try {
-        const { data: activeCalls, error } = await supabaseAdmin
+        const { data: activeCalls, error } = await newDb
             .from('active_calls')
             .select('*');
 
         if (error) throw error;
         if (!activeCalls?.length) return;
 
-        console.log(`🔄 [Recovery] Checking ${activeCalls.length} stale active call(s)...`);
+        console.log(`🔄 [Recovery - ${dbName}] Checking ${activeCalls.length} stale active call(s)...`);
 
         for (const activeCall of activeCalls) {
             try {
                 const runData = await fetchDograhRun(activeCall.call_id);
                 if (!isDograhRunCompleted(runData)) {
-                    console.log(`🔄 [Recovery] Call ${activeCall.call_id} still active in Dograh, skipping.`);
+                    console.log(`🔄 [Recovery - ${dbName}] Call ${activeCall.call_id} still active in Dograh, skipping.`);
                     continue;
                 }
 
-                const { data: org } = await supabaseAdmin
+                const { data: org } = await newDb
                     .from('organizations')
                     .select('admin_id')
                     .eq('id', activeCall.organization_id)
                     .maybeSingle();
 
-                console.log(`🔄 [Recovery] Finalizing stale call ${activeCall.call_id}`);
+                console.log(`🔄 [Recovery - ${dbName}] Finalizing stale call ${activeCall.call_id}`);
                 await finalizeActiveCall({
                     sessionKey: activeCall.call_id,
                     session: global.activeCallBilling[activeCall.call_id] || null,
@@ -392,16 +463,16 @@ export async function recoverStaleActiveCalls() {
                     runData,
                     phoneNumber: activeCall.customer_number,
                     agentId: activeCall.agent_id,
-                    agentName: activeCall.agent_name || 'Dograh Voice Agent',
+                    agentName: activeCall.agent_name || 'Voice Agent',
                     orgId: activeCall.organization_id,
                     adminId: org?.admin_id || null
                 });
             } catch (callErr) {
-                console.warn(`[Recovery] Could not recover call ${activeCall.call_id}:`, callErr.message);
+                console.warn(`[Recovery - ${dbName}] Could not recover call ${activeCall.call_id}:`, callErr.message);
             }
         }
     } catch (err) {
-        console.error('[Recovery] Stale active call recovery failed:', err.message);
+        console.error(`[Recovery - ${dbName}] Stale active call recovery failed:`, err.message);
     }
 }
 
@@ -413,7 +484,7 @@ export async function getOrgAndAdmin(payload) {
     const orgId = metadata.organization_id;
 
     if (orgId) {
-        const { data: org } = await supabaseAdmin
+        const { data: org } = await newDb
             .from('organizations')
             .select('id, admin_id')
             .eq('id', orgId)
@@ -422,7 +493,7 @@ export async function getOrgAndAdmin(payload) {
     }
 
     // Fallback: Get first organization (since it's single-client)
-    const { data: orgs } = await supabaseAdmin
+    const { data: orgs } = await newDb
         .from('organizations')
         .select('id, admin_id')
         .limit(1);
@@ -480,7 +551,8 @@ export async function terminateDograhCall(callId, telephonyCallId = null) {
 export async function deductDbCredits(adminId, amount, callId, orgId) {
     if (amount <= 0) return 0;
     try {
-        const { data, error } = await supabaseAdmin.rpc('deduct_credits_with_ledger', {
+        // Credit deductions go to OLD DB (Bitlance billing)
+        const { data, error } = await oldDb.rpc('deduct_credits_with_ledger', {
             p_user_id: adminId,
             p_agent_type: 'voice',
             p_reference_id: callId,
@@ -505,7 +577,7 @@ export async function deductDbCredits(adminId, amount, callId, orgId) {
 export async function refundDbCredits(adminId, amount, callId, orgId) {
     if (amount <= 0) return;
     try {
-        const { data: wallet } = await supabaseAdmin
+        const { data: wallet } = await newDb
             .from('wallet')
             .select('id, balance')
             .eq('organization_id', orgId)
@@ -513,12 +585,12 @@ export async function refundDbCredits(adminId, amount, callId, orgId) {
 
         if (wallet) {
             const newBalance = parseFloat(wallet.balance) + amount;
-            await supabaseAdmin
+            await newDb
                 .from('wallet')
                 .update({ balance: newBalance, updated_at: new Date().toISOString() })
                 .eq('id', wallet.id);
 
-            await supabaseAdmin.from('transactions').insert({
+            await newDb.from('transactions').insert({
                 organization_id: orgId,
                 wallet_id: wallet.id,
                 amount: amount,
@@ -540,8 +612,21 @@ export async function analyzeCallTranscript(transcriptText) {
     if (!transcriptText) {
         return {
             summary: "No transcript available.",
+            overall_sentiment: "neutral",
             sentiment: "😐 Neutral",
-            entities: {}
+            sentiment_score: 50,
+            confidence: 50,
+            customer_emotion: "Neutral",
+            interest_level: "medium",
+            buying_intent: "medium",
+            call_outcome: "Unknown",
+            customer_satisfaction: "medium",
+            objections: [],
+            complaints: [],
+            key_topics: [],
+            positive_signals: [],
+            negative_signals: [],
+            customer_name: null
         };
     }
 
@@ -554,18 +639,28 @@ export async function analyzeCallTranscript(transcriptText) {
                 {
                     role: "system",
                     content: `You are an AI assistant that analyzes call transcripts for a business dashboard.
-Identify the AI assistant (caller) and the recipient/customer (client). In the summary and sentiment, refer to the recipient/customer as the "client" or by their name, not as the "caller".
-Extract the following information in JSON format:
+Analyze the conversation between the AI assistant and the customer.
+Extract all requested information in the following JSON format:
 {
-  "summary": "A brief 2-3 sentence summary of the call, stating what the client wanted or did",
-  "sentiment": "A dynamic one-line result (under 15 words) starting with a suitable emoji (e.g. 😊, 😐, 😞, 😠) summarizing what the client said and how they responded (e.g. '😊 Interested in property listings and cooperated' or '😐 Declined to discuss property requirements due to time constraints')",
-  "entities": {
-    "client_name": "Name of the client/customer (if mentioned, otherwise null)",
-    "mobile": "Contact number (if mentioned, otherwise null)",
-    "department": "Inquiry category or department like Sales, Support, Real Estate, General (if mentioned, otherwise null)",
-    "appointment_date": "Date and time of appointment or callback (if mentioned, otherwise null)",
-    "email": "Email address (if mentioned, otherwise null)"
-  }
+  "summary": "A brief 2-3 sentence summary of the call, stating what the client/customer wanted or did",
+  "overall_sentiment": "positive" or "neutral" or "negative",
+  "sentiment_score": a number from 0 to 100 representing the client's mood (0 is extremely negative, 50 is neutral, 100 is extremely positive),
+  "confidence": a number from 0 to 100 representing your confidence in this analysis,
+  "customer_emotion": "a single word describing customer's emotional state, e.g. Happy, Curious, Interested, Impatient, Frustrated, Angry, Neutral",
+  "interest_level": "low" or "medium" or "high",
+  "buying_intent": "low" or "medium" or "high",
+  "call_outcome": "Brief summary of how the call ended or the outcome (e.g. Appointment scheduled, Callback requested, Disconnected, Not interested)",
+  "customer_satisfaction": "low" or "medium" or "high",
+  "objections": [
+    { "text": "brief description of objection raised by customer", "handled": true/false }
+  ],
+  "complaints": [
+    { "text": "brief description of complaint raised by customer", "resolved": true/false }
+  ],
+  "key_topics": ["topic 1", "topic 2", ...],
+  "positive_signals": ["positive feedback or signal 1", "signal 2", ...],
+  "negative_signals": ["negative feedback or signal 1", "signal 2", ...],
+  "customer_name": "Name of the customer if mentioned, otherwise null"
 }`
                 },
                 {
@@ -577,17 +672,32 @@ Extract the following information in JSON format:
         });
 
         const result = JSON.parse(response.choices[0].message.content);
-        if (result.entities && result.entities.client_name) {
-            result.entities.patient_name = result.entities.client_name;
-        }
+        
+        // Populate standard compatibility sentiment string
+        const emoji = result.overall_sentiment === 'positive' ? '😊' : result.overall_sentiment === 'negative' ? '😞' : '😐';
+        result.sentiment = `${emoji} ${result.overall_sentiment.charAt(0).toUpperCase() + result.overall_sentiment.slice(1)}`;
+        
         console.log("🤖 [AI Analysis] Completed successfully:", result);
         return result;
     } catch (err) {
         console.error("❌ [AI Analysis] Error analyzing transcript:", err.message);
         return {
             summary: "Failed to generate AI summary.",
+            overall_sentiment: "neutral",
             sentiment: "😐 Neutral",
-            entities: {}
+            sentiment_score: 50,
+            confidence: 50,
+            customer_emotion: "Neutral",
+            interest_level: "medium",
+            buying_intent: "medium",
+            call_outcome: "Error",
+            customer_satisfaction: "medium",
+            objections: [],
+            complaints: [],
+            key_topics: [],
+            positive_signals: [],
+            negative_signals: [],
+            customer_name: null
         };
     }
 }
@@ -646,7 +756,7 @@ export const handleDograhWebhook = async (req, res) => {
                 runData: payload,
                 phoneNumber: payload.from_number || payload.customer_number || payload.initial_context?.phone_number,
                 agentId: payload.agent_id || payload.initial_context?.workflow_uuid || payload.initial_context?.agent_identifier,
-                agentName: payload.agent_name || 'Dograh Voice Agent',
+                agentName: payload.agent_name || 'Voice Agent',
                 orgId: session?.orgId || orgId,
                 adminId: session?.adminId || adminId
             });

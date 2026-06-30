@@ -10,11 +10,23 @@
  */
 
 import crypto from 'crypto';
-import { supabaseAdmin } from '../../config/supabaseClient.js';
+import { oldSupabaseAdmin as supabaseAdmin } from '../../config/supabaseClient.js';
+import { sendPurchaseSuccessEmail } from '../../services/email/welcomeEmailService.js';
 
 const RAZORPAY_KEY_ID     = process.env.RAZORPAY_KEY_ID;
 const RAZORPAY_KEY_SECRET = process.env.RAZORPAY_KEY_SECRET;
 const RAZORPAY_API        = 'https://api.razorpay.com/v1';
+
+const getOldUserIdByEmail = async (email) => {
+    try {
+        const { data, error } = await supabaseAdmin.auth.admin.listUsers({ page: 1, perPage: 1000 });
+        if (error) return null;
+        const user = data?.users?.find(u => u.email?.toLowerCase() === email.toLowerCase());
+        return user ? user.id : null;
+    } catch (err) {
+        return null;
+    }
+};
 
 // ─── Comprehensive Bitlance Pricing Catalogue (2026) ────────────────────────
 export const BITLANCE_PRICING = {
@@ -179,12 +191,18 @@ export async function createOrder(req, res) {
         const amountPaise = selectedPlan.priceINR * 100;
         const receiptId = `BL-${planType.toUpperCase()}-${planName.toUpperCase()}-${Date.now()}`;
 
+        // Resolve Old Database User ID
+        const userId = await getOldUserIdByEmail(req.user.email);
+        if (!userId) {
+            return res.status(404).json({ success: false, error: 'User billing profile not found' });
+        }
+
         const rzpOrder = await rzpFetch('POST', '/orders', {
             amount: amountPaise,
             currency: 'INR',
             receipt: receiptId,
             notes: {
-                userId: req.user.id,
+                userId: userId,
                 planType,
                 planName,
                 credits: selectedPlan.credits,
@@ -194,7 +212,7 @@ export async function createOrder(req, res) {
         // Persist order in DB
         const { error: dbErr } = await supabaseAdmin.from('payment_orders').insert({
             order_id: rzpOrder.id,
-            user_id: req.user.id,
+            user_id: userId,
             amount: selectedPlan.priceINR,
             currency: 'INR',
             status: 'CREATED',
@@ -257,7 +275,11 @@ export async function verifyPayment(req, res) {
             return res.status(400).json({ success: false, error: 'Could not determine credits for plan.' });
         }
 
-        const userId = req.user.id;
+        // Resolve Old Database User ID
+        const userId = await getOldUserIdByEmail(req.user.email);
+        if (!userId) {
+            return res.status(404).json({ success: false, error: 'User billing profile not found' });
+        }
 
         // 3. Credit the user (upsert into user_credits)
         const { data: currentRow } = await supabaseAdmin
@@ -293,6 +315,12 @@ export async function verifyPayment(req, res) {
             .eq('order_id', razorpay_order_id);
 
         console.log(`[Razorpay] ✅ Payment verified. User ${userId} credited +${creditsToAdd}. New balance: ${newBalance}`);
+
+        // 5. Send Purchase Success Email asynchronously
+        const userEmail = req.user.email;
+        const fullName = req.user.user_metadata?.name || req.user.user_metadata?.full_name || userEmail.split('@')[0];
+        sendPurchaseSuccessEmail(userEmail, fullName, selectedPlan?.priceINR || 0, planName, planType, creditsToAdd, newBalance)
+            .catch(err => console.error('[Razorpay] Email sending failed:', err.message));
 
         return res.json({
             success: true,

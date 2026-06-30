@@ -17,6 +17,7 @@ import { fileURLToPath } from 'url';
 import dns from 'dns';
 import { createServer } from 'http';
 import SocketService from './services/socket/socketService.js';
+<<<<<<< HEAD
 import { connectMongo } from './config/mongoose.js';
 import { initAgenda, gracefulStop } from './config/agenda.js';
 
@@ -26,6 +27,9 @@ connectMongo().then(() => initAgenda()).catch(err => console.error('[Startup] Ag
 // Graceful shutdown
 process.on('SIGTERM', async () => { await gracefulStop(); process.exit(0); });
 process.on('SIGINT',  async () => { await gracefulStop(); process.exit(0); });
+=======
+import { supabaseStore } from './config/supabaseClient.js';
+>>>>>>> 64eb194326e29bd00dce327a82db0900b358b234
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -63,6 +67,12 @@ app.use(cors({
 app.use(express.json({
     verify: (req, _res, buf) => { req.rawBody = buf; },
 }));
+
+app.use((req, res, next) => {
+    const origin = req.headers.origin || '';
+    const referer = req.headers.referer || '';
+    supabaseStore.run({ origin, referer }, next);
+});
 
 // Initialize Socket Service for Real-time Billing Updates
 SocketService.init(server, allowedOrigins);
