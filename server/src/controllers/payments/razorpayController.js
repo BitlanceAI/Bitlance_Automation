@@ -11,6 +11,7 @@
 
 import crypto from 'crypto';
 import { supabaseAdmin } from '../../config/supabaseClient.js';
+import { sendPurchaseSuccessEmail } from '../../services/email/welcomeEmailService.js';
 
 const RAZORPAY_KEY_ID     = process.env.RAZORPAY_KEY_ID;
 const RAZORPAY_KEY_SECRET = process.env.RAZORPAY_KEY_SECRET;
@@ -293,6 +294,12 @@ export async function verifyPayment(req, res) {
             .eq('order_id', razorpay_order_id);
 
         console.log(`[Razorpay] ✅ Payment verified. User ${userId} credited +${creditsToAdd}. New balance: ${newBalance}`);
+
+        // 5. Send Purchase Success Email asynchronously
+        const userEmail = req.user.email;
+        const fullName = req.user.user_metadata?.name || req.user.user_metadata?.full_name || userEmail.split('@')[0];
+        sendPurchaseSuccessEmail(userEmail, fullName, selectedPlan?.priceINR || 0, planName, planType, creditsToAdd, newBalance)
+            .catch(err => console.error('[Razorpay] Email sending failed:', err.message));
 
         return res.json({
             success: true,
