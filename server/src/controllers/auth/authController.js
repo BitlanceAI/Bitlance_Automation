@@ -233,3 +233,45 @@ export const refreshToken = async (req, res) => {
         });
     }
 };
+
+/**
+ * Resend verification email
+ * POST /api/auth/resend-verification
+ */
+export const resendVerification = async (req, res) => {
+    try {
+        const { email } = req.body;
+
+        if (!email) {
+            return res.status(400).json({
+                success: false,
+                error: 'Email is required'
+            });
+        }
+
+        const { error } = await supabase.auth.resend({
+            type: 'signup',
+            email
+        });
+
+        if (error) {
+            console.error('Resend verification error:', error);
+            return res.status(400).json({
+                success: false,
+                error: error.message || 'Failed to resend verification email'
+            });
+        }
+
+        res.json({
+            success: true,
+            message: 'Verification email resent successfully. Please check your inbox.'
+        });
+
+    } catch (error) {
+        console.error('Resend verification error:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Failed to resend verification email'
+        });
+    }
+};
