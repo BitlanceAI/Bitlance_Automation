@@ -339,7 +339,7 @@ export const triggerCall = async (req, res) => {
                 organization_id: org.id,
                 customer_number: phoneNumber,
                 agent_id: agentId,
-                agent_name: 'Dograh Voice Agent',
+                agent_name: 'Voice Agent',
                 started_at: new Date().toISOString()
             })
             .select()
@@ -499,7 +499,7 @@ export const triggerCall = async (req, res) => {
             call: activeCall || {
                 call_id: callId,
                 customer_number: phoneNumber,
-                agent_name: 'Dograh Voice Agent',
+                agent_name: 'Voice Agent',
                 started_at: new Date().toISOString()
             }
         });

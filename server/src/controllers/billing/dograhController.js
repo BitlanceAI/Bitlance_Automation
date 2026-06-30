@@ -192,7 +192,7 @@ export async function finalizeActiveCall({
     runData = {},
     phoneNumber,
     agentId,
-    agentName = 'Dograh Voice Agent',
+    agentName = 'Voice Agent',
     orgId,
     adminId,
     forcedCreditsUsed = null
@@ -458,7 +458,7 @@ async function recoverFromDb(dbName) {
                     runData,
                     phoneNumber: activeCall.customer_number,
                     agentId: activeCall.agent_id,
-                    agentName: activeCall.agent_name || 'Dograh Voice Agent',
+                    agentName: activeCall.agent_name || 'Voice Agent',
                     orgId: activeCall.organization_id,
                     adminId: org?.admin_id || null
                 });
@@ -750,7 +750,7 @@ export const handleDograhWebhook = async (req, res) => {
                 runData: payload,
                 phoneNumber: payload.from_number || payload.customer_number || payload.initial_context?.phone_number,
                 agentId: payload.agent_id || payload.initial_context?.workflow_uuid || payload.initial_context?.agent_identifier,
-                agentName: payload.agent_name || 'Dograh Voice Agent',
+                agentName: payload.agent_name || 'Voice Agent',
                 orgId: session?.orgId || orgId,
                 adminId: session?.adminId || adminId
             });
