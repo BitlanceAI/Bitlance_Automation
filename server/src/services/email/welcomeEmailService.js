@@ -9,7 +9,7 @@ import { sendMailtrapEmail } from './mailtrapService.js';
  */
 export const sendSignupWelcomeEmail = async (user, fullName) => {
     try {
-        const clientUrl = process.env.CLIENT_URL || 'https://app.voiceaiagent.com';
+        const clientUrl = process.env.CLIENT_URL || 'https://lotlite.bitlancetechhub.com';
         const logoUrl = `${clientUrl}/logo.jpg`;
         
         const firstName = fullName ? fullName.split(' ')[0] : 'there';
@@ -178,12 +178,6 @@ export const sendSignupWelcomeEmail = async (user, fullName) => {
         .footer a:hover {
             text-decoration: underline;
         }
-        .footer-logo {
-            height: 24px;
-            width: auto;
-            opacity: 0.5;
-            margin-top: 16px;
-        }
     </style>
 </head>
 <body>
@@ -280,11 +274,17 @@ export const sendSignupWelcomeEmail = async (user, fullName) => {
                     The BITLANCE Voice AI Agent Team<br>
                     <a href="https://www.bitlancetechub.com" target="_blank">www.bitlancetechub.com</a>
                 </p>
-                <p style="margin: 16px 0 0; font-size: 11px;">
-                    &copy; 2026 Bitlance Voice AI Agent. All Rights Reserved. &nbsp;|&nbsp; 
-                    <a href="${clientUrl}/?showTerms=true" target="_blank" style="color: #94a3b8; text-decoration: underline;">Terms & Conditions</a>
-                </p>
-                <img src="${logoUrl}" alt="Logo" class="footer-logo">
+                <table width="100%" cellpadding="0" cellspacing="0" style="border-top: 1px solid #e2e8f0; margin-top: 24px; padding-top: 16px;">
+                    <tr>
+                        <td align="left" style="font-size: 11px; color: #94a3b8; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.5;">
+                            &copy; 2026 Bitlance Voice AI Agent. All Rights Reserved. &nbsp;|&nbsp; 
+                            <a href="${clientUrl}/?showTerms=true" target="_blank" style="color: #0891b2; text-decoration: underline; font-weight: 600;">Terms & Conditions</a>
+                        </td>
+                        <td align="right" style="padding-left: 10px; width: 80px; vertical-align: middle;">
+                            <img src="${logoUrl}" alt="Logo" style="height: 20px; width: auto; display: block; float: right;">
+                        </td>
+                    </tr>
+                </table>
             </div>
         </div>
     </div>
