@@ -1,4 +1,7 @@
 import { supabase } from '../../config/supabaseClient.js';
+import { sendSignupWelcomeEmail } from '../../services/email/welcomeEmailService.js';
+
+
 
 /**
  * Login user
@@ -98,6 +101,11 @@ export const signup = async (req, res) => {
                 if (creditsError) {
                     console.error('Failed to create credits record:', creditsError);
                 }
+
+                // Send styled welcome email asynchronously
+                sendSignupWelcomeEmail(data.user, name).catch(err => {
+                    console.error('[WelcomeEmail] Error calling sendSignupWelcomeEmail:', err.message);
+                });
             } catch (err) {
                 console.error('Credits initialization error:', err);
             }
