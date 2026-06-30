@@ -1,7 +1,7 @@
 import crypto from 'crypto';
 import axios from 'axios';
 import { OpenAI } from 'openai';
-import { supabaseAdmin } from '../../config/supabaseClient.js';
+import { supabaseAdmin, newSupabaseAdmin } from '../../config/supabaseClient.js';
 import CreditLedgerService from '../../services/credits/creditLedgerService.js';
 import SocketService from '../../services/socket/socketService.js';
 
@@ -265,8 +265,60 @@ export async function finalizeActiveCall({
         raw: transcriptRaw,
         summary: aiAnalysis.summary,
         sentiment: aiAnalysis.sentiment,
-        entities: aiAnalysis.entities
+        overall_sentiment: aiAnalysis.overall_sentiment,
+        sentiment_score: aiAnalysis.sentiment_score,
+        confidence: aiAnalysis.confidence,
+        customer_emotion: aiAnalysis.customer_emotion,
+        interest_level: aiAnalysis.interest_level,
+        buying_intent: aiAnalysis.buying_intent,
+        call_outcome: aiAnalysis.call_outcome,
+        customer_satisfaction: aiAnalysis.customer_satisfaction,
+        objections: aiAnalysis.objections,
+        complaints: aiAnalysis.complaints,
+        key_topics: aiAnalysis.key_topics,
+        positive_signals: aiAnalysis.positive_signals,
+        negative_signals: aiAnalysis.negative_signals,
+        customer_name: aiAnalysis.customer_name
     });
+
+    const targetCustomerPhone = phoneNumber || finalRunData?.initial_context?.phone_number || finalRunData?.customer_phone || 'Unknown';
+
+    if (newSupabaseAdmin) {
+        try {
+            console.log('🤖 [newSupabaseAdmin] Saving call analytics to new Supabase for customer:', targetCustomerPhone);
+            const { error: newSbError } = await newSupabaseAdmin
+                .from('call_analytics')
+                .insert({
+                    call_id: callId,
+                    overall_sentiment: aiAnalysis.overall_sentiment || 'neutral',
+                    sentiment_score: aiAnalysis.sentiment_score || 50,
+                    confidence: aiAnalysis.confidence || 80,
+                    customer_emotion: aiAnalysis.customer_emotion || 'Neutral',
+                    customer_name: aiAnalysis.customer_name || null,
+                    customer_phone: targetCustomerPhone,
+                    interest_level: aiAnalysis.interest_level || 'medium',
+                    buying_intent: aiAnalysis.buying_intent || 'medium',
+                    call_outcome: aiAnalysis.call_outcome || 'Completed',
+                    customer_satisfaction: aiAnalysis.customer_satisfaction || 'medium',
+                    objections: aiAnalysis.objections || [],
+                    complaints: aiAnalysis.complaints || [],
+                    key_topics: aiAnalysis.key_topics || [],
+                    positive_signals: aiAnalysis.positive_signals || [],
+                    negative_signals: aiAnalysis.negative_signals || [],
+                    summary: aiAnalysis.summary || '',
+                    created_at: new Date(finalRunData?.created_at || finalRunData?.start_timestamp || session?.startedAt || Date.now()).toISOString()
+                });
+            if (newSbError) {
+                console.error('❌ [newSupabaseAdmin] Failed to write call_analytics:', newSbError.message);
+            } else {
+                console.log('✅ [newSupabaseAdmin] Successfully saved call_analytics');
+            }
+        } catch (err) {
+            console.error('❌ [newSupabaseAdmin] Exception writing call_analytics:', err.message);
+        }
+    } else {
+        console.warn('⚠️ [newSupabaseAdmin] not configured, skipping call_analytics save');
+    }
 
     const { data: finalWallet } = await supabaseAdmin
         .from('wallet')
@@ -540,8 +592,21 @@ export async function analyzeCallTranscript(transcriptText) {
     if (!transcriptText) {
         return {
             summary: "No transcript available.",
+            overall_sentiment: "neutral",
             sentiment: "😐 Neutral",
-            entities: {}
+            sentiment_score: 50,
+            confidence: 50,
+            customer_emotion: "Neutral",
+            interest_level: "medium",
+            buying_intent: "medium",
+            call_outcome: "Unknown",
+            customer_satisfaction: "medium",
+            objections: [],
+            complaints: [],
+            key_topics: [],
+            positive_signals: [],
+            negative_signals: [],
+            customer_name: null
         };
     }
 
@@ -554,18 +619,28 @@ export async function analyzeCallTranscript(transcriptText) {
                 {
                     role: "system",
                     content: `You are an AI assistant that analyzes call transcripts for a business dashboard.
-Identify the AI assistant (caller) and the recipient/customer (client). In the summary and sentiment, refer to the recipient/customer as the "client" or by their name, not as the "caller".
-Extract the following information in JSON format:
+Analyze the conversation between the AI assistant and the customer.
+Extract all requested information in the following JSON format:
 {
-  "summary": "A brief 2-3 sentence summary of the call, stating what the client wanted or did",
-  "sentiment": "A dynamic one-line result (under 15 words) starting with a suitable emoji (e.g. 😊, 😐, 😞, 😠) summarizing what the client said and how they responded (e.g. '😊 Interested in property listings and cooperated' or '😐 Declined to discuss property requirements due to time constraints')",
-  "entities": {
-    "client_name": "Name of the client/customer (if mentioned, otherwise null)",
-    "mobile": "Contact number (if mentioned, otherwise null)",
-    "department": "Inquiry category or department like Sales, Support, Real Estate, General (if mentioned, otherwise null)",
-    "appointment_date": "Date and time of appointment or callback (if mentioned, otherwise null)",
-    "email": "Email address (if mentioned, otherwise null)"
-  }
+  "summary": "A brief 2-3 sentence summary of the call, stating what the client/customer wanted or did",
+  "overall_sentiment": "positive" or "neutral" or "negative",
+  "sentiment_score": a number from 0 to 100 representing the client's mood (0 is extremely negative, 50 is neutral, 100 is extremely positive),
+  "confidence": a number from 0 to 100 representing your confidence in this analysis,
+  "customer_emotion": "a single word describing customer's emotional state, e.g. Happy, Curious, Interested, Impatient, Frustrated, Angry, Neutral",
+  "interest_level": "low" or "medium" or "high",
+  "buying_intent": "low" or "medium" or "high",
+  "call_outcome": "Brief summary of how the call ended or the outcome (e.g. Appointment scheduled, Callback requested, Disconnected, Not interested)",
+  "customer_satisfaction": "low" or "medium" or "high",
+  "objections": [
+    { "text": "brief description of objection raised by customer", "handled": true/false }
+  ],
+  "complaints": [
+    { "text": "brief description of complaint raised by customer", "resolved": true/false }
+  ],
+  "key_topics": ["topic 1", "topic 2", ...],
+  "positive_signals": ["positive feedback or signal 1", "signal 2", ...],
+  "negative_signals": ["negative feedback or signal 1", "signal 2", ...],
+  "customer_name": "Name of the customer if mentioned, otherwise null"
 }`
                 },
                 {
@@ -577,17 +652,32 @@ Extract the following information in JSON format:
         });
 
         const result = JSON.parse(response.choices[0].message.content);
-        if (result.entities && result.entities.client_name) {
-            result.entities.patient_name = result.entities.client_name;
-        }
+        
+        // Populate standard compatibility sentiment string
+        const emoji = result.overall_sentiment === 'positive' ? '😊' : result.overall_sentiment === 'negative' ? '😞' : '😐';
+        result.sentiment = `${emoji} ${result.overall_sentiment.charAt(0).toUpperCase() + result.overall_sentiment.slice(1)}`;
+        
         console.log("🤖 [AI Analysis] Completed successfully:", result);
         return result;
     } catch (err) {
         console.error("❌ [AI Analysis] Error analyzing transcript:", err.message);
         return {
             summary: "Failed to generate AI summary.",
+            overall_sentiment: "neutral",
             sentiment: "😐 Neutral",
-            entities: {}
+            sentiment_score: 50,
+            confidence: 50,
+            customer_emotion: "Neutral",
+            interest_level: "medium",
+            buying_intent: "medium",
+            call_outcome: "Error",
+            customer_satisfaction: "medium",
+            objections: [],
+            complaints: [],
+            key_topics: [],
+            positive_signals: [],
+            negative_signals: [],
+            customer_name: null
         };
     }
 }

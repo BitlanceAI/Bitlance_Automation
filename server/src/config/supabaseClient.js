@@ -23,13 +23,21 @@ export const supabase = createClient(SUPABASE_URL, SUPABASE_KEY, {
     }
 });
 
-const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
-
-export const supabaseAdmin = SUPABASE_SERVICE_ROLE_KEY
-    ? createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
+export const supabaseAdmin = process.env.SUPABASE_SERVICE_ROLE_KEY
+    ? createClient(SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY, {
         auth: {
             autoRefreshToken: false,
             persistSession: false
         }
     })
     : null;
+
+export const newSupabaseAdmin = process.env.NEW_SUPABASE_SERVICE_ROLE_KEY
+    ? createClient(process.env.NEW_SUPABASE_URL, process.env.NEW_SUPABASE_SERVICE_ROLE_KEY, {
+        auth: {
+            autoRefreshToken: false,
+            persistSession: false
+        }
+    })
+    : null;
+

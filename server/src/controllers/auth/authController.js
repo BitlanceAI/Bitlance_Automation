@@ -54,7 +54,7 @@ export const login = async (req, res) => {
  */
 export const signup = async (req, res) => {
     try {
-        const { email, password, name } = req.body;
+        const { email, password, name, mobile } = req.body;
 
         if (!email || !password) {
             return res.status(400).json({
@@ -70,6 +70,7 @@ export const signup = async (req, res) => {
             options: {
                 data: {
                     name: name || email.split('@')[0],
+                    phone: mobile,
                     role: 'user'
                 }
             }
@@ -90,7 +91,7 @@ export const signup = async (req, res) => {
                     .from('user_credits')
                     .upsert({
                         user_id: data.user.id,
-                        balance: 200, // Initial credits
+                        balance: 10, // Initial credits
                         updated_at: new Date().toISOString()
                     }, { onConflict: 'user_id' });
 

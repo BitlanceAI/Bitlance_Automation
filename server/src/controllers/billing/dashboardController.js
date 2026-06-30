@@ -512,9 +512,27 @@ export const triggerCall = async (req, res) => {
 
     } catch (err) {
         console.error('[TriggerCall] Error initiating call:', err.response?.data || err.message);
-        res.status(err.response?.status || 500).json({ 
+        
+        const status = err.response?.status;
+        if (status === 401 || status === 402) {
+            return res.status(status).json({ 
+                success: false, 
+                error: 'INTERNAL_SERVER_ERROR',
+                message: 'Internal server error' 
+            });
+        }
+
+        let errMsg = err.response?.data?.error || err.response?.data?.message || err.message || 'Failed to trigger call';
+        if (typeof errMsg === 'string') {
+            errMsg = errMsg
+                .replace(/dograh/gi, 'telephony provider')
+                .replace(/retell/gi, 'telephony provider')
+                .replace(/vobiz/gi, 'telephony provider');
+        }
+
+        res.status(status || 500).json({ 
             success: false, 
-            error: err.response?.data?.error || err.response?.data?.message || err.message || 'Failed to trigger call' 
+            error: errMsg 
         });
     }
 };
