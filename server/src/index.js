@@ -17,6 +17,7 @@ import { fileURLToPath } from 'url';
 import dns from 'dns';
 import { createServer } from 'http';
 import SocketService from './services/socket/socketService.js';
+import { supabaseStore } from './config/supabaseClient.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -54,6 +55,12 @@ app.use(cors({
 app.use(express.json({
     verify: (req, _res, buf) => { req.rawBody = buf; },
 }));
+
+app.use((req, res, next) => {
+    const origin = req.headers.origin || '';
+    const referer = req.headers.referer || '';
+    supabaseStore.run({ origin, referer }, next);
+});
 
 // Initialize Socket Service for Real-time Billing Updates
 SocketService.init(server, allowedOrigins);

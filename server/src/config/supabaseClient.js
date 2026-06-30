@@ -6,6 +6,8 @@ if (process.env.INSECURE_TLS === 'true' || process.env.NODE_ENV !== 'production'
 
 import { createClient } from '@supabase/supabase-js';
 import dotenv from 'dotenv';
+import { AsyncLocalStorage } from 'async_hooks';
+
 dotenv.config();
 
 const SUPABASE_URL = process.env.SUPABASE_URL;
@@ -17,16 +19,29 @@ if (!SUPABASE_URL || !SUPABASE_KEY) {
     console.error('Missing Supabase URL or Key in environment variables');
 }
 
-export const supabase = createClient(SUPABASE_URL, SUPABASE_KEY, {
+// AsyncLocalStorage store to hold origin/referer context per request
+export const supabaseStore = new AsyncLocalStorage();
+
+// Static instances for the old database (Bitlance Automation)
+const oldSupabase = createClient(SUPABASE_URL, SUPABASE_KEY, {
     auth: {
         persistSession: false
     }
 });
 
-export const supabaseAdmin = process.env.SUPABASE_SERVICE_ROLE_KEY
+const oldSupabaseAdmin = process.env.SUPABASE_SERVICE_ROLE_KEY
     ? createClient(SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY, {
         auth: {
             autoRefreshToken: false,
+            persistSession: false
+        }
+    })
+    : null;
+
+// Static instances for the new database (Voice Dashboard / Lotlite)
+export const newSupabase = process.env.NEW_SUPABASE_URL && process.env.NEW_SUPABASE_KEY
+    ? createClient(process.env.NEW_SUPABASE_URL, process.env.NEW_SUPABASE_KEY, {
+        auth: {
             persistSession: false
         }
     })
@@ -41,11 +56,48 @@ export const newSupabaseAdmin = process.env.NEW_SUPABASE_SERVICE_ROLE_KEY
     })
     : null;
 
-export const newSupabase = process.env.NEW_SUPABASE_URL && process.env.NEW_SUPABASE_KEY
-    ? createClient(process.env.NEW_SUPABASE_URL, process.env.NEW_SUPABASE_KEY, {
-        auth: {
-            persistSession: false
-        }
-    })
-    : null;
+// Dynamic resolver
+function getTargetClient(isAdmin = false) {
+    const store = supabaseStore.getStore();
+    let useNewDb = false;
 
+    if (store) {
+        const origin = (store.origin || '').toLowerCase();
+        const referer = (store.referer || '').toLowerCase();
+
+        // Route requests originating from lotlite domain/port to the new database
+        if (origin.includes('lotlite') || referer.includes('lotlite') ||
+            origin.includes('localhost:3000') || referer.includes('localhost:3000')) {
+            useNewDb = true;
+        }
+    }
+
+    if (useNewDb) {
+        return isAdmin ? (newSupabaseAdmin || oldSupabaseAdmin) : (newSupabase || oldSupabase);
+    } else {
+        return isAdmin ? oldSupabaseAdmin : oldSupabase;
+    }
+}
+
+// Proxies to route database operations dynamically based on request context
+export const supabase = new Proxy({}, {
+    get(target, prop) {
+        const client = getTargetClient(false);
+        const val = Reflect.get(client, prop);
+        if (typeof val === 'function') {
+            return val.bind(client);
+        }
+        return val;
+    }
+});
+
+export const supabaseAdmin = new Proxy({}, {
+    get(target, prop) {
+        const client = getTargetClient(true);
+        const val = Reflect.get(client, prop);
+        if (typeof val === 'function') {
+            return val.bind(client);
+        }
+        return val;
+    }
+});

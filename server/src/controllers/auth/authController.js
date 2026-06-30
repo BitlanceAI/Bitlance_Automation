@@ -1,4 +1,4 @@
-import { newSupabase as supabase, newSupabaseAdmin as supabaseAdmin } from '../../config/supabaseClient.js';
+import { supabase, supabaseAdmin } from '../../config/supabaseClient.js';
 import { sendSignupWelcomeEmail } from '../../services/email/welcomeEmailService.js';
 
 

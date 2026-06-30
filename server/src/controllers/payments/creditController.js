@@ -1,5 +1,5 @@
 import CreditLedgerService from '../../services/credits/creditLedgerService.js';
-import { newSupabaseAdmin as supabaseAdmin } from '../../config/supabaseClient.js';
+import { supabaseAdmin } from '../../config/supabaseClient.js';
 import { createClient } from '@supabase/supabase-js';
 
 // Scoped Supabase helper using the new Supabase url/key for billing dashboard

@@ -6,7 +6,7 @@
  */
 
 import crypto from 'crypto';
-import { newSupabaseAdmin as supabaseAdmin } from '../../config/supabaseClient.js';
+import { supabaseAdmin } from '../../config/supabaseClient.js';
 
 const PG_BASE = process.env.CASHFREE_PG_BASE_URL || 'https://sandbox.cashfree.com/pg';
 const CF_CLIENT_ID = process.env.CASHFREE_CLIENT_ID;

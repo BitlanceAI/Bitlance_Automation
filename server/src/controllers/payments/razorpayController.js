@@ -10,7 +10,7 @@
  */
 
 import crypto from 'crypto';
-import { newSupabaseAdmin as supabaseAdmin } from '../../config/supabaseClient.js';
+import { supabaseAdmin } from '../../config/supabaseClient.js';
 
 const RAZORPAY_KEY_ID     = process.env.RAZORPAY_KEY_ID;
 const RAZORPAY_KEY_SECRET = process.env.RAZORPAY_KEY_SECRET;

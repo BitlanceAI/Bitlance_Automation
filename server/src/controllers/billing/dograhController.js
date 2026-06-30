@@ -1,7 +1,7 @@
 import crypto from 'crypto';
 import axios from 'axios';
 import { OpenAI } from 'openai';
-import { newSupabaseAdmin as supabaseAdmin } from '../../config/supabaseClient.js';
+import { supabaseAdmin, supabaseStore } from '../../config/supabaseClient.js';
 import CreditLedgerService from '../../services/credits/creditLedgerService.js';
 import SocketService from '../../services/socket/socketService.js';
 
@@ -412,6 +412,20 @@ export async function finalizeActiveCall({
  * but were left behind due to polling failures or server restarts.
  */
 export async function recoverStaleActiveCalls() {
+    // 1. Recover from the old/default database
+    await supabaseStore.run({ origin: 'https://www.bitlancetechhub.com', referer: '' }, async () => {
+        await recoverFromDb('Default DB');
+    });
+
+    // 2. Recover from the new database (if configured)
+    if (process.env.NEW_SUPABASE_URL) {
+        await supabaseStore.run({ origin: 'https://lotlite.bitlancetechhub.com', referer: '' }, async () => {
+            await recoverFromDb('New DB (Lotlite)');
+        });
+    }
+}
+
+async function recoverFromDb(dbName) {
     try {
         const { data: activeCalls, error } = await supabaseAdmin
             .from('active_calls')
@@ -420,13 +434,13 @@ export async function recoverStaleActiveCalls() {
         if (error) throw error;
         if (!activeCalls?.length) return;
 
-        console.log(`🔄 [Recovery] Checking ${activeCalls.length} stale active call(s)...`);
+        console.log(`🔄 [Recovery - ${dbName}] Checking ${activeCalls.length} stale active call(s)...`);
 
         for (const activeCall of activeCalls) {
             try {
                 const runData = await fetchDograhRun(activeCall.call_id);
                 if (!isDograhRunCompleted(runData)) {
-                    console.log(`🔄 [Recovery] Call ${activeCall.call_id} still active in Dograh, skipping.`);
+                    console.log(`🔄 [Recovery - ${dbName}] Call ${activeCall.call_id} still active in Dograh, skipping.`);
                     continue;
                 }
 
@@ -436,7 +450,7 @@ export async function recoverStaleActiveCalls() {
                     .eq('id', activeCall.organization_id)
                     .maybeSingle();
 
-                console.log(`🔄 [Recovery] Finalizing stale call ${activeCall.call_id}`);
+                console.log(`🔄 [Recovery - ${dbName}] Finalizing stale call ${activeCall.call_id}`);
                 await finalizeActiveCall({
                     sessionKey: activeCall.call_id,
                     session: global.activeCallBilling[activeCall.call_id] || null,
@@ -449,11 +463,11 @@ export async function recoverStaleActiveCalls() {
                     adminId: org?.admin_id || null
                 });
             } catch (callErr) {
-                console.warn(`[Recovery] Could not recover call ${activeCall.call_id}:`, callErr.message);
+                console.warn(`[Recovery - ${dbName}] Could not recover call ${activeCall.call_id}:`, callErr.message);
             }
         }
     } catch (err) {
-        console.error('[Recovery] Stale active call recovery failed:', err.message);
+        console.error(`[Recovery - ${dbName}] Stale active call recovery failed:`, err.message);
     }
 }
 
