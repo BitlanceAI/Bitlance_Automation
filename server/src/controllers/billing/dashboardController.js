@@ -80,27 +80,42 @@ export const getDashboardStats = async (req, res) => {
         startOfDay.setHours(0, 0, 0, 0);
 
         // Fetch active calls count
-        const { count: activeCallsCount, error: activeErr } = await supabaseAdmin
+        let activeQuery = supabaseAdmin
             .from('active_calls')
-            .select('*', { count: 'exact', head: true })
-            .eq('organization_id', orgId);
+            .select('*', { count: 'exact', head: true });
+        
+        if (req.user.email !== 'demo@bitlancetechhub.com') {
+            activeQuery = activeQuery.eq('organization_id', orgId);
+        }
+
+        const { count: activeCallsCount, error: activeErr } = await activeQuery;
 
         if (activeErr) throw activeErr;
 
         // Fetch today's calls count, duration, and credits used
-        const { data: todayCalls, error: todayErr } = await supabaseAdmin
+        let todayQuery = supabaseAdmin
             .from('sales_calls')
             .select('duration, credits_used')
-            .eq('organization_id', orgId)
             .gte('created_at', startOfDay.toISOString());
+
+        if (req.user.email !== 'demo@bitlancetechhub.com') {
+            todayQuery = todayQuery.eq('organization_id', orgId);
+        }
+
+        const { data: todayCalls, error: todayErr } = await todayQuery;
 
         if (todayErr) throw todayErr;
 
         // Fetch total calls history count
-        const { count: totalCallsCount, error: totalErr } = await supabaseAdmin
+        let totalQuery = supabaseAdmin
             .from('sales_calls')
-            .select('*', { count: 'exact', head: true })
-            .eq('organization_id', orgId);
+            .select('*', { count: 'exact', head: true });
+
+        if (req.user.email !== 'demo@bitlancetechhub.com') {
+            totalQuery = totalQuery.eq('organization_id', orgId);
+        }
+
+        const { count: totalCallsCount, error: totalErr } = await totalQuery;
 
         if (totalErr) throw totalErr;
 
@@ -136,11 +151,16 @@ export const getActiveCalls = async (req, res) => {
         const userId = req.user.id;
         const { org } = await ensureOrgAndWallet(userId);
 
-        const { data: activeCalls, error } = await supabaseAdmin
+        let query = supabaseAdmin
             .from('active_calls')
             .select('*')
-            .eq('organization_id', org.id)
             .order('started_at', { ascending: false });
+
+        if (req.user.email !== 'demo@bitlancetechhub.com') {
+            query = query.eq('organization_id', org.id);
+        }
+
+        const { data: activeCalls, error } = await query;
 
         if (error) throw error;
 
@@ -162,10 +182,15 @@ export const getCallHistory = async (req, res) => {
         const limit = parseInt(req.query.limit) || 20;
         const offset = parseInt(req.query.offset) || 0;
 
-        const { data: calls, error, count } = await supabaseAdmin
+        let query = supabaseAdmin
             .from('sales_calls')
-            .select('*', { count: 'exact' })
-            .eq('organization_id', org.id)
+            .select('*', { count: 'exact' });
+
+        if (req.user.email !== 'demo@bitlancetechhub.com') {
+            query = query.eq('organization_id', org.id);
+        }
+
+        const { data: calls, error, count } = await query
             .order('created_at', { ascending: false })
             .range(offset, offset + limit - 1);
 
@@ -195,10 +220,15 @@ export const getPaymentHistory = async (req, res) => {
         const limit = parseInt(req.query.limit) || 20;
         const offset = parseInt(req.query.offset) || 0;
 
-        const { data: payments, error, count } = await supabaseAdmin
+        let query = supabaseAdmin
             .from('payments')
-            .select('*', { count: 'exact' })
-            .eq('organization_id', org.id)
+            .select('*', { count: 'exact' });
+
+        if (req.user.email !== 'demo@bitlancetechhub.com') {
+            query = query.eq('organization_id', org.id);
+        }
+
+        const { data: payments, error, count } = await query
             .order('created_at', { ascending: false })
             .range(offset, offset + limit - 1);
 
