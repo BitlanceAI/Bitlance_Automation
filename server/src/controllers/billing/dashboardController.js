@@ -600,8 +600,8 @@ export const createRazorpayOrder = async (req, res) => {
         const userId = req.user.id;
         const { amount } = req.body; // In INR
 
-        if (!amount || isNaN(amount) || amount < 100) {
-            return res.status(400).json({ success: false, error: 'Valid amount (minimum ₹100) is required.' });
+        if (!amount || isNaN(amount) || amount < 1) {
+            return res.status(400).json({ success: false, error: 'Valid amount (minimum ₹1) is required.' });
         }
 
         const keyId = process.env.RAZORPAY_KEY_ID;
