@@ -1,4 +1,18 @@
 import { sendMailtrapEmail } from './mailtrapService.js';
+import { readFileSync } from 'fs';
+import { fileURLToPath } from 'url';
+import path from 'path';
+
+// Resolve the logo path relative to this file's location
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const _logoPath = path.resolve(__dirname, '../../../../../billing-dashboard/public/logo.jpg');
+let _logoBase64 = '';
+try {
+    _logoBase64 = `data:image/jpeg;base64,${readFileSync(_logoPath).toString('base64')}`;
+} catch {
+    // Fallback to hosted URL if file not found
+    _logoBase64 = 'https://lotlite.bitlancetechhub.com/logo.jpg';
+}
 
 /**
  * Sends a styled welcome verification email containing account info,
