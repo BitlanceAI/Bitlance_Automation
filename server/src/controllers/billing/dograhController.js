@@ -252,8 +252,8 @@ export async function finalizeActiveCall({
     } else if (session) {
         const adjustment = session.creditsDeductedSoFar - finalCreditsNeeded;
         if (adjustment > 0) {
-            await refundDbCredits(session.adminId, adjustment, callRecordId, session.orgId);
-            finalDeducted = finalCreditsNeeded;
+            const refunded = await refundDbCredits(session.adminId, adjustment, callRecordId, session.orgId);
+            finalDeducted = session.creditsDeductedSoFar - refunded;
         } else if (adjustment < 0) {
             const extraDeducted = await deductDbCredits(session.adminId, Math.abs(adjustment), callRecordId, session.orgId);
             finalDeducted = session.creditsDeductedSoFar + extraDeducted;
@@ -567,7 +567,7 @@ export async function deductDbCredits(adminId, amount, callId, orgId) {
         const toDeduct = Math.min(amount, currentBalance); // Can't go below 0
         if (toDeduct <= 0) return 0;
 
-        const newBalance = Math.max(0, currentBalance - toDeduct);
+        const newBalance = parseFloat((currentBalance - toDeduct).toFixed(4));
 
         const { error: updateErr } = await newDb
             .from('wallet')
@@ -583,7 +583,7 @@ export async function deductDbCredits(adminId, amount, callId, orgId) {
         await newDb.from('transactions').insert({
             organization_id: orgId,
             wallet_id: wallet.id,
-            amount: -toDeduct,
+            amount: -parseFloat(toDeduct.toFixed(4)),
             type: 'debit',
             description: `Voice call credit deduction for call ${callId}`,
             reference_table: 'sales_calls'
@@ -604,7 +604,7 @@ export async function deductDbCredits(adminId, amount, callId, orgId) {
  * Helper to refund credits back to database wallet
  */
 export async function refundDbCredits(adminId, amount, callId, orgId) {
-    if (amount <= 0) return;
+    if (amount <= 0) return 0;
     try {
         const { data: wallet } = await newDb
             .from('wallet')
@@ -613,7 +613,7 @@ export async function refundDbCredits(adminId, amount, callId, orgId) {
             .single();
 
         if (wallet) {
-            const newBalance = parseFloat(wallet.balance) + amount;
+            const newBalance = parseFloat((parseFloat(wallet.balance) + amount).toFixed(4));
             await newDb
                 .from('wallet')
                 .update({ balance: newBalance, updated_at: new Date().toISOString() })
@@ -622,15 +622,18 @@ export async function refundDbCredits(adminId, amount, callId, orgId) {
             await newDb.from('transactions').insert({
                 organization_id: orgId,
                 wallet_id: wallet.id,
-                amount: amount,
+                amount: parseFloat(amount.toFixed(4)),
                 type: 'credit',
                 description: `Billing reconciliation adjustment refund for call ${callId}`,
                 reference_table: 'sales_calls'
             });
             console.log(`✅ [Reconciliation] Refunded ${amount} credits to org ${orgId}`);
+            return amount;
         }
+        return 0;
     } catch (err) {
         console.error(`[refundDbCredits] Error:`, err.message);
+        return 0;
     }
 }
 
