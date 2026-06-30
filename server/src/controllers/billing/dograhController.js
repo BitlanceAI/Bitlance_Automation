@@ -546,30 +546,59 @@ export async function terminateDograhCall(callId, telephonyCallId = null) {
 }
 
 /**
- * Helper to deduct credits from database wallet
+ * Helper to deduct credits from the voice dashboard wallet (NEW DB)
  */
 export async function deductDbCredits(adminId, amount, callId, orgId) {
     if (amount <= 0) return 0;
     try {
-        // Credit deductions go to OLD DB (Bitlance billing)
-        const { data, error } = await oldDb.rpc('deduct_credits_with_ledger', {
-            p_user_id: adminId,
-            p_agent_type: 'voice',
-            p_reference_id: callId,
-            p_reference_table: 'sales_calls',
-            p_usage_quantity: Number(amount.toFixed(4)),
-            p_metadata: { call_id: callId, is_partial: true }
-        });
-        if (error) {
-            console.error(`[deductDbCredits] DB RPC Error:`, error.message);
+        // Deduct directly from NEW DB wallet (voice dashboard source of truth)
+        const { data: wallet, error: walletErr } = await newDb
+            .from('wallet')
+            .select('id, balance')
+            .eq('organization_id', orgId)
+            .single();
+
+        if (walletErr || !wallet) {
+            console.error(`[deductDbCredits] Wallet not found for org ${orgId}:`, walletErr?.message);
             return 0;
         }
-        return data.credits_deducted || 0;
+
+        const currentBalance = parseFloat(wallet.balance);
+        const toDeduct = Math.min(amount, currentBalance); // Can't go below 0
+        if (toDeduct <= 0) return 0;
+
+        const newBalance = Math.max(0, currentBalance - toDeduct);
+
+        const { error: updateErr } = await newDb
+            .from('wallet')
+            .update({ balance: newBalance, updated_at: new Date().toISOString() })
+            .eq('id', wallet.id);
+
+        if (updateErr) {
+            console.error(`[deductDbCredits] Failed to update wallet:`, updateErr.message);
+            return 0;
+        }
+
+        // Record transaction
+        await newDb.from('transactions').insert({
+            organization_id: orgId,
+            wallet_id: wallet.id,
+            amount: -toDeduct,
+            type: 'debit',
+            description: `Voice call credit deduction for call ${callId}`,
+            reference_table: 'sales_calls'
+        }).then(({ error }) => {
+            if (error) console.warn(`[deductDbCredits] Transaction log failed:`, error.message);
+        });
+
+        console.log(`✅ [deductDbCredits] Deducted ${toDeduct} credits from org ${orgId}. New balance: ${newBalance}`);
+        return toDeduct;
     } catch (err) {
         console.error(`[deductDbCredits] Error:`, err.message);
         return 0;
     }
 }
+
 
 /**
  * Helper to refund credits back to database wallet
