@@ -20,6 +20,7 @@ import SocketService from './services/socket/socketService.js';
 import { connectMongo } from './config/mongoose.js';
 import { initAgenda, gracefulStop } from './config/agenda.js';
 import { supabaseStore } from './config/supabaseClient.js';
+import prerenderNode from 'prerender-node';
 
 // Connect to MongoDB then start Agenda job scheduler
 connectMongo().then(() => initAgenda()).catch(err => console.error('[Startup] Agenda init failed:', err.message));
@@ -227,7 +228,7 @@ const serveFrontend = process.env.SERVE_FRONTEND === 'true';
 if (serveFrontend) {
     const distPath = path.join(__dirname, '../../client/dist');
     // Prerender.io middleware for SEO (bots will get fully rendered HTML)
-    app.use(require('prerender-node').set('prerenderToken', process.env.PRERENDER_TOKEN));
+    app.use(prerenderNode.set('prerenderToken', process.env.PRERENDER_TOKEN));
     
     app.use(express.static(distPath));
     app.use('/assets', express.static(path.join(distPath, 'assets')));
