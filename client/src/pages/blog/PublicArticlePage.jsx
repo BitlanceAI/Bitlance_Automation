@@ -7,6 +7,7 @@ import { trackBlogRead, trackDemoClick } from '../../lib/analytics';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import rehypeRaw from 'rehype-raw';
+import { ElegantShape } from '../../components/ui/shape-landing-hero';
 
 const TEAL = '#26CECE';
 
@@ -146,23 +147,23 @@ const PublicArticlePage = () => {
 
     if (loading) {
         return (
-            <div className="min-h-screen flex justify-center items-center bg-white">
-                <Loader2 className="animate-spin text-gray-300" size={48} />
+            <div className="min-h-screen flex justify-center items-center bg-teal-900">
+                <Loader2 className="animate-spin text-teal-300" size={48} />
             </div>
         );
     }
 
     if (error || !article) {
         return (
-            <div className="min-h-screen flex flex-col justify-center items-center bg-white px-6" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
-                <h1 className="text-5xl font-extrabold text-black tracking-tight uppercase mb-4">404 NOT FOUND</h1>
-                <p className="text-lg text-gray-500 mb-8 font-medium uppercase tracking-widest" style={{ fontFamily: "'DM Mono', monospace" }}>
+            <div className="min-h-screen flex flex-col justify-center items-center bg-teal-900 text-white px-6" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+                <h1 className="text-5xl font-extrabold text-white tracking-tight uppercase mb-4">404 NOT FOUND</h1>
+                <p className="text-lg text-teal-100/50 mb-8 font-medium uppercase tracking-widest" style={{ fontFamily: "'DM Mono', monospace" }}>
                     {error || 'Article not found'}
                 </p>
                 <Link
                     to="/blogs"
-                    className="px-8 py-4 font-bold uppercase tracking-widest text-xs transition-all hover:bg-gray-100"
-                    style={{ background: '#f9fafb', color: TEAL, border: '1px solid #e5e7eb', fontFamily: "'DM Mono', monospace" }}
+                    className="px-8 py-4 font-bold uppercase tracking-widest text-xs transition-all bg-white/10 text-white hover:bg-white/20 border border-white/20"
+                    style={{ fontFamily: "'DM Mono', monospace" }}
                 >
                     Back to Blogs
                 </Link>
@@ -196,7 +197,25 @@ const PublicArticlePage = () => {
 
 
     return (
-        <div className="min-h-screen bg-white pb-20">
+        <div className="relative min-h-screen w-full overflow-x-hidden bg-teal-900 text-white transition-colors duration-300 font-['Space_Grotesk'] pb-20">
+            {/* Global ambient glows */}
+            <div className="fixed inset-0 pointer-events-none overflow-hidden" style={{ zIndex: 0 }}>
+                <div className="absolute top-[20%] left-[15%] w-[500px] h-[500px] rounded-full blur-[180px] animate-float"
+                    style={{ background: 'rgba(38,206,206,0.15)' }} />
+                <div className="absolute top-[60%] right-[10%] w-[400px] h-[400px] rounded-full blur-[160px] animate-pulse-slow"
+                    style={{ background: 'rgba(45,212,191,0.1)' }} />
+                <div className="absolute bottom-[10%] left-[30%] w-[350px] h-[350px] rounded-full blur-[140px] animate-float"
+                    style={{ background: 'rgba(15,118,110,0.2)' }} />
+                <div className="absolute inset-0 opacity-[0.05]"
+                    style={{ backgroundImage: 'radial-gradient(circle, #26CECE 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
+            </div>
+
+            <div className="absolute inset-0 overflow-hidden pointer-events-none" style={{ zIndex: 0 }}>
+                <ElegantShape delay={0.3} width={600} height={140} rotate={12} gradient="from-teal-400/[0.15]" className="left-[-10%] md:left-[-5%] top-[15%] md:top-[20%]" />
+                <ElegantShape delay={0.5} width={500} height={120} rotate={-15} gradient="from-cyan-400/[0.1]" className="right-[-5%] md:right-[0%] top-[70%] md:top-[75%]" />
+                <ElegantShape delay={0.4} width={300} height={80} rotate={-8} gradient="from-teal-300/[0.12]" className="left-[5%] md:left-[10%] bottom-[5%] md:bottom-[10%]" />
+                <ElegantShape delay={0.6} width={200} height={60} rotate={20} gradient="from-cyan-500/[0.15]" className="right-[15%] md:right-[20%] top-[10%] md:top-[15%]" />
+            </div>
             <SEOHead
                 title={article.seo_title || article.topic}
                 description={article.content ? article.content.replace(/<[^>]+>/g, '').substring(0, 160) : ''}
@@ -234,25 +253,25 @@ const PublicArticlePage = () => {
             />
 
             {/* Header Image & Title */}
-            <div className="bg-white border-b border-gray-200">
+            <div className="relative z-10 border-b border-white/10">
                 <div className="max-w-7xl mx-auto px-6 py-12 md:py-24 lg:px-8">
                     <Link
                         to="/blogs"
-                        className="inline-flex items-center text-xs uppercase tracking-widest font-bold hover:translate-x-1 mb-10 transition-all"
-                        style={{ color: TEAL, fontFamily: "'DM Mono', monospace" }}
+                        className="inline-flex items-center text-xs uppercase tracking-widest font-bold hover:translate-x-1 mb-10 transition-all text-[#26cece]"
+                        style={{ fontFamily: "'DM Mono', monospace" }}
                     >
                         <ArrowLeft size={16} className="mr-2" />
                         CD /BLOGS
                     </Link>
 
                     <h1
-                        className="text-4xl md:text-5xl lg:text-6xl font-extrabold text-black mb-8 tracking-tighter uppercase leading-[1.1]"
+                        className="text-4xl md:text-5xl lg:text-6xl font-extrabold text-white mb-8 tracking-tighter uppercase leading-[1.1]"
                         style={{ fontFamily: "'Space Grotesk', sans-serif" }}
                     >
                         {article.seo_title || article.topic}
                     </h1>
 
-                    <div className="flex flex-wrap items-center gap-6 text-[11px] text-gray-500 mb-10 tracking-widest uppercase font-bold" style={{ fontFamily: "'DM Mono', monospace" }}>
+                    <div className="flex flex-wrap items-center gap-6 text-[11px] text-teal-100/50 mb-10 tracking-widest uppercase font-bold" style={{ fontFamily: "'DM Mono', monospace" }}>
                         <span className="flex items-center gap-3">
                             {(() => {
                                 const profileImg = article.author?.profile_image || article.author_details?.profile_image || article.author_image_url;
@@ -267,15 +286,12 @@ const PublicArticlePage = () => {
                                     );
                                 }
                                 return (
-                                    <div className="w-8 h-8 rounded-full flex items-center justify-center bg-gray-100 border border-gray-200 text-[#26CECE]">
+                                    <div className="w-8 h-8 rounded-full flex items-center justify-center bg-white/5 border border-white/10 text-[#26CECE]">
                                         <User size={14} />
                                     </div>
                                 );
                             })()}
-                            <div className="hidden w-8 h-8 rounded-full items-center justify-center bg-gray-100 border border-gray-200 text-[#26CECE]">
-                                <User size={14} />
-                            </div>
-                            <span className="text-[13px]">{article.author_name || (article.user_id === 'anonymous' ? 'AI Agent' : 'Bitlance Source')}</span>
+                            <span className="text-[13px] text-white/90">{article.author_name || (article.user_id === 'anonymous' ? 'AI Agent' : 'Bitlance Source')}</span>
                         </span>
                         <span className="flex items-center gap-2">
                             <Calendar size={14} />
@@ -291,21 +307,20 @@ const PublicArticlePage = () => {
                         </span>
                         {article.category && (
                             <span
-                                className="px-2 py-1"
-                                style={{ background: `${TEAL}10`, color: TEAL, border: `1px solid ${TEAL}30` }}
+                                className="px-2 py-1 bg-[#26cece]/10 text-[#26cece] border border-[#26cece]/30 rounded-xl"
                             >
                                 {article.category}
                             </span>
                         )}
                         {(article.updated_at && article.updated_at !== article.created_at) && (
-                            <span className="px-2 py-1" style={{ background: '#f9fafb', color: '#6b7280', border: '1px solid #d1d5db' }}>
+                            <span className="px-2 py-1 bg-white/5 text-white/60 border border-white/10 rounded-xl">
                                 UPD {new Date(article.updated_at).toLocaleDateString('en-US', { year: '2-digit', month: '2-digit', day: '2-digit' })}
                             </span>
                         )}
                     </div>
 
                     {article.image_url && (
-                        <div className="w-full max-w-5xl mx-auto mt-10 mb-6 overflow-hidden rounded-[2px] shadow-sm border border-gray-200">
+                        <div className="w-full max-w-5xl mx-auto mt-10 mb-6 overflow-hidden rounded-xl shadow-sm border border-white/10">
                             <img
                                 src={article.image_url}
                                 alt={article.seo_title || article.topic}
@@ -318,12 +333,12 @@ const PublicArticlePage = () => {
             </div>
 
             {/* Layout Container */}
-            <div className="max-w-7xl mx-auto px-6 lg:px-8 py-16 flex flex-col lg:flex-row gap-16 lg:gap-24">
+            <div className="relative z-10 max-w-7xl mx-auto px-6 lg:px-8 py-16 flex flex-col lg:flex-row gap-16 lg:gap-24">
 
                 {/* Article Content */}
                 <article className="flex-1 max-w-3xl">
                     <div
-                        className="prose prose-lg max-w-none prose-headings:font-extrabold prose-headings:text-black prose-headings:uppercase prose-headings:tracking-tight prose-a:no-underline hover:prose-a:underline prose-img:border prose-img:border-gray-200 prose-img:p-1 prose-img:bg-gray-50 text-gray-700 leading-relaxed marker:text-[#26CECE] prose-table:border-collapse prose-th:border prose-th:border-gray-300 prose-th:bg-gray-100 prose-th:p-3 prose-td:border prose-td:border-gray-300 prose-td:p-3"
+                        className="prose prose-lg prose-invert max-w-none prose-headings:font-extrabold prose-headings:text-white prose-headings:uppercase prose-headings:tracking-tight prose-a:no-underline hover:prose-a:underline prose-img:border prose-img:border-white/10 prose-img:p-1 prose-img:bg-white/5 text-teal-100/80 leading-relaxed marker:text-[#26CECE] prose-table:border-collapse prose-th:border prose-th:border-white/20 prose-th:bg-white/5 prose-th:p-3 prose-td:border prose-td:border-white/20 prose-td:p-3"
                         style={{ fontFamily: "'Space Grotesk', sans-serif" }}
                     >
                         <ReactMarkdown
@@ -338,26 +353,26 @@ const PublicArticlePage = () => {
                     <style dangerouslySetInnerHTML={{
                         __html: `
                         .prose a { color: ${TEAL}; font-weight: bold; }
-                        .prose strong { color: #000000; }
-                        .prose blockquote { border-left-color: ${TEAL}; background: #f9fafb; padding: 1rem; color: #4b5563; }
-                        .prose code { color: ${TEAL}; background: #f9fafb; padding: 0.2rem 0.4rem; border: 1px solid #e5e7eb; }
-                        .prose pre { background: #ffffff; border: 1px solid #e5e7eb; }
+                        .prose strong { color: #ffffff; }
+                        .prose blockquote { border-left-color: ${TEAL}; background: rgba(255,255,255,0.05); padding: 1rem; color: rgba(204,251,241,0.8); }
+                        .prose code { color: ${TEAL}; background: rgba(255,255,255,0.05); padding: 0.2rem 0.4rem; border: 1px solid rgba(255,255,255,0.1); }
+                        .prose pre { background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); }
                     `}} />
 
                     {/* Formal Extracted Footer */}
                     {extractedFooter && (
-                        <div className="mt-16 p-8 bg-slate-50 border-l-4 border-[#26CECE] shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-4 text-[12px] font-medium text-slate-600 font-mono">
+                        <div className="mt-16 p-8 bg-white/5 border-l-4 border-[#26CECE] shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-4 text-[12px] font-medium text-white/70 font-mono">
                             <div className="flex items-center gap-3">
-                                <span className="text-slate-400">AUTHOR:</span>
-                                <span className="text-slate-900 font-bold uppercase">{extractedFooter.author}</span>
+                                <span className="text-white/40">AUTHOR:</span>
+                                <span className="text-white font-bold uppercase">{extractedFooter.author}</span>
                             </div>
                             <div className="flex items-center gap-3">
-                                <span className="text-slate-400">REVIEWED BY:</span>
-                                <span className="text-slate-900 font-bold uppercase">{extractedFooter.reviewedBy}</span>
+                                <span className="text-white/40">REVIEWED BY:</span>
+                                <span className="text-white font-bold uppercase">{extractedFooter.reviewedBy}</span>
                             </div>
                             <div className="flex items-center gap-3">
-                                <span className="text-slate-400">UPDATED:</span>
-                                <span className="text-slate-900 uppercase">{extractedFooter.lastUpdated}</span>
+                                <span className="text-white/40">UPDATED:</span>
+                                <span className="text-white uppercase">{extractedFooter.lastUpdated}</span>
                             </div>
                         </div>
                     )}
@@ -365,13 +380,12 @@ const PublicArticlePage = () => {
                     {/* Tags Section */}
                     {article.tags && article.tags.length > 0 && (
                         <div className="mb-16 mt-16">
-                            <h4 className="text-[11px] font-bold text-gray-500 uppercase tracking-widest mb-6" style={{ fontFamily: "'DM Mono', monospace" }}>
+                            <h4 className="text-[11px] font-bold text-teal-100/50 uppercase tracking-widest mb-6" style={{ fontFamily: "'DM Mono', monospace" }}>
                                 [ METADATA_TAGS ]
                             </h4>
                             <div className="flex flex-wrap gap-3" style={{ fontFamily: "'DM Mono', monospace" }}>
                                 {article.tags.map((tag, index) => (
-                                    <span key={index} className="flex items-center gap-2 px-3 py-1.5 text-xs font-bold uppercase tracking-widest transition-colors cursor-pointer hover:bg-gray-100"
-                                        style={{ background: '#f9fafb', color: TEAL, border: '1px solid #e5e7eb' }}
+                                    <span key={index} className="flex items-center gap-2 px-3 py-1.5 text-xs font-bold uppercase tracking-widest transition-colors cursor-pointer bg-white/5 border border-white/10 hover:border-[#26CECE] hover:text-white text-[#26CECE]"
                                     >
                                         <Tag size={12} />
                                         {tag}
@@ -381,20 +395,20 @@ const PublicArticlePage = () => {
                         </div>
                     )}
 
-                    {/* CTA Section (Book a Demo) Brutalist */}
-                    <div className="mt-16 p-8 md:p-12 relative overflow-hidden flex flex-col items-start gap-8 group"
-                        style={{ background: TEAL, border: `2px solid #000`, color: '#000', fontFamily: "'Space Grotesk', sans-serif" }}
+                    {/* CTA Section (Book a Demo) */}
+                    <div className="mt-16 p-8 md:p-12 relative overflow-hidden flex flex-col items-start gap-8 group rounded-xl"
+                        style={{ background: 'rgba(38, 206, 206, 0.1)', border: `1px solid rgba(255,255,255,0.1)`, fontFamily: "'Space Grotesk', sans-serif" }}
                     >
                         {/* Abstract Decor */}
                         <div className="absolute -right-20 -top-20 opacity-10 pointer-events-none">
-                            <span className="text-[200px] leading-none font-black text-black">/&gt;</span>
+                            <span className="text-[200px] leading-none font-black text-[#26cece]">/&gt;</span>
                         </div>
 
                         <div className="relative z-10">
-                            <h3 className="text-3xl md:text-5xl font-black uppercase tracking-tighter mb-4 text-black">
+                            <h3 className="text-3xl md:text-5xl font-black uppercase tracking-tighter mb-4 text-white">
                                 Automate your <br />workflow
                             </h3>
-                            <p className="text-black/80 text-lg md:text-xl font-medium max-w-xl leading-relaxed">
+                            <p className="text-teal-100/80 text-lg md:text-xl font-medium max-w-xl leading-relaxed">
                                 Deploy AI agents today. Let's schedule a deep dive into the architecture and operations.
                             </p>
                         </div>
@@ -402,7 +416,7 @@ const PublicArticlePage = () => {
                         <Link
                             to="/apply"
                             onClick={() => trackDemoClick('blog_article_cta')}
-                            className="relative z-10 inline-flex items-center justify-center px-8 py-4 bg-black text-white font-black uppercase tracking-widest text-sm md:text-base border-2 border-black hover:bg-transparent hover:text-black transition-all"
+                            className="relative z-10 inline-flex items-center justify-center px-8 py-4 bg-[#26cece] text-teal-950 font-black uppercase tracking-widest text-sm md:text-base hover:bg-white hover:text-black transition-all"
                             style={{ fontFamily: "'DM Mono', monospace" }}
                         >
                             <ArrowRight size={18} className="mr-3" />
@@ -411,15 +425,15 @@ const PublicArticlePage = () => {
                     </div>
 
                     {/* Author Profile Section */}
-                    <div className="mt-20 pt-16 border-t border-gray-200">
-                        <h4 className="text-[11px] font-bold text-gray-500 uppercase tracking-widest mb-6" style={{ fontFamily: "'DM Mono', monospace" }}>
+                    <div className="mt-20 pt-16 border-t border-white/10">
+                        <h4 className="text-[11px] font-bold text-teal-100/50 uppercase tracking-widest mb-6" style={{ fontFamily: "'DM Mono', monospace" }}>
                             [ AUTHOR_ID ]
                         </h4>
 
-                        <div className="flex flex-col md:flex-row gap-8 items-start p-8" style={{ background: '#f9fafb', border: '1px solid #e5e7eb' }}>
+                        <div className="flex flex-col md:flex-row gap-8 items-start p-8 bg-white/5 border border-white/10 rounded-xl">
                             <div className="flex-shrink-0">
                                 {(article.author?.profile_image || article.author_details?.profile_image) ? (
-                                    <div className="w-24 h-24 md:w-32 md:h-32 p-1" style={{ border: '1px solid #e5e7eb', background: '#ffffff' }}>
+                                    <div className="w-24 h-24 md:w-32 md:h-32 p-1 border border-white/10 bg-white/5">
                                         <img
                                             src={article.author?.profile_image || article.author_details?.profile_image}
                                             alt={article.author_name}
@@ -427,22 +441,22 @@ const PublicArticlePage = () => {
                                         />
                                     </div>
                                 ) : (
-                                    <div className="w-24 h-24 md:w-32 md:h-32 flex items-center justify-center font-black text-4xl" style={{ border: '1px solid #e5e7eb', background: '#ffffff', color: TEAL, fontFamily: "'DM Mono', monospace" }}>
+                                    <div className="w-24 h-24 md:w-32 md:h-32 flex items-center justify-center font-black text-4xl border border-white/10 bg-white/5 text-[#26cece]" style={{ fontFamily: "'DM Mono', monospace" }}>
                                         usr
                                     </div>
                                 )}
                             </div>
 
                             <div className="flex-1" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
-                                <h4 className="text-2xl md:text-3xl font-black text-black uppercase tracking-tight mb-2">
+                                <h4 className="text-2xl md:text-3xl font-black text-white uppercase tracking-tight mb-2">
                                     {article.author?.name || article.author_details?.name || article.author_name || 'System Operator'}
                                 </h4>
                                 {(article.author?.role || article.author_details?.role) && (
-                                    <p className="font-bold uppercase tracking-widest text-[11px] mb-4" style={{ color: TEAL, fontFamily: "'DM Mono', monospace" }}>
+                                    <p className="font-bold uppercase tracking-widest text-[11px] mb-4 text-[#26cece]" style={{ fontFamily: "'DM Mono', monospace" }}>
                                         {article.author?.role || article.author_details?.role}
                                     </p>
                                 )}
-                                <div className="text-gray-600 leading-relaxed mb-6 font-medium">
+                                <div className="text-teal-100/80 leading-relaxed mb-6 font-medium">
                                     <p>{article.author?.bio || article.author_details?.bio || article.author_bio || 'Maintains the grid.'}</p>
                                 </div>
 
@@ -452,13 +466,13 @@ const PublicArticlePage = () => {
                                     return (
                                         <div className="flex flex-wrap gap-4">
                                             {socials.twitter && (
-                                                <a href={socials.twitter} target="_blank" rel="noopener noreferrer" className="text-gray-500 hover:text-black transition-colors"><Twitter size={20} /></a>
+                                                <a href={socials.twitter} target="_blank" rel="noopener noreferrer" className="text-white/50 hover:text-[#26cece] transition-colors"><Twitter size={20} /></a>
                                             )}
                                             {socials.linkedin && (
-                                                <a href={socials.linkedin} target="_blank" rel="noopener noreferrer" className="text-gray-500 hover:text-black transition-colors"><Linkedin size={20} /></a>
+                                                <a href={socials.linkedin} target="_blank" rel="noopener noreferrer" className="text-white/50 hover:text-[#26cece] transition-colors"><Linkedin size={20} /></a>
                                             )}
                                             {socials.website && (
-                                                <a href={socials.website} target="_blank" rel="noopener noreferrer" className="text-gray-500 hover:text-black transition-colors"><Globe size={20} /></a>
+                                                <a href={socials.website} target="_blank" rel="noopener noreferrer" className="text-white/50 hover:text-[#26cece] transition-colors"><Globe size={20} /></a>
                                             )}
                                         </div>
                                     );
@@ -477,67 +491,67 @@ const PublicArticlePage = () => {
                                     navigator.clipboard.writeText(window.location.href); alert('COPIED!');
                                 }
                             }}
-                            className="flex items-center gap-3 px-6 py-4 font-bold uppercase tracking-widest text-xs transition-all hover:bg-gray-100"
-                            style={{ background: '#f9fafb', color: TEAL, border: '1px solid #e5e7eb', fontFamily: "'DM Mono', monospace" }}
+                            className="flex items-center gap-3 px-6 py-4 font-bold uppercase tracking-widest text-xs transition-all hover:bg-white/10 bg-white/5 border border-white/10 text-[#26cece]"
+                            style={{ fontFamily: "'DM Mono', monospace" }}
                         >
                             <Share2 size={16} /> SHARE_LOG
                         </button>
                     </div>
 
                     {/* Comments Section */}
-                    <div className="mt-20 pt-16 border-t border-gray-200">
-                        <h4 className="text-[11px] font-bold text-gray-500 uppercase tracking-widest mb-10" style={{ fontFamily: "'DM Mono', monospace" }}>
+                    <div className="mt-20 pt-16 border-t border-white/10">
+                        <h4 className="text-[11px] font-bold text-teal-100/50 uppercase tracking-widest mb-10" style={{ fontFamily: "'DM Mono', monospace" }}>
                             [ COMM_LOGS : {comments.length} ]
                         </h4>
 
-                        <div className="p-8 mb-12" style={{ background: '#f9fafb', border: '1px solid #e5e7eb' }}>
+                        <div className="p-8 mb-12 bg-white/5 border border-white/10 rounded-xl">
                             <form onSubmit={handlePostComment} className="space-y-6" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
                                 <div>
-                                    <label className="block text-[11px] font-bold text-gray-500 uppercase tracking-widest mb-2" style={{ fontFamily: "'DM Mono', monospace" }}>ID_NAME</label>
+                                    <label className="block text-[11px] font-bold text-teal-100/50 uppercase tracking-widest mb-2" style={{ fontFamily: "'DM Mono', monospace" }}>ID_NAME</label>
                                     <input
                                         type="text" required value={commentName} onChange={(e) => setCommentName(e.target.value)}
                                         placeholder="GUEST"
-                                        className="w-full px-4 py-4 bg-white border border-gray-200 focus:border-[#26CECE] outline-none transition-all text-black font-bold"
+                                        className="w-full px-4 py-4 bg-white/5 border border-white/10 focus:border-[#26CECE] outline-none transition-all text-white font-bold"
                                         style={{ fontFamily: "'DM Mono', monospace" }}
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-[11px] font-bold text-gray-500 uppercase tracking-widest mb-2" style={{ fontFamily: "'DM Mono', monospace" }}>PAYLOAD</label>
+                                    <label className="block text-[11px] font-bold text-teal-100/50 uppercase tracking-widest mb-2" style={{ fontFamily: "'DM Mono', monospace" }}>PAYLOAD</label>
                                     <textarea
                                         required value={newComment} onChange={(e) => setNewComment(e.target.value)}
                                         placeholder="> ENTER INPUT..." rows="4"
-                                        className="w-full px-4 py-4 bg-white border border-gray-200 focus:border-[#26CECE] outline-none transition-all text-black resize-none font-medium"
+                                        className="w-full px-4 py-4 bg-white/5 border border-white/10 focus:border-[#26CECE] outline-none transition-all text-white resize-none font-medium"
                                     ></textarea>
                                 </div>
                                 <button
                                     type="submit" disabled={isSubmittingComment || !newComment.trim() || !commentName.trim()}
-                                    className="flex items-center gap-3 px-8 py-4 disabled:opacity-50 font-black uppercase tracking-widest text-sm hover:invert transition-all"
-                                    style={{ background: TEAL, color: '#000', border: 'none', fontFamily: "'DM Mono', monospace" }}
+                                    className="flex items-center gap-3 px-8 py-4 disabled:opacity-50 font-black uppercase tracking-widest text-sm hover:invert transition-all bg-[#26cece] text-teal-950 rounded-xl"
+                                    style={{ fontFamily: "'DM Mono', monospace" }}
                                 >
                                     {isSubmittingComment ? <Loader2 className="animate-spin" size={18} /> : <Send size={18} />}
                                     {isSubmittingComment ? 'TRANSMITTING...' : 'EXECUTE'}
                                 </button>
-                                {commentsError && <p className="text-red-500 font-bold font-mono text-sm mt-4 uppercase">ERR: {commentsError}</p>}
+                                {commentsError && <p className="text-rose-400 font-bold font-mono text-sm mt-4 uppercase">ERR: {commentsError}</p>}
                             </form>
                         </div>
 
                         <div className="space-y-6">
                             {comments.length === 0 ? (
-                                <p className="text-gray-500 font-medium uppercase tracking-widest text-sm" style={{ fontFamily: "'DM Mono', monospace" }}>
+                                <p className="text-teal-100/50 font-medium uppercase tracking-widest text-sm" style={{ fontFamily: "'DM Mono', monospace" }}>
                                     NO LOGS FOUND.
                                 </p>
                             ) : (
                                 comments.map(comment => (
-                                    <div key={comment.id} className="flex gap-6 p-6 md:p-8" style={{ background: '#f9fafb', border: '1px solid #e5e7eb' }}>
+                                    <div key={comment.id} className="flex gap-6 p-6 md:p-8 bg-white/5 border border-white/10 rounded-xl">
                                         <div className="flex-1" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
-                                            <div className="flex items-baseline justify-between mb-4 border-b border-gray-200 pb-4">
-                                                <h5 className="font-black text-black uppercase tracking-wider text-xl">{comment.author_name}</h5>
-                                                <span className="text-[10px] text-gray-500 font-bold uppercase tracking-widest flex items-center gap-2" style={{ fontFamily: "'DM Mono', monospace" }}>
+                                            <div className="flex items-baseline justify-between mb-4 border-b border-white/10 pb-4">
+                                                <h5 className="font-black text-white uppercase tracking-wider text-xl">{comment.author_name}</h5>
+                                                <span className="text-[10px] text-teal-100/50 font-bold uppercase tracking-widest flex items-center gap-2" style={{ fontFamily: "'DM Mono', monospace" }}>
                                                     <Clock size={12} />
                                                     {new Date(comment.created_at).toLocaleDateString(undefined, { month: '2-digit', day: '2-digit', year: '2-digit' })}
                                                 </span>
                                             </div>
-                                            <p className="text-gray-700 leading-relaxed font-medium">
+                                            <p className="text-teal-100/80 leading-relaxed font-medium">
                                                 {comment.text}
                                             </p>
                                         </div>
@@ -550,37 +564,37 @@ const PublicArticlePage = () => {
 
                 {/* Sidebar */}
                 <aside className="w-full lg:w-[320px] flex-shrink-0 pt-16 lg:pt-0">
-                    <h4 className="text-[11px] font-bold text-gray-500 uppercase tracking-widest mb-10" style={{ fontFamily: "'DM Mono', monospace" }}>
+                    <h4 className="text-[11px] font-bold text-teal-100/50 uppercase tracking-widest mb-10" style={{ fontFamily: "'DM Mono', monospace" }}>
                         [ SYS_RELATED_LOGS ]
                     </h4>
 
                     {loadingLatest ? (
                         <div className="flex py-10">
-                            <Loader2 className="animate-spin text-gray-300" size={32} />
+                            <Loader2 className="animate-spin text-teal-300" size={32} />
                         </div>
                     ) : latestBlogs.length > 0 ? (
                         <div className="flex flex-col gap-8">
                             {latestBlogs.map((blog) => (
                                 <Link to={`/blogs/${blog.slug || blog.id}`} key={blog.id} className="group block focus:outline-none">
-                                    <div className="flex flex-col gap-4 p-4 transition-all hover:bg-gray-50 hover:border-[#26CECE]" style={{ border: '1px solid transparent' }}>
-                                        <div className="overflow-hidden aspect-[16/9] border border-gray-200 p-1 bg-gray-50">
+                                    <div className="flex flex-col gap-4 p-4 transition-all hover:bg-white/10 bg-white/5 border border-white/10 hover:border-[#26cece] rounded-xl">
+                                        <div className="overflow-hidden aspect-[16/9] border border-white/10 p-1 bg-white/5">
                                             <img
                                                 src={blog.image_url || 'https://via.placeholder.com/600x400?text=Blog'}
                                                 alt={blog.seo_title || blog.topic}
-                                                className="w-full h-full object-cover transition-all duration-500"
+                                                className="w-full h-full object-cover transition-all duration-500 opacity-90 group-hover:opacity-100"
                                                 onError={(e) => { e.target.src = 'https://via.placeholder.com/600x400?text=No+Image' }}
                                             />
                                         </div>
                                         <div style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
                                             {blog.category && (
-                                                <span className="text-[10px] font-bold uppercase tracking-widest mb-2 inline-block px-1" style={{ color: TEAL, border: `1px solid ${TEAL}50`, fontFamily: "'DM Mono', monospace" }}>
+                                                <span className="text-[10px] font-bold uppercase tracking-widest mb-2 inline-block px-1 text-[#26cece] border border-[#26cece]/50" style={{ fontFamily: "'DM Mono', monospace" }}>
                                                     {blog.category}
                                                 </span>
                                             )}
-                                            <h4 className="font-extrabold text-black line-clamp-2 uppercase tracking-tight group-hover:text-[#26CECE] transition-colors leading-tight mb-3">
+                                            <h4 className="font-extrabold text-white line-clamp-2 uppercase tracking-tight group-hover:text-[#26CECE] transition-colors leading-tight mb-3">
                                                 {blog.seo_title || blog.topic}
                                             </h4>
-                                            <div className="text-[10px] text-gray-500 font-bold flex items-center gap-2 uppercase tracking-widest" style={{ fontFamily: "'DM Mono', monospace" }}>
+                                            <div className="text-[10px] text-teal-100/50 font-bold flex items-center gap-2 uppercase tracking-widest" style={{ fontFamily: "'DM Mono', monospace" }}>
                                                 {new Date(blog.publish_date || blog.created_at).toLocaleDateString('en-US', { year: '2-digit', month: '2-digit', day: '2-digit' })}
                                             </div>
                                         </div>
@@ -589,7 +603,7 @@ const PublicArticlePage = () => {
                             ))}
                         </div>
                     ) : (
-                        <div className="text-gray-500 uppercase tracking-widest font-bold text-xs" style={{ fontFamily: "'DM Mono', monospace" }}>
+                        <div className="text-teal-100/50 uppercase tracking-widest font-bold text-xs" style={{ fontFamily: "'DM Mono', monospace" }}>
                             DATA OFFLINE.
                         </div>
                     )}

@@ -36,18 +36,17 @@ import {
     Upload,
     Globe
 } from 'lucide-react';
-
-
+import { ElegantShape } from '../../components/ui/shape-landing-hero';
 
 // Input field component
 const InputField = ({ icon: Icon, label, name, value, onChange, type = 'text', placeholder, required = true, colSpan = false }) => (
     <div className={colSpan ? 'md:col-span-2' : ''}>
-        <label className="block text-sm font-medium text-slate-700 mb-2">
-            {label} {required && <span className="text-rose-500">*</span>}
+        <label className="block text-sm font-medium text-white/90 mb-2">
+            {label} {required && <span className="text-rose-400">*</span>}
         </label>
         <div className="relative group">
             <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                <Icon className="h-5 w-5 text-slate-400 group-focus-within:text-[#26cece] transition-colors" />
+                <Icon className="h-5 w-5 text-white/40 group-focus-within:text-[#26cece] transition-colors" />
             </div>
             <input
                 type={type}
@@ -56,7 +55,7 @@ const InputField = ({ icon: Icon, label, name, value, onChange, type = 'text', p
                 onChange={onChange}
                 placeholder={placeholder}
                 required={required}
-                className="w-full pl-12 pr-4 py-3.5 rounded-[2px] border border-slate-200 bg-white text-slate-900 placeholder-slate-400 focus:ring-2 focus:ring-[#26cece]/20 focus:border-[#26cece] transition-all duration-300 outline-none hover:border-slate-300 shadow-sm font-sans"
+                className="w-full pl-12 pr-4 py-3.5 rounded-xl border border-white/10 bg-white/5 text-white placeholder-white/30 focus:ring-2 focus:ring-[#26cece]/20 focus:border-[#26cece] transition-all duration-300 outline-none hover:border-white/20 shadow-sm font-sans"
             />
         </div>
     </div>
@@ -65,25 +64,25 @@ const InputField = ({ icon: Icon, label, name, value, onChange, type = 'text', p
 // Select field component
 const SelectField = ({ icon: Icon, label, name, value, onChange, options, colSpan = false }) => (
     <div className={colSpan ? 'md:col-span-2' : ''}>
-        <label className="block text-sm font-medium text-slate-700 mb-2">
+        <label className="block text-sm font-medium text-white/90 mb-2">
             {label}
         </label>
         <div className="relative group">
-            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                <Icon className="h-5 w-5 text-slate-400 group-focus-within:text-[#26cece] transition-colors" />
+            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none z-10">
+                <Icon className="h-5 w-5 text-white/40 group-focus-within:text-[#26cece] transition-colors" />
             </div>
             <select
                 name={name}
                 value={value}
                 onChange={onChange}
-                className="w-full pl-12 pr-10 py-3.5 rounded-[2px] border border-slate-200 bg-white text-slate-900 focus:ring-2 focus:ring-[#26cece]/20 focus:border-[#26cece] transition-all duration-300 outline-none appearance-none shadow-sm cursor-pointer hover:border-slate-300 font-sans"
+                className="w-full pl-12 pr-10 py-3.5 rounded-xl border border-white/10 bg-white/5 text-white appearance-none focus:ring-2 focus:ring-[#26cece]/20 focus:border-[#26cece] transition-all duration-300 outline-none hover:border-white/20 shadow-sm font-sans"
             >
                 {options.map(opt => (
-                    <option key={opt.value} value={opt.value}>{opt.label}</option>
+                    <option key={opt.value} value={opt.value} className="bg-teal-900">{opt.label}</option>
                 ))}
             </select>
             <div className="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none">
-                <svg className="h-5 w-5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg className="h-5 w-5 text-white/40" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
                 </svg>
             </div>
@@ -412,29 +411,47 @@ const GraphicDesignerPage = () => {
     };
 
     return (
-        <div className="min-h-screen bg-white transition-colors duration-300 pt-24 font-['Space_Grotesk']">
+        <div className="relative min-h-screen w-full overflow-x-hidden bg-teal-900 text-white transition-colors duration-300 font-['Space_Grotesk']">
+            {/* Global ambient glows */}
+            <div className="fixed inset-0 pointer-events-none overflow-hidden" style={{ zIndex: 0 }}>
+                <div className="absolute top-[20%] left-[15%] w-[500px] h-[500px] rounded-full blur-[180px] animate-float"
+                    style={{ background: 'rgba(38,206,206,0.15)' }} />
+                <div className="absolute top-[60%] right-[10%] w-[400px] h-[400px] rounded-full blur-[160px] animate-pulse-slow"
+                    style={{ background: 'rgba(45,212,191,0.1)' }} />
+                <div className="absolute bottom-[10%] left-[30%] w-[350px] h-[350px] rounded-full blur-[140px] animate-float"
+                    style={{ background: 'rgba(15,118,110,0.2)' }} />
+                <div className="absolute inset-0 opacity-[0.05]"
+                    style={{ backgroundImage: 'radial-gradient(circle, #26CECE 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
+            </div>
+
+            <div className="absolute inset-0 overflow-hidden pointer-events-none" style={{ zIndex: 0 }}>
+                <ElegantShape delay={0.3} width={600} height={140} rotate={12} gradient="from-teal-400/[0.15]" className="left-[-10%] md:left-[-5%] top-[15%] md:top-[20%]" />
+                <ElegantShape delay={0.5} width={500} height={120} rotate={-15} gradient="from-cyan-400/[0.1]" className="right-[-5%] md:right-[0%] top-[70%] md:top-[75%]" />
+                <ElegantShape delay={0.4} width={300} height={80} rotate={-8} gradient="from-teal-300/[0.12]" className="left-[5%] md:left-[10%] bottom-[5%] md:bottom-[10%]" />
+                <ElegantShape delay={0.6} width={200} height={60} rotate={20} gradient="from-cyan-500/[0.15]" className="right-[15%] md:right-[20%] top-[10%] md:top-[15%]" />
+            </div>
 
             {/* Premium Header */}
-            <header className="sticky top-0 z-50 bg-white border-b border-slate-200">
+            <header className="sticky top-0 z-50 bg-teal-900/80 backdrop-blur-md border-b border-teal-800">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex items-center justify-between h-20">
                         <div className="flex items-center gap-5">
                             <button
                                 onClick={() => navigate('/agents')}
-                                className="p-2.5 rounded-[2px] hover:bg-slate-50 text-slate-400 transition-colors border border-transparent hover:border-slate-200"
+                                className="relative z-10 p-2.5 rounded-xl hover:bg-white/10 text-white/60 transition-colors border border-transparent hover:border-white/20"
                                 title="Back to Agents"
                             >
                                 <ArrowLeft size={22} />
                             </button>
                             <div className="flex items-center gap-3.5">
-                                <div className="p-2.5 rounded-[2px] bg-[#26cece] shadow-lg shadow-[#26cece]/20">
+                                <div className="p-2.5 rounded-xl bg-[#26cece] shadow-lg shadow-[#26cece]/20">
                                     <Palette className="h-6 w-6 text-white" />
                                 </div>
                                 <div>
-                                    <h1 className="text-xl font-bold text-[#26cece] uppercase tracking-tight">
+                                    <h1 className="text-xl font-bold text-white uppercase tracking-tight">
                                         Graphic AI Studio
                                     </h1>
-                                    <p className="text-[10px] text-slate-500 font-mono uppercase tracking-widest">
+                                    <p className="text-[10px] text-teal-100/50 font-mono uppercase tracking-widest">
                                         Visual Generation
                                     </p>
                                 </div>
@@ -443,76 +460,76 @@ const GraphicDesignerPage = () => {
 
                         <div className="flex items-center gap-4">
                             {/* Credits Display */}
-                            <div className="hidden sm:flex items-center gap-3 px-5 py-2.5 rounded-[2px] bg-slate-50 border border-slate-200 shadow-sm">
-                                <div className="p-1.5 rounded-[2px] bg-[#26cece]">
+                            <div className="hidden sm:flex relative z-10 items-center gap-3 px-5 py-2.5 rounded-xl bg-white/5 border border-white/10 shadow-sm">
+                                <div className="p-1.5 rounded-xl bg-[#26cece]">
                                     <Zap className="h-4 w-4 text-white" />
                                 </div>
                                 <div>
-                                    <p className="text-[10px] font-bold font-mono tracking-widest uppercase text-slate-500">Balance</p>
-                                    <p className="text-base font-bold text-slate-900 leading-none mt-0.5">
+                                    <p className="text-[10px] font-bold font-mono tracking-widest uppercase text-teal-100/50">Balance</p>
+                                    <p className="text-base font-bold text-white leading-none mt-0.5">
                                         {credits.toLocaleString()} <span className="text-xs font-normal text-[#26cece]">CR</span>
                                     </p>
                                 </div>
                             </div>
                         </div>
                     </div>
+                    
+                    {/* Navigation Tabs */}
+                    <div className="flex items-center gap-2 relative z-10">
+                        <button
+                            onClick={() => setActiveTab('create')}
+                            className={`px-6 py-4 text-[12px] font-mono tracking-widest uppercase font-bold transition-all border-b-2 ${activeTab === 'create'
+                                ? 'border-[#26cece] text-[#26cece]'
+                                : 'border-transparent text-white/50 hover:text-white'
+                                }`}
+                        >
+                            Create Design
+                        </button>
+                        <button
+                            onClick={() => setActiveTab('history')}
+                            className={`px-6 py-4 text-[12px] font-mono tracking-widest uppercase font-bold transition-all border-b-2 flex items-center gap-2 ${activeTab === 'history'
+                                ? 'border-[#26cece] text-[#26cece]'
+                                : 'border-transparent text-white/50 hover:text-white'
+                                }`}
+                        >
+                            Gallery History
+                            <span className="bg-white/10 text-white/70 py-0.5 px-2 rounded-xl text-[10px]">
+                                {jobs.length}
+                            </span>
+                        </button>
+                    </div>
                 </div>
             </header>
 
             <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
 
-                {/* Navigation Tabs */}
-                <div className="flex items-center gap-2 mb-8 border-b border-slate-200">
-                    <button
-                        onClick={() => setActiveTab('create')}
-                        className={`px-6 py-4 text-[12px] font-mono tracking-widest uppercase font-bold transition-all border-b-2 ${activeTab === 'create'
-                            ? 'border-[#26cece] text-[#26cece]'
-                            : 'border-transparent text-slate-500 hover:text-slate-900'
-                            }`}
-                    >
-                        Create Design
-                    </button>
-                    <button
-                        onClick={() => setActiveTab('history')}
-                        className={`px-6 py-4 text-[12px] font-mono tracking-widest uppercase font-bold transition-all border-b-2 flex items-center gap-2 ${activeTab === 'history'
-                            ? 'border-[#26cece] text-[#26cece]'
-                            : 'border-transparent text-slate-500 hover:text-slate-900'
-                            }`}
-                    >
-                        Gallery History
-                        <span className="bg-slate-100 text-slate-600 py-0.5 px-2 rounded-[2px] text-[10px]">
-                            {jobs.length}
-                        </span>
-                    </button>
-                </div>
-
                 {activeTab === 'create' ? (
                     <div className="max-w-3xl mx-auto">
-                        <div className="bg-slate-50 rounded-[2px] border border-slate-200 shadow-sm overflow-hidden">
-                            <div className="p-8 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                        <div className="relative z-10 bg-teal-950/40 backdrop-blur-[16px] rounded-xl border border-white/10 shadow-sm overflow-hidden">
+                            <div className="p-8 border-b border-white/10 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                                 <div className="flex items-center gap-4">
-                                    <div className="p-3 rounded-[2px] bg-white border border-slate-200 text-[#26cece]">
+                                    <div className="p-3 rounded-xl bg-white/5 border border-white/10 text-[#26cece]">
                                         <Image className="h-6 w-6" />
                                     </div>
                                     <div>
-                                        <h2 className="text-xl font-bold text-slate-900 uppercase tracking-tight">Design Parameters</h2>
-                                        <p className="text-xs text-slate-500 font-sans tracking-tight">Configure your AI generation</p>
+                                        <h2 className="text-xl font-bold text-white uppercase tracking-tight">Design Parameters</h2>
+                                        <p className="text-xs text-teal-100/50 font-sans tracking-tight">Configure your AI generation</p>
                                     </div>
                                 </div>
                                 
                                 {/* Creation Mode Toggle */}
-                                <div className="flex bg-white border border-slate-200 p-1 rounded-[2px] shrink-0">
+                                <div className="flex bg-black/20 border border-white/10 p-1 rounded-xl shrink-0">
                                     <button
                                         type="button"
                                         onClick={() => setCreationMode('form')}
-                                        className={`px-4 py-2 rounded-[2px] text-[10px] font-mono tracking-widest uppercase font-bold transition-all ${creationMode === 'form' ? 'bg-[#26cece] text-white shadow-sm' : 'text-slate-500 hover:text-slate-900'}`}
+                                        className={`px-4 py-2 rounded-xl text-[10px] font-mono tracking-widest uppercase font-bold transition-all ${creationMode === 'form' ? 'bg-[#26cece] text-white shadow-sm' : 'text-white/50 hover:text-white'}`}
                                     >
                                         Details Form
                                     </button>
                                     <button
                                         type="button"
                                         onClick={() => setCreationMode('prompt')}
-                                        className={`px-4 py-2 rounded-[2px] text-[10px] font-mono tracking-widest uppercase font-bold transition-all ${creationMode === 'prompt' ? 'bg-[#26cece] text-white shadow-sm' : 'text-slate-500 hover:text-slate-900'}`}
+                                        className={`px-4 py-2 rounded-xl text-[10px] font-mono tracking-widest uppercase font-bold transition-all ${creationMode === 'prompt' ? 'bg-[#26cece] text-white shadow-sm' : 'text-white/50 hover:text-white'}`}
                                     >
                                         Custom Prompt
                                     </button>
@@ -523,7 +540,7 @@ const GraphicDesignerPage = () => {
                                 {creationMode === 'form' ? (
                                     <>
                                         <div className="space-y-6">
-                                            <h3 className="text-[10px] font-bold tracking-widest text-slate-400 uppercase font-mono">Core Details</h3>
+                                            <h3 className="text-[10px] font-bold tracking-widest text-teal-100/50 uppercase font-mono">Core Details</h3>
                                             <InputField
                                                 icon={Building2}
                                                 label="Business / Property Type"
@@ -564,10 +581,10 @@ const GraphicDesignerPage = () => {
                                             />
                                         </div>
 
-                                        <div className="h-px bg-slate-200" />
+                                        <div className="h-px bg-white/10" />
 
                                         <div className="space-y-6">
-                                            <h3 className="text-[10px] font-bold tracking-widest text-slate-400 uppercase font-mono">Contact & Business Details</h3>
+                                            <h3 className="text-[10px] font-bold tracking-widest text-teal-100/50 uppercase font-mono">Contact & Business Details</h3>
                                             <div className="grid grid-cols-2 gap-4">
                                                 <InputField
                                                     icon={UserCircle}
@@ -610,10 +627,10 @@ const GraphicDesignerPage = () => {
                                             </div>
                                         </div>
 
-                                        <div className="h-px bg-slate-200" />
+                                        <div className="h-px bg-white/10" />
 
                                         <div className="space-y-6">
-                                            <h3 className="text-[10px] font-bold tracking-widest text-slate-400 uppercase font-mono">Context & Details</h3>
+                                            <h3 className="text-[10px] font-bold tracking-widest text-teal-100/50 uppercase font-mono">Style Preferences</h3>
                                             <InputField
                                                 icon={ListChecks}
                                                 label="Features / Amenities"
@@ -670,10 +687,10 @@ const GraphicDesignerPage = () => {
                                             </div>
                                             <div>
                                                 <div className="flex justify-between items-end mb-2">
-                                                    <label className="block text-sm font-medium text-slate-700">
+                                                    <label className="block text-sm font-medium text-white/90">
                                                         Reference Image URL or Context (Optional)
                                                     </label>
-                                                    <label className="cursor-pointer text-xs font-medium text-[#26cece] hover:text-[#1ca0a0] flex items-center gap-1">
+                                                    <label className="cursor-pointer text-xs font-medium text-[#26cece] hover:text-[#35dfdf] flex items-center gap-1">
                                                         {isUploadingImage ? (
                                                             <Loader2 className="h-3 w-3 animate-spin" />
                                                         ) : (
@@ -691,7 +708,7 @@ const GraphicDesignerPage = () => {
                                                 </div>
                                                 <div className="relative group">
                                                     <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                                                        <Image className="h-5 w-5 text-slate-400 group-focus-within:text-[#26cece] transition-colors" />
+                                                        <Image className="h-5 w-5 text-white/40 group-focus-within:text-[#26cece] transition-colors" />
                                                     </div>
                                                     <input
                                                         type="text"
@@ -699,7 +716,7 @@ const GraphicDesignerPage = () => {
                                                         value={formData.reference_image}
                                                         onChange={handleInputChange}
                                                         placeholder="https://example.com/image.jpg or 'A hospital lobby with green accents'"
-                                                        className="w-full pl-12 pr-4 py-3.5 rounded-[2px] border border-slate-200 bg-white text-slate-900 placeholder-slate-400 focus:ring-2 focus:ring-[#26cece]/20 focus:border-[#26cece] transition-all duration-300 outline-none hover:border-slate-300 shadow-sm font-sans"
+                                                        className="w-full pl-12 pr-4 py-3.5 rounded-xl border border-white/10 bg-white/5 text-white placeholder-white/30 focus:ring-2 focus:ring-[#26cece]/20 focus:border-[#26cece] transition-all duration-300 outline-none hover:border-white/20 shadow-sm font-sans"
                                                     />
                                                 </div>
                                             </div>
@@ -707,10 +724,10 @@ const GraphicDesignerPage = () => {
                                             {/* Custom Upload Logo Field */}
                                             <div>
                                                 <div className="flex justify-between items-end mb-2">
-                                                    <label className="block text-sm font-medium text-slate-700">
+                                                    <label className="block text-sm font-medium text-white/90">
                                                         Brand Logo URL (Optional)
                                                     </label>
-                                                    <label className="cursor-pointer text-xs font-medium text-[#26cece] hover:text-[#1ca0a0] flex items-center gap-1">
+                                                    <label className="cursor-pointer text-xs font-medium text-[#26cece] hover:text-[#35dfdf] flex items-center gap-1">
                                                         {isUploadingLogo ? (
                                                             <Loader2 className="h-3 w-3 animate-spin" />
                                                         ) : (
@@ -728,7 +745,7 @@ const GraphicDesignerPage = () => {
                                                 </div>
                                                 <div className="relative group">
                                                     <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                                                        <Upload className="h-5 w-5 text-slate-400 group-focus-within:text-[#26cece] transition-colors" />
+                                                        <Upload className="h-5 w-5 text-white/40 group-focus-within:text-[#26cece] transition-colors" />
                                                     </div>
                                                     <input
                                                         type="text"
@@ -736,17 +753,17 @@ const GraphicDesignerPage = () => {
                                                         value={formData.logo_image}
                                                         onChange={handleInputChange}
                                                         placeholder="https://example.com/logo.jpg or upload logo from computer"
-                                                        className="w-full pl-12 pr-4 py-3.5 rounded-[2px] border border-slate-200 bg-white text-slate-900 placeholder-slate-400 focus:ring-2 focus:ring-[#26cece]/20 focus:border-[#26cece] transition-all duration-300 outline-none hover:border-slate-300 shadow-sm font-sans"
+                                                        className="w-full pl-12 pr-4 py-3.5 rounded-xl border border-white/10 bg-white/5 text-white placeholder-white/30 focus:ring-2 focus:ring-[#26cece]/20 focus:border-[#26cece] transition-all duration-300 outline-none hover:border-white/20 shadow-sm font-sans"
                                                     />
                                                 </div>
                                                 {formData.logo_image && (
-                                                    <div className="mt-2 flex items-center gap-3 bg-slate-50 p-2 rounded border border-slate-100">
+                                                    <div className="mt-2 flex items-center gap-3 bg-white/5 p-2 rounded border border-white/10">
                                                         <img src={formData.logo_image} alt="Logo preview" className="h-10 w-10 object-contain rounded bg-white border border-slate-200" />
-                                                        <span className="text-xs text-slate-500 truncate flex-1">{formData.logo_image}</span>
+                                                        <span className="text-xs text-white/70 truncate flex-1">{formData.logo_image}</span>
                                                         <button 
                                                             type="button" 
                                                             onClick={() => setFormData(prev => ({ ...prev, logo_image: '' }))}
-                                                            className="text-xs text-rose-500 hover:text-rose-700 font-medium"
+                                                            className="text-xs text-rose-400 hover:text-rose-300 font-medium"
                                                         >
                                                             Remove
                                                         </button>
@@ -757,13 +774,13 @@ const GraphicDesignerPage = () => {
                                     </>
                                 ) : (
                                     <div className="space-y-6">
-                                        <h3 className="text-[10px] font-bold tracking-widest text-slate-400 uppercase font-mono">Custom Design Prompt</h3>
+                                        <h3 className="text-[10px] font-bold tracking-widest text-teal-100/50 uppercase font-mono">Custom Design Prompt</h3>
                                         <div>
                                             <div className="flex justify-between items-end mb-2">
-                                                <label className="block text-sm font-medium text-slate-700">
-                                                    Describe your concept <span className="text-rose-500">*</span>
+                                                <label className="block text-sm font-medium text-white/90">
+                                                    Describe your concept <span className="text-rose-400">*</span>
                                                 </label>
-                                                <label className="cursor-pointer text-xs font-medium text-[#26cece] hover:text-[#1ca0a0] flex items-center gap-1">
+                                                <label className="cursor-pointer text-xs font-medium text-[#26cece] hover:text-[#35dfdf] flex items-center gap-1">
                                                     {isUploadingImage ? (
                                                         <Loader2 className="h-3 w-3 animate-spin" />
                                                     ) : (
@@ -785,17 +802,17 @@ const GraphicDesignerPage = () => {
                                                 placeholder="e.g. A hyper-realistic 8k render of a modern beachfront villa or a vibrant tech startup office with neon lighting..."
                                                 required
                                                 rows={8}
-                                                className="w-full p-4 rounded-[2px] border border-slate-200 bg-white text-slate-900 placeholder-slate-400 focus:ring-2 focus:ring-[#26cece]/20 focus:border-[#26cece] transition-all duration-300 outline-none hover:border-slate-300 shadow-sm resize-none font-sans"
+                                                className="w-full p-4 rounded-xl border border-white/10 bg-white/5 text-white placeholder-white/30 focus:ring-2 focus:ring-[#26cece]/20 focus:border-[#26cece] transition-all duration-300 outline-none hover:border-white/20 shadow-sm resize-none font-sans"
                                             />
                                         </div>
 
                                         {/* Custom Upload Logo Field for Prompt Mode */}
                                         <div>
                                             <div className="flex justify-between items-end mb-2">
-                                                <label className="block text-sm font-medium text-slate-700">
+                                                <label className="block text-sm font-medium text-white/90">
                                                     Brand Logo URL (Optional)
                                                 </label>
-                                                <label className="cursor-pointer text-xs font-medium text-[#26cece] hover:text-[#1ca0a0] flex items-center gap-1">
+                                                <label className="cursor-pointer text-xs font-medium text-[#26cece] hover:text-[#35dfdf] flex items-center gap-1">
                                                     {isUploadingLogo ? (
                                                         <Loader2 className="h-3 w-3 animate-spin" />
                                                     ) : (
@@ -813,7 +830,7 @@ const GraphicDesignerPage = () => {
                                             </div>
                                             <div className="relative group">
                                                 <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                                                    <Upload className="h-5 w-5 text-slate-400 group-focus-within:text-[#26cece] transition-colors" />
+                                                    <Upload className="h-5 w-5 text-white/40 group-focus-within:text-[#26cece] transition-colors" />
                                                 </div>
                                                 <input
                                                     type="text"
@@ -821,17 +838,17 @@ const GraphicDesignerPage = () => {
                                                     value={formData.logo_image}
                                                     onChange={handleInputChange}
                                                     placeholder="https://example.com/logo.jpg or upload logo from computer"
-                                                    className="w-full pl-12 pr-4 py-3.5 rounded-[2px] border border-slate-200 bg-white text-slate-900 placeholder-slate-400 focus:ring-2 focus:ring-[#26cece]/20 focus:border-[#26cece] transition-all duration-300 outline-none hover:border-slate-300 shadow-sm font-sans"
+                                                    className="w-full pl-12 pr-4 py-3.5 rounded-xl border border-white/10 bg-white/5 text-white placeholder-white/30 focus:ring-2 focus:ring-[#26cece]/20 focus:border-[#26cece] transition-all duration-300 outline-none hover:border-white/20 shadow-sm font-sans"
                                                 />
                                             </div>
                                             {formData.logo_image && (
-                                                <div className="mt-2 flex items-center gap-3 bg-slate-50 p-2 rounded border border-slate-100">
+                                                <div className="mt-2 flex items-center gap-3 bg-white/5 p-2 rounded border border-white/10">
                                                     <img src={formData.logo_image} alt="Logo preview" className="h-10 w-10 object-contain rounded bg-white border border-slate-200" />
-                                                    <span className="text-xs text-slate-500 truncate flex-1">{formData.logo_image}</span>
+                                                    <span className="text-xs text-white/70 truncate flex-1">{formData.logo_image}</span>
                                                     <button 
                                                         type="button" 
                                                         onClick={() => setFormData(prev => ({ ...prev, logo_image: '' }))}
-                                                        className="text-xs text-rose-500 hover:text-rose-700 font-medium"
+                                                        className="text-xs text-rose-400 hover:text-rose-300 font-medium"
                                                     >
                                                         Remove
                                                     </button>
@@ -891,10 +908,10 @@ const GraphicDesignerPage = () => {
                                     <button
                                         type="submit"
                                         disabled={loading || (!isAdmin && credits < COST_PER_FLYER)}
-                                        className="w-full relative group overflow-hidden rounded-[2px] bg-slate-900 text-white py-4 px-6 font-bold text-[14px] uppercase tracking-widest transition-all duration-300 hover:shadow-xl hover:-translate-y-1 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:shadow-none disabled:hover:translate-y-0"
+                                        className="w-full relative group overflow-hidden rounded-xl bg-white/10 border border-white/20 text-white py-4 px-6 font-bold text-[14px] uppercase tracking-widest transition-all duration-300 hover:shadow-[0_0_20px_rgba(38,206,206,0.3)] hover:border-[#26cece] hover:-translate-y-1 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:shadow-none disabled:hover:translate-y-0 disabled:hover:border-white/20"
                                     >
                                         <div className="absolute inset-0 bg-[#26cece] opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                                        <span className="relative flex items-center justify-center gap-2">
+                                        <span className="relative z-10 flex items-center justify-center gap-2 group-hover:text-black transition-colors">
                                             {loading ? (
                                                 <>
                                                     <Loader2 className="h-5 w-5 animate-spin" />
@@ -918,29 +935,29 @@ const GraphicDesignerPage = () => {
                         <div className="flex flex-col gap-8">
                             
                             {/* Stats */}
-                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 relative z-10">
                                 {[
                                     { label: 'Generations', value: stats.total, color: 'text-[#26cece]' },
-                                    { label: 'Completed', value: stats.completed, color: 'text-emerald-500' },
-                                    { label: 'In Progress', value: stats.pending, color: 'text-amber-500' },
-                                    { label: 'Failed', value: stats.failed, color: 'text-rose-500' }
+                                    { label: 'Completed', value: stats.completed, color: 'text-[#35dfdf]' },
+                                    { label: 'In Progress', value: stats.pending, color: 'text-amber-400' },
+                                    { label: 'Failed', value: stats.failed, color: 'text-rose-400' }
                                 ].map((stat) => (
-                                    <div key={stat.label} className="bg-slate-50 rounded-[2px] p-6 border border-slate-200 shadow-sm">
+                                    <div key={stat.label} className="bg-white/5 backdrop-blur-md rounded-xl p-6 border border-white/10 shadow-sm">
                                         <p className={`text-3xl font-black mb-1 ${stat.color}`}>{stat.value}</p>
-                                        <p className="text-[10px] font-bold font-mono tracking-widest uppercase text-slate-500">{stat.label}</p>
+                                        <p className="text-[10px] font-bold font-mono tracking-widest uppercase text-white/50">{stat.label}</p>
                                     </div>
                                 ))}
                             </div>
 
                             {/* Gallery Header */}
-                            <div className="flex items-center justify-between">
+                            <div className="flex items-center justify-between relative z-10">
                                 <div>
-                                    <h2 className="text-2xl font-bold text-slate-900 uppercase tracking-tight">Studio Gallery</h2>
-                                    <p className="text-xs text-slate-500 font-sans tracking-tight">Review your recent AI generations</p>
+                                    <h2 className="text-2xl font-bold text-white uppercase tracking-tight">Studio Gallery</h2>
+                                    <p className="text-xs text-teal-100/50 font-sans tracking-tight">Review your recent AI generations</p>
                                 </div>
                                 <button
                                     onClick={handleRefresh}
-                                    className="p-3 rounded-[2px] bg-white border border-slate-200 shadow-sm hover:bg-slate-50 text-slate-400 transition-colors group"
+                                    className="p-3 rounded-xl bg-white/5 border border-white/10 shadow-sm hover:bg-white/10 text-white/60 transition-colors group"
                                     title="Refresh Gallery"
                                 >
                                     <RefreshCw className={`h-5 w-5 group-hover:text-[#26cece] transition-colors ${refreshing ? 'animate-spin text-[#26cece]' : ''}`} />
@@ -948,14 +965,14 @@ const GraphicDesignerPage = () => {
                             </div>
 
                             {/* Filters */}
-                            <div className="flex flex-wrap gap-2">
+                            <div className="flex flex-wrap gap-2 relative z-10">
                                 {['all', 'completed', 'processing', 'pending', 'failed'].map(status => (
                                     <button
                                         key={status}
                                         onClick={() => setFilter(status)}
-                                        className={`px-5 py-2.5 rounded-[2px] text-[10px] font-mono tracking-widest uppercase font-bold transition-all duration-300 ${filter === status
-                                            ? 'bg-slate-900 text-white shadow-md'
-                                            : 'bg-white border border-slate-200 text-slate-500 hover:border-slate-300 hover:text-slate-900'
+                                        className={`px-5 py-2.5 rounded-xl text-[10px] font-mono tracking-widest uppercase font-bold transition-all duration-300 ${filter === status
+                                            ? 'bg-white/20 text-white shadow-md border-white/30 border'
+                                            : 'bg-white/5 border border-white/10 text-white/50 hover:border-white/20 hover:text-white'
                                             }`}
                                     >
                                         {status.charAt(0).toUpperCase() + status.slice(1)}
@@ -965,14 +982,14 @@ const GraphicDesignerPage = () => {
 
                             {/* Gallery Grid */}
                             {filteredJobs.length === 0 ? (
-                                <div className="flex flex-col items-center justify-center p-16 bg-slate-50 rounded-[2px] border border-dashed border-slate-300">
-                                    <div className="w-24 h-24 mb-6 rounded-[2px] bg-white border border-slate-200 flex items-center justify-center">
+                                <div className="flex flex-col items-center justify-center p-16 bg-white/5 rounded-xl border border-dashed border-white/20 relative z-10">
+                                    <div className="w-24 h-24 mb-6 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center">
                                         <Image className="h-10 w-10 text-[#26cece]" />
                                     </div>
-                                    <h3 className="text-xl font-bold text-slate-900 mb-2 uppercase tracking-tight">
+                                    <h3 className="text-xl font-bold text-white mb-2 uppercase tracking-tight">
                                         Your Gallery is Empty
                                     </h3>
-                                    <p className="text-slate-500 text-center max-w-md font-sans tracking-tight">
+                                    <p className="text-teal-100/70 text-center max-w-md font-sans tracking-tight">
                                         Configure parameters on the left and hit "Generate Concept" to start creating stunning architectural visuals.
                                     </p>
                                 </div>
@@ -987,28 +1004,28 @@ const GraphicDesignerPage = () => {
                                             return [(
                                                 <div
                                                     key={job.id}
-                                                    className="group flex flex-col bg-white rounded-[2px] border border-slate-200 shadow-sm hover:shadow-xl hover:border-[#26cece] transition-all duration-300 overflow-hidden"
+                                                    className="group flex flex-col bg-white/5 backdrop-blur-md rounded-xl border border-white/10 shadow-sm hover:shadow-xl hover:border-[#26cece] hover:bg-white/10 transition-all duration-300 overflow-hidden relative z-10"
                                                 >
-                                                    <div className="relative aspect-[4/3] bg-slate-50 overflow-hidden">
+                                                    <div className="relative aspect-[4/3] bg-black/20 overflow-hidden">
                                                         <div className="absolute inset-0 flex flex-col items-center justify-center p-6 text-center">
                                                             <StatusIcon className={`h-10 w-10 mb-4 ${statusConfig.color} ${statusConfig.animate ? 'animate-spin' : ''}`} />
                                                             <p className={`text-[10px] font-bold font-mono tracking-widest uppercase ${statusConfig.color}`}>{statusConfig.label}</p>
                                                         </div>
-                                                        <div className={`absolute top-4 right-4 flex items-center gap-1.5 px-3 py-1.5 rounded-[2px] text-[8px] font-bold uppercase tracking-widest ${statusConfig.bg} ${statusConfig.color} border ${statusConfig.border}`}>
+                                                        <div className={`absolute top-4 right-4 flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[8px] font-bold uppercase tracking-widest bg-black/40 ${statusConfig.color} border border-white/10`}>
                                                             {statusConfig.label}
                                                         </div>
                                                     </div>
                                                     <div className="p-5">
-                                                        <h3 className="font-bold text-lg text-slate-900 mb-1 line-clamp-1 uppercase tracking-tight">
+                                                        <h3 className="font-bold text-lg text-white mb-1 line-clamp-1 uppercase tracking-tight">
                                                             {job.property_type || 'Custom Design'}
                                                         </h3>
-                                                        <p className="text-xs text-slate-500 flex items-center gap-1.5 line-clamp-1 font-sans">
+                                                        <p className="text-xs text-white/60 flex items-center gap-1.5 line-clamp-1 font-sans">
                                                             <MapPin className="h-4 w-4 shrink-0 text-[#26cece]" />
                                                             <span className="truncate">{job.location || 'Custom Prompt'}</span>
                                                         </p>
-                                                        <div className="mt-4 pt-4 border-t border-slate-100 flex items-center justify-between text-[10px] font-mono font-bold text-slate-400 uppercase tracking-widest">
+                                                        <div className="mt-4 pt-4 border-t border-white/10 flex items-center justify-between text-[10px] font-mono font-bold text-white/40 uppercase tracking-widest">
                                                             <span>{new Date(job.created_at).toLocaleDateString()}</span>
-                                                            <span className="px-2 py-1 bg-slate-50 border border-slate-200 rounded-[2px] text-[#26cece]">
+                                                            <span className="px-2 py-1 bg-white/5 border border-white/10 rounded-xl text-[#26cece]">
                                                                 {job.price || 'N/A'}
                                                             </span>
                                                         </div>
@@ -1022,50 +1039,50 @@ const GraphicDesignerPage = () => {
                                         return urls.map((url, index) => (
                                             <div
                                                 key={`${job.id}-${index}`}
-                                                className="group flex flex-col bg-white dark:bg-[#111827] rounded-[1.5rem] border border-gray-200/60 dark:border-gray-800 shadow-sm hover:shadow-xl hover:border-violet-300 dark:hover:border-violet-800/50 transition-all duration-300 overflow-hidden"
+                                                className="group flex flex-col bg-white/5 backdrop-blur-md rounded-xl border border-white/10 shadow-sm hover:shadow-xl hover:border-[#26cece] hover:bg-white/10 transition-all duration-300 overflow-hidden relative z-10"
                                             >
-                                                <div className="relative aspect-[4/3] bg-gray-100 dark:bg-gray-900 overflow-hidden">
+                                                <div className="relative aspect-[4/3] bg-black/20 overflow-hidden">
                                                     <img src={url} alt={job.property_type || 'Generated concept'} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
-                                                    <div className="absolute inset-0 bg-gradient-to-t from-gray-900/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                                                    <div className="absolute inset-0 bg-gradient-to-t from-[#0a1f1e]/90 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                                                     
                                                     <div className="absolute bottom-4 left-4 right-4 flex items-center gap-2 translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300">
                                                         <button
                                                             onClick={() => setPreviewJob({ ...job, flyer_url: url, metadata: { flyer_urls: [url] } })}
-                                                            className="flex-1 bg-white/20 hover:bg-white/30 backdrop-blur-md text-white py-2.5 rounded-xl text-sm font-semibold transition-colors flex justify-center items-center gap-1.5"
+                                                            className="flex-1 bg-white/10 hover:bg-white/20 border border-white/20 backdrop-blur-md text-white py-2.5 rounded-xl text-[10px] tracking-widest font-bold uppercase transition-colors flex justify-center items-center gap-1.5"
                                                         >
                                                             <Eye className="w-4 h-4" /> View
                                                         </button>
                                                         <button
                                                             onClick={() => forceDownload(url, `concept_${job.property_type?.replace(/[^a-z0-9]/gi, '_').toLowerCase() || 'design'}_var${index+1}.png`)}
-                                                            className="flex-1 bg-violet-600 hover:bg-violet-500 text-white py-2.5 rounded-xl text-sm font-semibold shadow-lg transition-colors flex items-center justify-center gap-2"
+                                                            className="flex-1 bg-[#26cece] hover:bg-[#35dfdf] text-[#0a1f1e] py-2.5 rounded-xl text-[10px] tracking-widest font-bold uppercase shadow-[0_0_15px_rgba(38,206,206,0.3)] transition-colors flex items-center justify-center gap-2"
                                                         >
                                                             <Download className="w-4 h-4" /> Save
                                                         </button>
                                                     </div>
                                                     
-                                                    <div className={`absolute top-4 right-4 flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-bold uppercase tracking-wider ${statusConfig.bg} ${statusConfig.color} backdrop-blur-md`}>
+                                                    <div className={`absolute top-4 right-4 flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[8px] font-bold uppercase tracking-wider bg-black/40 ${statusConfig.color} border border-white/10 backdrop-blur-md`}>
                                                         {statusConfig.label}
                                                     </div>
 
                                                     {urls.length > 1 && (
-                                                        <div className="absolute top-4 left-4 flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-bold tracking-wider bg-black/50 text-white backdrop-blur-md border border-white/10">
+                                                        <div className="absolute top-4 left-4 flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[8px] font-bold uppercase tracking-wider bg-black/40 text-white/90 backdrop-blur-md border border-white/10">
                                                             Variant {index + 1}
                                                         </div>
                                                     )}
                                                 </div>
 
                                                 <div className="p-5">
-                                                    <h3 className="font-bold text-lg text-gray-900 dark:text-white mb-1 line-clamp-1">
+                                                    <h3 className="font-bold text-lg text-white mb-1 line-clamp-1 uppercase tracking-tight">
                                                         {job.property_type || 'Custom Design'}
                                                     </h3>
-                                                    <p className="text-sm text-gray-500 dark:text-gray-400 flex items-center gap-1.5 line-clamp-1">
-                                                        <MapPin className="h-4 w-4 shrink-0" />
+                                                    <p className="text-xs text-white/60 flex items-center gap-1.5 line-clamp-1 font-sans">
+                                                        <MapPin className="h-4 w-4 shrink-0 text-[#26cece]" />
                                                         <span className="truncate">{job.location || 'Custom Prompt'}</span>
                                                     </p>
                                                     
-                                                    <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-800 flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
-                                                        <span>{new Date(job.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}</span>
-                                                        <span className="px-2 py-1 bg-gray-100 dark:bg-gray-800 rounded-md font-medium">
+                                                    <div className="mt-4 pt-4 border-t border-white/10 flex items-center justify-between text-[10px] font-mono font-bold text-white/40 uppercase tracking-widest">
+                                                        <span>{new Date(job.created_at).toLocaleDateString()}</span>
+                                                        <span className="px-2 py-1 bg-white/5 border border-white/10 rounded-xl text-[#26cece]">
                                                             {job.price || 'N/A'}
                                                         </span>
                                                     </div>
