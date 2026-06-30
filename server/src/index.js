@@ -17,9 +17,9 @@ import { fileURLToPath } from 'url';
 import dns from 'dns';
 import { createServer } from 'http';
 import SocketService from './services/socket/socketService.js';
-<<<<<<< HEAD
 import { connectMongo } from './config/mongoose.js';
 import { initAgenda, gracefulStop } from './config/agenda.js';
+import { supabaseStore } from './config/supabaseClient.js';
 
 // Connect to MongoDB then start Agenda job scheduler
 connectMongo().then(() => initAgenda()).catch(err => console.error('[Startup] Agenda init failed:', err.message));
@@ -27,9 +27,6 @@ connectMongo().then(() => initAgenda()).catch(err => console.error('[Startup] Ag
 // Graceful shutdown
 process.on('SIGTERM', async () => { await gracefulStop(); process.exit(0); });
 process.on('SIGINT',  async () => { await gracefulStop(); process.exit(0); });
-=======
-import { supabaseStore } from './config/supabaseClient.js';
->>>>>>> 64eb194326e29bd00dce327a82db0900b358b234
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
