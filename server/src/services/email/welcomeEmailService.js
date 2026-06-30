@@ -53,8 +53,8 @@ export const sendSignupWelcomeEmail = async (user, fullName) => {
             border: 1px solid #e2e8f0;
         }
         .header {
-            background-color: #0f172a;
-            padding: 32px;
+            background-color: #ffffff;
+            padding: 32px 32px 8px;
             text-align: center;
         }
         .header img {
