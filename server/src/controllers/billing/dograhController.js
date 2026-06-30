@@ -1,7 +1,12 @@
 import crypto from 'crypto';
 import axios from 'axios';
 import { OpenAI } from 'openai';
-import { oldSupabaseAdmin as supabaseAdmin, supabaseStore } from '../../config/supabaseClient.js';
+import { oldSupabaseAdmin, newSupabaseAdmin, supabaseStore } from '../../config/supabaseClient.js';
+
+// newDb = voice dashboard client activity (calls, transcripts, analytics, leads)
+// oldDb = billing only (credit deductions, ledger)
+const newDb = newSupabaseAdmin;
+const oldDb = oldSupabaseAdmin;
 import CreditLedgerService from '../../services/credits/creditLedgerService.js';
 import SocketService from '../../services/socket/socketService.js';
 
@@ -229,7 +234,7 @@ export async function finalizeActiveCall({
         clearActiveCallSession(sessionKey);
     }
 
-    const { data: existingCall } = await supabaseAdmin
+    const { data: existingCall } = await newDb
         .from('sales_calls')
         .select('*')
         .eq('call_id', callId)
@@ -320,7 +325,7 @@ export async function finalizeActiveCall({
         console.warn('⚠️ [newSupabaseAdmin] not configured, skipping call_analytics save');
     }
 
-    const { data: finalWallet } = await supabaseAdmin
+    const { data: finalWallet } = await newDb
         .from('wallet')
         .select('balance')
         .eq('organization_id', orgId)
@@ -331,7 +336,7 @@ export async function finalizeActiveCall({
     let historyErr = null;
 
     if (existingCall) {
-        const { data: updatedRow, error: updateErr } = await supabaseAdmin
+        const { data: updatedRow, error: updateErr } = await newDb
             .from('sales_calls')
             .update({
                 duration: durationSeconds,
@@ -347,7 +352,7 @@ export async function finalizeActiveCall({
         callHistoryRow = updatedRow;
         historyErr = updateErr;
     } else {
-        const { data: insertedRow, error: insertErr } = await supabaseAdmin
+        const { data: insertedRow, error: insertErr } = await newDb
             .from('sales_calls')
             .insert({
                 id: callRecordId,
@@ -374,7 +379,7 @@ export async function finalizeActiveCall({
         console.error('[Call Finalize] History insert failed:', historyErr.message);
     }
 
-    const { error: deleteErr } = await supabaseAdmin
+    const { error: deleteErr } = await newDb
         .from('active_calls')
         .delete()
         .eq('call_id', callId);
@@ -427,7 +432,7 @@ export async function recoverStaleActiveCalls() {
 
 async function recoverFromDb(dbName) {
     try {
-        const { data: activeCalls, error } = await supabaseAdmin
+        const { data: activeCalls, error } = await newDb
             .from('active_calls')
             .select('*');
 
@@ -444,7 +449,7 @@ async function recoverFromDb(dbName) {
                     continue;
                 }
 
-                const { data: org } = await supabaseAdmin
+                const { data: org } = await newDb
                     .from('organizations')
                     .select('admin_id')
                     .eq('id', activeCall.organization_id)
@@ -479,7 +484,7 @@ export async function getOrgAndAdmin(payload) {
     const orgId = metadata.organization_id;
 
     if (orgId) {
-        const { data: org } = await supabaseAdmin
+        const { data: org } = await newDb
             .from('organizations')
             .select('id, admin_id')
             .eq('id', orgId)
@@ -488,7 +493,7 @@ export async function getOrgAndAdmin(payload) {
     }
 
     // Fallback: Get first organization (since it's single-client)
-    const { data: orgs } = await supabaseAdmin
+    const { data: orgs } = await newDb
         .from('organizations')
         .select('id, admin_id')
         .limit(1);
@@ -546,7 +551,8 @@ export async function terminateDograhCall(callId, telephonyCallId = null) {
 export async function deductDbCredits(adminId, amount, callId, orgId) {
     if (amount <= 0) return 0;
     try {
-        const { data, error } = await supabaseAdmin.rpc('deduct_credits_with_ledger', {
+        // Credit deductions go to OLD DB (Bitlance billing)
+        const { data, error } = await oldDb.rpc('deduct_credits_with_ledger', {
             p_user_id: adminId,
             p_agent_type: 'voice',
             p_reference_id: callId,
@@ -571,7 +577,7 @@ export async function deductDbCredits(adminId, amount, callId, orgId) {
 export async function refundDbCredits(adminId, amount, callId, orgId) {
     if (amount <= 0) return;
     try {
-        const { data: wallet } = await supabaseAdmin
+        const { data: wallet } = await newDb
             .from('wallet')
             .select('id, balance')
             .eq('organization_id', orgId)
@@ -579,12 +585,12 @@ export async function refundDbCredits(adminId, amount, callId, orgId) {
 
         if (wallet) {
             const newBalance = parseFloat(wallet.balance) + amount;
-            await supabaseAdmin
+            await newDb
                 .from('wallet')
                 .update({ balance: newBalance, updated_at: new Date().toISOString() })
                 .eq('id', wallet.id);
 
-            await supabaseAdmin.from('transactions').insert({
+            await newDb.from('transactions').insert({
                 organization_id: orgId,
                 wallet_id: wallet.id,
                 amount: amount,

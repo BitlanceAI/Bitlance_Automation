@@ -1,4 +1,11 @@
-import { oldSupabaseAdmin as supabaseAdmin } from '../../config/supabaseClient.js';
+import { oldSupabaseAdmin, newSupabaseAdmin } from '../../config/supabaseClient.js';
+
+// newDb = voice dashboard client activity (organizations, wallet, sales_calls, active_calls)
+// oldDb = billing only (user_credits, credit_ledger, payment_orders)
+const newDb = newSupabaseAdmin;
+const oldDb = oldSupabaseAdmin;
+// supabaseAdmin alias points to newDb for all client activity in this controller
+const supabaseAdmin = newDb;
 import axios from 'axios';
 import crypto from 'crypto';
 import SocketService from '../../services/socket/socketService.js';

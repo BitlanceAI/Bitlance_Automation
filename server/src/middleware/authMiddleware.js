@@ -56,21 +56,23 @@ export const resolveOldBillingUser = async (req, res, next) => {
             return res.status(401).json({ success: false, error: 'User email not found in token' });
         }
         
-        // Find user by email in the old database
+        // Find user by email in the old (billing) database
         const { data, error } = await oldSupabaseAdmin.auth.admin.listUsers({ page: 1, perPage: 1000 });
-        if (error) throw error;
         
-        const oldUser = data?.users?.find(u => u.email?.toLowerCase() === req.user.email.toLowerCase());
-        
-        if (!oldUser) {
-            return res.status(404).json({ success: false, error: 'Billing profile not found for user' });
+        if (!error && data?.users) {
+            const oldUser = data.users.find(u => u.email?.toLowerCase() === req.user.email.toLowerCase());
+            if (oldUser) {
+                // Store old DB user ID for billing operations (payment, credits)
+                req.user.billingId = oldUser.id;
+            }
         }
         
-        // Overwrite req.user.id with the old database user ID for downstream billing controllers
-        req.user.id = oldUser.id;
+        // Always continue — dashboard uses new DB for client activity
+        // billingId will be used only for credit deductions in billing controllers
         next();
     } catch (error) {
         console.error('Resolve Old Billing User Middleware Error:', error);
-        res.status(500).json({ success: false, error: 'Failed to resolve billing profile' });
+        // Don't block on error — let dashboard still load
+        next();
     }
 };

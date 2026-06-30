@@ -1,6 +1,8 @@
 import CreditLedgerService from '../../services/credits/creditLedgerService.js';
 import { oldSupabaseAdmin as supabaseAdmin } from '../../config/supabaseClient.js';
 
+// Resolve billing user ID — precomputed by resolveOldBillingUser middleware into req.user.billingId.
+// Falls back to getOldUserIdByEmail for routes that skip the middleware.
 const getOldUserIdByEmail = async (email) => {
     try {
         const { data, error } = await supabaseAdmin.auth.admin.listUsers({ page: 1, perPage: 1000 });
@@ -12,14 +14,17 @@ const getOldUserIdByEmail = async (email) => {
     }
 };
 
+const getBillingUserId = async (req) => {
+    return req.user.billingId || await getOldUserIdByEmail(req.user.email);
+};
+
 /**
  * LEGACY: Get credits (kept for backward compatibility)
  * TODO: Migrate to getUserBalance
  */
 export const getCredits = async (req, res) => {
     try {
-        const email = req.user.email;
-        const userId = await getOldUserIdByEmail(email);
+        const userId = await getBillingUserId(req);
         if (!userId) {
             return res.json({ success: true, balance: 0 });
         }
@@ -49,8 +54,7 @@ export const getCredits = async (req, res) => {
 export const deductCredits = async (req, res) => {
     try {
         const { amount, action } = req.body;
-        const email = req.user.email;
-        const userId = await getOldUserIdByEmail(email);
+        const userId = await getBillingUserId(req);
         if (!userId) {
             return res.status(404).json({ success: false, error: 'User not found in billing system' });
         }
@@ -110,8 +114,7 @@ export const deductCredits = async (req, res) => {
  */
 export const getUserBalance = async (req, res) => {
     try {
-        const email = req.user.email;
-        const userId = await getOldUserIdByEmail(email);
+        const userId = await getBillingUserId(req);
         if (!userId) {
             return res.json({ success: true, balance: 0, lastUpdated: null });
         }
@@ -141,8 +144,7 @@ export const getUserBalance = async (req, res) => {
  */
 export const getUserUsageHistory = async (req, res) => {
     try {
-        const email = req.user.email;
-        const userId = await getOldUserIdByEmail(email);
+        const userId = await getBillingUserId(req);
         if (!userId) {
             return res.json({ success: true, history: [], pagination: { limit: 50, offset: 0, hasMore: false } });
         }
@@ -175,8 +177,7 @@ export const getUserUsageHistory = async (req, res) => {
  */
 export const getUserAnalytics = async (req, res) => {
     try {
-        const email = req.user.email;
-        const userId = await getOldUserIdByEmail(email);
+        const userId = await getBillingUserId(req);
         if (!userId) {
             return res.json({ success: true, analytics: { totalCreditsUsed: 0, totalActions: 0 } });
         }
@@ -199,8 +200,7 @@ export const getUserAnalytics = async (req, res) => {
  */
 export const checkCreditsForAgent = async (req, res) => {
     try {
-        const email = req.user.email;
-        const userId = await getOldUserIdByEmail(email);
+        const userId = await getBillingUserId(req);
         if (!userId) {
             return res.json({ success: false, available: false, error: 'User billing profile not found' });
         }
@@ -309,8 +309,7 @@ export const getAgentPricing = async (req, res) => {
  */
 export const getAgentStats = async (req, res) => {
     try {
-        const email = req.user.email;
-        const userId = await getOldUserIdByEmail(email);
+        const userId = await getBillingUserId(req);
         if (!userId) {
             return res.json({
                 success: true,
