@@ -368,6 +368,44 @@ class MetaService {
             return { success: false, error: error.response?.data?.error?.message || 'Failed to moderate comment' };
         }
     }
+
+    /**
+     * Get Facebook Page conversations (DMs/inbox)
+     */
+    async getPageConversations(pageId, limit = 20) {
+        try {
+            const response = await this.client.get(`/${pageId}/conversations`, {
+                params: {
+                    fields: 'participants,messages{message,from,created_time},updated_time',
+                    limit
+                }
+            });
+            const conversations = (response.data.data || []).map(conv => {
+                const msgs = conv.messages?.data || [];
+                const participants = conv.participants?.data || [];
+                const other = participants.find(p => p.id !== pageId) || participants[0] || {};
+                return {
+                    id: conv.id,
+                    name: other.name || 'Unknown',
+                    handle: other.email || '',
+                    time: conv.updated_time,
+                    lastMessage: msgs[0]?.message || '',
+                    messages: msgs.map(m => ({
+                        id: m.id || `${conv.id}-${m.created_time}`,
+                        from: m.from?.id === pageId ? 'me' : 'them',
+                        text: m.message,
+                        time: m.created_time
+                    })).reverse(),
+                    platform: 'facebook',
+                    unread: 0
+                };
+            });
+            return { success: true, conversations };
+        } catch (error) {
+            console.error('Meta getPageConversations error:', error.response?.data || error.message);
+            return { success: false, error: error.response?.data?.error?.message || 'Failed to fetch conversations' };
+        }
+    }
 }
 
 export default MetaService;

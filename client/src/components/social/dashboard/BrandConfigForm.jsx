@@ -5,7 +5,8 @@ const BrandConfigForm = ({ onSave, initialData }) => {
     const [formData, setFormData] = useState({
         brand_name: '',
         brand_tone: '',
-        brand_niche: ''
+        brand_niche: '',
+        brand_website_url: ''
     });
     const [isSaving, setIsSaving] = useState(false);
 
@@ -84,6 +85,21 @@ const BrandConfigForm = ({ onSave, initialData }) => {
                         onChange={handleChange}
                         placeholder="e.g. B2B SaaS for Real Estate Agencies"
                         required
+                        className="w-full bg-[#111] border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-white/30 focus:outline-none focus:border-[#26cece] focus:ring-1 focus:ring-[#26cece]/50 transition-all font-mono text-sm"
+                    />
+                </div>
+
+                <div>
+                    <label className="flex items-center text-sm font-mono text-white/80 mb-2">
+                        <Building2 className="w-4 h-4 mr-2 text-[#26cece]" />
+                        Brand Website URL
+                    </label>
+                    <input
+                        type="url"
+                        name="brand_website_url"
+                        value={formData.brand_website_url}
+                        onChange={handleChange}
+                        placeholder="e.g. https://www.bitlance.com"
                         className="w-full bg-[#111] border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-white/30 focus:outline-none focus:border-[#26cece] focus:ring-1 focus:ring-[#26cece]/50 transition-all font-mono text-sm"
                     />
                 </div>

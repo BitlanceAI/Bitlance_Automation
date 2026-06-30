@@ -648,4 +648,58 @@ router.post('/comments/:commentId/reply', async (req, res) => {
     }
 });
 
+/**
+ * GET /api/meta/inbox/:accountId
+ * Fetch Facebook Page or Instagram Business conversations (DMs) for the inbox
+ */
+router.get('/inbox/:accountId', authMiddleware, async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const { accountId } = req.params;
+
+        const { data: connections, error: dbError } = await supabase
+            .from('meta_connections')
+            .select('*')
+            .eq('user_id', userId)
+            .eq('is_active', true);
+
+        if (dbError || !connections?.length) {
+            return res.status(404).json({ error: 'No Meta connections found' });
+        }
+
+        // Search across all connections for the matching account
+        let matchedAccount = null;
+        let matchedToken = null;
+        for (const conn of connections) {
+            const pages = conn.pages || [];
+            const page = pages.find(p => p.accountId === accountId || p.profileId === accountId);
+            if (page) {
+                matchedAccount = page;
+                matchedToken = page.accessToken || decryptData(conn.access_token);
+                break;
+            }
+        }
+
+        if (!matchedAccount) {
+            return res.status(404).json({ error: 'Account not found in your connected profiles' });
+        }
+
+        const metaService = new MetaService(matchedToken);
+        const result = await metaService.getPageConversations(accountId);
+
+        if (!result.success) {
+            const isPermissionError = result.error?.includes('capability') || result.error?.includes('permission');
+            return res.status(isPermissionError ? 403 : 400).json({
+                error: result.error,
+                permissionRequired: isPermissionError ? 'pages_messaging' : null
+            });
+        }
+
+        res.json({ success: true, conversations: result.conversations, platform: matchedAccount.platform });
+    } catch (error) {
+        console.error('[Meta Inbox] Error:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
 export default router;

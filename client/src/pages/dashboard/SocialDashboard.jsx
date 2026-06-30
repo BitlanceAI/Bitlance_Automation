@@ -22,7 +22,7 @@ import UploadCSVView from '../../components/social/UploadCSVView';
 import InboxView from '../../components/social/InboxView';
 import SchedulePostView from '../../components/social/SchedulePostView';
 import GraphicsAIView from '../../components/social/GraphicsAIView';
-import AgentSettingsView from '../../components/social/AgentSettingsView';
+import CampaignView from '../../components/social/CampaignView';
 import HumanReviewView from '../../components/social/HumanReviewView';
 import CommentsView from '../../components/social/CommentsView';
 
@@ -54,6 +54,7 @@ const SocialDashboard = () => {
         { id: 'twitter_thread', icon: XIcon, label: 'X (Twitter) Thread Builder', description: 'Craft engaging threads with automatic splitting' },
         { id: 'smart_schedule', icon: Zap, label: 'Smart Post Scheduler (AI)', description: 'Let AI determine the best times to post' },
         { id: 'approval_queue', icon: CalendarCheck, label: 'Agent Approval Queue', description: 'Review, edit, and approve AI-generated posts' },
+        { id: 'campaigns', icon: Sparkles, label: 'AI Campaigns', description: 'Generate posts scheduled for weeks or months' },
     ];
     
     // UI State
@@ -627,9 +628,9 @@ const SocialDashboard = () => {
                             setIsScheduling={setIsScheduling}
                         />
                     )}
-                    {activeView === 'inbox' && <InboxView />}
+                    {activeView === 'inbox' && <InboxView connectedProfiles={connectedProfiles} />}
                     { activeView === 'graphics_ai' && <GraphicsAIView /> }
-                    { activeView === 'agent_settings' && <AgentSettingsView setActiveView={setActiveView} /> }
+                    { activeView === 'campaigns' && <CampaignView setActiveView={setActiveView} /> }
                     { activeView === 'approval_queue' && <HumanReviewView /> }
                     { activeView === 'comments' && <CommentsView connectedProfiles={connectedProfiles} /> }
                     
@@ -638,24 +639,6 @@ const SocialDashboard = () => {
                             <div className="mb-10 text-center relative">
                                 <h1 className="text-3xl md:text-4xl font-bold font-['Space_Grotesk'] text-white tracking-tight uppercase mb-3">Create a Post</h1>
                                 <p className="text-teal-50/80 font-mono tracking-widest text-sm uppercase">Choose how you want to create your content</p>
-                                
-                                <button 
-                                    onClick={() => setActiveView('agent_settings')}
-                                    className="absolute right-0 top-1/2 -translate-y-1/2 hidden md:flex items-center gap-2 px-4 py-2 bg-[#26cece]/10 text-[#26cece] hover:bg-[#26cece]/20 border border-[#26cece]/30 rounded-xl font-mono text-xs uppercase tracking-wider transition-colors"
-                                >
-                                    <Sparkles className="w-4 h-4" />
-                                    Agent Settings
-                                </button>
-                            </div>
-                            
-                            <div className="md:hidden flex justify-center mb-8">
-                                <button 
-                                    onClick={() => setActiveView('agent_settings')}
-                                    className="flex items-center gap-2 px-4 py-2 bg-[#26cece]/10 text-[#26cece] hover:bg-[#26cece]/20 border border-[#26cece]/30 rounded-xl font-mono text-xs uppercase tracking-wider transition-colors"
-                                >
-                                    <Sparkles className="w-4 h-4" />
-                                    Agent Settings
-                                </button>
                             </div>
 
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">

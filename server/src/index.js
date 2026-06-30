@@ -17,6 +17,15 @@ import { fileURLToPath } from 'url';
 import dns from 'dns';
 import { createServer } from 'http';
 import SocketService from './services/socket/socketService.js';
+import { connectMongo } from './config/mongoose.js';
+import { initAgenda, gracefulStop } from './config/agenda.js';
+
+// Connect to MongoDB then start Agenda job scheduler
+connectMongo().then(() => initAgenda()).catch(err => console.error('[Startup] Agenda init failed:', err.message));
+
+// Graceful shutdown
+process.on('SIGTERM', async () => { await gracefulStop(); process.exit(0); });
+process.on('SIGINT',  async () => { await gracefulStop(); process.exit(0); });
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
