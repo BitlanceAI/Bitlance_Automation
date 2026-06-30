@@ -7,7 +7,7 @@ import { sendMailtrapEmail } from './mailtrapService.js';
  * @param {object} user - Supabase user object
  * @param {string} fullName - Full name of the registered user
  */
-export const sendSignupWelcomeEmail = async (user, fullName) => {
+export const sendSignupWelcomeEmail = async (user, fullName, verificationLink) => {
     try {
         const clientUrl = process.env.CLIENT_URL || 'https://lotlite.bitlancetechhub.com';
         const logoUrl = `${clientUrl}/logo.jpg`;
@@ -19,7 +19,7 @@ export const sendSignupWelcomeEmail = async (user, fullName) => {
         const options = { day: 'numeric', month: 'long', year: 'numeric' };
         const registrationDate = new Date().toLocaleDateString('en-US', options);
 
-        const emailSubject = "Welcome to Bitlance Voice AI Agent! 🎙";
+        const emailSubject = "Confirm your email address - Bitlance Voice AI Agent! 🎙";
 
         const emailHtml = `
 <!DOCTYPE html>
@@ -188,9 +188,9 @@ export const sendSignupWelcomeEmail = async (user, fullName) => {
             </div>
             
             <div class="hero">
-                <span class="hero-badge">🎙 Welcome on Board</span>
-                <h1>You're All Set!</h1>
-                <p>Welcome to Bitlance Voice AI Agent! Your account has been successfully created.</p>
+                <span class="hero-badge">🎙 Email Verification</span>
+                <h1>Verify Your Email Address</h1>
+                <p>Welcome to Bitlance Voice AI Agent! Please verify your email to activate your account.</p>
             </div>
             
             <div class="content">
@@ -198,7 +198,7 @@ export const sendSignupWelcomeEmail = async (user, fullName) => {
                     Hi ${firstName},
                 </p>
                 <p style="font-size: 15px; color: #475569; line-height: 1.6; margin-bottom: 24px;">
-                    Thank you for signing up for Voice AI Agent! We're thrilled to have you on board. Your account is now active and ready to use.
+                    Thank you for signing up for Voice AI Agent! We're thrilled to have you on board. Your account is ready to use as soon as you confirm your email.
                 </p>
                 <p style="font-size: 15px; color: #475569; line-height: 1.6; margin-bottom: 24px;">
                     Below is a summary of your account details and what to expect next.
@@ -238,7 +238,7 @@ export const sendSignupWelcomeEmail = async (user, fullName) => {
                 </ul>
                 
                 <div class="btn-container">
-                    <a href="${clientUrl}" class="btn">Access Your Dashboard</a>
+                    <a href="${verificationLink || clientUrl}" class="btn">Confirm Email Address</a>
                 </div>
                 
                 <div class="info-card">

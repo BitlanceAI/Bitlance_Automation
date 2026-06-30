@@ -1,4 +1,4 @@
-import { supabase, supabaseAdmin } from '../../config/supabaseClient.js';
+import { supabase, supabaseAdmin, oldSupabaseAdmin } from '../../config/supabaseClient.js';
 import { sendSignupWelcomeEmail } from '../../services/email/welcomeEmailService.js';
 
 
@@ -87,8 +87,9 @@ export const signup = async (req, res) => {
             });
         }
 
-        // Sign up with Supabase Auth
-        const { data, error } = await supabase.auth.signUp({
+        // Generate the signup verification link using supabaseAdmin (points to NEW DB for Voice Dashboard)
+        const { data, error } = await supabaseAdmin.auth.admin.generateLink({
+            type: 'signup',
             email,
             password,
             options: {
@@ -97,7 +98,7 @@ export const signup = async (req, res) => {
                     phone: mobile,
                     role: 'user'
                 },
-                emailRedirectTo: 'https://lotlite.bitlancetechhub.com/'
+                redirectTo: 'https://lotlite.bitlancetechhub.com/'
             }
         });
 
@@ -109,28 +110,57 @@ export const signup = async (req, res) => {
             });
         }
 
-        // Create user credits record
+        // Create corresponding user and credits record in the OLD database
         if (data.user) {
             try {
-                const { error: creditsError } = await supabase
-                    .from('user_credits')
-                    .upsert({
-                        user_id: data.user.id,
-                        balance: 10, // Initial credits
-                        updated_at: new Date().toISOString()
-                    }, { onConflict: 'user_id' });
+                // 1. Create user in the OLD database's auth.users
+                const { data: oldUser, error: oldUserError } = await oldSupabaseAdmin.auth.admin.createUser({
+                    email,
+                    password,
+                    email_confirm: true,
+                    user_metadata: {
+                        name: name || email.split('@')[0],
+                        phone: mobile,
+                        role: 'user'
+                    }
+                });
 
-                if (creditsError) {
-                    console.error('Failed to create credits record:', creditsError);
+                let oldUserId = oldUser?.user?.id;
+                if (!oldUserId) {
+                    // Fetch existing user in old database by email if they already existed
+                    const { data: listData } = await oldSupabaseAdmin.auth.admin.listUsers({
+                        page: 1,
+                        perPage: 1000
+                    });
+                    const existingOldUser = listData?.users?.find(u => u.email?.toLowerCase() === email.toLowerCase());
+                    if (existingOldUser) {
+                        oldUserId = existingOldUser.id;
+                    }
                 }
 
-                // Send styled welcome email asynchronously
-                sendSignupWelcomeEmail(data.user, name).catch(err => {
-                    console.error('[WelcomeEmail] Error calling sendSignupWelcomeEmail:', err.message);
-                });
+                if (oldUserId) {
+                    // 2. Create user credits record in the OLD database
+                    const { error: creditsError } = await oldSupabaseAdmin
+                        .from('user_credits')
+                        .upsert({
+                            user_id: oldUserId,
+                            balance: 10, // Initial credits
+                            updated_at: new Date().toISOString()
+                        }, { onConflict: 'user_id' });
+
+                    if (creditsError) {
+                        console.error('Failed to create credits record in old DB:', creditsError);
+                    }
+                }
             } catch (err) {
-                console.error('Credits initialization error:', err);
+                console.error('Old DB user/credits sync error:', err);
             }
+
+            // Send styled welcome verification email asynchronously with the dynamic verification link
+            const verificationLink = data.properties?.action_link;
+            sendSignupWelcomeEmail(data.user, name, verificationLink).catch(err => {
+                console.error('[WelcomeEmail] Error calling sendSignupWelcomeEmail:', err.message);
+            });
         }
 
         res.json({
@@ -280,6 +310,7 @@ export const resendVerification = async (req, res) => {
         }
 
         // Verify if user exists in Supabase to prevent resends for non-existent users
+        let targetUser = null;
         try {
             if (supabaseAdmin) {
                 const { data: listData, error: listError } = await supabaseAdmin.auth.admin.listUsers({
@@ -287,8 +318,8 @@ export const resendVerification = async (req, res) => {
                     perPage: 1000
                 });
                 if (!listError && listData?.users) {
-                    const userExists = listData.users.some(u => u.email?.toLowerCase() === email.toLowerCase());
-                    if (!userExists) {
+                    targetUser = listData.users.find(u => u.email?.toLowerCase() === email.toLowerCase());
+                    if (!targetUser) {
                         return res.status(404).json({
                             success: false,
                             error: 'cant resend .. please sign up first'
@@ -300,21 +331,30 @@ export const resendVerification = async (req, res) => {
             console.error('Error checking user existence before resend:', err);
         }
 
-        const { error } = await supabase.auth.resend({
-            type: 'signup',
+        // Generate verification link using magiclink type on new DB (doesn't throw email_exists)
+        const { data, error } = await supabaseAdmin.auth.admin.generateLink({
+            type: 'magiclink',
             email,
             options: {
-                emailRedirectTo: 'https://lotlite.bitlancetechhub.com/'
+                redirectTo: 'https://lotlite.bitlancetechhub.com/'
             }
         });
 
-        if (error) {
+        if (error || !data) {
             console.error('Resend verification error:', error);
             return res.status(400).json({
                 success: false,
-                error: error.message || 'Failed to resend verification email'
+                error: error?.message || 'Failed to resend verification email'
             });
         }
+
+        // Send styled welcome verification email asynchronously with the dynamic verification link
+        const verificationLink = data.properties?.action_link;
+        const name = targetUser?.user_metadata?.name || email.split('@')[0];
+        
+        sendSignupWelcomeEmail(targetUser || { email }, name, verificationLink).catch(err => {
+            console.error('[WelcomeEmail] Error calling sendSignupWelcomeEmail during resend:', err.message);
+        });
 
         res.json({
             success: true,

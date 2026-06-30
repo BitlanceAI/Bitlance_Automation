@@ -47,3 +47,30 @@ export const authenticateUser = async (req, res, next) => {
 
 // Alias for route compatibility
 export const protect = authenticateUser;
+
+import { oldSupabaseAdmin } from '../config/supabaseClient.js';
+
+export const resolveOldBillingUser = async (req, res, next) => {
+    try {
+        if (!req.user || !req.user.email) {
+            return res.status(401).json({ success: false, error: 'User email not found in token' });
+        }
+        
+        // Find user by email in the old database
+        const { data, error } = await oldSupabaseAdmin.auth.admin.listUsers({ page: 1, perPage: 1000 });
+        if (error) throw error;
+        
+        const oldUser = data?.users?.find(u => u.email?.toLowerCase() === req.user.email.toLowerCase());
+        
+        if (!oldUser) {
+            return res.status(404).json({ success: false, error: 'Billing profile not found for user' });
+        }
+        
+        // Overwrite req.user.id with the old database user ID for downstream billing controllers
+        req.user.id = oldUser.id;
+        next();
+    } catch (error) {
+        console.error('Resolve Old Billing User Middleware Error:', error);
+        res.status(500).json({ success: false, error: 'Failed to resolve billing profile' });
+    }
+};

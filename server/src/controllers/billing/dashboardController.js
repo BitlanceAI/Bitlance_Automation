@@ -1,4 +1,4 @@
-import { supabaseAdmin } from '../../config/supabaseClient.js';
+import { oldSupabaseAdmin as supabaseAdmin } from '../../config/supabaseClient.js';
 import axios from 'axios';
 import crypto from 'crypto';
 import SocketService from '../../services/socket/socketService.js';

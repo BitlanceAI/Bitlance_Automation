@@ -23,13 +23,13 @@ if (!SUPABASE_URL || !SUPABASE_KEY) {
 export const supabaseStore = new AsyncLocalStorage();
 
 // Static instances for the old database (Bitlance Automation)
-const oldSupabase = createClient(SUPABASE_URL, SUPABASE_KEY, {
+export const oldSupabase = createClient(SUPABASE_URL, SUPABASE_KEY, {
     auth: {
         persistSession: false
     }
 });
 
-const oldSupabaseAdmin = process.env.SUPABASE_SERVICE_ROLE_KEY
+export const oldSupabaseAdmin = process.env.SUPABASE_SERVICE_ROLE_KEY
     ? createClient(SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY, {
         auth: {
             autoRefreshToken: false,
