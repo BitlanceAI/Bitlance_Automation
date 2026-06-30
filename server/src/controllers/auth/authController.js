@@ -279,6 +279,27 @@ export const resendVerification = async (req, res) => {
             });
         }
 
+        // Verify if user exists in Supabase to prevent resends for non-existent users
+        try {
+            if (supabaseAdmin) {
+                const { data: listData, error: listError } = await supabaseAdmin.auth.admin.listUsers({
+                    page: 1,
+                    perPage: 1000
+                });
+                if (!listError && listData?.users) {
+                    const userExists = listData.users.some(u => u.email?.toLowerCase() === email.toLowerCase());
+                    if (!userExists) {
+                        return res.status(404).json({
+                            success: false,
+                            error: 'cant resend .. please sign up first'
+                        });
+                    }
+                }
+            }
+        } catch (err) {
+            console.error('Error checking user existence before resend:', err);
+        }
+
         const { error } = await supabase.auth.resend({
             type: 'signup',
             email,
