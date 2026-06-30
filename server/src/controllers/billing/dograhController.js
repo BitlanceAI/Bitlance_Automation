@@ -1,7 +1,7 @@
 import crypto from 'crypto';
 import axios from 'axios';
 import { OpenAI } from 'openai';
-import { supabaseAdmin, newSupabaseAdmin } from '../../config/supabaseClient.js';
+import { newSupabaseAdmin as supabaseAdmin } from '../../config/supabaseClient.js';
 import CreditLedgerService from '../../services/credits/creditLedgerService.js';
 import SocketService from '../../services/socket/socketService.js';
 

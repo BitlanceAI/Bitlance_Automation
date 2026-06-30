@@ -1,4 +1,4 @@
-import { supabase, supabaseAdmin } from '../../config/supabaseClient.js';
+import { newSupabase as supabase, newSupabaseAdmin as supabaseAdmin } from '../../config/supabaseClient.js';
 import { sendSignupWelcomeEmail } from '../../services/email/welcomeEmailService.js';
 
 
@@ -96,7 +96,8 @@ export const signup = async (req, res) => {
                     name: name || email.split('@')[0],
                     phone: mobile,
                     role: 'user'
-                }
+                },
+                emailRedirectTo: 'https://lotlite.bitlancetechhub.com/'
             }
         });
 
@@ -280,7 +281,10 @@ export const resendVerification = async (req, res) => {
 
         const { error } = await supabase.auth.resend({
             type: 'signup',
-            email
+            email,
+            options: {
+                emailRedirectTo: 'https://lotlite.bitlancetechhub.com/'
+            }
         });
 
         if (error) {

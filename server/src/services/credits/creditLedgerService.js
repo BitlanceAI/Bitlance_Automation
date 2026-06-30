@@ -1,4 +1,4 @@
-import { supabase, supabaseAdmin } from '../../config/supabaseClient.js';
+import { newSupabase as supabase, newSupabaseAdmin as supabaseAdmin } from '../../config/supabaseClient.js';
 
 /**
  * Credit Ledger Service

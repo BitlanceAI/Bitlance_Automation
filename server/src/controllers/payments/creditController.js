@@ -1,10 +1,10 @@
 import CreditLedgerService from '../../services/credits/creditLedgerService.js';
-import { supabaseAdmin } from '../../config/supabaseClient.js';
+import { newSupabaseAdmin as supabaseAdmin } from '../../config/supabaseClient.js';
 import { createClient } from '@supabase/supabase-js';
 
-// Legacy scoped Supabase helper
+// Scoped Supabase helper using the new Supabase url/key for billing dashboard
 const getScopedSupabase = (token) => {
-    return createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY, {
+    return createClient(process.env.NEW_SUPABASE_URL, process.env.NEW_SUPABASE_KEY, {
         global: {
             headers: {
                 Authorization: `Bearer ${token}`

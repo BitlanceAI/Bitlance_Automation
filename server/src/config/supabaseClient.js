@@ -41,3 +41,11 @@ export const newSupabaseAdmin = process.env.NEW_SUPABASE_SERVICE_ROLE_KEY
     })
     : null;
 
+export const newSupabase = process.env.NEW_SUPABASE_URL && process.env.NEW_SUPABASE_KEY
+    ? createClient(process.env.NEW_SUPABASE_URL, process.env.NEW_SUPABASE_KEY, {
+        auth: {
+            persistSession: false
+        }
+    })
+    : null;
+
