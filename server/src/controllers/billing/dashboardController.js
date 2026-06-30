@@ -9,6 +9,7 @@ const supabaseAdmin = newDb;
 import axios from 'axios';
 import crypto from 'crypto';
 import SocketService from '../../services/socket/socketService.js';
+import { sendPurchaseSuccessEmail } from '../../services/email/welcomeEmailService.js';
 import { deductDbCredits, terminateDograhCall, fetchDograhRun, isDograhRunCompleted, extractRecordingUrl, finalizeActiveCall } from './dograhController.js';
 
 // Global object to track active call billing intervals in memory
@@ -756,6 +757,25 @@ export const verifyRazorpayPayment = async (req, res) => {
         if (txnErr) console.error('[Razorpay Verify] Error writing transaction log:', txnErr.message);
 
         console.log(`[Razorpay Verify] ✅ Payment Successful. Organization ${org.name} wallet credited +${creditsToAdd}`);
+
+        // 4. Send payment confirmation email (fire-and-forget)
+        try {
+            const userEmail = req.user?.email || '';
+            const userName = req.user?.name || req.user?.full_name || userEmail.split('@')[0];
+            if (userEmail) {
+                sendPurchaseSuccessEmail(
+                    userEmail,
+                    userName,
+                    payment.amount,
+                    `₹${payment.amount} Wallet Recharge`,
+                    'voice_billing',
+                    creditsToAdd,
+                    newBalance
+                ).catch(err => console.error('[Razorpay Verify] Failed to send payment email:', err.message));
+            }
+        } catch (emailErr) {
+            console.error('[Razorpay Verify] Payment email error:', emailErr.message);
+        }
 
         res.json({
             success: true,
