@@ -14,7 +14,7 @@ export const sendSignupWelcomeEmail = async (user, fullName, verificationLink) =
         
         const firstName = fullName ? fullName.split(' ')[0] : 'there';
         const dynamicName = fullName || user.email.split('@')[0];
-        const accountId = `ACC-${user.id.slice(0, 8).toUpperCase()}`;
+        const accountId = `ACC-${(user.id || Math.random().toString(36).slice(2, 10)).slice(0, 8).toUpperCase()}`;
         
         const options = { day: 'numeric', month: 'long', year: 'numeric' };
         const registrationDate = new Date().toLocaleDateString('en-US', options);
