@@ -6,7 +6,9 @@ if (process.env.INSECURE_TLS === 'true' || process.env.NODE_ENV !== 'production'
 
 import { createClient } from '@supabase/supabase-js';
 import dotenv from 'dotenv';
+import ws from 'ws';
 import { AsyncLocalStorage } from 'async_hooks';
+global.WebSocket = ws;
 
 dotenv.config();
 
