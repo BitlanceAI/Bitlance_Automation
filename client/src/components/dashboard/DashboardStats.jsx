@@ -8,23 +8,23 @@ const StatCard = ({ title, value, icon: Icon, color, subtext }) => {
     const iconColor = color.split(' ').find(c => c.startsWith('text-')) || 'text-[#26CECE]';
     
     return (
-        <div className="bg-slate-50 rounded-[2px] p-6 border border-slate-200 transition-all hover:border-slate-300 hover:bg-slate-100 relative group overflow-hidden">
+        <div className="bg-white/5 rounded-xl p-6 border border-white/10 transition-all hover:border-[#26cece] hover:bg-white/10 relative group overflow-hidden backdrop-blur-sm shadow-[0_4px_30px_rgba(0,0,0,0.1)]">
             {/* Left Accent Bar on Hover */}
-            <div className="absolute top-0 left-0 w-1 h-full bg-[#26CECE] opacity-0 group-hover:opacity-100 transition-opacity"></div>
+            <div className="absolute top-0 left-0 w-1 h-full bg-[#26CECE] opacity-0 group-hover:opacity-100 transition-opacity shadow-[0_0_10px_#26cece]"></div>
             
             <div className="flex items-center justify-between mb-5">
-                <div className={`text-slate-900 p-2 border border-slate-200 bg-white rounded-[2px]`}>
+                <div className={`text-white p-2 border border-white/10 bg-white/5 rounded-xl group-hover:border-[#26cece]/30 transition-colors`}>
                     <Icon size={20} className={iconColor} />
                 </div>
                 {subtext && (
-                    <span className="text-[10px] font-mono tracking-widest uppercase text-slate-500 bg-white px-2 py-1 rounded-[2px] border border-slate-200">
+                    <span className="text-[10px] font-mono tracking-widest uppercase text-teal-100/50 bg-white/5 px-2 py-1 rounded-xl border border-white/10 group-hover:border-[#26cece]/30 group-hover:text-teal-100/80 transition-colors">
                         {subtext}
                     </span>
                 )}
             </div>
             <div>
-                <h3 className="text-[13px] font-sans font-medium text-slate-500 mb-2 font-['Space_Grotesk'] tracking-tight">{title}</h3>
-                <div className="text-[32px] font-mono font-medium text-slate-900 tracking-tight leading-none">{value}</div>
+                <h3 className="text-[13px] font-sans font-medium text-teal-100/60 mb-2 font-['Space_Grotesk'] tracking-tight group-hover:text-teal-100/80 transition-colors">{title}</h3>
+                <div className="text-[32px] font-mono font-medium text-white tracking-tight leading-none group-hover:text-[#26cece] transition-colors">{value}</div>
             </div>
         </div>
     );
