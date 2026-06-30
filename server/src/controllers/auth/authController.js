@@ -1,4 +1,4 @@
-import { supabase } from '../../config/supabaseClient.js';
+import { supabase, supabaseAdmin } from '../../config/supabaseClient.js';
 import { sendSignupWelcomeEmail } from '../../services/email/welcomeEmailService.js';
 
 
@@ -26,9 +26,30 @@ export const login = async (req, res) => {
 
         if (error) {
             console.error('Login error:', error);
+            let errorMessage = error.message || 'Invalid credentials';
+            
+            if (errorMessage.toLowerCase().includes('invalid login credentials') || errorMessage.toLowerCase().includes('invalid credentials')) {
+                try {
+                    if (supabaseAdmin) {
+                        const { data: listData, error: listError } = await supabaseAdmin.auth.admin.listUsers({
+                            page: 1,
+                            perPage: 1000
+                        });
+                        if (!listError && listData?.users) {
+                            const userExists = listData.users.some(u => u.email?.toLowerCase() === email.toLowerCase());
+                            if (!userExists) {
+                                errorMessage = "User does not exist. Please sign up.";
+                            }
+                        }
+                    }
+                } catch (err) {
+                    console.error('Error checking user existence:', err);
+                }
+            }
+
             return res.status(401).json({
                 success: false,
-                error: error.message || 'Invalid credentials'
+                error: errorMessage
             });
         }
 
