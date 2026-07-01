@@ -204,6 +204,35 @@ export const getCallHistory = async (req, res) => {
 
         if (error) throw error;
 
+        // Fetch matching analytics for these specific calls by call_id
+        if (calls && calls.length > 0) {
+            const callIds = calls.map(c => c.call_id).filter(Boolean);
+            const { data: analyticsList } = await supabaseAdmin
+                .from('call_analytics')
+                .select('id, call_id, overall_sentiment, interest_level, buying_intent, call_outcome, sentiment_score, summary')
+                .in('call_id', callIds);
+
+            if (analyticsList && analyticsList.length > 0) {
+                const analyticsMap = {};
+                analyticsList.forEach(a => {
+                    if (a.call_id) analyticsMap[a.call_id] = a;
+                });
+
+                calls.forEach(c => {
+                    const a = analyticsMap[c.call_id];
+                    if (a) {
+                        c.analytics_id = a.id;
+                        c.overall_sentiment = a.overall_sentiment;
+                        c.interest_level = a.interest_level;
+                        c.buying_intent = a.buying_intent;
+                        c.call_outcome = a.call_outcome;
+                        c.sentiment_score = a.sentiment_score;
+                        c.summary = a.summary;
+                    }
+                });
+            }
+        }
+
         res.json({
             success: true,
             calls,
