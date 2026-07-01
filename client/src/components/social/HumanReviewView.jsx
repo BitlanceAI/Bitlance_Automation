@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { CheckCircle2, XCircle, Edit, Calendar, Hash, Image as ImageIcon, Sparkles, Eye } from 'lucide-react';
 import { useWorkspace } from '../../context/WorkspaceContext';
 import { supabase } from '../../services/supabaseClient';
+import API_BASE_URL from '../../config';
 
 const BundleCard = ({ bundle, handleApprove, handleReject, handleEdit, onImageClick }) => {
     const [expanded, setExpanded] = useState(false);
@@ -116,7 +117,7 @@ const HumanReviewView = () => {
             const { data: { session } } = await supabase.auth.getSession();
             const token = session?.access_token;
 
-            const response = await fetch(`/api/agent/bundles/pending?workspace_id=${workspaceId}`, {
+            const response = await fetch(`${API_BASE_URL}/api/agent/bundles/pending?workspace_id=${workspaceId}`, {
                 headers: {
                     'Authorization': `Bearer ${token}`,
                     'x-workspace-id': workspaceId
@@ -138,7 +139,7 @@ const HumanReviewView = () => {
             const { data: { session } } = await supabase.auth.getSession();
             const token = session?.access_token;
             
-            await fetch(`/api/agent/bundles/${id}/status`, {
+            await fetch(`${API_BASE_URL}/api/agent/bundles/${id}/status`, {
                 method: 'PATCH',
                 headers: { 
                     'Content-Type': 'application/json',
@@ -158,7 +159,7 @@ const HumanReviewView = () => {
             const { data: { session } } = await supabase.auth.getSession();
             const token = session?.access_token;
 
-            await fetch(`/api/agent/bundles/${id}/status`, {
+            await fetch(`${API_BASE_URL}/api/agent/bundles/${id}/status`, {
                 method: 'PATCH',
                 headers: { 
                     'Content-Type': 'application/json',
