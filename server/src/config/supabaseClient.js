@@ -40,13 +40,45 @@ export const oldSupabaseAdmin = process.env.SUPABASE_SERVICE_ROLE_KEY
     })
     : null;
 
-// Static instances for the new database (Voice Dashboard / Lotlite redirect to central/old DB)
-export const newSupabase = oldSupabase;
-export const newSupabaseAdmin = oldSupabaseAdmin;
+// Static instances for the new database (Voice Dashboard / Lotlite)
+export const newSupabase = process.env.NEW_SUPABASE_URL && process.env.NEW_SUPABASE_KEY
+    ? createClient(process.env.NEW_SUPABASE_URL, process.env.NEW_SUPABASE_KEY, {
+        auth: {
+            persistSession: false
+        }
+    })
+    : null;
+
+export const newSupabaseAdmin = process.env.NEW_SUPABASE_SERVICE_ROLE_KEY
+    ? createClient(process.env.NEW_SUPABASE_URL, process.env.NEW_SUPABASE_SERVICE_ROLE_KEY, {
+        auth: {
+            autoRefreshToken: false,
+            persistSession: false
+        }
+    })
+    : null;
 
 // Dynamic resolver
 function getTargetClient(isAdmin = false) {
-    return isAdmin ? oldSupabaseAdmin : oldSupabase;
+    const store = supabaseStore.getStore();
+    let useNewDb = false;
+
+    if (store) {
+        const origin = (store.origin || '').toLowerCase();
+        const referer = (store.referer || '').toLowerCase();
+
+        // Route requests originating from lotlite domain/port to the new database
+        if (origin.includes('lotlite') || referer.includes('lotlite') ||
+            origin.includes('localhost:3000') || referer.includes('localhost:3000')) {
+            useNewDb = true;
+        }
+    }
+
+    if (useNewDb) {
+        return isAdmin ? (newSupabaseAdmin || oldSupabaseAdmin) : (newSupabase || oldSupabase);
+    } else {
+        return isAdmin ? oldSupabaseAdmin : oldSupabase;
+    }
 }
 
 // Proxies to route database operations dynamically based on request context
