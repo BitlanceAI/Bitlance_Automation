@@ -218,6 +218,60 @@ export const getCallHistory = async (req, res) => {
 };
 
 /**
+ * Get voice leads filtered by user's organization calls or phone numbers
+ */
+export const getVoiceLeads = async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const { org } = await ensureOrgAndWallet(userId);
+
+        // 1. Fetch user's own call history to know which numbers/calls they own
+        let callQuery = supabaseAdmin
+            .from('sales_calls')
+            .select('call_id, customer_number');
+
+        if (req.user.email !== 'demo@bitlancetechhub.com') {
+            callQuery = callQuery.eq('organization_id', org.id);
+        }
+
+        const { data: calls, error: callsErr } = await callQuery;
+        if (callsErr) throw callsErr;
+
+        const normalize = (p) => p.replace(/^\+/, '').replace(/\s/g, '');
+        const myPhonesSet = new Set(calls.map(c => normalize(c.customer_number || '')).filter(Boolean));
+        const myCallIdsSet = new Set(calls.map(c => String(c.call_id || '')).filter(Boolean));
+
+        // 2. Fetch voice leads from new Supabase
+        const { data: voiceLeads, error: leadsErr } = await supabaseAdmin
+            .from('lotlite_leads')
+            .select('id, call_id, call_time, duration_seconds, preferred_language, purpose, first_name, full_name, mobile_number, email, property_type, city, locality, budget, size_bhk, amenities, move_in_timeline, recording_url, transcript_url, phone_number')
+            .order('call_time', { ascending: false });
+
+        if (leadsErr) throw leadsErr;
+
+        // Check if the user has Admin rights
+        const isAdmin = req.user.email === 'bitlanceai@gmail.com';
+
+        // 3. Filter voice leads
+        const filteredLeads = (voiceLeads || []).filter((item) => {
+            if (isAdmin) return true;
+            if (item.call_id && myCallIdsSet.has(String(item.call_id))) return true;
+            const num = item.mobile_number || item.phone_number;
+            if (num && myPhonesSet.has(normalize(num))) return true;
+            return false;
+        });
+
+        res.json({
+            success: true,
+            leads: filteredLeads
+        });
+    } catch (err) {
+        console.error('[VoiceLeads] Error:', err.message);
+        res.status(500).json({ success: false, error: err.message });
+    }
+};
+
+/**
  * Get payment history
  */
 export const getPaymentHistory = async (req, res) => {

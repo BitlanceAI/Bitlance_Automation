@@ -4,6 +4,7 @@ import {
     getActiveCalls,
     getCallHistory,
     getPaymentHistory,
+    getVoiceLeads,
     triggerCall,
     forceTerminateCall,
     createRazorpayOrder,
@@ -23,6 +24,7 @@ router.use(resolveOldBillingUser);
 router.get('/stats', getDashboardStats);
 router.get('/active-calls', getActiveCalls);
 router.get('/call-history', getCallHistory);
+router.get('/voice-leads', getVoiceLeads);
 router.get('/payment-history', getPaymentHistory);
 router.get('/workflows', getUserWorkflows);
 router.post('/trigger-call', triggerCall);
