@@ -352,11 +352,38 @@ export async function finalizeActiveCall({
             } else {
                 console.log('✅ [newSupabaseAdmin] Successfully saved call_analytics');
             }
+
+            // Save to Voice Leads if response is positive
+            const isPositiveLead = 
+                aiAnalysis.interest_level?.toLowerCase() === 'high' || 
+                aiAnalysis.interest_level?.toLowerCase() === 'medium' ||
+                aiAnalysis.buying_intent?.toLowerCase() === 'high' || 
+                aiAnalysis.overall_sentiment?.toLowerCase() === 'positive';
+
+            if (isPositiveLead) {
+                const { error: leadErr } = await newSupabaseAdmin
+                    .from('lotlite_leads')
+                    .insert({
+                        call_id: callId,
+                        call_time: new Date(finalRunData?.created_at || finalRunData?.start_timestamp || session?.startedAt || Date.now()).toISOString(),
+                        duration_seconds: durationSeconds.toString(),
+                        phone_number: targetCustomerPhone,
+                        first_name: aiAnalysis.customer_name || 'Interested Lead',
+                        mobile_number: targetCustomerPhone,
+                        recording_url: extractRecordingUrl(finalRunData),
+                        transcript_url: finalRunData?.transcript_public_url || finalRunData?.transcript_url || '',
+                    });
+                if (leadErr) {
+                    console.error('❌ [newSupabaseAdmin] Failed to insert voice lead:', leadErr.message);
+                } else {
+                    console.log('✅ [newSupabaseAdmin] Successfully saved voice lead to lotlite_leads');
+                }
+            }
         } catch (err) {
-            console.error('❌ [newSupabaseAdmin] Exception writing call_analytics:', err.message);
+            console.error('❌ [newSupabaseAdmin] Exception writing call_analytics or leads:', err.message);
         }
     } else {
-        console.warn('⚠️ [newSupabaseAdmin] not configured, skipping call_analytics save');
+        console.warn('⚠️ [newSupabaseAdmin] not configured, skipping call_analytics and leads save');
     }
 
     const { data: finalWallet } = await newDb
