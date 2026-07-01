@@ -20,7 +20,7 @@ import { ElegantShape } from '../../components/ui/shape-landing-hero';
 
 const HomePage = () => {
     const navigate = useNavigate();
-    const { user, signOut } = useAuth();
+    const { user, signOut, token } = useAuth();
     const [greeting, setGreeting] = useState('');
 
     const [stats, setStats] = useState({
@@ -188,7 +188,14 @@ const HomePage = () => {
                                         onClick={() => { 
                                             trackAgentOpen(agent.title); 
                                             if (agent.path.startsWith('http')) {
-                                                window.open(agent.path, '_blank');
+                                                let targetUrl = agent.path;
+                                                if (targetUrl.includes('lotlite.bitlancetechhub.com') && token && user?.email) {
+                                                    const urlObj = new URL(targetUrl);
+                                                    urlObj.searchParams.set('sso_token', token);
+                                                    urlObj.searchParams.set('email', user.email);
+                                                    targetUrl = urlObj.toString();
+                                                }
+                                                window.open(targetUrl, '_blank');
                                             } else {
                                                 navigate(agent.path); 
                                             }

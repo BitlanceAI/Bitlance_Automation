@@ -136,7 +136,19 @@ function App() {
     if (agent.title === 'WhatsApp Broadcasting Automation') {
       window.open('https://wacrm.bitlancetechhub.com/', '_blank');
     } else if (agent.title === 'AI Voice Agent') {
-      window.open('https://lotlite.bitlancetechhub.com/', '_blank');
+      let targetUrl = 'https://lotlite.bitlancetechhub.com/';
+      try {
+        const token = localStorage.getItem('sb-paskzwoegduhzehkxoyu-auth-token') || sessionStorage.getItem('sb-paskzwoegduhzehkxoyu-auth-token');
+        if (token) {
+          const parsed = JSON.parse(token);
+          const accessToken = parsed.access_token;
+          const email = parsed.user?.email;
+          if (accessToken && email) {
+            targetUrl += `?sso_token=${accessToken}&email=${encodeURIComponent(email)}`;
+          }
+        }
+      } catch (e) {}
+      window.open(targetUrl, '_blank');
     } else if (agent.title === 'GEO (Generative) AI Agent' || agent.title === 'SEO (Search Engine) AI Agent') {
       const isSeo = agent.title === 'SEO (Search Engine) AI Agent';
       navigate(isSeo ? '/dashboard/agents/seo' : '/dashboard/agents/geo', { state: { defaultMode: isSeo ? 'SEO' : 'GEO' } });
