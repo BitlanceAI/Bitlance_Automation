@@ -285,8 +285,6 @@ export const getVoiceLeads = async (req, res) => {
         const filteredLeads = (voiceLeads || []).filter((item) => {
             if (isAdmin) return true;
             if (item.call_id && myCallIdsSet.has(String(item.call_id))) return true;
-            const num = item.mobile_number || item.phone_number;
-            if (num && myPhonesSet.has(normalize(num))) return true;
             return false;
         });
 
@@ -340,7 +338,6 @@ export const getAnalytics = async (req, res) => {
         const userRecords = (analytics || []).filter((item) => {
             if (isAdmin) return true;
             if (item.call_id && myCallIdsSet.has(String(item.call_id))) return true;
-            if (item.customer_phone && myPhonesSet.has(normalize(item.customer_phone))) return true;
             return false;
         });
 

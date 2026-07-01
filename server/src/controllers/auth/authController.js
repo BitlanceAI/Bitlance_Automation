@@ -205,8 +205,11 @@ export const forgotPassword = async (req, res) => {
 
         if (error) {
             console.error('Forgot password error:', error.message);
-            // Don't leak if email exists or not
-            return res.json({ success: true, message: 'If an account exists, a reset link will be sent.' });
+            // If user doesn't exist, return explicit error
+            if (error.message.toLowerCase().includes('not found') || error.message.toLowerCase().includes('exist')) {
+                return res.status(404).json({ success: false, error: 'User does not exist. Please sign up.' });
+            }
+            return res.status(400).json({ success: false, error: error.message });
         }
 
         if (data && data.properties && data.properties.action_link) {
