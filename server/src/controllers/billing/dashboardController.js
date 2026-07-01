@@ -218,6 +218,60 @@ export const getCallHistory = async (req, res) => {
 };
 
 /**
+ * Get voice leads filtered by user's organization calls or phone numbers
+ */
+export const getVoiceLeads = async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const { org } = await ensureOrgAndWallet(userId);
+
+        // 1. Fetch user's own call history to know which numbers/calls they own
+        let callQuery = supabaseAdmin
+            .from('sales_calls')
+            .select('call_id, customer_number');
+
+        if (req.user.email !== 'demo@bitlancetechhub.com') {
+            callQuery = callQuery.eq('organization_id', org.id);
+        }
+
+        const { data: calls, error: callsErr } = await callQuery;
+        if (callsErr) throw callsErr;
+
+        const normalize = (p) => p.replace(/^\+/, '').replace(/\s/g, '');
+        const myPhonesSet = new Set(calls.map(c => normalize(c.customer_number || '')).filter(Boolean));
+        const myCallIdsSet = new Set(calls.map(c => String(c.call_id || '')).filter(Boolean));
+
+        // 2. Fetch voice leads from new Supabase
+        const { data: voiceLeads, error: leadsErr } = await supabaseAdmin
+            .from('lotlite_leads')
+            .select('id, call_id, call_time, duration_seconds, preferred_language, purpose, first_name, full_name, mobile_number, email, property_type, city, locality, budget, size_bhk, amenities, move_in_timeline, recording_url, transcript_url, phone_number')
+            .order('call_time', { ascending: false });
+
+        if (leadsErr) throw leadsErr;
+
+        // Check if the user has Admin rights
+        const isAdmin = req.user.email === 'bitlanceai@gmail.com';
+
+        // 3. Filter voice leads
+        const filteredLeads = (voiceLeads || []).filter((item) => {
+            if (isAdmin) return true;
+            if (item.call_id && myCallIdsSet.has(String(item.call_id))) return true;
+            const num = item.mobile_number || item.phone_number;
+            if (num && myPhonesSet.has(normalize(num))) return true;
+            return false;
+        });
+
+        res.json({
+            success: true,
+            leads: filteredLeads
+        });
+    } catch (err) {
+        console.error('[VoiceLeads] Error:', err.message);
+        res.status(500).json({ success: false, error: err.message });
+    }
+};
+
+/**
  * Get payment history
  */
 export const getPaymentHistory = async (req, res) => {
@@ -228,7 +282,7 @@ export const getPaymentHistory = async (req, res) => {
         const limit = parseInt(req.query.limit) || 20;
         const offset = parseInt(req.query.offset) || 0;
 
-        let query = supabaseAdmin
+        let query = oldDb
             .from('payments')
             .select('*', { count: 'exact' });
 
@@ -387,38 +441,7 @@ export const triggerCall = async (req, res) => {
 
                 console.log(`⏱️ [LiveBilling Tick] Call ${callId} | Duration: ${elapsedSeconds}s | Used: ${currentCreditsUsed.toFixed(4)} | Balance: ${currentFloatBalance.toFixed(4)}`);
 
-                if (currentFloatBalance <= 0) {
-                    console.log(`🚨 [LiveBilling] Balance reached <= 0. Terminating call ${callId}!`);
-                    clearInterval(session.intervalId);
-
-                    const finalToDeduct = session.startBalance - session.creditsDeductedSoFar;
-                    if (finalToDeduct > 0) {
-                        const deducted = await deductDbCredits(session.adminId, finalToDeduct, session.callRecordId, session.orgId);
-                        session.creditsDeductedSoFar += deducted;
-                    }
-
-                    await terminateDograhCall(callId, session.telephonyCallId);
-
-                    let runData = {};
-                    try {
-                        runData = await fetchDograhRun(callId, session.workflowId);
-                    } catch (fetchErr) {
-                        console.warn(`[LiveBilling] Could not fetch final run data for ${callId}:`, fetchErr.message);
-                    }
-
-                    await finalizeActiveCall({
-                        sessionKey: callId,
-                        session,
-                        callId,
-                        runData,
-                        phoneNumber: session.phoneNumber,
-                        agentId: session.agentId,
-                        orgId: session.orgId,
-                        adminId: session.adminId,
-                        forcedCreditsUsed: session.startBalance
-                    });
-                    return;
-                }
+                // Allow credits to go negative without terminating the call
 
                 // Check crossed integer boundary
                 const currentIntegerBalance = Math.floor(currentFloatBalance);
@@ -616,7 +639,8 @@ export const createRazorpayOrder = async (req, res) => {
         // Get organization
         const { org } = await ensureOrgAndWallet(userId);
 
-        const amountPaise = Math.round(amount * 100);
+        const amountWithGst = amount * 1.18;
+        const amountPaise = Math.round(amountWithGst * 100);
         const receiptId = `BILL-RECH-${org.id.substring(0,8)}-${Date.now()}`;
 
         // Create Razorpay Order
@@ -643,7 +667,7 @@ export const createRazorpayOrder = async (req, res) => {
         const rzpOrder = response.data;
 
         // Save payment order to Supabase
-        const { error: dbErr } = await supabaseAdmin.from('payments').insert({
+        const { error: dbErr } = await oldDb.from('payments').insert({
             organization_id: org.id,
             order_id: rzpOrder.id,
             amount: amount,
@@ -698,7 +722,7 @@ export const verifyRazorpayPayment = async (req, res) => {
         const { org, wallet } = await ensureOrgAndWallet(userId);
 
         // Fetch payment details
-        const { data: payment, error: fetchErr } = await supabaseAdmin
+        const { data: payment, error: fetchErr } = await oldDb
             .from('payments')
             .select('*')
             .eq('order_id', razorpay_order_id)
@@ -730,7 +754,7 @@ export const verifyRazorpayPayment = async (req, res) => {
         if (walletErr) throw walletErr;
 
         // 2. Update payment record
-        const { error: payErr } = await supabaseAdmin
+        const { error: payErr } = await oldDb
             .from('payments')
             .update({
                 payment_id: razorpay_payment_id,

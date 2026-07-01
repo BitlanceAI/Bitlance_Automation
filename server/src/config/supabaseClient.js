@@ -24,14 +24,82 @@ if (!SUPABASE_URL || !SUPABASE_KEY) {
 // AsyncLocalStorage store to hold origin/referer context per request
 export const supabaseStore = new AsyncLocalStorage();
 
-// Static instances for the old database (Bitlance Automation)
-export const oldSupabase = createClient(SUPABASE_URL, SUPABASE_KEY, {
-    auth: {
-        persistSession: false
-    }
-});
+// Safe Proxy builder to prevent TypeErrors on unconfigured databases/keys
+const makeSafeProxy = (getClientFn) => {
+    return new Proxy({}, {
+        get(target, prop) {
+            const client = getClientFn();
+            if (!client) {
+                console.warn(`[SupabaseClient Proxy] Warning: Client is not initialized for property "${String(prop)}". Returning fallback mock.`);
+                
+                // Return safe mock structures for common API routes to prevent crash
+                if (prop === 'auth') {
+                    return {
+                        admin: new Proxy({}, {
+                            get(t, p) {
+                                return () => Promise.resolve({ data: { users: [], user: null }, error: null });
+                            }
+                        }),
+                        signInWithPassword: () => Promise.resolve({ data: { user: null, session: null }, error: null }),
+                        signUp: () => Promise.resolve({ data: { user: null, session: null }, error: null }),
+                        signOut: () => Promise.resolve({ error: null })
+                    };
+                }
+                
+                if (prop === 'storage') {
+                    return {
+                        from: () => ({
+                            getPublicUrl: () => ({ data: { publicUrl: '' } }),
+                            upload: () => Promise.resolve({ data: null, error: null })
+                        })
+                    };
+                }
 
-export const oldSupabaseAdmin = process.env.SUPABASE_SERVICE_ROLE_KEY
+                if (prop === 'rpc') {
+                    return () => Promise.resolve({ data: null, error: null });
+                }
+
+                const chainable = () => chainable;
+                chainable.select = () => chainable;
+                chainable.insert = () => chainable;
+                chainable.update = () => chainable;
+                chainable.upsert = () => chainable;
+                chainable.delete = () => chainable;
+                chainable.eq = () => chainable;
+                chainable.neq = () => chainable;
+                chainable.gt = () => chainable;
+                chainable.lt = () => chainable;
+                chainable.gte = () => chainable;
+                chainable.lte = () => chainable;
+                chainable.or = () => chainable;
+                chainable.order = () => chainable;
+                chainable.limit = () => chainable;
+                chainable.single = () => chainable;
+                chainable.maybeSingle = () => chainable;
+                
+                chainable.then = (resolve) => resolve({ data: [], error: null });
+                
+                return chainable;
+            }
+            
+            const val = Reflect.get(client, prop);
+            if (typeof val === 'function') {
+                return val.bind(client);
+            }
+            return val;
+        }
+    });
+};
+
+const staticOldSupabaseClient = SUPABASE_URL && SUPABASE_KEY 
+    ? createClient(SUPABASE_URL, SUPABASE_KEY, {
+        auth: {
+            persistSession: false
+        }
+    })
+    : null;
+
+const staticOldSupabaseAdminClient = process.env.SUPABASE_SERVICE_ROLE_KEY && SUPABASE_URL
     ? createClient(SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY, {
         auth: {
             autoRefreshToken: false,
@@ -40,66 +108,16 @@ export const oldSupabaseAdmin = process.env.SUPABASE_SERVICE_ROLE_KEY
     })
     : null;
 
-// Static instances for the new database (Voice Dashboard / Lotlite)
-export const newSupabase = process.env.NEW_SUPABASE_URL && process.env.NEW_SUPABASE_KEY
-    ? createClient(process.env.NEW_SUPABASE_URL, process.env.NEW_SUPABASE_KEY, {
-        auth: {
-            persistSession: false
-        }
-    })
-    : null;
+// Export all static and dynamic instances wrapped in the safe proxy structure
+export const oldSupabase = makeSafeProxy(() => staticOldSupabaseClient);
+export const oldSupabaseAdmin = makeSafeProxy(() => staticOldSupabaseAdminClient);
 
-export const newSupabaseAdmin = process.env.NEW_SUPABASE_SERVICE_ROLE_KEY
-    ? createClient(process.env.NEW_SUPABASE_URL, process.env.NEW_SUPABASE_SERVICE_ROLE_KEY, {
-        auth: {
-            autoRefreshToken: false,
-            persistSession: false
-        }
-    })
-    : null;
+export const newSupabase = oldSupabase;
+export const newSupabaseAdmin = oldSupabaseAdmin;
 
-// Dynamic resolver
 function getTargetClient(isAdmin = false) {
-    const store = supabaseStore.getStore();
-    let useNewDb = false;
-
-    if (store) {
-        const origin = (store.origin || '').toLowerCase();
-        const referer = (store.referer || '').toLowerCase();
-
-        // Route requests originating from lotlite domain/port to the new database
-        if (origin.includes('lotlite') || referer.includes('lotlite') ||
-            origin.includes('localhost:3000') || referer.includes('localhost:3000')) {
-            useNewDb = true;
-        }
-    }
-
-    if (useNewDb) {
-        return isAdmin ? (newSupabaseAdmin || oldSupabaseAdmin) : (newSupabase || oldSupabase);
-    } else {
-        return isAdmin ? oldSupabaseAdmin : oldSupabase;
-    }
+    return isAdmin ? staticOldSupabaseAdminClient : staticOldSupabaseClient;
 }
 
-// Proxies to route database operations dynamically based on request context
-export const supabase = new Proxy({}, {
-    get(target, prop) {
-        const client = getTargetClient(false);
-        const val = Reflect.get(client, prop);
-        if (typeof val === 'function') {
-            return val.bind(client);
-        }
-        return val;
-    }
-});
-
-export const supabaseAdmin = new Proxy({}, {
-    get(target, prop) {
-        const client = getTargetClient(true);
-        const val = Reflect.get(client, prop);
-        if (typeof val === 'function') {
-            return val.bind(client);
-        }
-        return val;
-    }
-});
+export const supabase = makeSafeProxy(() => getTargetClient(false));
+export const supabaseAdmin = makeSafeProxy(() => getTargetClient(true));

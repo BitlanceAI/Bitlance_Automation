@@ -5,7 +5,9 @@ import {
     logout,
     getCurrentUser,
     refreshToken,
-    resendVerification
+    resendVerification,
+    forgotPassword,
+    resetPassword
 } from '../../controllers/auth/authController.js';
 import { authenticateUser } from '../../middleware/authMiddleware.js';
 
@@ -16,6 +18,8 @@ router.post('/login', login);
 router.post('/signup', signup);
 router.post('/refresh', refreshToken);
 router.post('/resend-verification', resendVerification);
+router.post('/forgot-password', forgotPassword);
+router.post('/reset-password', resetPassword);
 
 // Protected routes (authentication required)
 router.post('/logout', authenticateUser, logout);

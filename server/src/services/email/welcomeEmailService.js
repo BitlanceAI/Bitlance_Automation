@@ -535,3 +535,61 @@ export const sendPurchaseSuccessEmail = async (email, fullName, amount, planName
         console.error('[PurchaseEmail] Failed to send purchase confirmation email:', err.message);
     }
 };
+
+/**
+ * Sends a password reset email.
+ *
+ * @param {string} email - The user's email address
+ * @param {string} resetLink - The password reset link
+ */
+export const sendPasswordResetEmail = async (email, resetLink) => {
+    try {
+        const clientUrl = process.env.CLIENT_URL || 'https://lotlite.bitlancetechhub.com';
+        const logoUrl = `${clientUrl}/logo.jpg`;
+        const emailSubject = "Reset Your Password - Bitlance Voice AI Agent";
+
+        const emailHtml = `
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reset Your Password</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background-color: #f8fafc; color: #1e293b; padding: 40px 0; }
+        .container { max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 16px; border: 1px solid #e2e8f0; overflow: hidden; }
+        .header { padding: 32px; text-align: center; }
+        .header img { height: 48px; border-radius: 8px; }
+        .hero { padding: 20px 40px; text-align: center; }
+        .hero h1 { font-size: 24px; color: #0f172a; margin-bottom: 12px; }
+        .hero p { font-size: 15px; color: #475569; line-height: 1.6; }
+        .content { padding: 0 40px 40px; text-align: center; }
+        .btn { display: inline-block; background-color: #0891b2; color: #ffffff !important; font-weight: 700; font-size: 14px; text-decoration: none; padding: 14px 32px; border-radius: 8px; margin-top: 24px; }
+        .footer { background-color: #f8fafc; padding: 32px; text-align: center; border-top: 1px solid #e2e8f0; font-size: 12px; color: #94a3b8; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header"><img src="${logoUrl}" alt="Bitlance Voice AI Agent"></div>
+        <div class="hero">
+            <h1>Password Reset Request</h1>
+            <p>We received a request to reset your password. If you didn't make this request, you can safely ignore this email.</p>
+        </div>
+        <div class="content">
+            <a href="${resetLink}" class="btn">Reset Password</a>
+            <p style="margin-top: 24px; font-size: 13px; color: #64748b;">Or copy this link into your browser: <br><a href="${resetLink}" style="color: #0891b2; word-break: break-all;">${resetLink}</a></p>
+        </div>
+        <div class="footer">
+            &copy; 2026 Bitlance Voice AI Agent. All Rights Reserved.
+        </div>
+    </div>
+</body>
+</html>
+        `;
+
+        await sendMailtrapEmail(email, emailSubject, emailHtml);
+        console.log(`[PasswordResetEmail] Send status: success for ${email}`);
+    } catch (err) {
+        console.error('[PasswordResetEmail] Failed to send password reset email:', err.message);
+    }
+};

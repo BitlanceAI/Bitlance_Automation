@@ -86,7 +86,18 @@ export async function fetchDograhRun(runId, workflowId = null) {
         throw new Error('Dograh API key not configured');
     }
 
-    const pollWorkflowId = workflowId || process.env.DOGRAH_WORKFLOW_ID || DOGRAH_POLL_WORKFLOW_PLACEHOLDER;
+    let pollWorkflowId = workflowId;
+    if (!pollWorkflowId || String(pollWorkflowId).includes('-')) {
+        const uuidStr = String(pollWorkflowId || '');
+        if (uuidStr === '45b42390-369b-49b5-9a26-21a099dc843e') {
+            pollWorkflowId = 13606;
+        } else if (uuidStr === '0ae47ce1-5ada-411c-85ff-e28105a374e6') {
+            pollWorkflowId = 13606;
+        } else {
+            pollWorkflowId = process.env.DOGRAH_WORKFLOW_ID || 13606;
+        }
+    }
+
     const pollUrl = `${apiUrl}/api/v1/workflow/${pollWorkflowId}/runs/${runId}`;
     const runRes = await axios.get(pollUrl, {
         headers: { 'X-API-Key': apiKey }
@@ -157,6 +168,29 @@ export function extractRecordingUrl(runData) {
 }
 
 async function fetchTranscriptContent(runData) {
+    const timeline = (runData?.events_timeline && Array.isArray(runData.events_timeline))
+        ? runData.events_timeline
+        : (runData?.logs?.realtime_feedback_events && Array.isArray(runData.logs.realtime_feedback_events))
+            ? runData.logs.realtime_feedback_events
+            : null;
+
+    if (timeline) {
+        const transcriptText = timeline
+            .filter(ev => ev.type === 'rtf-user-transcription' || ev.type === 'rtf-bot-text')
+            .map(ev => {
+                const role = ev.type === 'rtf-bot-text' ? 'AI' : 'Customer';
+                const text = ev.payload?.text || '';
+                if (!text || (ev.type === 'rtf-user-transcription' && !ev.payload.final)) return null;
+                return `[${ev.timestamp || new Date().toISOString()}] ${role}: ${text}`;
+            })
+            .filter(Boolean)
+            .join('\n');
+            
+        if (transcriptText.trim().length > 0) {
+            return transcriptText;
+        }
+    }
+
     const inlineTranscript = runData?.transcript || runData?.transcript_object;
     if (inlineTranscript) {
         return formatTranscript(inlineTranscript);
@@ -417,17 +451,10 @@ export async function finalizeActiveCall({
  * but were left behind due to polling failures or server restarts.
  */
 export async function recoverStaleActiveCalls() {
-    // 1. Recover from the old/default database
+    // Recover from the default database
     await supabaseStore.run({ origin: 'https://www.bitlancetechhub.com', referer: '' }, async () => {
         await recoverFromDb('Default DB');
     });
-
-    // 2. Recover from the new database (if configured)
-    if (process.env.NEW_SUPABASE_URL) {
-        await supabaseStore.run({ origin: 'https://lotlite.bitlancetechhub.com', referer: '' }, async () => {
-            await recoverFromDb('New DB (Lotlite)');
-        });
-    }
 }
 
 async function recoverFromDb(dbName) {
@@ -564,9 +591,7 @@ export async function deductDbCredits(adminId, amount, callId, orgId) {
         }
 
         const currentBalance = parseFloat(wallet.balance);
-        const toDeduct = Math.min(amount, currentBalance); // Can't go below 0
-        if (toDeduct <= 0) return 0;
-
+        const toDeduct = amount;
         const newBalance = parseFloat((currentBalance - toDeduct).toFixed(4));
 
         const { error: updateErr } = await newDb
@@ -670,24 +695,26 @@ export async function analyzeCallTranscript(transcriptText) {
             messages: [
                 {
                     role: "system",
-                    content: `You are an AI assistant that analyzes call transcripts for a business dashboard.
-Analyze the conversation between the AI assistant and the customer.
+                    content: `You are an elite AI conversational analyst for a business dashboard.
+Your goal is to deeply analyze the transcription of an AI voice agent interacting with a customer.
+Pay close attention to the context of the user input, what the customer is asking for, and adapt your analysis dynamically to reflect the core context of the interaction. Provide a highly accurate, best-in-class analysis report based on the nuances of the interaction.
+
 Extract all requested information in the following JSON format:
 {
-  "summary": "A brief 2-3 sentence summary of the call, stating what the client/customer wanted or did",
+  "summary": "A detailed 2-3 sentence summary of the call. Dynamically state what the client/customer wanted, their main pain points or interests, and how the AI agent handled it.",
   "overall_sentiment": "positive" or "neutral" or "negative",
   "sentiment_score": a number from 0 to 100 representing the client's mood (0 is extremely negative, 50 is neutral, 100 is extremely positive),
   "confidence": a number from 0 to 100 representing your confidence in this analysis,
-  "customer_emotion": "a single word describing customer's emotional state, e.g. Happy, Curious, Interested, Impatient, Frustrated, Angry, Neutral",
+  "customer_emotion": "a single descriptive word describing customer's emotional state, e.g. Happy, Curious, Interested, Impatient, Frustrated, Angry, Neutral",
   "interest_level": "low" or "medium" or "high",
   "buying_intent": "low" or "medium" or "high",
-  "call_outcome": "Brief summary of how the call ended or the outcome (e.g. Appointment scheduled, Callback requested, Disconnected, Not interested)",
+  "call_outcome": "Highly specific summary of how the call ended or the outcome (e.g. Appointment scheduled for Tuesday, Callback requested tomorrow, Disconnected early, Not interested due to price)",
   "customer_satisfaction": "low" or "medium" or "high",
   "objections": [
-    { "text": "brief description of objection raised by customer", "handled": true/false }
+    { "text": "Specific objection raised by customer (e.g. Price too high, Timing doesn't match)", "handled": true/false }
   ],
   "complaints": [
-    { "text": "brief description of complaint raised by customer", "resolved": true/false }
+    { "text": "Specific complaint raised by customer", "resolved": true/false }
   ],
   "key_topics": ["topic 1", "topic 2", ...],
   "positive_signals": ["positive feedback or signal 1", "signal 2", ...],
@@ -697,7 +724,7 @@ Extract all requested information in the following JSON format:
                 },
                 {
                     role: "user",
-                    content: `Analyze the following transcript:\n\n${transcriptText}`
+                    content: `Analyze the following transcript dynamically based on the conversation content:\n\n${transcriptText}`
                 }
             ],
             temperature: 0.1
