@@ -86,7 +86,18 @@ export async function fetchDograhRun(runId, workflowId = null) {
         throw new Error('Dograh API key not configured');
     }
 
-    const pollWorkflowId = workflowId || process.env.DOGRAH_WORKFLOW_ID || DOGRAH_POLL_WORKFLOW_PLACEHOLDER;
+    let pollWorkflowId = workflowId;
+    if (!pollWorkflowId || String(pollWorkflowId).includes('-')) {
+        const uuidStr = String(pollWorkflowId || '');
+        if (uuidStr === '45b42390-369b-49b5-9a26-21a099dc843e') {
+            pollWorkflowId = 13606;
+        } else if (uuidStr === '0ae47ce1-5ada-411c-85ff-e28105a374e6') {
+            pollWorkflowId = 13606;
+        } else {
+            pollWorkflowId = process.env.DOGRAH_WORKFLOW_ID || 13606;
+        }
+    }
+
     const pollUrl = `${apiUrl}/api/v1/workflow/${pollWorkflowId}/runs/${runId}`;
     const runRes = await axios.get(pollUrl, {
         headers: { 'X-API-Key': apiKey }
@@ -157,8 +168,14 @@ export function extractRecordingUrl(runData) {
 }
 
 async function fetchTranscriptContent(runData) {
-    if (runData?.events_timeline && Array.isArray(runData.events_timeline)) {
-        const transcriptText = runData.events_timeline
+    const timeline = (runData?.events_timeline && Array.isArray(runData.events_timeline))
+        ? runData.events_timeline
+        : (runData?.logs?.realtime_feedback_events && Array.isArray(runData.logs.realtime_feedback_events))
+            ? runData.logs.realtime_feedback_events
+            : null;
+
+    if (timeline) {
+        const transcriptText = timeline
             .filter(ev => ev.type === 'rtf-user-transcription' || ev.type === 'rtf-bot-text')
             .map(ev => {
                 const role = ev.type === 'rtf-bot-text' ? 'AI' : 'Customer';
