@@ -110,50 +110,24 @@ export const signup = async (req, res) => {
             });
         }
 
-        // Create corresponding user and credits record in the OLD database
+        // Create user credits record in the database
         if (data.user) {
             try {
-                // 1. Create user in the OLD database's auth.users
-                const { data: oldUser, error: oldUserError } = await oldSupabaseAdmin.auth.admin.createUser({
-                    email,
-                    password,
-                    email_confirm: true,
-                    user_metadata: {
-                        name: name || email.split('@')[0],
-                        phone: mobile,
-                        role: 'user'
-                    }
-                });
+                // Since supabaseAdmin resolves to the old database, the user was already created there.
+                // We can directly upsert their credits using the user ID from the signup generation response.
+                const { error: creditsError } = await oldSupabaseAdmin
+                    .from('user_credits')
+                    .upsert({
+                        user_id: data.user.id,
+                        balance: 10, // Initial credits
+                        updated_at: new Date().toISOString()
+                    }, { onConflict: 'user_id' });
 
-                let oldUserId = oldUser?.user?.id;
-                if (!oldUserId) {
-                    // Fetch existing user in old database by email if they already existed
-                    const { data: listData } = await oldSupabaseAdmin.auth.admin.listUsers({
-                        page: 1,
-                        perPage: 1000
-                    });
-                    const existingOldUser = listData?.users?.find(u => u.email?.toLowerCase() === email.toLowerCase());
-                    if (existingOldUser) {
-                        oldUserId = existingOldUser.id;
-                    }
-                }
-
-                if (oldUserId) {
-                    // 2. Create user credits record in the OLD database
-                    const { error: creditsError } = await oldSupabaseAdmin
-                        .from('user_credits')
-                        .upsert({
-                            user_id: oldUserId,
-                            balance: 10, // Initial credits
-                            updated_at: new Date().toISOString()
-                        }, { onConflict: 'user_id' });
-
-                    if (creditsError) {
-                        console.error('Failed to create credits record in old DB:', creditsError);
-                    }
+                if (creditsError) {
+                    console.error('Failed to create credits record in DB:', creditsError);
                 }
             } catch (err) {
-                console.error('Old DB user/credits sync error:', err);
+                console.error('DB user/credits sync error:', err);
             }
 
             // Send styled welcome verification email asynchronously with the dynamic verification link

@@ -451,17 +451,10 @@ export async function finalizeActiveCall({
  * but were left behind due to polling failures or server restarts.
  */
 export async function recoverStaleActiveCalls() {
-    // 1. Recover from the old/default database
+    // Recover from the default database
     await supabaseStore.run({ origin: 'https://www.bitlancetechhub.com', referer: '' }, async () => {
         await recoverFromDb('Default DB');
     });
-
-    // 2. Recover from the new database (if configured)
-    if (process.env.NEW_SUPABASE_URL) {
-        await supabaseStore.run({ origin: 'https://lotlite.bitlancetechhub.com', referer: '' }, async () => {
-            await recoverFromDb('New DB (Lotlite)');
-        });
-    }
 }
 
 async function recoverFromDb(dbName) {

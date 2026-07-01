@@ -45,30 +45,12 @@ export const oldSupabaseAdmin = process.env.SUPABASE_SERVICE_ROLE_KEY
 export const newSupabase = oldSupabase;
 export const newSupabaseAdmin = oldSupabaseAdmin;
 
-// Dynamic resolver
+// Dynamic resolver - Always returns the old database client to save everything in the old database only
 function getTargetClient(isAdmin = false) {
-    const store = supabaseStore.getStore();
-    let useNewDb = false;
-
-    if (store) {
-        const origin = (store.origin || '').toLowerCase();
-        const referer = (store.referer || '').toLowerCase();
-
-        // Route requests originating from lotlite domain/port to the new database
-        if (origin.includes('lotlite') || referer.includes('lotlite') ||
-            origin.includes('localhost:3000') || referer.includes('localhost:3000')) {
-            useNewDb = true;
-        }
-    }
-
-    if (useNewDb) {
-        return isAdmin ? (newSupabaseAdmin || oldSupabaseAdmin) : (newSupabase || oldSupabase);
-    } else {
-        return isAdmin ? oldSupabaseAdmin : oldSupabase;
-    }
+    return isAdmin ? oldSupabaseAdmin : oldSupabase;
 }
 
-// Proxies to route database operations dynamically based on request context
+// Proxies to route database operations dynamically based on request context (forces old database)
 export const supabase = new Proxy({}, {
     get(target, prop) {
         const client = getTargetClient(false);
