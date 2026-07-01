@@ -136,7 +136,7 @@ function App() {
     if (agent.title === 'WhatsApp Broadcasting Automation') {
       window.open('https://wacrm.bitlancetechhub.com/', '_blank');
     } else if (agent.title === 'AI Voice Agent') {
-      window.open('https://lotlite.bitlancetechhub.com/workflow', '_blank');
+      window.open('https://lotlite.bitlancetechhub.com/', '_blank');
     } else if (agent.title === 'GEO (Generative) AI Agent' || agent.title === 'SEO (Search Engine) AI Agent') {
       const isSeo = agent.title === 'SEO (Search Engine) AI Agent';
       navigate(isSeo ? '/dashboard/agents/seo' : '/dashboard/agents/geo', { state: { defaultMode: isSeo ? 'SEO' : 'GEO' } });
