@@ -236,12 +236,23 @@ export const resetPassword = async (req, res) => {
             return res.status(400).json({ success: false, error: 'Token and new password are required' });
         }
 
-        // Verify the token to get the user
-        const { data: { user }, error: verifyError } = await supabase.auth.getUser(token);
-        
-        if (verifyError || !user) {
-            console.error('Reset password verify error:', verifyError?.message);
-            return res.status(401).json({ success: false, error: 'Invalid or expired reset token' });
+        // Verify the token
+        let user;
+        const { data: verifyData, error: verifyError } = await supabase.auth.verifyOtp({
+            token_hash: token,
+            type: 'recovery'
+        });
+
+        if (verifyError || !verifyData?.user) {
+            // Fallback: try verifying as a JWT access token
+            const { data: userData, error: jwtError } = await supabase.auth.getUser(token);
+            if (jwtError || !userData?.user) {
+                console.error('Reset password verify error:', verifyError?.message || jwtError?.message);
+                return res.status(401).json({ success: false, error: 'Invalid or expired reset token' });
+            }
+            user = userData.user;
+        } else {
+            user = verifyData.user;
         }
 
         // Update the password
