@@ -210,7 +210,12 @@ export const forgotPassword = async (req, res) => {
         }
 
         if (data && data.properties && data.properties.action_link) {
-            await sendPasswordResetEmail(email, data.properties.action_link);
+            // Extract the token parameter from the Supabase generated link
+            const urlObj = new URL(data.properties.action_link);
+            const token = urlObj.searchParams.get('token');
+            // Build the frontend URL directly to bypass Supabase redirect whitelist issues
+            const customResetLink = `https://lotlite.bitlancetechhub.com/reset-password?token=${token}`;
+            await sendPasswordResetEmail(email, customResetLink);
         }
 
         res.json({ success: true, message: 'Verification link sent successfully' });

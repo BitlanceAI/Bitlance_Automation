@@ -577,7 +577,6 @@ export const sendPasswordResetEmail = async (email, resetLink) => {
         </div>
         <div class="content">
             <a href="${resetLink}" class="btn">Reset Password</a>
-            <p style="margin-top: 24px; font-size: 13px; color: #64748b;">Or copy this link into your browser: <br><a href="${resetLink}" style="color: #0891b2; word-break: break-all;">${resetLink}</a></p>
         </div>
         <div class="footer">
             &copy; 2026 Bitlance Voice AI Agent. All Rights Reserved.
