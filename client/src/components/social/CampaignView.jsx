@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 import { useWorkspace } from '../../context/WorkspaceContext';
 import { supabase } from '../../services/supabaseClient';
+import API_BASE_URL from '../../config';
 
 const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
@@ -82,8 +83,8 @@ export default function CampaignView({ setActiveView }) {
                 'x-workspace-id': activeWorkspace?.id || 'default_workspace'
             };
             const [brandRes, calRes] = await Promise.all([
-                fetch('/api/agent/brand-configs', { headers }),
-                fetch('/api/agent/calendars', { headers })
+                fetch(`${API_BASE_URL}/api/agent/brand-configs`, { headers }),
+                fetch(`${API_BASE_URL}/api/agent/calendars`, { headers })
             ]);
             const brandData = await brandRes.json();
             const calData = await calRes.json();
@@ -116,7 +117,7 @@ export default function CampaignView({ setActiveView }) {
             const { data: { session } } = await supabase.auth.getSession();
             const token = session?.access_token;
             const method = selectedBrandId === 'new' ? 'POST' : 'PUT';
-            const url = selectedBrandId === 'new' ? '/api/agent/brand-configs' : `/api/agent/brand-configs/${selectedBrandId}`;
+            const url = selectedBrandId === 'new' ? `${API_BASE_URL}/api/agent/brand-configs` : `${API_BASE_URL}/api/agent/brand-configs/${selectedBrandId}`;
             const res = await fetch(url, {
                 method,
                 headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}`, 'x-workspace-id': activeWorkspace?.id || 'default_workspace' },
@@ -137,7 +138,7 @@ export default function CampaignView({ setActiveView }) {
             const { data: { session } } = await supabase.auth.getSession();
             const token = session?.access_token;
             const method = selectedCalendarId === 'new' ? 'POST' : 'PUT';
-            const url = selectedCalendarId === 'new' ? '/api/agent/calendars' : `/api/agent/calendars/${selectedCalendarId}`;
+            const url = selectedCalendarId === 'new' ? `${API_BASE_URL}/api/agent/calendars` : `${API_BASE_URL}/api/agent/calendars/${selectedCalendarId}`;
             const res = await fetch(url, {
                 method,
                 headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}`, 'x-workspace-id': activeWorkspace?.id || 'default_workspace' },
@@ -175,7 +176,7 @@ export default function CampaignView({ setActiveView }) {
         try {
             const { data: { session } } = await supabase.auth.getSession();
             const token = session?.access_token;
-            const res = await fetch('/api/agent/bundles/generate', {
+            const res = await fetch(`${API_BASE_URL}/api/agent/bundles/generate`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
