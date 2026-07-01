@@ -41,22 +41,9 @@ export const oldSupabaseAdmin = process.env.SUPABASE_SERVICE_ROLE_KEY
     : null;
 
 // Static instances for the new database (Voice Dashboard / Lotlite)
-export const newSupabase = process.env.NEW_SUPABASE_URL && process.env.NEW_SUPABASE_KEY
-    ? createClient(process.env.NEW_SUPABASE_URL, process.env.NEW_SUPABASE_KEY, {
-        auth: {
-            persistSession: false
-        }
-    })
-    : null;
-
-export const newSupabaseAdmin = process.env.NEW_SUPABASE_SERVICE_ROLE_KEY
-    ? createClient(process.env.NEW_SUPABASE_URL, process.env.NEW_SUPABASE_SERVICE_ROLE_KEY, {
-        auth: {
-            autoRefreshToken: false,
-            persistSession: false
-        }
-    })
-    : null;
+// Redirected to use the OLD database for all flows per user request
+export const newSupabase = oldSupabase;
+export const newSupabaseAdmin = oldSupabaseAdmin;
 
 // Dynamic resolver
 function getTargetClient(isAdmin = false) {
