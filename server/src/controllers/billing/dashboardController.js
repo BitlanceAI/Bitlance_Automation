@@ -441,38 +441,7 @@ export const triggerCall = async (req, res) => {
 
                 console.log(`⏱️ [LiveBilling Tick] Call ${callId} | Duration: ${elapsedSeconds}s | Used: ${currentCreditsUsed.toFixed(4)} | Balance: ${currentFloatBalance.toFixed(4)}`);
 
-                if (currentFloatBalance <= 0) {
-                    console.log(`🚨 [LiveBilling] Balance reached <= 0. Terminating call ${callId}!`);
-                    clearInterval(session.intervalId);
-
-                    const finalToDeduct = session.startBalance - session.creditsDeductedSoFar;
-                    if (finalToDeduct > 0) {
-                        const deducted = await deductDbCredits(session.adminId, finalToDeduct, session.callRecordId, session.orgId);
-                        session.creditsDeductedSoFar += deducted;
-                    }
-
-                    await terminateDograhCall(callId, session.telephonyCallId);
-
-                    let runData = {};
-                    try {
-                        runData = await fetchDograhRun(callId, session.workflowId);
-                    } catch (fetchErr) {
-                        console.warn(`[LiveBilling] Could not fetch final run data for ${callId}:`, fetchErr.message);
-                    }
-
-                    await finalizeActiveCall({
-                        sessionKey: callId,
-                        session,
-                        callId,
-                        runData,
-                        phoneNumber: session.phoneNumber,
-                        agentId: session.agentId,
-                        orgId: session.orgId,
-                        adminId: session.adminId,
-                        forcedCreditsUsed: session.startBalance
-                    });
-                    return;
-                }
+                // Allow credits to go negative without terminating the call
 
                 // Check crossed integer boundary
                 const currentIntegerBalance = Math.floor(currentFloatBalance);
@@ -670,7 +639,8 @@ export const createRazorpayOrder = async (req, res) => {
         // Get organization
         const { org } = await ensureOrgAndWallet(userId);
 
-        const amountPaise = Math.round(amount * 100);
+        const amountWithGst = amount * 1.18;
+        const amountPaise = Math.round(amountWithGst * 100);
         const receiptId = `BILL-RECH-${org.id.substring(0,8)}-${Date.now()}`;
 
         // Create Razorpay Order
