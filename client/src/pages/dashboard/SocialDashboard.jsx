@@ -398,9 +398,9 @@ const SocialDashboard = () => {
         let errors = [];
 
         try {
-            // 1. Pre-upload media for Meta/Twitter if needed (they need a public URL)
+            // 1. Pre-upload media for scheduling (needed for WhatsApp/Agenda) or Meta/Twitter (they need a public URL)
             let publicMediaUrl = null;
-            if (mediaAttachment && postTargets.some(t => ['facebook', 'instagram', 'twitter'].includes(t.platform))) {
+            if (mediaAttachment && (isScheduling || postTargets.some(t => ['facebook', 'instagram', 'twitter'].includes(t.platform)))) {
                 if (mediaAttachment.preview && mediaAttachment.preview.startsWith('http')) {
                     publicMediaUrl = mediaAttachment.preview;
                 } else if (mediaAttachment.file) {

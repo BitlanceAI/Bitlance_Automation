@@ -150,7 +150,8 @@ const SchedulePostView = ({
             });
             const data = await res.json();
             if (data.success) {
-                setScheduledPosts(data.data || []);
+                const posts = (data.data || []).map(p => ({ ...p, id: p._id || p.id }));
+                setScheduledPosts(posts);
             }
         } catch (err) {
             console.error("Failed to fetch scheduled posts:", err);

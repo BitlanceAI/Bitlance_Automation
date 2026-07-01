@@ -1,3 +1,4 @@
+import mongoose from 'mongoose';
 import ScheduledPost from '../../models/social/ScheduledPost.js';
 import { getAgenda } from '../../config/agenda.js';
 import { JOB_NAME as PUBLISH_POST_JOB } from '../../jobs/social/publishPost.js';
@@ -188,6 +189,10 @@ export const resendApproval = async (req, res) => {
     try {
         const workspaceId = req.workspaceId || 'default_workspace';
         const { id } = req.params;
+
+        if (!id || id === 'undefined' || !mongoose.Types.ObjectId.isValid(id)) {
+            return res.status(400).json({ success: false, message: 'Invalid post ID' });
+        }
 
         const post = await ScheduledPost.findOne({ _id: id, workspaceId });
         if (!post) return res.status(404).json({ success: false, message: 'Post not found' });

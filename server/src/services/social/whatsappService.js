@@ -125,6 +125,9 @@ const whatsappService = {
             ? postPreview.substring(0, 97) + '...' 
             : postPreview;
 
+        // The WhatsApp template requires an IMAGE header. If none provided, use a placeholder.
+        const finalImageUrl = imageUrl || 'https://dummyimage.com/600x400/cccccc/000000.png&text=No+Preview+Image';
+
         const payload = {
             messaging_product: 'whatsapp',
             recipient_type: 'individual',
@@ -134,12 +137,12 @@ const whatsappService = {
                 name: 'post_approval_template', // Needs to be approved in Meta Manager
                 language: { code: 'en' },
                 components: [
-                    ...(imageUrl ? [{
+                    {
                         type: 'header',
                         parameters: [
-                            { type: 'image', image: { link: imageUrl } }
+                            { type: 'image', image: { link: finalImageUrl } }
                         ]
-                    }] : []),
+                    },
                     {
                         type: 'body',
                         parameters: [
