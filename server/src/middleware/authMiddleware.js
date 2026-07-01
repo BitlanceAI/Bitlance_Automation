@@ -1,4 +1,4 @@
-import { supabase } from '../config/supabaseClient.js';
+import { supabase, supabaseAdmin } from '../config/supabaseClient.js';
 
 export const authenticateUser = async (req, res, next) => {
     try {
@@ -33,6 +33,16 @@ export const authenticateUser = async (req, res, next) => {
         if (error || !user) {
             return res.status(401).json({ success: false, error: 'Invalid or expired token' });
         }
+
+        // --- ACCOUNT LINKING (Shared Admins) ---
+        if (user.email === 'itm.lotlite@gmail.com' || user.email === 'bookishalok@gmail.com') {
+            const { data: adminList } = await supabaseAdmin.auth.admin.listUsers({ perPage: 1000 });
+            const bookishUser = adminList?.users?.find(u => u.email === 'bookishalok@gmail.com');
+            if (bookishUser) {
+                user.id = bookishUser.id;
+            }
+        }
+        // ---------------------------------------
 
         // Attach user and active workspace to request
         req.user = user;
