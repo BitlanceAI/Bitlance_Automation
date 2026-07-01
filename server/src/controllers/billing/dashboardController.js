@@ -697,7 +697,7 @@ export const createRazorpayOrder = async (req, res) => {
         const rzpOrder = response.data;
 
         // Save payment order to Supabase
-        const { error: dbErr } = await supabaseAdmin.from('payments').insert({
+        const { error: dbErr } = await oldDb.from('payments').insert({
             organization_id: org.id,
             order_id: rzpOrder.id,
             amount: amount,
@@ -752,7 +752,7 @@ export const verifyRazorpayPayment = async (req, res) => {
         const { org, wallet } = await ensureOrgAndWallet(userId);
 
         // Fetch payment details
-        const { data: payment, error: fetchErr } = await supabaseAdmin
+        const { data: payment, error: fetchErr } = await oldDb
             .from('payments')
             .select('*')
             .eq('order_id', razorpay_order_id)
@@ -784,7 +784,7 @@ export const verifyRazorpayPayment = async (req, res) => {
         if (walletErr) throw walletErr;
 
         // 2. Update payment record
-        const { error: payErr } = await supabaseAdmin
+        const { error: payErr } = await oldDb
             .from('payments')
             .update({
                 payment_id: razorpay_payment_id,
