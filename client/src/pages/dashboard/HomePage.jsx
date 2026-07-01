@@ -121,7 +121,7 @@ const HomePage = () => {
         'Real Estate Reel AI Agent': { path: '/dashboard/agents/video', stats: 'Reels Generated' },
         'Email Automation AI': { path: '/dashboard/email-automation', stats: 'Campaigns Sent' },
         'WhatsApp Broadcasting Automation': { path: 'https://wacrm.bitlancetechhub.com/', stats: 'Active Broadcasts' },
-        'AI Voice Agent': { path: 'https://voice.bitlancetechhub.com/', stats: 'Call Analytics' }
+        'AI Voice Agent': { path: 'https://lotlite.bitlancetechhub.com/', stats: 'Call Analytics' }
     };
 
     const agents = allAgents

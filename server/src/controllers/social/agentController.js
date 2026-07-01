@@ -474,3 +474,41 @@ export const deleteCalendar = async (req, res) => {
         res.status(500).json({ success: false, message: err.message });
     }
 };
+
+// ── Ads Library ───────────────────────────────────────────────────────────────
+
+export const listAdsBrands = async (req, res) => {
+    try {
+        const { userId, workspaceId } = userCtx(req);
+        const { listBrands } = await import('../../services/social/bloomMCPService.js');
+        let brands = await listBrands();
+
+        // Fallback: use local BrandConfigs that have a bloom_brand_id
+        if (!brands.length) {
+            const locals = await BrandConfig.find({ userId, workspaceId, bloom_brand_id: { $ne: null } }).lean();
+            brands = locals.map(b => ({ id: b.bloom_brand_id, name: b.brand_name || b.name }));
+        }
+
+        res.json({ success: true, brands });
+    } catch (err) {
+        console.error('[AgentController] listAdsBrands:', err);
+        res.status(500).json({ success: false, message: err.message });
+    }
+};
+
+export const findBloomReferenceAds = async (req, res) => {
+    try {
+        const { brand_id, query, top_k = 6 } = req.body;
+
+        if (!brand_id) return res.status(400).json({ success: false, message: 'brand_id is required' });
+        if (!query || !query.trim()) return res.status(400).json({ success: false, message: 'query is required' });
+
+        const { findReferenceAds } = await import('../../services/social/bloomMCPService.js');
+        const ads = await findReferenceAds(brand_id, query.trim(), Number(top_k));
+
+        res.json({ success: true, ads });
+    } catch (err) {
+        console.error('[AgentController] findBloomReferenceAds:', err);
+        res.status(500).json({ success: false, message: err.message });
+    }
+};

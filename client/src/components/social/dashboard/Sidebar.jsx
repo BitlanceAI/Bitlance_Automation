@@ -20,7 +20,8 @@ import {
     CalendarDays,
     ImageIcon,
     Zap,
-    CheckCircle2
+    CheckCircle2,
+    TrendingUp,
 } from 'lucide-react';
 import Logo from '../../../assets/logo.webp';
 
@@ -46,6 +47,7 @@ const Sidebar = ({
         { icon: Send, label: 'Share a post', view: 'share_menu', path: '/dashboard' },
         { icon: CheckCircle2, label: 'Approval Queue', view: 'approval_queue', path: '#' },
         { icon: Calendar, label: 'Calendar', view: 'calendar', path: '#' },
+        { icon: TrendingUp, label: 'High-Performing Ads', view: 'ads_library', path: '#' },
         { icon: Library, label: 'Libraries', view: null, path: '#' },
         { icon: Users, label: 'Social profiles', view: 'profiles', path: '#' },
         { icon: Inbox, label: 'Inbox', view: 'inbox', path: '#' },
@@ -70,6 +72,7 @@ const Sidebar = ({
 
     const libraryMenuItems = [
         { id: 'graphics_ai', icon: ImageIcon, label: 'Graphics AI Agent' },
+        { id: 'ads_library', icon: TrendingUp, label: 'High-Performing Ads' },
     ];
 
     const bottomItems = [

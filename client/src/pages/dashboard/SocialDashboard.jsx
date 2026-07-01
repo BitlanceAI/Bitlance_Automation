@@ -25,6 +25,7 @@ import GraphicsAIView from '../../components/social/GraphicsAIView';
 import CampaignView from '../../components/social/CampaignView';
 import HumanReviewView from '../../components/social/HumanReviewView';
 import CommentsView from '../../components/social/CommentsView';
+import AdsLibraryView from '../../components/social/AdsLibraryView';
 
 // Import extracted dashboard components
 import Sidebar from '../../components/social/dashboard/Sidebar';
@@ -633,6 +634,7 @@ const SocialDashboard = () => {
                     { activeView === 'campaigns' && <CampaignView setActiveView={setActiveView} /> }
                     { activeView === 'approval_queue' && <HumanReviewView /> }
                     { activeView === 'comments' && <CommentsView connectedProfiles={connectedProfiles} /> }
+                    { activeView === 'ads_library' && <AdsLibraryView /> }
                     
                     {activeView === 'share_menu' && (
                         <div className="p-8 max-w-[1200px] mx-auto flex flex-col h-full overflow-y-auto">

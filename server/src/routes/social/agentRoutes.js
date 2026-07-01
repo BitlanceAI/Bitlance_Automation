@@ -3,7 +3,7 @@ import {
     getPendingBundles, updateBundleStatus, generateCalendar,
     getBrandConfigs, createBrandConfig, updateBrandConfig, deleteBrandConfig,
     getCalendars, createCalendar, updateCalendar, deleteCalendar,
-    onboardBloomBrand, getBloomBrandStatus,
+    onboardBloomBrand, getBloomBrandStatus, listAdsBrands, findBloomReferenceAds,
 } from '../../controllers/social/agentController.js';
 import { authenticateUser } from '../../middleware/authMiddleware.js';
 
@@ -25,6 +25,10 @@ router.delete('/brand-configs/:id',  deleteBrandConfig);
 // Bloom brand onboarding (attach visual DNA to a BrandConfig)
 router.post('/brand-configs/:id/onboard-bloom',  onboardBloomBrand);
 router.get('/brand-configs/:id/bloom-status',    getBloomBrandStatus);
+
+// Ads Library
+router.get('/ads/brands',           listAdsBrands);
+router.post('/ads/find-reference',  findBloomReferenceAds);
 
 // Content Calendars CRUD
 router.get('/calendars',         getCalendars);

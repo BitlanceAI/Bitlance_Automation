@@ -99,7 +99,23 @@ export async function waitForBrand(brandId, timeoutSecs = 120) {
 /** List all onboarded brands for this account. */
 export async function listBrands() {
     const result = await callTool('bloom_list_brands', {});
-    return result?.brands || [];
+    if (Array.isArray(result)) return result;
+    if (Array.isArray(result?.brands)) return result.brands;
+    if (Array.isArray(result?.data)) return result.data;
+    if (typeof result === 'string') {
+        // Format: "- **Brand Name** (...) — ...\n  ID: `uuid` | ..."
+        const brands = [];
+        const blocks = result.split(/\n- \*\*/);
+        for (const block of blocks) {
+            const nameMatch = block.match(/^([^*]+)\*\*/);
+            const idMatch   = block.match(/ID:\s*`([a-f0-9-]{36})`/i);
+            if (nameMatch && idMatch) {
+                brands.push({ id: idMatch[1], name: nameMatch[1].trim() });
+            }
+        }
+        return brands;
+    }
+    return [];
 }
 
 /** Check remaining image generation credits. */
