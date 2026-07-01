@@ -301,6 +301,60 @@ export const getVoiceLeads = async (req, res) => {
 };
 
 /**
+ * Get call analytics securely for the user's calls
+ */
+export const getAnalytics = async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const { org } = await ensureOrgAndWallet(userId);
+
+        // 1. Fetch user's own call history to know which numbers/calls they own
+        let callQuery = supabaseAdmin
+            .from('sales_calls')
+            .select('call_id, customer_number');
+
+        if (req.user.email !== 'demo@bitlancetechhub.com') {
+            callQuery = callQuery.eq('organization_id', org.id);
+        }
+
+        const { data: calls, error: callsErr } = await callQuery;
+        if (callsErr) throw callsErr;
+
+        const normalize = (p) => p.replace(/^\+/, '').replace(/\s/g, '');
+        const myPhonesSet = new Set(calls.map(c => normalize(c.customer_number || '')).filter(Boolean));
+        const myCallIdsSet = new Set(calls.map(c => String(c.call_id || '')).filter(Boolean));
+
+        // 2. Fetch all call analytics (limit to recent 250 for performance)
+        const { data: analytics, error: sbError } = await supabaseAdmin
+            .from("call_analytics")
+            .select("*")
+            .order("created_at", { ascending: true })
+            .limit(250);
+
+        if (sbError) throw sbError;
+
+        // Check if the user has Admin rights
+        const isAdmin = req.user.email === 'bitlanceai@gmail.com';
+
+        // 3. Filter the records in memory: show all for admins, otherwise filter by organization's calls
+        const userRecords = (analytics || []).filter((item) => {
+            if (isAdmin) return true;
+            if (item.call_id && myCallIdsSet.has(String(item.call_id))) return true;
+            if (item.customer_phone && myPhonesSet.has(normalize(item.customer_phone))) return true;
+            return false;
+        });
+
+        res.json({
+            success: true,
+            analytics: userRecords
+        });
+    } catch (err) {
+        console.error('[Analytics] Error:', err.message);
+        res.status(500).json({ success: false, error: err.message });
+    }
+};
+
+/**
  * Get payment history
  */
 export const getPaymentHistory = async (req, res) => {

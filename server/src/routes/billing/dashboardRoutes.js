@@ -10,7 +10,8 @@ import {
     createRazorpayOrder,
     verifyRazorpayPayment,
     failRazorpayPayment,
-    getUserWorkflows
+    getUserWorkflows,
+    getAnalytics
 } from '../../controllers/billing/dashboardController.js';
 import { authenticateUser, resolveOldBillingUser } from '../../middleware/authMiddleware.js';
 
@@ -25,6 +26,7 @@ router.get('/stats', getDashboardStats);
 router.get('/active-calls', getActiveCalls);
 router.get('/call-history', getCallHistory);
 router.get('/voice-leads', getVoiceLeads);
+router.get('/analytics', getAnalytics);
 router.get('/payment-history', getPaymentHistory);
 router.get('/workflows', getUserWorkflows);
 router.post('/trigger-call', triggerCall);

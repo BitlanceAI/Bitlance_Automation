@@ -372,6 +372,15 @@ export async function finalizeActiveCall({
                         mobile_number: targetCustomerPhone,
                         recording_url: extractRecordingUrl(finalRunData),
                         transcript_url: finalRunData?.transcript_public_url || finalRunData?.transcript_url || '',
+                        property_type: aiAnalysis.property_type || null,
+                        city: aiAnalysis.city || null,
+                        locality: aiAnalysis.locality || null,
+                        budget: aiAnalysis.budget || null,
+                        size_bhk: aiAnalysis.size_bhk || null,
+                        amenities: aiAnalysis.amenities || null,
+                        move_in_timeline: aiAnalysis.move_in_timeline || null,
+                        purpose: aiAnalysis.purpose || null,
+                        preferred_language: aiAnalysis.preferred_language || null
                     });
                 if (leadErr) {
                     console.error('❌ [newSupabaseAdmin] Failed to insert voice lead:', leadErr.message);
@@ -746,7 +755,16 @@ Extract all requested information in the following JSON format:
   "key_topics": ["topic 1", "topic 2", ...],
   "positive_signals": ["positive feedback or signal 1", "signal 2", ...],
   "negative_signals": ["negative feedback or signal 1", "signal 2", ...],
-  "customer_name": "Name of the customer if mentioned, otherwise null"
+  "customer_name": "Name of the customer if mentioned, otherwise null",
+  "property_type": "flat, villa, plot, commercial, etc. if mentioned, otherwise null",
+  "city": "city mentioned, otherwise null",
+  "locality": "specific locality or area mentioned, otherwise null",
+  "budget": "budget mentioned (e.g. 1 crore, 50k/month), otherwise null",
+  "size_bhk": "size or BHK mentioned (e.g. 2 BHK, 1000 sqft), otherwise null",
+  "amenities": "any specific amenities requested, otherwise null",
+  "move_in_timeline": "when they want to move in, otherwise null",
+  "purpose": "buy, rent, sell, otherwise null",
+  "preferred_language": "English, Hindi, Marathi, etc. based on what they spoke, otherwise null"
 }`
                 },
                 {
