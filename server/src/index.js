@@ -27,7 +27,7 @@ connectMongo().then(() => initAgenda()).catch(err => console.error('[Startup] Ag
 
 // Graceful shutdown
 process.on('SIGTERM', async () => { await gracefulStop(); process.exit(0); });
-process.on('SIGINT',  async () => { await gracefulStop(); process.exit(0); });
+process.on('SIGINT', async () => { await gracefulStop(); process.exit(0); });
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -43,7 +43,7 @@ const PORT = process.env.PORT || 3001;
 // ── CORS ── allow origins from env var (comma-separated) or localhost in dev
 const allowedOrigins = process.env.ALLOWED_ORIGINS
     ? process.env.ALLOWED_ORIGINS.split(',').map(o => o.trim())
-    : ['http://localhost:5173', 'http://localhost:5174', 'https://nice-water-02854560f.7.azurestaticapps.net', 'http://localhost:5176', 'http://localhost:3000', 'https://bitlance-automation-app.azurewebsites.net', 'https://bitlance-backend-gucrd2dcgng8dkch.eastasia-01.azurewebsites.net', 'https://automation-dashboard-ten.vercel.app', 'https://automation-dashboard-git-main-bitlanceais-projects.vercel.app', 'https://bitlancetechhub.com', 'https://www.bitlancetechhub.com'];
+    : ['http://localhost:5173', 'http://localhost:5174', 'http://localhost:5176', 'http://localhost:3000',  'https://bitlancetechhub.com', 'https://www.bitlancetechhub.com'];
 
 // Allow all Vercel preview deployments for this project and any bitlancetechhub subdomains
 const allowedOriginPatterns = [
@@ -229,7 +229,6 @@ if (serveFrontend) {
     const distPath = path.join(__dirname, '../../client/dist');
     // Prerender.io middleware for SEO (bots will get fully rendered HTML)
     app.use(prerenderNode.set('prerenderToken', process.env.PRERENDER_TOKEN));
-    
     app.use(express.static(distPath));
     app.use('/assets', express.static(path.join(distPath, 'assets')));
 

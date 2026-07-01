@@ -148,6 +148,8 @@ function App() {
       navigate('/dashboard/agents/video');
     } else if (agent.title === 'Email Automation AI') {
       navigate('/dashboard/email-automation');
+    } else if (agent.title === 'Handle Social Media Account') {
+      navigate('/SocialDashboard');
     }
   };
 

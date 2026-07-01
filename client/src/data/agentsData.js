@@ -135,6 +135,6 @@ export const agents = [
       "Content moderation",
       "Performance tracking"
     ],
-    status: "Coming Soon"
+    status: "Available"
   }
 ];
