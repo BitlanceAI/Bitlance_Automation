@@ -282,7 +282,7 @@ export const getPaymentHistory = async (req, res) => {
         const limit = parseInt(req.query.limit) || 20;
         const offset = parseInt(req.query.offset) || 0;
 
-        let query = supabaseAdmin
+        let query = oldDb
             .from('payments')
             .select('*', { count: 'exact' });
 
