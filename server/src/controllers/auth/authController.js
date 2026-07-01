@@ -1,5 +1,5 @@
 import { supabase, supabaseAdmin, oldSupabaseAdmin } from '../../config/supabaseClient.js';
-import { sendSignupWelcomeEmail } from '../../services/email/welcomeEmailService.js';
+import { sendSignupWelcomeEmail, sendPasswordResetEmail } from '../../services/email/welcomeEmailService.js';
 
 
 
@@ -205,10 +205,80 @@ export const logout = async (req, res) => {
 
     } catch (error) {
         console.error('Logout error:', error);
-        res.status(500).json({
-            success: false,
-            error: 'Logout failed'
+        res.status(500).json({ success: false, error: 'Logout failed' });
+    }
+};
+
+/**
+ * Request password reset link
+ * POST /api/auth/forgot-password
+ */
+export const forgotPassword = async (req, res) => {
+    try {
+        const { email } = req.body;
+        if (!email) {
+            return res.status(400).json({ success: false, error: 'Email is required' });
+        }
+
+        // Generate recovery link using admin client (this bypasses email rate limits on dev)
+        const { data, error } = await supabaseAdmin.auth.admin.generateLink({
+            type: 'recovery',
+            email,
+            options: {
+                redirectTo: 'https://lotlite.bitlancetechhub.com/reset-password'
+            }
         });
+
+        if (error) {
+            console.error('Forgot password error:', error.message);
+            // Don't leak if email exists or not
+            return res.json({ success: true, message: 'If an account exists, a reset link will be sent.' });
+        }
+
+        if (data && data.properties && data.properties.action_link) {
+            await sendPasswordResetEmail(email, data.properties.action_link);
+        }
+
+        res.json({ success: true, message: 'Verification link sent successfully' });
+    } catch (error) {
+        console.error('Forgot password error:', error);
+        res.status(500).json({ success: false, error: 'Failed to process request' });
+    }
+};
+
+/**
+ * Reset password with token
+ * POST /api/auth/reset-password
+ */
+export const resetPassword = async (req, res) => {
+    try {
+        const { token, newPassword } = req.body;
+        if (!token || !newPassword) {
+            return res.status(400).json({ success: false, error: 'Token and new password are required' });
+        }
+
+        // Verify the token to get the user
+        const { data: { user }, error: verifyError } = await supabase.auth.getUser(token);
+        
+        if (verifyError || !user) {
+            console.error('Reset password verify error:', verifyError?.message);
+            return res.status(401).json({ success: false, error: 'Invalid or expired reset token' });
+        }
+
+        // Update the password
+        const { error: updateError } = await supabaseAdmin.auth.admin.updateUserById(user.id, {
+            password: newPassword
+        });
+
+        if (updateError) {
+            console.error('Update password error:', updateError.message);
+            return res.status(400).json({ success: false, error: 'Failed to update password' });
+        }
+
+        res.json({ success: true, message: 'Password updated successfully' });
+    } catch (error) {
+        console.error('Reset password error:', error);
+        res.status(500).json({ success: false, error: 'Failed to reset password' });
     }
 };
 
