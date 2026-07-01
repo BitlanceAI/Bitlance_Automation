@@ -564,9 +564,7 @@ export async function deductDbCredits(adminId, amount, callId, orgId) {
         }
 
         const currentBalance = parseFloat(wallet.balance);
-        const toDeduct = Math.min(amount, currentBalance); // Can't go below 0
-        if (toDeduct <= 0) return 0;
-
+        const toDeduct = amount;
         const newBalance = parseFloat((currentBalance - toDeduct).toFixed(4));
 
         const { error: updateErr } = await newDb
