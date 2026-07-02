@@ -9,7 +9,7 @@ import { trackContactFormSubmit, trackContactFormSuccess, trackContactFormError,
 const ContactPage = () => {
     const navigate = useNavigate();
 
-    const [form, setForm] = useState({ name: '', email: '', phone: '', service: 'Voice Bot', message: '' });
+    const [form, setForm] = useState({ name: '', email: '', phone: '+91 ', service: 'Voice Bot', message: '' });
     const [submitting, setSubmitting] = useState(false);
     const [submitted, setSubmitted] = useState(false);
     const [formStartedTracked, setFormStartedTracked] = useState(false);

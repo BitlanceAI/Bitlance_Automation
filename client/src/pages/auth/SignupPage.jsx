@@ -24,12 +24,12 @@ async function makeOutboundCall(phoneNumber, name, instructions, firstLine) {
         const data = await response.json();
 
         if (response.ok) {
-            console.log("Call initiated successfully!", data);
+            console.log("Call initiated successfully!");
         } else {
-            console.error("Failed to initiate call:", data.detail);
+            console.error("Failed to initiate call.");
         }
     } catch (error) {
-        console.error("Network error:", error);
+        console.error("Network error on call initiation.");
     }
 }
 
@@ -39,7 +39,7 @@ const SignupPage = () => {
 
     const [formData, setFormData] = useState({
         name: '',
-        phone: '',
+        phone: '+91 ',
         email: '',
         password: ''
     });
