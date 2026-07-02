@@ -305,6 +305,7 @@ export default function HeroSection({ onOpenBooking }) {
                               <input
                                 type="tel"
                                 id="phone"
+                                defaultValue="+91 "
                                 placeholder="+91 9876543210"
                                 className="w-full px-4 py-3 rounded-lg bg-teal-950/40 border border-teal-300/20 text-white placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-teal-400 focus:border-transparent transition-all text-sm"
                               />

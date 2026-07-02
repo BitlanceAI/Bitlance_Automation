@@ -22,12 +22,12 @@ async function makeOutboundCall(phoneNumber, name, instructions, firstLine) {
         const data = await response.json();
 
         if (response.ok) {
-            console.log("Demo booking call initiated successfully!", data);
+            console.log("Demo booking call initiated successfully!");
         } else {
-            console.error("Failed to initiate demo booking call:", data.detail);
+            console.error("Failed to initiate demo booking call.");
         }
     } catch (error) {
-        console.error("Network error on demo booking call:", error);
+        console.error("Network error on demo booking call.");
     }
 }
 
@@ -37,7 +37,7 @@ const BookingModal = ({ isOpen, onClose }) => {
     const [formData, setFormData] = React.useState({
         name: '',
         email: '',
-        phone: '',
+        phone: '+91 ',
         businessName: '',
         revenue: '',
         goals: ''
@@ -209,7 +209,7 @@ const BookingModal = ({ isOpen, onClose }) => {
                                                 value={formData.phone}
                                                 onChange={handleChange}
                                                 className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 transition-all font-sans"
-                                                placeholder="+1 (555) 000-0000"
+                                                placeholder="+91 98765 43210"
                                             />
                                         </div>
                                         <div>
