@@ -104,12 +104,6 @@ export const FullScreenSignup = ({
                         </div>
                     )}
 
-                    {success && (
-                        <div className="mb-6 p-4 flex items-start gap-3" style={{ background: `${TEAL}25`, border: `1px solid ${TEAL}50`, borderRadius: 8, color: TEAL }}>
-                            <CheckCircle size={20} className="flex-shrink-0 mt-0.5" />
-                            <span className="text-sm font-bold">{success}</span>
-                        </div>
-                    )}
 
                     <form className="flex flex-col gap-3" onSubmit={handleSubmit} noValidate>
 
@@ -270,6 +264,25 @@ export const FullScreenSignup = ({
                     </form>
                 </div>
             </div>
+            
+            {/* Success Modal */}
+            {success && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm transition-opacity">
+                    <div className="bg-white rounded-2xl p-8 max-w-sm w-full shadow-2xl flex flex-col items-center text-center animate-fade-in-up">
+                        <div className="w-16 h-16 bg-teal-100 rounded-full flex items-center justify-center text-teal-600 mb-6">
+                            <CheckCircle size={32} />
+                        </div>
+                        <h3 className="text-xl font-bold text-gray-900 mb-2">Success!</h3>
+                        <p className="text-gray-600 mb-8 font-medium">{success}</p>
+                        <a 
+                            href="/login" 
+                            className="w-full bg-teal-600 hover:bg-teal-700 text-white font-bold py-3 px-4 rounded-xl transition-colors shadow-lg shadow-teal-500/30 text-center"
+                        >
+                            Go to Login
+                        </a>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

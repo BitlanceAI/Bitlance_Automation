@@ -96,7 +96,7 @@ const SignupPage = () => {
                 console.error('Webhook error:', webhookError);
             }
 
-            setSuccess('Account created! Please check your email and click the verification link before logging in.');
+            setSuccess('mail sent please check and login again');
 
             if (formData.phone) {
                 setTimeout(() => {
