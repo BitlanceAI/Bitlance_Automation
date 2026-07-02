@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import {
     Sparkles, TrendingUp, Loader2, CheckCircle2, XCircle,
     Send, Linkedin, Facebook, Instagram, Copy, Check, RefreshCw,
-    Zap, Clock, ChevronDown, ChevronUp, ImageIcon, X, MessageSquare
+    Zap, Clock, ChevronDown, ChevronUp, ImageIcon, X, MessageSquare, Edit2
 } from 'lucide-react';
 import API_BASE_URL from '../../config.js';
 import { supabase } from '../../services/supabaseClient';
@@ -62,7 +62,8 @@ const SchedulePostView = ({
     setIsPreviewOpen, 
     setPostTargets, 
     setPreviewStep,
-    postSuccessCount = 0
+    postSuccessCount = 0,
+    setIsScheduling
 }) => {
     const { workspaceHeaders } = useWorkspace();
 
@@ -70,6 +71,13 @@ const SchedulePostView = ({
     const [activeTab, setActiveTab] = useState('create');
     const [history, setHistory] = useState([]);
     const [loadingHistory, setLoadingHistory] = useState(false);
+    const [scheduledPosts, setScheduledPosts] = useState([]);
+    const [loadingScheduled, setLoadingScheduled] = useState(false);
+    
+    // Edit Time State
+    const [editingTimeId, setEditingTimeId] = useState(null);
+    const [editTimeValue, setEditTimeValue] = useState('');
+    const [isUpdatingTime, setIsUpdatingTime] = useState(false);
 
     // Step 1: Config
     const [category, setCategory] = useState('');
@@ -127,6 +135,59 @@ const SchedulePostView = ({
             console.error("Failed to fetch history:", err);
         } finally {
             setLoadingHistory(false);
+        }
+    };
+
+    const fetchScheduledPosts = async () => {
+        setLoadingScheduled(true);
+        try {
+            const token = await getToken();
+            const res = await fetch(`${API_BASE_URL}/api/social/schedule`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    ...workspaceHeaders,
+                }
+            });
+            const data = await res.json();
+            if (data.success) {
+                const posts = (data.data || []).map(p => ({ ...p, id: p._id || p.id }));
+                setScheduledPosts(posts);
+            }
+        } catch (err) {
+            console.error("Failed to fetch scheduled posts:", err);
+        } finally {
+            setLoadingScheduled(false);
+        }
+    };
+
+    const handleUpdateScheduledTime = async (id) => {
+        if (!editTimeValue) return;
+        setIsUpdatingTime(true);
+        try {
+            const token = await getToken();
+            const res = await fetch(`${API_BASE_URL}/api/social/schedule/${id}`, {
+                method: 'PUT',
+                headers: { 
+                    'Authorization': `Bearer ${token}`, 
+                    'Content-Type': 'application/json', 
+                    ...workspaceHeaders 
+                },
+                body: JSON.stringify({ 
+                    scheduledAt: new Date(editTimeValue).toISOString(),
+                    timezone: Intl.DateTimeFormat().resolvedOptions().timeZone
+                })
+            });
+            const data = await res.json();
+            if (data.success) {
+                setEditingTimeId(null);
+                fetchScheduledPosts();
+            } else {
+                alert(data.message || 'Failed to update time');
+            }
+        } catch (err) {
+            console.error('Failed to update scheduled time:', err);
+        } finally {
+            setIsUpdatingTime(false);
         }
     };
 
@@ -211,7 +272,8 @@ const SchedulePostView = ({
         const targets = connectedProfiles.filter(p => selectedPlatforms.includes(p.platform));
         setPostTargets(targets);
 
-        // 4. Open Modal
+        // 4. Open Modal & Enable Scheduling
+        if (setIsScheduling) setIsScheduling(true);
         setPreviewStep(1);
         setIsPreviewOpen(true);
     };
@@ -289,7 +351,7 @@ const SchedulePostView = ({
     const renderConfig = () => (
         <div className="space-y-6">
             <div>
-                <label className="block text-[11px] font-mono uppercase tracking-widest text-gray-500 mb-2">
+                <label className="block text-[11px] font-mono uppercase tracking-widest text-white/50 mb-2">
                     Content Category / Niche *
                 </label>
                 <input
@@ -297,15 +359,15 @@ const SchedulePostView = ({
                     value={category}
                     onChange={e => setCategory(e.target.value)}
                     placeholder="e.g. AI in Healthcare, SaaS Growth, Web3 Marketing..."
-                    className="w-full bg-white border border-slate-200 rounded-[2px] px-4 py-3 text-[15px] text-slate-900 placeholder:text-gray-400 focus:outline-none focus:border-[#26cece] transition-colors"
+                    className="w-full bg-white/5 border border-white/10 rounded-[2px] px-4 py-3 text-[15px] text-white placeholder:text-white/40 focus:outline-none focus:border-[#26cece] transition-colors"
                 />
-                <p className="mt-1.5 text-[11px] text-gray-400 font-mono">
+                <p className="mt-1.5 text-[11px] text-white/40 font-mono">
                     We'll find trending keywords in this niche via Google Trends
                 </p>
             </div>
 
             <div>
-                <label className="block text-[11px] font-mono uppercase tracking-widest text-gray-500 mb-2">
+                <label className="block text-[11px] font-mono uppercase tracking-widest text-white/50 mb-2">
                     Target Platforms *
                 </label>
                 <div className="grid grid-cols-2 gap-2">
@@ -319,12 +381,12 @@ const SchedulePostView = ({
                                 className={`flex items-center gap-2.5 px-4 py-3 rounded-[2px] border text-[13px] font-mono transition-all cursor-pointer ${
                                     selected
                                         ? 'bg-[#26cece]/10 border-[#26cece] text-[#26cece]'
-                                        : 'bg-white border-slate-200 text-gray-500 hover:border-slate-300'
+                                        : 'bg-white/5 border-white/10 text-white/50 hover:border-white/20'
                                 }`}
                             >
                                 <Icon className="w-4 h-4 flex-shrink-0" />
                                 <span>{p.label}</span>
-                                <span className="ml-auto text-[10px] text-gray-400">{p.maxChars}ch</span>
+                                <span className="ml-auto text-[10px] text-white/40">{p.maxChars}ch</span>
                             </button>
                         );
                     })}
@@ -334,13 +396,13 @@ const SchedulePostView = ({
             {/* Language & Tone Section */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 pt-6 border-t border-[#f0f0f0]">
                 <div>
-                    <h3 className="text-[13px] font-bold text-gray-900 font-mono uppercase tracking-widest mb-4 flex items-center gap-2">
+                    <h3 className="text-[13px] font-bold text-white font-mono uppercase tracking-widest mb-4 flex items-center gap-2">
                         <MessageSquare className="w-4 h-4 text-purple-500" /> Language
                     </h3>
                     <select 
                         value={language}
                         onChange={(e) => setLanguage(e.target.value)}
-                        className="w-full bg-[#f9f9f9] border border-[#d0d0d0] text-gray-700 text-[13px] font-sans rounded-[4px] px-4 py-3 focus:outline-none focus:border-purple-500 hover:border-gray-400 transition-colors"
+                        className="w-full bg-[#111] border border-white/10 text-white/80 text-[13px] font-sans rounded-[4px] px-4 py-3 focus:outline-none focus:border-purple-500 hover:border-gray-400 transition-colors"
                     >
                         {LANGUAGES.map(lang => (
                             <option key={lang.id} value={lang.id}>{lang.label}</option>
@@ -349,7 +411,7 @@ const SchedulePostView = ({
                 </div>
                 
                 <div>
-                    <h3 className="text-[13px] font-bold text-gray-900 font-mono uppercase tracking-widest mb-4 flex items-center gap-2">
+                    <h3 className="text-[13px] font-bold text-white font-mono uppercase tracking-widest mb-4 flex items-center gap-2">
                         <MessageSquare className="w-4 h-4 text-orange-500" /> Tone of Voice
                     </h3>
                     <div className="grid grid-cols-2 gap-3">
@@ -360,7 +422,7 @@ const SchedulePostView = ({
                                 className={`flex items-center gap-2 px-4 py-3 rounded-[4px] border transition-all ${
                                     tone === t.id 
                                         ? 'bg-orange-50 border-orange-200 text-orange-700 font-bold' 
-                                        : 'bg-white border-[#e0e0e0] text-gray-600 hover:border-orange-200 hover:bg-orange-50/50'
+                                        : 'bg-white/5 border-white/10 text-white/70 hover:border-orange-200 hover:bg-orange-50/50'
                                 }`}
                             >
                                 <span className="text-lg">{t.emoji}</span>
@@ -372,14 +434,14 @@ const SchedulePostView = ({
             </div>
 
             <div>
-                <label className="block text-[11px] font-mono uppercase tracking-widest text-gray-500 mb-2">
+                <label className="block text-[11px] font-mono uppercase tracking-widest text-white/50 mb-2">
                     Extra Instructions (optional)
                 </label>
                 <textarea
                     value={extraInstructions}
                     onChange={e => setExtraInstructions(e.target.value)}
                     placeholder="Any specific angle, CTA, or context you want included..."
-                    className="w-full bg-white border border-slate-200 rounded-[2px] px-4 py-3 text-[14px] text-slate-900 placeholder:text-gray-400 focus:outline-none focus:border-[#26cece] transition-colors resize-none min-h-[80px]"
+                    className="w-full bg-white/5 border border-white/10 rounded-[2px] px-4 py-3 text-[14px] text-white placeholder:text-white/40 focus:outline-none focus:border-[#26cece] transition-colors resize-none min-h-[80px]"
                 />
             </div>
 
@@ -410,14 +472,14 @@ const SchedulePostView = ({
                 <div className="absolute -inset-2 rounded-full border-2 border-[#26cece]/10 animate-ping" />
             </div>
             <div className="text-center space-y-2">
-                <h3 className="text-[16px] font-bold font-['Space_Grotesk'] text-slate-900">
+                <h3 className="text-[16px] font-bold font-['Space_Grotesk'] text-white">
                     AI Pipeline Running
                 </h3>
-                <p className="text-[13px] text-gray-500 font-mono animate-pulse">
+                <p className="text-[13px] text-white/50 font-mono animate-pulse">
                     {pipelineStatus}
                 </p>
             </div>
-            <div className="w-64 space-y-2 text-[11px] font-mono text-gray-400">
+            <div className="w-64 space-y-2 text-[11px] font-mono text-white/40">
                 {['Fetching Google Trends', 'Writing platform captions', 'Generating graphic'].map((s, i) => (
                     <div key={i} className="flex items-center gap-2">
                         <div className={`w-2 h-2 rounded-full ${i === 0 ? 'bg-[#26cece] animate-pulse' : 'bg-gray-200'}`} />
@@ -434,17 +496,17 @@ const SchedulePostView = ({
             <div className="space-y-6">
                 <div className="flex items-center justify-between">
                     <div>
-                        <h3 className="text-[16px] font-bold font-['Space_Grotesk'] text-slate-900 flex items-center gap-2">
+                        <h3 className="text-[16px] font-bold font-['Space_Grotesk'] text-white flex items-center gap-2">
                             <CheckCircle2 className="w-5 h-5 text-emerald-500" />
                             Posts Generated
                         </h3>
-                        <p className="text-[12px] text-gray-500 font-mono mt-0.5">
+                        <p className="text-[12px] text-white/50 font-mono mt-0.5">
                             Category: {result.category}
                         </p>
                     </div>
                     <button
                         onClick={handleReset}
-                        className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-mono uppercase tracking-widest text-gray-500 hover:text-[#26cece] border border-slate-200 hover:border-[#26cece]/30 rounded-[2px] transition-colors cursor-pointer"
+                        className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-mono uppercase tracking-widest text-white/50 hover:text-[#26cece] border border-white/10 hover:border-[#26cece]/30 rounded-[2px] transition-colors cursor-pointer"
                     >
                         <RefreshCw className="w-3 h-3" /> New Post
                     </button>
@@ -458,7 +520,7 @@ const SchedulePostView = ({
                         </div>
                         <div className="flex flex-wrap gap-1.5">
                             {result.trending_keywords.map((kw, i) => (
-                                <span key={i} className="px-2 py-0.5 bg-white border border-[#26cece]/20 rounded-[2px] text-[11px] text-slate-700 font-mono">
+                                <span key={i} className="px-2 py-0.5 bg-white/5 border border-[#26cece]/20 rounded-[2px] text-[11px] text-white/80 font-mono">
                                     {kw}
                                 </span>
                             ))}
@@ -468,11 +530,11 @@ const SchedulePostView = ({
 
                 {result.image_base64 && (
                     <div>
-                        <div className="flex items-center gap-1.5 text-[11px] font-mono uppercase tracking-widest text-gray-500 mb-2">
+                        <div className="flex items-center gap-1.5 text-[11px] font-mono uppercase tracking-widest text-white/50 mb-2">
                             <ImageIcon className="w-3.5 h-3.5" />
                             Generated Graphic
                         </div>
-                        <div className="border border-slate-200 rounded-[2px] overflow-hidden bg-slate-50">
+                        <div className="border border-white/10 rounded-[2px] overflow-hidden bg-white/5">
                             <img
                                 src={`data:image/png;base64,${result.image_base64}`}
                                 alt="Generated social post graphic"
@@ -483,7 +545,7 @@ const SchedulePostView = ({
                 )}
 
                 <div className="space-y-3">
-                    <div className="text-[11px] font-mono uppercase tracking-widest text-gray-500">
+                    <div className="text-[11px] font-mono uppercase tracking-widest text-white/50">
                         Platform Captions
                     </div>
                     {Object.entries(editedCaptions).map(([platform, caption]) => {
@@ -495,29 +557,29 @@ const SchedulePostView = ({
                         const isOverLimit = charCount > spec.maxChars;
 
                         return (
-                            <div key={platform} className="border border-slate-200 rounded-[2px] overflow-hidden">
+                            <div key={platform} className="border border-white/10 rounded-[2px] overflow-hidden">
                                 <button
                                     onClick={() => setExpandedCaption(isExpanded ? null : platform)}
-                                    className="w-full flex items-center gap-3 px-4 py-3 bg-slate-50 hover:bg-slate-100 transition-colors cursor-pointer"
+                                    className="w-full flex items-center gap-3 px-4 py-3 bg-white/5 hover:bg-black/20 transition-colors cursor-pointer"
                                 >
                                     <Icon className="w-4 h-4 flex-shrink-0" style={{ color: spec.color }} />
-                                    <span className="text-[13px] font-mono font-medium text-slate-900">{spec.label}</span>
-                                    <span className={`ml-auto text-[11px] font-mono ${isOverLimit ? 'text-red-500' : 'text-gray-400'}`}>
+                                    <span className="text-[13px] font-mono font-medium text-white">{spec.label}</span>
+                                    <span className={`ml-auto text-[11px] font-mono ${isOverLimit ? 'text-red-500' : 'text-white/40'}`}>
                                         {charCount}/{spec.maxChars}
                                     </span>
-                                    {isExpanded ? <ChevronUp className="w-4 h-4 text-gray-400" /> : <ChevronDown className="w-4 h-4 text-gray-400" />}
+                                    {isExpanded ? <ChevronUp className="w-4 h-4 text-white/40" /> : <ChevronDown className="w-4 h-4 text-white/40" />}
                                 </button>
                                 {isExpanded && (
                                     <div className="p-4 space-y-3">
                                         <textarea
                                             value={caption}
                                             onChange={e => setEditedCaptions(prev => ({ ...prev, [platform]: e.target.value }))}
-                                            className="w-full bg-white border border-slate-200 rounded-[2px] p-3 text-[14px] text-slate-900 focus:outline-none focus:border-[#26cece] transition-colors resize-none min-h-[120px]"
+                                            className="w-full bg-white/5 border border-white/10 rounded-[2px] p-3 text-[14px] text-white focus:outline-none focus:border-[#26cece] transition-colors resize-none min-h-[120px]"
                                         />
                                         <div className="flex items-center gap-2">
                                             <button
                                                 onClick={() => handleCopy(platform)}
-                                                className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-mono uppercase tracking-widest bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-[2px] transition-colors cursor-pointer"
+                                                className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-mono uppercase tracking-widest bg-black/20 hover:bg-white/10 text-white/80 rounded-[2px] transition-colors cursor-pointer"
                                             >
                                                 {copiedPlatform === platform ? <Check className="w-3 h-3 text-emerald-500" /> : <Copy className="w-3 h-3" />}
                                                 {copiedPlatform === platform ? 'Copied' : 'Copy'}
@@ -530,16 +592,16 @@ const SchedulePostView = ({
                     })}
                 </div>
 
-                <div className="pt-4 border-t border-slate-200">
+                <div className="pt-4 border-t border-white/10">
                     <button
                         onClick={handlePrepareForPost}
-                        className="w-full flex items-center justify-center gap-2 bg-[#26cece] hover:bg-white text-[#070707] font-bold font-['Space_Grotesk'] uppercase tracking-widest py-4 rounded-[2px] shadow-none hover:-translate-y-1 hover:shadow-[4px_4px_0_0_#333] transition-all duration-200 cursor-pointer"
+                        className="w-full flex items-center justify-center gap-2 bg-[#26cece] hover:bg-white/5 text-[#070707] font-bold font-['Space_Grotesk'] uppercase tracking-widest py-4 rounded-[2px] shadow-none hover:-translate-y-1 hover:shadow-[4px_4px_0_0_#333] transition-all duration-200 cursor-pointer"
                     >
-                        <Send className="w-5 h-5" />
-                        Publish to Social Media
+                        <Clock className="w-5 h-5" />
+                        Preview & Schedule Post
                     </button>
-                    <p className="mt-3 text-center text-[11px] font-mono text-gray-400 uppercase tracking-widest">
-                        This will open the preview & publishing modal
+                    <p className="mt-3 text-center text-[11px] font-mono text-white/40 uppercase tracking-widest">
+                        This will open the preview & scheduling modal
                     </p>
                 </div>
             </div>
@@ -551,10 +613,10 @@ const SchedulePostView = ({
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {history.length === 0 ? (
                     <div className="col-span-full py-20 text-center space-y-3">
-                        <div className="w-16 h-16 rounded-full bg-slate-100 flex items-center justify-center mx-auto">
+                        <div className="w-16 h-16 rounded-full bg-black/20 flex items-center justify-center mx-auto">
                             <Clock className="w-8 h-8 text-gray-300" />
                         </div>
-                        <p className="text-[13px] font-mono text-gray-500 uppercase tracking-widest">
+                        <p className="text-[13px] font-mono text-white/50 uppercase tracking-widest">
                             No history found yet
                         </p>
                     </div>
@@ -563,9 +625,9 @@ const SchedulePostView = ({
                         <div 
                             key={item.id}
                             onClick={() => handleSelectFromHistory(item)}
-                            className="group bg-white border border-slate-200 rounded-[2px] overflow-hidden hover:border-[#26cece]/50 transition-all cursor-pointer"
+                            className="group bg-white/5 border border-white/10 rounded-[2px] overflow-hidden hover:border-[#26cece]/50 transition-all cursor-pointer"
                         >
-                            <div className="aspect-video bg-slate-50 relative overflow-hidden">
+                            <div className="aspect-video bg-white/5 relative overflow-hidden">
                                 {item.flyer_url ? (
                                     <img src={item.flyer_url} alt="" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                                 ) : (
@@ -574,21 +636,21 @@ const SchedulePostView = ({
                                     </div>
                                 )}
                                 <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center">
-                                    <div className="opacity-0 group-hover:opacity-100 bg-white text-slate-900 px-4 py-2 text-[11px] font-mono uppercase tracking-widest transition-opacity">
+                                    <div className="opacity-0 group-hover:opacity-100 bg-white/5 text-white px-4 py-2 text-[11px] font-mono uppercase tracking-widest transition-opacity">
                                         Use This Post
                                     </div>
                                 </div>
                             </div>
                             <div className="p-4 space-y-1">
                                 <div className="flex items-center justify-between">
-                                    <span className="text-[12px] font-bold font-['Space_Grotesk'] text-slate-900 truncate uppercase">
+                                    <span className="text-[12px] font-bold font-['Space_Grotesk'] text-white truncate uppercase">
                                         {item.location}
                                     </span>
-                                    <span className="text-[10px] font-mono text-gray-400">
+                                    <span className="text-[10px] font-mono text-white/40">
                                         {new Date(item.created_at).toLocaleDateString()}
                                     </span>
                                 </div>
-                                <p className="text-[11px] font-mono text-gray-500 line-clamp-2 italic">
+                                <p className="text-[11px] font-mono text-white/50 line-clamp-2 italic">
                                     {Object.values(item.metadata?.captions || {})[0] || 'No caption'}
                                 </p>
                             </div>
@@ -599,25 +661,148 @@ const SchedulePostView = ({
         </div>
     );
 
+    const renderScheduledPosts = () => (
+        <div className="space-y-6">
+            <div className="grid grid-cols-1 gap-4">
+                {loadingScheduled ? (
+                    <div className="py-20 text-center"><Loader2 className="w-8 h-8 text-[#26cece] animate-spin mx-auto" /></div>
+                ) : scheduledPosts.length === 0 ? (
+                    <div className="col-span-full py-20 text-center space-y-3">
+                        <div className="w-16 h-16 rounded-full bg-black/20 flex items-center justify-center mx-auto">
+                            <Clock className="w-8 h-8 text-gray-300" />
+                        </div>
+                        <p className="text-[13px] font-mono text-white/50 uppercase tracking-widest">
+                            No scheduled posts found
+                        </p>
+                    </div>
+                ) : (
+                    scheduledPosts.map((item) => (
+                        <div 
+                            key={item.id}
+                            className="bg-white/5 border border-white/10 rounded-[2px] overflow-hidden"
+                        >
+                            <div className="p-4 flex gap-4">
+                                {item.media_url && (
+                                    <div className="w-24 h-24 rounded-xl overflow-hidden shrink-0">
+                                        <img src={item.media_url} alt="" className="w-full h-full object-cover" />
+                                    </div>
+                                )}
+                                <div className="flex-1 space-y-2">
+                                    <div className="flex items-center justify-between">
+                                        <div className="flex items-center gap-2">
+                                            {item.platforms?.map(p => (
+                                                <span key={p} className="text-[10px] font-mono uppercase bg-white/10 px-2 py-1 rounded-full text-white/80">{p}</span>
+                                            ))}
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                            <span className={`text-[10px] font-mono uppercase tracking-widest px-2 py-1 rounded-[2px] border ${
+                                                item.status === 'approved' || item.status === 'scheduled' ? 'bg-[#26cece]/10 border-[#26cece] text-[#26cece]' :
+                                                item.status === 'rejected' ? 'bg-red-500/10 border-red-500 text-red-500' :
+                                                'bg-[#FFCA4A]/10 border-[#FFCA4A] text-[#FFCA4A]'
+                                            }`}>
+                                                {item.status.replace('_', ' ')}
+                                            </span>
+                                            {editingTimeId === item.id ? (
+                                                <div className="flex items-center gap-2 ml-2">
+                                                    <input 
+                                                        type="datetime-local" 
+                                                        value={editTimeValue}
+                                                        onChange={e => setEditTimeValue(e.target.value)}
+                                                        className="bg-white/5 border border-white/10 text-white px-2 py-1 rounded-sm font-mono text-[11px] outline-none"
+                                                    />
+                                                    <button onClick={() => handleUpdateScheduledTime(item.id)} disabled={isUpdatingTime} className="text-[#25D366] hover:text-white transition-colors cursor-pointer">
+                                                        {isUpdatingTime ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
+                                                    </button>
+                                                    <button onClick={() => setEditingTimeId(null)} className="text-red-400 hover:text-white transition-colors cursor-pointer">
+                                                        <X className="w-4 h-4" />
+                                                    </button>
+                                                </div>
+                                            ) : (
+                                                <div className="flex items-center gap-2">
+                                                    <span className="text-[11px] font-mono text-white/60">
+                                                        {new Date(item.scheduled_at).toLocaleString()}
+                                                    </span>
+                                                    {(item.status === 'pending_approval' || item.status === 'scheduled' || item.status === 'approved') && (
+                                                        <button 
+                                                            onClick={() => {
+                                                                setEditingTimeId(item.id);
+                                                                // Convert ISO string back to local datetime-local format
+                                                                const localDate = new Date(item.scheduled_at);
+                                                                const tzOffset = localDate.getTimezoneOffset() * 60000;
+                                                                const localISOTime = (new Date(localDate - tzOffset)).toISOString().slice(0,16);
+                                                                setEditTimeValue(localISOTime);
+                                                            }}
+                                                            className="text-[#26cece]/60 hover:text-[#26cece] transition-colors cursor-pointer"
+                                                        >
+                                                            <Edit2 className="w-3.5 h-3.5" />
+                                                        </button>
+                                                    )}
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                    <p className="text-[13px] text-white/80 font-sans line-clamp-2">
+                                        {item.text}
+                                    </p>
+                                    <div className="text-[10px] font-mono text-white/40 pt-2 flex justify-between">
+                                        <span>Approver: {item.approver_phone || 'None'}</span>
+                                        {item.status === 'pending_approval' && (
+                                            <button 
+                                                onClick={async () => {
+                                                    try {
+                                                        const token = await getToken();
+                                                        const res = await fetch(`${API_BASE_URL}/api/social/schedule/${item.id}/resend-approval`, {
+                                                            method: 'POST',
+                                                            headers: { 
+                                                                'Authorization': `Bearer ${token}`, 
+                                                                ...workspaceHeaders 
+                                                            }
+                                                        });
+                                                        const data = await res.json();
+                                                        if (data.success) {
+                                                            alert('Approval request sent via WhatsApp!');
+                                                        } else {
+                                                            alert(data.message || 'Failed to resend approval');
+                                                        }
+                                                    } catch (err) {
+                                                        console.error('Failed to resend approval:', err);
+                                                        alert('An error occurred');
+                                                    }
+                                                }}
+                                                className="text-[#26cece] hover:underline cursor-pointer transition-all"
+                                            >
+                                                Resend Approval Request
+                                            </button>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    ))
+                )}
+            </div>
+        </div>
+    );
+
     return (
-        <div className="flex-1 p-8 bg-white overflow-y-auto w-full">
+        <div className="flex-1 p-8 bg-white/5 overflow-y-auto w-full">
             <div className="max-w-3xl mx-auto space-y-6">
                 <div className="flex items-center justify-between">
                     <div>
-                        <h2 className="text-xl font-bold font-['Space_Grotesk'] text-slate-900 uppercase tracking-tight flex items-center gap-2">
+                        <h2 className="text-xl font-bold font-['Space_Grotesk'] text-white uppercase tracking-tight flex items-center gap-2">
                             <Zap className="w-5 h-5 text-[#26cece]" />
                             Smart Post Scheduler
                         </h2>
-                        <p className="text-[13px] text-gray-500 font-mono mt-1">
-                            {activeTab === 'create' ? 'Category → Google Trends → AI Captions → Graphic → Publish' : 'Access your past AI-generated social content'}
+                        <p className="text-[13px] text-white/50 font-mono mt-1">
+                            {activeTab === 'create' ? 'Category → Google Trends → AI Captions → Graphic → Publish' : activeTab === 'scheduled' ? 'Manage your upcoming AI-generated posts' : 'Access your past AI-generated social content'}
                         </p>
                     </div>
 
-                    <div className="flex items-center bg-slate-100 p-1 rounded-[2px] border border-slate-200">
+                    <div className="flex items-center bg-black/20 p-1 rounded-[2px] border border-white/10">
                         <button
                             onClick={() => setActiveTab('create')}
                             className={`px-4 py-1.5 text-[11px] font-mono uppercase tracking-widest rounded-[1px] transition-all cursor-pointer ${
-                                activeTab === 'create' ? 'bg-white text-[#26cece] shadow-sm font-bold' : 'text-gray-500 hover:text-slate-900'
+                                activeTab === 'create' ? 'bg-white/5 text-[#26cece] shadow-sm font-bold' : 'text-white/50 hover:text-white'
                             }`}
                         >
                             Create
@@ -628,10 +813,21 @@ const SchedulePostView = ({
                                 fetchHistory();
                             }}
                             className={`px-4 py-1.5 text-[11px] font-mono uppercase tracking-widest rounded-[1px] transition-all cursor-pointer ${
-                                activeTab === 'history' ? 'bg-white text-[#26cece] shadow-sm font-bold' : 'text-gray-500 hover:text-slate-900'
+                                activeTab === 'history' ? 'bg-white/5 text-[#26cece] shadow-sm font-bold' : 'text-white/50 hover:text-white'
                             }`}
                         >
                             History
+                        </button>
+                        <button
+                            onClick={() => {
+                                setActiveTab('scheduled');
+                                fetchScheduledPosts();
+                            }}
+                            className={`px-4 py-1.5 text-[11px] font-mono uppercase tracking-widest rounded-[1px] transition-all cursor-pointer ${
+                                activeTab === 'scheduled' ? 'bg-white/5 text-[#26cece] shadow-sm font-bold' : 'text-white/50 hover:text-white'
+                            }`}
+                        >
+                            Scheduled
                         </button>
                     </div>
                 </div>
@@ -660,11 +856,11 @@ const SchedulePostView = ({
                                 const isDone = step > s.id;
                                 return (
                                     <React.Fragment key={s.id}>
-                                        {i > 0 && <div className={`flex-1 h-px ${isDone ? 'bg-[#26cece]' : 'bg-slate-200'}`} />}
+                                        {i > 0 && <div className={`flex-1 h-px ${isDone ? 'bg-[#26cece]' : 'bg-white/10'}`} />}
                                         <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-[2px] text-[11px] font-mono uppercase tracking-widest transition-colors ${
                                             isActive ? 'bg-[#26cece]/10 text-[#26cece] border border-[#26cece]/30' :
                                             isDone ? 'bg-emerald-50 text-emerald-600 border border-emerald-200' :
-                                            'text-gray-400 border border-slate-200'
+                                            'text-white/40 border border-white/10'
                                         }`}>
                                             {isDone ? <CheckCircle2 className="w-3.5 h-3.5" /> : <Icon className={`w-3.5 h-3.5 ${isActive && s.id === 2 ? 'animate-spin' : ''}`} />}
                                             {s.label}
@@ -674,18 +870,27 @@ const SchedulePostView = ({
                             })}
                         </div>
 
-                        <div className="bg-slate-50 border border-slate-200 rounded-[2px] p-6 shadow-[0_4px_24px_0_rgba(0,0,0,0.08)]">
+                        <div className="bg-white/5 border border-white/10 rounded-[2px] p-6 shadow-[0_4px_24px_0_rgba(0,0,0,0.08)]">
                             {step === 1 && renderConfig()}
                             {step === 2 && renderLoading()}
                             {step === 3 && renderReview()}
                         </div>
                     </>
+                ) : activeTab === 'scheduled' ? (
+                    <div className="bg-white/5 border border-white/10 rounded-[2px] p-6 shadow-[0_4px_24px_0_rgba(0,0,0,0.08)]">
+                        {loadingScheduled ? (
+                            <div className="py-20 flex flex-col items-center justify-center space-y-4">
+                                <Loader2 className="w-8 h-8 text-[#26cece] animate-spin" />
+                                <p className="text-[12px] font-mono text-white/50 uppercase tracking-widest">Loading Scheduled Posts...</p>
+                            </div>
+                        ) : renderScheduledPosts()}
+                    </div>
                 ) : (
-                    <div className="bg-slate-50 border border-slate-200 rounded-[2px] p-6 shadow-[0_4px_24px_0_rgba(0,0,0,0.08)]">
+                    <div className="bg-white/5 border border-white/10 rounded-[2px] p-6 shadow-[0_4px_24px_0_rgba(0,0,0,0.08)]">
                         {loadingHistory ? (
                             <div className="py-20 flex flex-col items-center justify-center space-y-4">
                                 <Loader2 className="w-8 h-8 text-[#26cece] animate-spin" />
-                                <p className="text-[12px] font-mono text-gray-500 uppercase tracking-widest">Loading History...</p>
+                                <p className="text-[12px] font-mono text-white/50 uppercase tracking-widest">Loading History...</p>
                             </div>
                         ) : renderHistory()}
                     </div>

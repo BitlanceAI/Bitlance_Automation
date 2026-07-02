@@ -128,6 +128,7 @@ export const startPostScheduler = () => {
         checkAndPublishBlogPosts();
         checkAndPublishAutoBlogs();
         checkAndPublishPostBundles();
+        checkAndPublishScheduledSocialPosts();
     };
 
     // Run immediately on start
@@ -232,7 +233,7 @@ const checkAndPublishAutoBlogs = async () => {
         // We can just import and call it! Let's import generateAndSaveArticleInternal directly.
         // Wait, generateAndSaveArticleInternal is not exported in articleController.js. 
         // Option A: Export generateAndSaveArticleInternal in articleController.js
-        // Option B: Make an HTTP POST to `http://localhost:${process.env.PORT || 3001}/api/articles/generate` with an admin token limit.
+        // Option B: Make an HTTP POST to \`http://localhost:\${process.env.PORT || 3001}/api/articles/generate\` with an admin token limit.
         // Let's go with an Axios call to the /api/admin... wait, we don't have a token. 
         // We will make it simple: We just call the Python API directly here.
         // Let's export generateAndSaveArticleInternal from articleController.js and use it!
@@ -244,10 +245,10 @@ const checkAndPublishAutoBlogs = async () => {
         // Wait, Python API relies on Firebase/Supabase token checking usually. 
         // If internal, we can just fetch Python API without token? Wait, Python uses Dependency(get_current_user).
         // Best approach: We must generate a real Supabase JWT for the admin using Supabase /auth/v1/token or use an existing one?
-        // Actually, the easiest path: Call `generateAndSaveArticleInternal` but it needs a valid `token` to pass to Python API.
+        // Actually, the easiest path: Call \`generateAndSaveArticleInternal\` but it needs a valid \`token\` to pass to Python API.
 
         // Let's fetch the Python API directly without auth if possible, else we have to get an admin token.
-        // I will use `generateAndSaveArticleInternal` and for token I will use process.env.SUPABASE_KEY as a placeholder, but it might fail. Let's see.
+        // I will use \`generateAndSaveArticleInternal\` and for token I will use process.env.SUPABASE_KEY as a placeholder, but it might fail. Let's see.
         // Actually, instead of dealing with tokens, let's login to supabase to get a fresh token for ADMIN, or we add an API key bypass to python?
         // I'll update articleController to export it, and we will pass the SUPABASE_SERVICE_ROLE_KEY as a placeholder token or just make sure the user has an admin token? No, cron is totally offline.
 
@@ -284,7 +285,7 @@ const checkAndPublishAutoBlogs = async () => {
             });
 
             if (result && result.success) {
-                console.log(`✅ [Scheduler] Auto blog generated and published: "${blogEntry.title}"`);
+                console.log(`✅[Scheduler] Auto blog generated and published: "${blogEntry.title}"`);
 
                 // Mark success
                 await supabase
@@ -296,9 +297,9 @@ const checkAndPublishAutoBlogs = async () => {
                 if (settings.wp_profile_id) {
                     try {
                         const wpPost = await autoPostToWordPress(supabase, settings.wp_profile_id, result);
-                        console.log(`🌐 [Scheduler] Auto-posted to WordPress: ${wpPost.link}`);
+                        console.log(`🌐[Scheduler] Auto - posted to WordPress: ${ wpPost.link }`);
                     } catch (wpErr) {
-                        console.warn(`⚠️ [Scheduler] WordPress auto-post failed for "${blogEntry.title}": ${wpErr.message}`);
+                        console.warn(`⚠️[Scheduler] WordPress auto - post failed for "${blogEntry.title}": ${ wpErr.message } `);
                     }
                 }
 
@@ -316,16 +317,16 @@ const checkAndPublishAutoBlogs = async () => {
                             blogUrl,
                             result.imageUrl || undefined
                         );
-                        console.log(`🔔 [Scheduler] OneSignal push sent for auto blog: "${blogEntry.title}"`);
+                        console.log(`🔔[Scheduler] OneSignal push sent for auto blog: "${blogEntry.title}"`);
                     } catch (notifyError) {
-                        console.warn(`⚠️ [Scheduler] OneSignal push failed for "${blogEntry.title}": ${notifyError.message}`);
+                        console.warn(`⚠️[Scheduler] OneSignal push failed for "${blogEntry.title}": ${ notifyError.message } `);
                     }
                 } else {
-                    console.log(`🔕 [Scheduler] Push skipped — WordPress auto-post mode for "${blogEntry.title}"`);
+                    console.log(`🔕[Scheduler] Push skipped — WordPress auto - post mode for "${blogEntry.title}"`);
                 }
             }
         } catch (genError) {
-            console.error(`💥 [Scheduler] Auto blog generation failed for "${blogEntry.title}":`, genError.message);
+            console.error(`💥[Scheduler] Auto blog generation failed for "${blogEntry.title}": `, genError.message);
 
             // Mark failed
             await supabase
@@ -367,7 +368,7 @@ const checkAndPublishBlogPosts = async () => {
 
             if (!posts || posts.length === 0) continue;
 
-            console.log(`⏰ [Scheduler] Found ${posts.length} blog posts to publish in ${tableName}.`);
+            console.log(`⏰[Scheduler] Found ${ posts.length } blog posts to publish in ${ tableName }.`);
 
             for (const post of posts) {
                 // Publish
@@ -377,11 +378,11 @@ const checkAndPublishBlogPosts = async () => {
                     .eq('id', post.id);
 
                 if (updateError) {
-                    console.error(`❌ [Scheduler] Failed to publish blog post ${post.id} in ${tableName}:`, updateError);
+                    console.error(`❌[Scheduler] Failed to publish blog post ${ post.id } in ${ tableName }: `, updateError);
                     continue;
                 }
 
-                console.log(`✅ [Scheduler] Blog post ${post.id} published in ${tableName}.`);
+                console.log(`✅[Scheduler] Blog post ${ post.id } published in ${ tableName }.`);
 
                 // Notification Logic
                 // Only send "Global" blog updates for company_articles
@@ -413,9 +414,9 @@ const checkAndPublishBlogPosts = async () => {
                                 useTopic: true
                             }
                         });
-                        console.log(`🔔 [Scheduler] Notification sent for blog post ${post.id} (${tableName})`);
+                        console.log(`🔔[Scheduler] Notification sent for blog post ${ post.id } (${ tableName })`);
                     } catch (notifyError) {
-                        console.error(`⚠️ [Scheduler] Failed to send notification for post ${post.id}:`, notifyError.message);
+                        console.error(`⚠️[Scheduler] Failed to send notification for post ${ post.id }: `, notifyError.message);
                     }
                 }
             }
@@ -448,7 +449,7 @@ const checkAndPublishPostBundles = async () => {
 
         if (!bundles || bundles.length === 0) return;
 
-        console.log(`⏰ [Scheduler] Found ${bundles.length} AI Post Bundles ready to publish.`);
+        console.log(`⏰[Scheduler] Found ${ bundles.length } AI Post Bundles ready to publish.`);
 
         const { decryptData } = await import('../../../utils/encryption.js');
         const MetaServiceClass = (await import('../social/metaService.js')).default;
@@ -459,7 +460,7 @@ const checkAndPublishPostBundles = async () => {
             const mediaUrl = bundle.graphic_assets?.file_url;
 
             if (!mediaUrl) {
-                console.warn(`⚠️ [Scheduler] Bundle ${bundle.id} missing graphic URL. Skipping.`);
+                console.warn(`⚠️[Scheduler] Bundle ${ bundle.id } missing graphic URL.Skipping.`);
                 await supabase.from('post_bundles').update({ status: 'failed' }).eq('id', bundle.id);
                 continue;
             }
@@ -473,7 +474,7 @@ const checkAndPublishPostBundles = async () => {
                 .single();
 
             if (connError || !connection || !connection.pages) {
-                console.warn(`⚠️ [Scheduler] No active Meta connection found for workspace ${workspaceId}.`);
+                console.warn(`⚠️[Scheduler] No active Meta connection found for workspace ${ workspaceId }.`);
                 await supabase.from('post_bundles').update({ status: 'failed' }).eq('id', bundle.id);
                 continue;
             }
@@ -481,7 +482,7 @@ const checkAndPublishPostBundles = async () => {
             // Find an Instagram account
             const igAccount = connection.pages.find(p => p.platform === 'instagram');
             if (!igAccount) {
-                console.warn(`⚠️ [Scheduler] No linked Instagram account found for workspace ${workspaceId}.`);
+                console.warn(`⚠️[Scheduler] No linked Instagram account found for workspace ${ workspaceId }.`);
                 await supabase.from('post_bundles').update({ status: 'failed' }).eq('id', bundle.id);
                 continue;
             }
@@ -494,17 +495,17 @@ const checkAndPublishPostBundles = async () => {
                 const result = await metaService.createInstagramPost(igAccount.accountId, caption, mediaUrl);
 
                 if (result.success) {
-                    console.log(`✅ [Scheduler] Bundle ${bundle.id} published to Instagram! (Post ID: ${result.postId})`);
+                    console.log(`✅[Scheduler] Bundle ${ bundle.id } published to Instagram!(Post ID: ${ result.postId })`);
                     await supabase
                         .from('post_bundles')
                         .update({ status: 'published', updated_at: new Date().toISOString() })
                         .eq('id', bundle.id);
                 } else {
-                    console.error(`❌ [Scheduler] Failed to publish Bundle ${bundle.id}:`, result.error);
+                    console.error(`❌[Scheduler] Failed to publish Bundle ${ bundle.id }: `, result.error);
                     await supabase.from('post_bundles').update({ status: 'failed' }).eq('id', bundle.id);
                 }
             } catch (publishErr) {
-                console.error(`❌ [Scheduler] Crash publishing Bundle ${bundle.id}:`, publishErr.message);
+                console.error(`❌[Scheduler] Crash publishing Bundle ${ bundle.id }: `, publishErr.message);
                 await supabase.from('post_bundles').update({ status: 'failed' }).eq('id', bundle.id);
             }
         }
@@ -513,3 +514,113 @@ const checkAndPublishPostBundles = async () => {
     }
 };
 
+const checkAndPublishScheduledSocialPosts = async () => {
+    try {
+        const now = new Date().toISOString();
+
+        // 1. Fetch scheduled posts ready for publishing
+        // THIS IS THE LINE THAT IS MODIFIED TO QUERY 'approved' STATUS
+        const { data: posts, error } = await supabase
+            .from('scheduled_social_posts')
+            .select('*')
+            .eq('status', 'approved')
+            .lte('scheduled_at', now);
+
+        if (error) {
+            console.error('❌ [Scheduler] Error fetching scheduled_social_posts:', error);
+            return;
+        }
+
+        if (!posts || posts.length === 0) return;
+
+        console.log(`⏰[Scheduler] Found ${ posts.length } user - scheduled social posts ready to publish.`);
+
+        const { decryptData } = await import('../../../utils/encryption.js');
+        const MetaServiceClass = (await import('../social/metaService.js')).default;
+        const { postToLinkedIn } = await import('../social/linkedinService.js');
+
+        for (const post of posts) {
+            const workspaceId = post.workspace_id;
+            let successCount = 0;
+            let errors = [];
+
+            // Mark as publishing
+            await supabase.from('scheduled_social_posts').update({ status: 'publishing' }).eq('id', post.id);
+
+            for (const target of post.profile_ids) {
+                try {
+                    if (target.platform === 'linkedin') {
+                        // Fetch LinkedIn Connection
+                        const { data: liConn } = await supabase
+                            .from('linkedin_connections')
+                            .select('*')
+                            .eq('workspace_id', workspaceId)
+                            .eq('is_active', true)
+                            .single();
+                        
+                        if (liConn) {
+                            const accessToken = decryptData(liConn.access_token);
+                            const result = await postToLinkedIn(
+                                accessToken,
+                                target.profileId || 'urn:li:person:me',
+                                post.text,
+                                'PUBLIC',
+                                null, // assetUrn
+                                null  // mediaCategory
+                            );
+                            if (result.success) successCount++;
+                            else errors.push(`LinkedIn: ${ result.error } `);
+                        } else {
+                            errors.push('LinkedIn connection not found');
+                        }
+                    } else if (target.platform === 'instagram' || target.platform === 'facebook') {
+                        // Fetch Meta Connection
+                        const { data: metaConn } = await supabase
+                            .from('meta_connections')
+                            .select('*')
+                            .eq('workspace_id', workspaceId)
+                            .eq('is_active', true)
+                            .single();
+                            
+                        if (metaConn) {
+                            const accessToken = decryptData(metaConn.access_token);
+                            const metaService = new MetaServiceClass(accessToken);
+                            
+                            let result;
+                            if (target.platform === 'instagram') {
+                                result = await metaService.createInstagramPost(target.profileId || target.id, post.text, post.media_url);
+                            } else {
+                                result = await metaService.createFacebookPost(target.profileId || target.id, post.text, post.media_url);
+                            }
+                            
+                            if (result.success) successCount++;
+                            else errors.push(`\${ target.platform }: \${ result.error } `);
+                        } else {
+                            errors.push(`\${ target.platform } connection not found`);
+                        }
+                    }
+                } catch (publishErr) {
+                    errors.push(`\${ target.platform } crash: \${ publishErr.message } `);
+                }
+            }
+
+            // Update final status
+            if (successCount > 0 && errors.length === 0) {
+                await supabase.from('scheduled_social_posts').update({ 
+                    status: 'published', 
+                    updated_at: new Date().toISOString() 
+                }).eq('id', post.id);
+                console.log(`✅[Scheduler] Scheduled post ${ post.id } published successfully.`);
+            } else {
+                await supabase.from('scheduled_social_posts').update({ 
+                    status: successCount > 0 ? 'published_with_errors' : 'failed', 
+                    error_details: errors.join(', '),
+                    updated_at: new Date().toISOString() 
+                }).eq('id', post.id);
+                console.warn(`⚠️[Scheduler] Scheduled post ${ post.id } had issues: `, errors);
+            }
+        }
+    } catch (error) {
+        console.error('💥 [Scheduler] checkAndPublishScheduledSocialPosts Critical error:', error);
+    }
+};

@@ -4,7 +4,10 @@ import {
     signup,
     logout,
     getCurrentUser,
-    refreshToken
+    refreshToken,
+    resendVerification,
+    forgotPassword,
+    resetPassword
 } from '../../controllers/auth/authController.js';
 import { authenticateUser } from '../../middleware/authMiddleware.js';
 
@@ -14,6 +17,9 @@ const router = express.Router();
 router.post('/login', login);
 router.post('/signup', signup);
 router.post('/refresh', refreshToken);
+router.post('/resend-verification', resendVerification);
+router.post('/forgot-password', forgotPassword);
+router.post('/reset-password', resetPassword);
 
 // Protected routes (authentication required)
 router.post('/logout', authenticateUser, logout);

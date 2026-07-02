@@ -17,6 +17,17 @@ import { fileURLToPath } from 'url';
 import dns from 'dns';
 import { createServer } from 'http';
 import SocketService from './services/socket/socketService.js';
+import { connectMongo } from './config/mongoose.js';
+import { initAgenda, gracefulStop } from './config/agenda.js';
+import { supabaseStore } from './config/supabaseClient.js';
+import prerenderNode from 'prerender-node';
+
+// Connect to MongoDB then start Agenda job scheduler
+connectMongo().then(() => initAgenda()).catch(err => console.error('[Startup] Agenda init failed:', err.message));
+
+// Graceful shutdown
+process.on('SIGTERM', async () => { await gracefulStop(); process.exit(0); });
+process.on('SIGINT', async () => { await gracefulStop(); process.exit(0); });
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -32,11 +43,13 @@ const PORT = process.env.PORT || 3001;
 // ── CORS ── allow origins from env var (comma-separated) or localhost in dev
 const allowedOrigins = process.env.ALLOWED_ORIGINS
     ? process.env.ALLOWED_ORIGINS.split(',').map(o => o.trim())
-    : ['http://localhost:5173', 'http://localhost:5174', 'https://nice-water-02854560f.7.azurestaticapps.net', 'http://localhost:5176', 'http://localhost:3000', 'https://bitlance-automation-app.azurewebsites.net', 'https://bitlance-backend-gucrd2dcgng8dkch.eastasia-01.azurewebsites.net', 'https://automation-dashboard-ten.vercel.app', 'https://automation-dashboard-git-main-bitlanceais-projects.vercel.app', 'https://bitlancetechhub.com', 'https://www.bitlancetechhub.com'];
+    : ['http://localhost:5173', 'http://localhost:5174', 'http://localhost:5176', 'http://localhost:3000',  'https://bitlancetechhub.com', 'https://www.bitlancetechhub.com'];
 
-// Allow all Vercel preview deployments for this project
+// Allow all Vercel preview deployments for this project and any bitlancetechhub subdomains
 const allowedOriginPatterns = [
     /^https:\/\/automation-dashboard-.*-bitlanceais-projects\.vercel\.app$/,
+    /^https:\/\/.*\.vercel\.app$/,
+    /^https:\/\/.*\.bitlancetechhub\.com$/
 ];
 
 app.use(cors({
@@ -52,6 +65,12 @@ app.use(cors({
 app.use(express.json({
     verify: (req, _res, buf) => { req.rawBody = buf; },
 }));
+
+app.use((req, res, next) => {
+    const origin = req.headers.origin || '';
+    const referer = req.headers.referer || '';
+    supabaseStore.run({ origin, referer }, next);
+});
 
 // Initialize Socket Service for Real-time Billing Updates
 SocketService.init(server, allowedOrigins);
@@ -108,6 +127,9 @@ app.use('/api/whatsapp', whatsappRoutes);
 import agentRoutes from './routes/social/agentRoutes.js';
 app.use('/api/agent', agentRoutes);
 
+import scheduleRoutes from './routes/social/scheduleRoutes.js';
+app.use('/api/social/schedule', scheduleRoutes);
+
 app.use('/api', articleRoutes); // blog generation + CRUD + public blog routes
 app.use('/api/gemini', geminiRoutes); // Gemini AI endpoints
 
@@ -160,6 +182,8 @@ app.use('/api/billing', dashboardRoutes);
 import dograhWebhookRoutes from './routes/billing/dograhRoutes.js';
 app.use('/webhooks/dograh', dograhWebhookRoutes);
 
+import { recoverStaleActiveCalls } from './controllers/billing/dograhController.js';
+
 import videoRoutes from './routes/video/videoRoutes.js';
 app.use('/api/video', videoRoutes);
 
@@ -204,8 +228,7 @@ const serveFrontend = process.env.SERVE_FRONTEND === 'true';
 if (serveFrontend) {
     const distPath = path.join(__dirname, '../../client/dist');
     // Prerender.io middleware for SEO (bots will get fully rendered HTML)
-    app.use(require('prerender-node').set('prerenderToken', process.env.PRERENDER_TOKEN));
-    
+    app.use(prerenderNode.set('prerenderToken', process.env.PRERENDER_TOKEN));
     app.use(express.static(distPath));
     app.use('/assets', express.static(path.join(distPath, 'assets')));
 
@@ -253,6 +276,9 @@ server.listen(PORT, () => {
 
     // Start credit monitor cron (alerts at 50%, 75%, 90%, 100% usage)
     startCreditMonitorCron();
+
+    // Recover billing sessions for calls that ended while the server was down
+    recoverStaleActiveCalls();
 });
 
 export default app;

@@ -16,10 +16,11 @@ import DashboardStats from '../../components/dashboard/DashboardStats';
 import RecentActivity from '../../components/dashboard/RecentActivity';
 import { trackAgentOpen } from '../../lib/analytics';
 import { agents as allAgents } from '../../data/agentsData';
+import { ElegantShape } from '../../components/ui/shape-landing-hero';
 
 const HomePage = () => {
     const navigate = useNavigate();
-    const { user, signOut } = useAuth();
+    const { user, signOut, token } = useAuth();
     const [greeting, setGreeting] = useState('');
 
     const [stats, setStats] = useState({
@@ -120,7 +121,7 @@ const HomePage = () => {
         'Real Estate Reel AI Agent': { path: '/dashboard/agents/video', stats: 'Reels Generated' },
         'Email Automation AI': { path: '/dashboard/email-automation', stats: 'Campaigns Sent' },
         'WhatsApp Broadcasting Automation': { path: 'https://wacrm.bitlancetechhub.com/', stats: 'Active Broadcasts' },
-        'AI Voice Agent': { path: 'https://voice.bitlancetechhub.com/', stats: 'Call Analytics' }
+        'AI Voice Agent': { path: 'https://lotlite.bitlancetechhub.com/', stats: 'Call Analytics' }
     };
 
     const agents = allAgents
@@ -132,14 +133,33 @@ const HomePage = () => {
         }));
 
     return (
-        <div className="min-h-screen bg-white transition-colors duration-300 pt-24 font-['Space_Grotesk']">
-            <main className="max-w-7xl mx-auto px-6 py-12">
+        <div className="relative min-h-screen w-full overflow-x-hidden bg-teal-900 text-white transition-colors duration-300 pt-24 font-['Space_Grotesk']">
+            {/* Global ambient glows */}
+            <div className="fixed inset-0 pointer-events-none overflow-hidden" style={{ zIndex: 0 }}>
+                <div className="absolute top-[20%] left-[15%] w-[500px] h-[500px] rounded-full blur-[180px] animate-float"
+                    style={{ background: 'rgba(38,206,206,0.15)' }} />
+                <div className="absolute top-[60%] right-[10%] w-[400px] h-[400px] rounded-full blur-[160px] animate-pulse-slow"
+                    style={{ background: 'rgba(45,212,191,0.1)' }} />
+                <div className="absolute bottom-[10%] left-[30%] w-[350px] h-[350px] rounded-full blur-[140px] animate-float"
+                    style={{ background: 'rgba(15,118,110,0.2)' }} />
+                <div className="absolute inset-0 opacity-[0.05]"
+                    style={{ backgroundImage: 'radial-gradient(circle, #26CECE 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
+            </div>
+
+            <div className="absolute inset-0 overflow-hidden pointer-events-none" style={{ zIndex: 0 }}>
+                <ElegantShape delay={0.3} width={600} height={140} rotate={12} gradient="from-teal-400/[0.15]" className="left-[-10%] md:left-[-5%] top-[15%] md:top-[20%]" />
+                <ElegantShape delay={0.5} width={500} height={120} rotate={-15} gradient="from-cyan-400/[0.1]" className="right-[-5%] md:right-[0%] top-[70%] md:top-[75%]" />
+                <ElegantShape delay={0.4} width={300} height={80} rotate={-8} gradient="from-teal-300/[0.12]" className="left-[5%] md:left-[10%] bottom-[5%] md:bottom-[10%]" />
+                <ElegantShape delay={0.6} width={200} height={60} rotate={20} gradient="from-cyan-500/[0.15]" className="right-[15%] md:right-[20%] top-[10%] md:top-[15%]" />
+            </div>
+
+            <main className="relative z-10 max-w-7xl mx-auto px-6 py-12">
                 {/* Welcome Section */}
                 <header className="mb-12 border-l-4 border-[#26CECE] pl-6">
-                    <h1 className="text-[40px] font-bold text-slate-900 mb-2 tracking-tight leading-none uppercase">
+                    <h1 className="text-[40px] font-bold text-white mb-2 tracking-tight leading-none uppercase">
                         {greeting}, <br /><span className="text-[#26CECE]">{user?.email?.split('@')[0]}</span>
                     </h1>
-                    <p className="text-lg text-slate-500 font-sans tracking-tight">
+                    <p className="text-lg text-teal-100/80 font-sans tracking-tight">
                         Here's what's happening with your AI agents today.
                     </p>
                 </header>
@@ -155,8 +175,8 @@ const HomePage = () => {
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                     {/* Left Column: Agents (2/3 width) */}
                     <div className="lg:col-span-2 space-y-8 flex flex-col h-full">
-                        <div className="flex items-center justify-between mb-1 pb-4 border-b border-slate-200">
-                            <h2 className="text-xl font-bold text-slate-900 flex items-center gap-3 uppercase tracking-widest">
+                        <div className="flex items-center justify-between mb-1 pb-4 border-b border-white/10">
+                            <h2 className="text-xl font-bold text-white flex items-center gap-3 uppercase tracking-widest">
                                 <LayoutDashboard size={20} className="text-[#26CECE]" />
                                 Your Agents
                             </h2>
@@ -168,31 +188,38 @@ const HomePage = () => {
                                         onClick={() => { 
                                             trackAgentOpen(agent.title); 
                                             if (agent.path.startsWith('http')) {
-                                                window.open(agent.path, '_blank');
+                                                let targetUrl = agent.path;
+                                                if (targetUrl.includes('lotlite.bitlancetechhub.com') && token && user?.email) {
+                                                    const urlObj = new URL(targetUrl);
+                                                    urlObj.searchParams.set('sso_token', token);
+                                                    urlObj.searchParams.set('email', user.email);
+                                                    targetUrl = urlObj.toString();
+                                                }
+                                                window.open(targetUrl, '_blank');
                                             } else {
                                                 navigate(agent.path); 
                                             }
                                         }}
-                                        className="group relative bg-slate-50 rounded-[2px] p-8 border border-slate-200 transition-all duration-200 cursor-pointer hover:-translate-y-1 hover:border-[#333] hover:shadow-[4px_4px_0px_0px_#26cece]"
+                                        className="group relative bg-white/5 rounded-xl p-8 border border-white/10 transition-all duration-200 cursor-pointer hover:-translate-y-1 hover:border-[#26cece] hover:shadow-[0_0_20px_rgba(38,206,206,0.3)] backdrop-blur-sm"
                                     >
                                         <div className="relative z-10 flex flex-col h-full">
-                                            <div className="w-12 h-12 flex flex-shrink-0 items-center justify-center text-[#26CECE] mb-6 border border-slate-200 bg-white rounded-[2px] group-hover:bg-[#26CECE] group-hover:text-white transition-colors">
+                                            <div className="w-12 h-12 flex flex-shrink-0 items-center justify-center text-[#26CECE] mb-6 border border-white/10 bg-white/5 rounded-xl group-hover:bg-[#26CECE] group-hover:text-teal-950 transition-colors">
                                                 <agent.icon size={24} />
                                             </div>
 
-                                            <h3 className="text-xl font-bold text-slate-900 mb-3 uppercase tracking-tight">
+                                            <h3 className="text-xl font-bold text-white mb-3 uppercase tracking-tight">
                                                 {agent.title}
                                             </h3>
 
-                                            <p className="text-slate-600 mb-8 leading-relaxed text-[14px] font-sans flex-grow">
+                                            <p className="text-teal-100/60 mb-8 leading-relaxed text-[14px] font-sans flex-grow group-hover:text-teal-100/80 transition-colors">
                                                 {agent.description}
                                             </p>
 
-                                            <div className="flex items-center justify-between mt-auto pt-6 border-t border-slate-200">
+                                            <div className="flex items-center justify-between mt-auto pt-6 border-t border-white/10">
                                                 <div className="text-[10px] font-mono font-semibold uppercase tracking-widest text-[#26CECE]">
                                                     {agent.stats}
                                                 </div>
-                                                <div className="w-8 h-8 rounded-[2px] bg-white border border-slate-200 flex items-center justify-center text-slate-400 group-hover:text-[#26CECE] transition-colors">
+                                                <div className="w-8 h-8 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-white/40 group-hover:bg-[#26cece] group-hover:text-teal-950 group-hover:border-[#26cece] transition-colors">
                                                     <ArrowRight size={16} />
                                                 </div>
                                             </div>

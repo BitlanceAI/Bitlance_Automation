@@ -1,4 +1,7 @@
-import { supabase } from '../../config/supabaseClient.js';
+import { supabase, supabaseAdmin, oldSupabaseAdmin } from '../../config/supabaseClient.js';
+import { sendSignupWelcomeEmail, sendPasswordResetEmail } from '../../services/email/welcomeEmailService.js';
+
+
 
 /**
  * Login user
@@ -23,9 +26,30 @@ export const login = async (req, res) => {
 
         if (error) {
             console.error('Login error:', error);
+            let errorMessage = error.message || 'Invalid credentials';
+            
+            if (errorMessage.toLowerCase().includes('invalid login credentials') || errorMessage.toLowerCase().includes('invalid credentials')) {
+                try {
+                    if (supabaseAdmin) {
+                        const { data: listData, error: listError } = await supabaseAdmin.auth.admin.listUsers({
+                            page: 1,
+                            perPage: 1000
+                        });
+                        if (!listError && listData?.users) {
+                            const userExists = listData.users.some(u => u.email?.toLowerCase() === email.toLowerCase());
+                            if (!userExists) {
+                                errorMessage = "User does not exist. Please sign up.";
+                            }
+                        }
+                    }
+                } catch (err) {
+                    console.error('Error checking user existence:', err);
+                }
+            }
+
             return res.status(401).json({
                 success: false,
-                error: error.message || 'Invalid credentials'
+                error: errorMessage
             });
         }
 
@@ -54,7 +78,7 @@ export const login = async (req, res) => {
  */
 export const signup = async (req, res) => {
     try {
-        const { email, password, name } = req.body;
+        const { email, password, name, mobile } = req.body;
 
         if (!email || !password) {
             return res.status(400).json({
@@ -63,15 +87,18 @@ export const signup = async (req, res) => {
             });
         }
 
-        // Sign up with Supabase Auth
-        const { data, error } = await supabase.auth.signUp({
+        // Generate the signup verification link using supabaseAdmin (points to NEW DB for Voice Dashboard)
+        const { data, error } = await supabaseAdmin.auth.admin.generateLink({
+            type: 'signup',
             email,
             password,
             options: {
                 data: {
                     name: name || email.split('@')[0],
+                    phone: mobile,
                     role: 'user'
-                }
+                },
+                redirectTo: 'https://lotlite.bitlancetechhub.com/'
             }
         });
 
@@ -83,23 +110,31 @@ export const signup = async (req, res) => {
             });
         }
 
-        // Create user credits record
+        // Create user credits record in the database
         if (data.user) {
             try {
-                const { error: creditsError } = await supabase
+                // Since supabaseAdmin resolves to the old database, the user was already created there.
+                // We can directly upsert their credits using the user ID from the signup generation response.
+                const { error: creditsError } = await oldSupabaseAdmin
                     .from('user_credits')
                     .upsert({
                         user_id: data.user.id,
-                        balance: 500, // Initial credits
+                        balance: 10, // Initial credits
                         updated_at: new Date().toISOString()
                     }, { onConflict: 'user_id' });
 
                 if (creditsError) {
-                    console.error('Failed to create credits record:', creditsError);
+                    console.error('Failed to create credits record in DB:', creditsError);
                 }
             } catch (err) {
-                console.error('Credits initialization error:', err);
+                console.error('DB user/credits sync error:', err);
             }
+
+            // Send styled welcome verification email asynchronously with the dynamic verification link
+            const verificationLink = data.properties?.action_link;
+            sendSignupWelcomeEmail(data.user, name, verificationLink).catch(err => {
+                console.error('[WelcomeEmail] Error calling sendSignupWelcomeEmail:', err.message);
+            });
         }
 
         res.json({
@@ -144,10 +179,99 @@ export const logout = async (req, res) => {
 
     } catch (error) {
         console.error('Logout error:', error);
-        res.status(500).json({
-            success: false,
-            error: 'Logout failed'
+        res.status(500).json({ success: false, error: 'Logout failed' });
+    }
+};
+
+/**
+ * Request password reset link
+ * POST /api/auth/forgot-password
+ */
+export const forgotPassword = async (req, res) => {
+    try {
+        const { email } = req.body;
+        if (!email) {
+            return res.status(400).json({ success: false, error: 'Email is required' });
+        }
+
+        // Generate recovery link using admin client (this bypasses email rate limits on dev)
+        const { data, error } = await supabaseAdmin.auth.admin.generateLink({
+            type: 'recovery',
+            email,
+            options: {
+                redirectTo: 'https://lotlite.bitlancetechhub.com/reset-password'
+            }
         });
+
+        if (error) {
+            console.error('Forgot password error:', error.message);
+            // If user doesn't exist, return explicit error
+            if (error.message.toLowerCase().includes('not found') || error.message.toLowerCase().includes('exist')) {
+                return res.status(404).json({ success: false, error: 'User does not exist. Please sign up.' });
+            }
+            return res.status(400).json({ success: false, error: error.message });
+        }
+
+        if (data && data.properties && data.properties.action_link) {
+            // Extract the token parameter from the Supabase generated link
+            const urlObj = new URL(data.properties.action_link);
+            const token = urlObj.searchParams.get('token');
+            // Build the frontend URL directly to bypass Supabase redirect whitelist issues
+            const customResetLink = `https://lotlite.bitlancetechhub.com/reset-password?token=${token}`;
+            await sendPasswordResetEmail(email, customResetLink);
+        }
+
+        res.json({ success: true, message: 'Verification link sent successfully' });
+    } catch (error) {
+        console.error('Forgot password error:', error);
+        res.status(500).json({ success: false, error: 'Failed to process request' });
+    }
+};
+
+/**
+ * Reset password with token
+ * POST /api/auth/reset-password
+ */
+export const resetPassword = async (req, res) => {
+    try {
+        const { token, newPassword } = req.body;
+        if (!token || !newPassword) {
+            return res.status(400).json({ success: false, error: 'Token and new password are required' });
+        }
+
+        // Verify the token
+        let user;
+        const { data: verifyData, error: verifyError } = await supabase.auth.verifyOtp({
+            token_hash: token,
+            type: 'recovery'
+        });
+
+        if (verifyError || !verifyData?.user) {
+            // Fallback: try verifying as a JWT access token
+            const { data: userData, error: jwtError } = await supabase.auth.getUser(token);
+            if (jwtError || !userData?.user) {
+                console.error('Reset password verify error:', verifyError?.message || jwtError?.message);
+                return res.status(401).json({ success: false, error: 'Invalid or expired reset token' });
+            }
+            user = userData.user;
+        } else {
+            user = verifyData.user;
+        }
+
+        // Update the password
+        const { error: updateError } = await supabaseAdmin.auth.admin.updateUserById(user.id, {
+            password: newPassword
+        });
+
+        if (updateError) {
+            console.error('Update password error:', updateError.message);
+            return res.status(400).json({ success: false, error: 'Failed to update password' });
+        }
+
+        res.json({ success: true, message: 'Password updated successfully' });
+    } catch (error) {
+        console.error('Reset password error:', error);
+        res.status(500).json({ success: false, error: 'Failed to reset password' });
     }
 };
 
@@ -229,6 +353,82 @@ export const refreshToken = async (req, res) => {
         res.status(500).json({
             success: false,
             error: 'Failed to refresh token'
+        });
+    }
+};
+
+/**
+ * Resend verification email
+ * POST /api/auth/resend-verification
+ */
+export const resendVerification = async (req, res) => {
+    try {
+        const { email } = req.body;
+
+        if (!email) {
+            return res.status(400).json({
+                success: false,
+                error: 'Email is required'
+            });
+        }
+
+        // Verify if user exists in Supabase to prevent resends for non-existent users
+        let targetUser = null;
+        try {
+            if (supabaseAdmin) {
+                const { data: listData, error: listError } = await supabaseAdmin.auth.admin.listUsers({
+                    page: 1,
+                    perPage: 1000
+                });
+                if (!listError && listData?.users) {
+                    targetUser = listData.users.find(u => u.email?.toLowerCase() === email.toLowerCase());
+                    if (!targetUser) {
+                        return res.status(404).json({
+                            success: false,
+                            error: 'cant resend .. please sign up first'
+                        });
+                    }
+                }
+            }
+        } catch (err) {
+            console.error('Error checking user existence before resend:', err);
+        }
+
+        // Generate verification link using magiclink type on new DB (doesn't throw email_exists)
+        const { data, error } = await supabaseAdmin.auth.admin.generateLink({
+            type: 'magiclink',
+            email,
+            options: {
+                redirectTo: 'https://lotlite.bitlancetechhub.com/'
+            }
+        });
+
+        if (error || !data) {
+            console.error('Resend verification error:', error);
+            return res.status(400).json({
+                success: false,
+                error: error?.message || 'Failed to resend verification email'
+            });
+        }
+
+        // Send styled welcome verification email asynchronously with the dynamic verification link
+        const verificationLink = data.properties?.action_link;
+        const name = targetUser?.user_metadata?.name || email.split('@')[0];
+        
+        sendSignupWelcomeEmail(targetUser || { email }, name, verificationLink).catch(err => {
+            console.error('[WelcomeEmail] Error calling sendSignupWelcomeEmail during resend:', err.message);
+        });
+
+        res.json({
+            success: true,
+            message: 'Verification email resent successfully. Please check your inbox.'
+        });
+
+    } catch (error) {
+        console.error('Resend verification error:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Failed to resend verification email'
         });
     }
 };

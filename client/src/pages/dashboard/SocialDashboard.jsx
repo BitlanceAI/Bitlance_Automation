@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react'; // Force save 6
 import { useAuth } from '../../context/AuthContext';
 import { useWorkspace } from '../../context/WorkspaceContext';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import API_BASE_URL from '../../config.js';
 import WorkspaceSwitcher from '../../components/workspace/WorkspaceSwitcher';
 import { Menu, Edit2, Layers, Sparkles, CalendarCheck, Star, CalendarDays, Zap } from 'lucide-react';
@@ -22,8 +22,10 @@ import UploadCSVView from '../../components/social/UploadCSVView';
 import InboxView from '../../components/social/InboxView';
 import SchedulePostView from '../../components/social/SchedulePostView';
 import GraphicsAIView from '../../components/social/GraphicsAIView';
-import AgentSettingsView from '../../components/social/AgentSettingsView';
+import CampaignView from '../../components/social/CampaignView';
 import HumanReviewView from '../../components/social/HumanReviewView';
+import CommentsView from '../../components/social/CommentsView';
+import AdsLibraryView from '../../components/social/AdsLibraryView';
 
 // Import extracted dashboard components
 import Sidebar from '../../components/social/dashboard/Sidebar';
@@ -41,6 +43,7 @@ const SocialDashboard = () => {
     const { user, session } = useAuth();
     const { workspaceHeaders, loading: workspaceLoading, activeWorkspace } = useWorkspace();
     const navigate = useNavigate();
+    const [searchParams, setSearchParams] = useSearchParams();
 
     const shareMenuItems = [
         { id: 'share', icon: Edit2, label: 'Create a Post Manually', description: 'Write, schedule and publish your post directly to your social profiles' },
@@ -52,6 +55,7 @@ const SocialDashboard = () => {
         { id: 'twitter_thread', icon: XIcon, label: 'X (Twitter) Thread Builder', description: 'Craft engaging threads with automatic splitting' },
         { id: 'smart_schedule', icon: Zap, label: 'Smart Post Scheduler (AI)', description: 'Let AI determine the best times to post' },
         { id: 'approval_queue', icon: CalendarCheck, label: 'Agent Approval Queue', description: 'Review, edit, and approve AI-generated posts' },
+        { id: 'campaigns', icon: Sparkles, label: 'AI Campaigns', description: 'Generate posts scheduled for weeks or months' },
     ];
     
     // UI State
@@ -85,6 +89,11 @@ const SocialDashboard = () => {
     const [postTargets, setPostTargets] = useState([]);
     const [waShare, setWaShare] = useState({ enabled: false, mode: 'link', phone: '', sending: false, sent: false, copied: false, opened: false, error: null });
 
+    // Scheduling State
+    const [isScheduling, setIsScheduling] = useState(false);
+    const [scheduledAt, setScheduledAt] = useState('');
+    const [approverPhone, setApproverPhone] = useState(user?.user_metadata?.phone || '');
+
     // AI Write State
     const [isAiWriteOpen, setIsAiWriteOpen] = useState(false);
     const [aiPrompt, setAiPrompt] = useState('');
@@ -114,6 +123,46 @@ const SocialDashboard = () => {
         fetchProfiles();
         fetchLinkedInStats(7);
     }, [authToken, postSuccessCount]);
+
+    const oauthHandledRef = useRef(false);
+
+    // Handle Meta OAuth callback: ?code=...&platform=meta
+    useEffect(() => {
+        const code = searchParams.get('code');
+        const platform = searchParams.get('platform');
+        const connectPlatform = searchParams.get('connect_platform') || 'facebook';
+        if (!code || !authToken) return;
+        if (platform !== 'meta' && platform !== 'instagram_business') return;
+        if (oauthHandledRef.current) return;
+        oauthHandledRef.current = true;
+
+        // Clean URL immediately so refresh doesn't re-trigger
+        setSearchParams({}, { replace: true });
+
+        const endpoint = platform === 'instagram_business'
+            ? `${API_BASE_URL}/api/meta/instagram/connect`
+            : `${API_BASE_URL}/api/meta/connect`;
+
+        fetch(endpoint, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${authToken}`,
+                'Content-Type': 'application/json',
+                ...workspaceHeaders
+            },
+            body: JSON.stringify(platform === 'instagram_business' ? { code } : { code, connect_platform: connectPlatform })
+        })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    setPostSuccessCount(c => c + 1); // triggers fetchProfiles
+                } else {
+                    console.error('Meta connect failed:', data.error);
+                    alert('Meta connection failed: ' + (data.error || 'Unknown error'));
+                }
+            })
+            .catch(err => console.error('Meta connect error:', err));
+    }, [searchParams, authToken]);
 
     const fetchProfiles = async () => {
         setIsLoadingProfiles(true);
@@ -292,9 +341,13 @@ const SocialDashboard = () => {
                 payload.type = 'text';
             }
 
-            const res = await fetch(`${API_BASE_URL}/api/social/whatsapp/send`, {
+            const res = await fetch(`${API_BASE_URL}/api/whatsapp/send`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json', ...workspaceHeaders },
+                headers: { 
+                    'Content-Type': 'application/json', 
+                    'Authorization': `Bearer ${authToken}`,
+                    ...workspaceHeaders 
+                },
                 body: JSON.stringify(payload)
             });
             const data = await res.json();
@@ -346,9 +399,9 @@ const SocialDashboard = () => {
         let errors = [];
 
         try {
-            // 1. Pre-upload media for Meta/Twitter if needed (they need a public URL)
+            // 1. Pre-upload media for scheduling (needed for WhatsApp/Agenda) or Meta/Twitter (they need a public URL)
             let publicMediaUrl = null;
-            if (mediaAttachment && postTargets.some(t => ['facebook', 'instagram', 'twitter'].includes(t.platform))) {
+            if (mediaAttachment && (isScheduling || postTargets.some(t => ['facebook', 'instagram', 'twitter'].includes(t.platform)))) {
                 if (mediaAttachment.preview && mediaAttachment.preview.startsWith('http')) {
                     publicMediaUrl = mediaAttachment.preview;
                 } else if (mediaAttachment.file) {
@@ -357,7 +410,7 @@ const SocialDashboard = () => {
                         uploadData.append('file', mediaAttachment.file);
                         const uploadRes = await fetch(`${API_BASE_URL}/api/campaigns/upload`, {
                             method: 'POST',
-                            headers: { 'Authorization': `Bearer ${authToken}` },
+                            headers: { 'Authorization': `Bearer ${authToken}`, ...workspaceHeaders },
                             body: uploadData
                         });
                         const uploadJson = await uploadRes.json();
@@ -372,91 +425,127 @@ const SocialDashboard = () => {
                 }
             }
 
-            for (const target of postTargets) {
-                let endpoint = '';
-                let payload = {};
-                let fetchOptions = {
-                    method: 'POST',
-                    headers: { 'Authorization': `Bearer ${authToken}` }
+            if (isScheduling) {
+                const endpoint = `${API_BASE_URL}/api/social/schedule`;
+                const payload = {
+                    text: postText,
+                    platforms: postTargets.map(t => t.platform),
+                    profileIds: postTargets.map(t => t.profileId || t.id || 'urn:li:person:me'),
+                    scheduledAt: new Date(scheduledAt).toISOString(),
+                    timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+                    approverPhone
                 };
-
-                if (target.platform === 'linkedin') {
-                    endpoint = `${API_BASE_URL}/api/linkedin/post`;
-                    payload = {
-                        profileId: target.profileId || 'urn:li:person:me',
-                        text: postText,
-                        visibility: postVisibility
-                    };
-                    
-                    // LinkedIn needs its own direct upload to get an assetUrn
-                    if (mediaAttachment && mediaAttachment.file) {
-                        try {
-                            const liUploadData = new FormData();
-                            liUploadData.append('file', mediaAttachment.file);
-                            liUploadData.append('profileId', payload.profileId);
-                            liUploadData.append('mediaCategory', mediaAttachment.mediaCategory || 'IMAGE');
-                            
-                            const liUploadRes = await fetch(`${API_BASE_URL}/api/linkedin/upload-media`, {
-                                method: 'POST',
-                                headers: { 'Authorization': `Bearer ${authToken}` },
-                                body: liUploadData
-                            });
-                            const liUploadJson = await liUploadRes.json();
-                            if (liUploadJson.success && liUploadJson.assetUrn) {
-                                payload.assetUrn = liUploadJson.assetUrn;
-                                payload.mediaCategory = liUploadJson.mediaCategory;
-                            }
-                        } catch (err) {
-                            console.error("LinkedIn media upload failed:", err);
-                        }
-                    }
-
-                    fetchOptions.headers['Content-Type'] = 'application/json';
-                    fetchOptions.body = JSON.stringify(payload);
-
-                } else if (target.platform === 'facebook' || target.platform === 'instagram') {
-                    endpoint = `${API_BASE_URL}/api/meta/post`;
-                    payload = {
-                        accountId: target.profileId || target.id,
-                        platform: target.platform,
-                        text: postText
-                    };
-                    
-                    if (publicMediaUrl) {
-                        payload.mediaUrl = publicMediaUrl;
-                    }
-                    
-                    fetchOptions.headers['Content-Type'] = 'application/json';
-                    fetchOptions.body = JSON.stringify(payload);
-
-                } else if (target.platform === 'twitter') {
-                    endpoint = `${API_BASE_URL}/api/twitter/post`;
-                    payload = {
-                        text: postText
-                    };
-                    
-                    // If backend ever supports passing mediaUrl to Twitter, pass it here
-                    if (publicMediaUrl) {
-                        payload.mediaUrl = publicMediaUrl; 
-                    }
-
-                    fetchOptions.headers['Content-Type'] = 'application/json';
-                    fetchOptions.body = JSON.stringify(payload);
+                if (publicMediaUrl) {
+                    payload.mediaUrl = publicMediaUrl;
+                    payload.mediaCategory = mediaAttachment?.mediaCategory || 'IMAGE';
                 }
-
-                if (!endpoint) continue;
-
-                const res = await fetch(endpoint, fetchOptions);
+                const res = await fetch(endpoint, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${authToken}`, 'Content-Type': 'application/json', ...workspaceHeaders },
+                    body: JSON.stringify(payload)
+                });
                 const data = await res.json();
-                
-                if (data.success || data.id || data.postId) {
-                    successCount++;
+                if (data.success) {
+                    setPostStatus({ type: 'success', message: 'Post scheduled! Pending WhatsApp approval.' });
+                    setPostSuccessCount(prev => prev + 1);
+                    setPostText('');
+                    setMediaAttachment(null);
+                    setPostTargets([]);
+                    setIsPreviewOpen(false);
+                    // Reset scheduling state
+                    setIsScheduling(false);
+                    setScheduledAt('');
                 } else {
-                    errors.push(`${target.platform}: ${data.error || 'Failed'}`);
+                    errors.push(data.message || data.error || 'Scheduling failed');
                 }
-            }
+            } else {
+                for (const target of postTargets) {
+                    try {
+                        let endpoint = '';
+                        let payload = {};
+                        let fetchOptions = {
+                            method: 'POST',
+                            headers: { 'Authorization': `Bearer ${authToken}`, ...workspaceHeaders }
+                        };
 
-            if (successCount > 0) {
+                        if (target.platform === 'linkedin') {
+                            endpoint = `${API_BASE_URL}/api/linkedin/post`;
+                            payload = {
+                                profileId: target.profileId || 'urn:li:person:me',
+                                text: postText,
+                                visibility: postVisibility
+                            };
+                            
+                            // LinkedIn needs its own direct upload to get an assetUrn
+                            if (mediaAttachment && mediaAttachment.file) {
+                                try {
+                                    const liUploadData = new FormData();
+                                    liUploadData.append('file', mediaAttachment.file);
+                                    liUploadData.append('profileId', payload.profileId);
+                                    liUploadData.append('mediaCategory', mediaAttachment.mediaCategory || 'IMAGE');
+                                    
+                                    const liUploadRes = await fetch(`${API_BASE_URL}/api/linkedin/upload-media`, {
+                                        method: 'POST',
+                                        headers: { 'Authorization': `Bearer ${authToken}`, ...workspaceHeaders },
+                                        body: liUploadData
+                                    });
+                                    const liUploadJson = await liUploadRes.json();
+                                    if (liUploadJson.success && liUploadJson.assetUrn) {
+                                        payload.assetUrn = liUploadJson.assetUrn;
+                                        payload.mediaCategory = liUploadJson.mediaCategory;
+                                    }
+                                } catch (err) {
+                                    console.error("LinkedIn media upload failed:", err);
+                                }
+                            }
+
+                            fetchOptions.headers['Content-Type'] = 'application/json';
+                            fetchOptions.body = JSON.stringify(payload);
+
+                        } else if (target.platform === 'facebook' || target.platform === 'instagram') {
+                            endpoint = `${API_BASE_URL}/api/meta/post`;
+                            payload = {
+                                accountId: target.profileId || target.id,
+                                platform: target.platform,
+                                text: postText
+                            };
+                            
+                            if (publicMediaUrl) {
+                                payload.mediaUrl = publicMediaUrl;
+                            }
+                            
+                            fetchOptions.headers['Content-Type'] = 'application/json';
+                            fetchOptions.body = JSON.stringify(payload);
+
+                        } else if (target.platform === 'twitter') {
+                            endpoint = `${API_BASE_URL}/api/twitter/post`;
+                            payload = {
+                                text: postText
+                            };
+                            
+                            // If backend ever supports passing mediaUrl to Twitter, pass it here
+                            if (publicMediaUrl) {
+                                payload.mediaUrl = publicMediaUrl; 
+                            }
+
+                            fetchOptions.headers['Content-Type'] = 'application/json';
+                            fetchOptions.body = JSON.stringify(payload);
+                        }
+
+                        if (!endpoint) continue;
+
+                        const res = await fetch(endpoint, fetchOptions);
+                        const data = await res.json();
+                        if (!res.ok) errors.push(`${target.platform}: ${res.statusText}`);
+                        else if (!data.success) errors.push(`${target.platform}: ${data.error || 'Failed'}`);
+                        else successCount++;
+                    } catch (err) {
+                        errors.push(`${target.platform}: ${err.message}`);
+                    }
+                }
+            } // end of else (isScheduling)
+
+            if (errors.length > 0) {
                 setPostStatus({ type: 'success', message: `Successfully posted to ${successCount} profile(s)` });
                 setPostText('');
                 removeAttachment();
@@ -528,35 +617,30 @@ const SocialDashboard = () => {
                     {activeView === 'ai_templates' && <AITemplatesView />}
                     {activeView === 'upload_csv' && <UploadCSVView />}
                     {activeView === 'twitter_thread' && <TwitterThreadBuilderView />}
-                    {activeView === 'smart_schedule' && <SchedulePostView />}
-                    {activeView === 'inbox' && <InboxView />}
+                    {activeView === 'smart_schedule' && (
+                        <SchedulePostView 
+                            connectedProfiles={connectedProfiles}
+                            setPostText={setPostText}
+                            setMediaAttachment={setMediaAttachment}
+                            setIsPreviewOpen={setIsPreviewOpen}
+                            setPostTargets={setPostTargets}
+                            setPreviewStep={setPreviewStep}
+                            postSuccessCount={postSuccessCount}
+                            setIsScheduling={setIsScheduling}
+                        />
+                    )}
+                    {activeView === 'inbox' && <InboxView connectedProfiles={connectedProfiles} />}
                     { activeView === 'graphics_ai' && <GraphicsAIView /> }
-                    { activeView === 'agent_settings' && <AgentSettingsView setActiveView={setActiveView} /> }
+                    { activeView === 'campaigns' && <CampaignView setActiveView={setActiveView} /> }
                     { activeView === 'approval_queue' && <HumanReviewView /> }
+                    { activeView === 'comments' && <CommentsView connectedProfiles={connectedProfiles} /> }
+                    { activeView === 'ads_library' && <AdsLibraryView /> }
                     
                     {activeView === 'share_menu' && (
                         <div className="p-8 max-w-[1200px] mx-auto flex flex-col h-full overflow-y-auto">
                             <div className="mb-10 text-center relative">
                                 <h1 className="text-3xl md:text-4xl font-bold font-['Space_Grotesk'] text-white tracking-tight uppercase mb-3">Create a Post</h1>
                                 <p className="text-teal-50/80 font-mono tracking-widest text-sm uppercase">Choose how you want to create your content</p>
-                                
-                                <button 
-                                    onClick={() => setActiveView('agent_settings')}
-                                    className="absolute right-0 top-1/2 -translate-y-1/2 hidden md:flex items-center gap-2 px-4 py-2 bg-[#26cece]/10 text-[#26cece] hover:bg-[#26cece]/20 border border-[#26cece]/30 rounded-xl font-mono text-xs uppercase tracking-wider transition-colors"
-                                >
-                                    <Sparkles className="w-4 h-4" />
-                                    Agent Settings
-                                </button>
-                            </div>
-                            
-                            <div className="md:hidden flex justify-center mb-8">
-                                <button 
-                                    onClick={() => setActiveView('agent_settings')}
-                                    className="flex items-center gap-2 px-4 py-2 bg-[#26cece]/10 text-[#26cece] hover:bg-[#26cece]/20 border border-[#26cece]/30 rounded-xl font-mono text-xs uppercase tracking-wider transition-colors"
-                                >
-                                    <Sparkles className="w-4 h-4" />
-                                    Agent Settings
-                                </button>
                             </div>
 
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
@@ -677,6 +761,13 @@ const SocialDashboard = () => {
                 waShare={waShare}
                 setWaShare={setWaShare}
                 handleSendWhatsAppPreview={handleSendWhatsAppPreview}
+                isScheduling={isScheduling}
+                setIsScheduling={setIsScheduling}
+                scheduledAt={scheduledAt}
+                setScheduledAt={setScheduledAt}
+                approverPhone={approverPhone}
+                setApproverPhone={setApproverPhone}
+                authToken={authToken}
             />
 
             <TrendingTopicsModal 

@@ -5,6 +5,7 @@ const CalendarSettings = ({ onSave, initialData }) => {
     const [month, setMonth] = useState(new Date().toLocaleString('default', { month: 'long' }));
     const [year, setYear] = useState(new Date().getFullYear().toString());
     const [themes, setThemes] = useState('');
+    const [campaignTopic, setCampaignTopic] = useState('');
     const [festivals, setFestivals] = useState([{ date: '', name: '' }]);
     const [isSaving, setIsSaving] = useState(false);
 
@@ -13,6 +14,7 @@ const CalendarSettings = ({ onSave, initialData }) => {
             if (initialData.month) setMonth(initialData.month);
             if (initialData.year) setYear(initialData.year);
             if (initialData.themes) setThemes(initialData.themes.join(', '));
+            if (initialData.campaign_topic) setCampaignTopic(initialData.campaign_topic);
             if (initialData.festivals && initialData.festivals.length > 0) {
                 setFestivals(initialData.festivals);
             }
@@ -42,6 +44,7 @@ const CalendarSettings = ({ onSave, initialData }) => {
             const data = {
                 month,
                 year,
+                campaign_topic: campaignTopic,
                 themes: themes.split(',').map(t => t.trim()).filter(Boolean),
                 festivals: festivals.filter(f => f.date && f.name)
             };
@@ -99,6 +102,20 @@ const CalendarSettings = ({ onSave, initialData }) => {
                         onChange={(e) => setThemes(e.target.value)}
                         placeholder="e.g. Summer Sale, Back to School, Product Launch"
                         className="w-full bg-[#111] border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-white/30 focus:outline-none focus:border-[#26cece] transition-all font-mono text-sm"
+                    />
+                </div>
+
+                <div>
+                    <label className="flex items-center text-sm font-mono text-white/80 mb-2">
+                        <Tag className="w-4 h-4 mr-2 text-[#26cece]" />
+                        Campaign Topic / Goals
+                    </label>
+                    <textarea
+                        value={campaignTopic}
+                        onChange={(e) => setCampaignTopic(e.target.value)}
+                        placeholder="e.g. Launching our new summer collection. Goal is to drive traffic to the new catalog and highlight eco-friendly materials."
+                        rows={3}
+                        className="w-full bg-[#111] border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-white/30 focus:outline-none focus:border-[#26cece] transition-all font-mono text-sm resize-none"
                     />
                 </div>
 

@@ -14,6 +14,7 @@
         "@google/generative-ai": "^0.24.1",
         "@onesignal/node-onesignal": "^5.3.1-beta1",
         "@supabase/supabase-js": "^2.39.0",
+        "agenda": "^6.2.5",
         "axios": "^1.13.3",
         "bcrypt": "^6.0.0",
         "cors": "^2.8.5",
@@ -22,6 +23,7 @@
         "firebase-admin": "^13.6.1",
         "form-data": "^4.0.5",
         "googleapis": "^170.1.0",
+        "mongoose": "^9.7.3",
         "multer": "^2.0.2",
         "node-cron": "^4.2.1",
         "nodemailer": "^8.0.1",
@@ -32,6 +34,7 @@
         "redis": "^6.0.1",
         "socket.io": "^4.8.3",
         "twilio": "^5.12.2",
+        "ws": "^8.21.0",
         "xlsx": "^0.18.5"
     },
     "engines": {

@@ -1,4 +1,4 @@
-import { supabase } from '../config/supabaseClient.js';
+import { supabase, supabaseAdmin } from '../config/supabaseClient.js';
 
 export const authenticateUser = async (req, res, next) => {
     try {
@@ -34,6 +34,16 @@ export const authenticateUser = async (req, res, next) => {
             return res.status(401).json({ success: false, error: 'Invalid or expired token' });
         }
 
+        // --- ACCOUNT LINKING (Shared Admins) ---
+        if (user.email === 'itm.lotlite@gmail.com' || user.email === 'bookishalok@gmail.com') {
+            const { data: adminList } = await supabaseAdmin.auth.admin.listUsers({ perPage: 1000 });
+            const bookishUser = adminList?.users?.find(u => u.email === 'bookishalok@gmail.com');
+            if (bookishUser) {
+                user.id = bookishUser.id;
+            }
+        }
+        // ---------------------------------------
+
         // Attach user and active workspace to request
         req.user = user;
         req.token = token;
@@ -47,3 +57,32 @@ export const authenticateUser = async (req, res, next) => {
 
 // Alias for route compatibility
 export const protect = authenticateUser;
+
+import { oldSupabaseAdmin } from '../config/supabaseClient.js';
+
+export const resolveOldBillingUser = async (req, res, next) => {
+    try {
+        if (!req.user || !req.user.email) {
+            return res.status(401).json({ success: false, error: 'User email not found in token' });
+        }
+        
+        // Find user by email in the old (billing) database
+        const { data, error } = await oldSupabaseAdmin.auth.admin.listUsers({ page: 1, perPage: 1000 });
+        
+        if (!error && data?.users) {
+            const oldUser = data.users.find(u => u.email?.toLowerCase() === req.user.email.toLowerCase());
+            if (oldUser) {
+                // Store old DB user ID for billing operations (payment, credits)
+                req.user.billingId = oldUser.id;
+            }
+        }
+        
+        // Always continue — dashboard uses new DB for client activity
+        // billingId will be used only for credit deductions in billing controllers
+        next();
+    } catch (error) {
+        console.error('Resolve Old Billing User Middleware Error:', error);
+        // Don't block on error — let dashboard still load
+        next();
+    }
+};

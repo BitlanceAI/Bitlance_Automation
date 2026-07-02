@@ -44,14 +44,19 @@ class InstagramAgent:
             raise
 
     def content_planner(self, brand_config: Dict, calendar: Dict) -> str:
-        """Node 1: Generates a day-wise post strategy."""
-        logger.info("[InstagramAgent] Running Content Planner...")
+        """Node 1: Generates a day-wise post strategy with deep research."""
+        logger.info("[InstagramAgent] Running Content Planner with Perplexity Research...")
+        campaign_topic = calendar.get("campaign_topic", "General Social Media Content")
+        brand_url = brand_config.get("brand_website_url", "No URL provided")
+        
         system_prompt = (
-            "You are an expert Social Media Strategist. Your job is to create a highly engaging "
-            "day-wise content strategy based on the brand's config and the provided 30-day calendar events. "
-            "Return ONLY a JSON array of objects with 'day', 'topic', and 'angle' keys. Do not use markdown blocks."
+            "You are an expert Social Media Strategist and AI Researcher. "
+            "First, research the provided Brand Website URL (if any) to understand their products, tone, and audience. "
+            "Next, research current trends related to the Campaign Topic / Goals provided. "
+            "Then, create a highly engaging day-wise content strategy based on your research, the brand's config, and the 30-day calendar events. "
+            "Your output MUST be ONLY a valid JSON array of objects with 'day' (integer), 'topic' (string), and 'angle' (string) keys. Do not use markdown blocks."
         )
-        user_prompt = f"Brand Config: {json.dumps(brand_config)}\nCalendar Events: {json.dumps(calendar)}"
+        user_prompt = f"Brand Config: {json.dumps(brand_config)}\nBrand URL: {brand_url}\nCampaign Topic: {campaign_topic}\nCalendar Events: {json.dumps(calendar)}"
         
         response = self._call_perplexity(system_prompt, user_prompt)
         # Strip markdown fences if present

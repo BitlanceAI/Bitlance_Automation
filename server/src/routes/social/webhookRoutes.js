@@ -348,6 +348,42 @@ router.post('/whatsapp', async (req, res) => {
             const fromPhone = message.from; // e.g. "919876543210"
             const payload = message.button?.payload; // 'APPROVED' or 'DISAPPROVED'
 
+            if (payload.startsWith('SCHED_APPROVE_') || payload.startsWith('SCHED_REJECT_')) {
+                const isApproved = payload.startsWith('SCHED_APPROVE_');
+                const postId = payload.replace('SCHED_APPROVE_', '').replace('SCHED_REJECT_', '');
+
+                console.log(`[WA Approval] Scheduled Post ${postId} ${isApproved ? 'APPROVED' : 'REJECTED'} by ${fromPhone}`);
+
+                // Update the status in the database
+                const newStatus = isApproved ? 'approved' : 'rejected';
+                const { error: updateErr } = await supabase
+                    .from('scheduled_social_posts')
+                    .update({ 
+                        status: newStatus,
+                        updated_at: new Date().toISOString()
+                    })
+                    .eq('id', postId);
+
+                if (updateErr) {
+                    console.error('[WA Approval] Failed to update scheduled post:', updateErr);
+                } else {
+                    // Send confirmation message to user
+                    const whatsappService = (await import('../../services/social/whatsappService.js')).default;
+                    const confirmMsg = isApproved 
+                        ? '✅ Post Approved! It will be published at the scheduled time.' 
+                        : '❌ Post Rejected. It will not be published.';
+                    
+                    // Note: In a production app, we would ideally fetch the user_id from the post to pass into sendTextMessage
+                    // For now, we simulate or pass a system sender if user context isn't strictly needed for the reply.
+                    // We can query the post to get the user_id:
+                    const { data: postData } = await supabase.from('scheduled_social_posts').select('user_id').eq('id', postId).single();
+                    if (postData) {
+                        await whatsappService.sendTextMessage(postData.user_id, fromPhone, confirmMsg);
+                    }
+                }
+                continue;
+            }
+
             if (!['APPROVED', 'DISAPPROVED'].includes(payload)) continue;
 
             console.log(`[WA Approval] ${payload} from ${fromPhone}`);

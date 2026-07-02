@@ -6,7 +6,7 @@ import { createClient } from '@supabase/supabase-js';
 import LinkedinService from '../../services/social/linkedinService.js';
 import { encryptData, decryptData } from '../../../utils/encryption.js';
 
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY || 'dummy_placeholder_for_startup' });
 
 const upload = multer({
     storage: multer.memoryStorage(),

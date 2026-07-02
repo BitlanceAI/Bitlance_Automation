@@ -36,7 +36,162 @@ const authMiddleware = async (req, res, next) => {
     }
 };
 
+/**
+ * Instagram Business Login callback — no auth
+ * Handles both webhook verification (hub.mode) and OAuth redirect (code)
+ * GET /api/meta/instagram/callback
+ */
+router.get('/instagram/callback', async (req, res) => {
+    // Webhook verification challenge from Meta
+    if (req.query['hub.mode'] === 'subscribe') {
+        const token = req.query['hub.verify_token'];
+        const challenge = req.query['hub.challenge'];
+        if (token === process.env.META_VERIFY_TOKEN) {
+            console.log('[Instagram Webhook] Verified');
+            return res.status(200).send(challenge);
+        }
+        return res.sendStatus(403);
+    }
+
+    // OAuth redirect with authorization code
+    const { code, state, error } = req.query;
+    const clientUrl = process.env.CLIENT_URL || 'http://localhost:5173';
+
+    let destination = clientUrl + '/SocialDashboard';
+    if (state) {
+        try { destination = decodeURIComponent(state); } catch (_) {}
+    }
+
+    if (error || !code) {
+        return res.redirect(`${destination}?error=${error || 'no_code'}`);
+    }
+
+    const separator = destination.includes('?') ? '&' : '?';
+    res.redirect(`${destination}${separator}code=${code}&platform=instagram_business`);
+});
+
+/**
+ * OAuth Callback handler (Backend) — no auth, called by Meta redirect
+ * GET /api/meta/oauth/callback
+ */
+router.get('/oauth/callback', (req, res) => {
+    const { code, state, error, error_description } = req.query;
+    const clientUrl = process.env.CLIENT_URL || 'http://localhost:5173';
+
+    let destination = clientUrl + '/SocialDashboard';
+    let connectPlatform = 'facebook';
+    if (state && state !== 'meta_auth') {
+        try {
+            const parsed = JSON.parse(decodeURIComponent(state));
+            destination = parsed.dest || destination;
+            connectPlatform = parsed.platform || 'facebook';
+        } catch (e) {
+            // Fallback: treat state as plain URL (backwards compat)
+            try { destination = decodeURIComponent(state); } catch (_) {}
+        }
+    }
+
+    if (error) {
+        return res.redirect(`${destination}?error=${error}&description=${error_description}`);
+    }
+
+    if (!code) {
+        return res.redirect(`${destination}?error=no_code`);
+    }
+
+    const separator = destination.includes('?') ? '&' : '?';
+    res.redirect(`${destination}${separator}code=${code}&platform=meta&connect_platform=${connectPlatform}`);
+});
+
 router.use(authMiddleware);
+
+/**
+ * Get Instagram Business Login OAuth URL
+ * GET /api/meta/instagram/url
+ */
+router.get('/instagram/url', (req, res) => {
+    if (!process.env.INSTAGRAM_APP_ID || !process.env.INSTAGRAM_APP_SECRET) {
+        return res.status(500).json({ error: 'Instagram app not configured' });
+    }
+    const redirectUri = process.env.SERVER_URL
+        ? `${process.env.SERVER_URL}/api/meta/instagram/callback`
+        : `http://localhost:3001/api/meta/instagram/callback`;
+
+    const frontendDestination = req.query.redirect_uri || (process.env.CLIENT_URL || 'http://localhost:5173') + '/SocialDashboard';
+    const state = encodeURIComponent(frontendDestination);
+
+    const url = MetaService.getInstagramOAuthUrl(redirectUri, state);
+    res.json({ success: true, url });
+});
+
+/**
+ * Exchange Instagram Business Login code and save profile
+ * POST /api/meta/instagram/connect
+ */
+router.post('/instagram/connect', async (req, res) => {
+    try {
+        const { code } = req.body;
+        const userId = req.user.id;
+
+        if (!code) return res.status(400).json({ error: 'Code is required' });
+
+        const redirectUri = process.env.SERVER_URL
+            ? `${process.env.SERVER_URL}/api/meta/instagram/callback`
+            : `http://localhost:3001/api/meta/instagram/callback`;
+
+        console.log('[IG Connect] Exchanging code with redirect_uri:', redirectUri);
+
+        // Exchange code for short-lived token
+        const tokenData = await MetaService.exchangeInstagramCodeForToken(code, redirectUri);
+        console.log('[IG Connect] Token data:', tokenData);
+        const shortToken = tokenData.access_token;
+        const igUserId = tokenData.user_id;
+
+        // Exchange for long-lived token (Wrap in try-catch as IG Business Login might not support this GET endpoint)
+        let accessToken = shortToken;
+        try {
+            const longData = await MetaService.getInstagramLongLivedToken(shortToken);
+            accessToken = longData.access_token || shortToken;
+        } catch (tokenErr) {
+            console.warn('[IG Connect] Long-lived token exchange skipped or failed:', tokenErr.response?.data?.error?.message || tokenErr.message);
+        }
+
+        // Fetch profile info (optional — fall back to token data if unavailable)
+        let profile = { id: String(igUserId), username: 'instagram_user' };
+        try {
+            profile = await MetaService.getInstagramProfile(accessToken, igUserId);
+        } catch (profileErr) {
+            console.warn('[IG Connect] Profile fetch skipped:', profileErr.response?.data?.error?.message || profileErr.message);
+        }
+
+        const encryptedToken = encryptData(accessToken);
+
+        // Save as a meta_connection with platform=instagram
+        await supabase.from('meta_connections').upsert({
+            user_id: userId,
+            connection_type: 'instagram_business',
+            access_token: encryptedToken,
+            app_id: process.env.INSTAGRAM_APP_ID,
+            pages: [{
+                platform: 'instagram',
+                type: 'Instagram Business',
+                profileId: String(igUserId),
+                name: profile.name || profile.username || `IG:${igUserId}`,
+                username: profile.username || null,
+                profilePicture: profile.profile_picture_url || null
+            }],
+            is_active: true,
+            workspace_id: req.workspaceId || null,
+            updated_at: new Date().toISOString()
+        }, { onConflict: 'user_id,app_id' }).select().single();
+
+        res.json({ success: true, profile });
+    } catch (err) {
+        const igError = err.response?.data;
+        console.error('[Instagram Business Connect] Full error:', JSON.stringify(igError) || err.message);
+        res.status(500).json({ error: igError?.error_message || igError?.error?.message || err.message, details: igError });
+    }
+});
 
 /**
  * Get OAuth authorization URL
@@ -47,49 +202,20 @@ router.get('/oauth/url', (req, res) => {
         return res.status(500).json({ error: 'Meta App ID not configured' });
     }
     
-    // The redirectUri is the BACKEND URL that Facebook will call
-    // If not provided in query, use the fallback from env
-    const redirectUri = req.query.redirect_uri || META_REDIRECT_URI;
-    
-    // We can pass the "final" frontend destination in the state parameter
-    // If the frontend passed a redirect_uri, it's likely where it wants to end up
-    const state = req.query.redirect_uri ? encodeURIComponent(req.query.redirect_uri) : 'meta_auth';
-    
-    const authUrl = MetaService.getOAuthUrl(META_APP_ID, redirectUri, state);
+    // Always use the backend callback as redirect_uri (must match Meta App whitelist)
+    const backendCallback = process.env.SERVER_URL
+        ? `${process.env.SERVER_URL}/api/meta/oauth/callback`
+        : META_REDIRECT_URI;
+
+    const frontendDestination = req.query.redirect_uri || (process.env.CLIENT_URL || 'http://localhost:5173') + '/SocialDashboard';
+    const connectPlatform = req.query.platform || 'facebook'; // 'facebook' or 'instagram'
+    // Encode both destination and platform in state as JSON
+    const state = encodeURIComponent(JSON.stringify({ dest: frontendDestination, platform: connectPlatform }));
+
+    const authUrl = MetaService.getOAuthUrl(META_APP_ID, backendCallback, state);
     res.json({ success: true, url: authUrl });
 });
 
-/**
- * OAuth Callback handler (Backend)
- * GET /api/meta/oauth/callback
- */
-router.get('/oauth/callback', (req, res) => {
-    const { code, state, error, error_description } = req.query;
-    const clientUrl = process.env.CLIENT_URL || 'http://localhost:5173';
-    
-    // If state contains a URL, use it as the final destination
-    let destination = clientUrl + '/dashboard';
-    if (state && state !== 'meta_auth') {
-        try {
-            destination = decodeURIComponent(state);
-        } catch (e) {
-            console.error('Failed to decode state URL:', e);
-        }
-    }
-
-    if (error) {
-        return res.redirect(`${destination}?error=${error}&description=${error_description}`);
-    }
-    
-    if (!code) {
-        return res.redirect(`${destination}?error=no_code`);
-    }
-
-    // Redirect back to frontend with the code
-    // The frontend SocialDashboard.jsx will detect this and call /api/meta/connect
-    const separator = destination.includes('?') ? '&' : '?';
-    res.redirect(`${destination}${separator}code=${code}&platform=meta`);
-});
 
 /**
  * Exchange code for token and save profile
@@ -97,14 +223,16 @@ router.get('/oauth/callback', (req, res) => {
  */
 router.post('/connect', async (req, res) => {
     try {
-        const { code, redirect_uri } = req.body;
+        const { code, redirect_uri, connect_platform } = req.body;
         const userId = req.user.id;
 
         if (!code) {
             return res.status(400).json({ error: 'Authorization code is required' });
         }
 
-        const redirectUri = redirect_uri || META_REDIRECT_URI;
+        const redirectUri = redirect_uri || (process.env.SERVER_URL
+            ? `${process.env.SERVER_URL}/api/meta/oauth/callback`
+            : META_REDIRECT_URI);
 
         // Exchange code for short-lived token
         const tokenResult = await MetaService.exchangeCodeForToken(
@@ -126,17 +254,23 @@ router.post('/connect', async (req, res) => {
         );
 
         const accessToken = longLivedResult.success ? longLivedResult.accessToken : tokenResult.accessToken;
-        
+
         // Use token to get user profile and pages/instagram accounts
         const metaService = new MetaService(accessToken);
-        
+
         const accountsResult = await metaService.getPagesAndInstagramAccounts();
 
         if (!accountsResult.success) {
             return res.status(400).json({ error: 'Failed to fetch Meta pages and accounts' });
         }
 
-        const pages = accountsResult.accounts;
+        // Filter accounts by the platform the user intended to connect
+        let pages = accountsResult.accounts;
+        if (connect_platform === 'instagram') {
+            pages = pages.filter(p => p.platform === 'instagram');
+        } else if (connect_platform === 'facebook') {
+            pages = pages.filter(p => p.platform === 'facebook' || !p.platform);
+        }
 
         // Encrypt token
         let encryptedToken;
@@ -378,6 +512,192 @@ router.post('/post', async (req, res) => {
 
     } catch (error) {
         console.error('[Meta API] 💥 Unhandled error in /post:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+/**
+ * GET /api/meta/comments/:accountId
+ * Fetch recent media + comments for an Instagram account, upsert to DB
+ */
+router.get('/comments/:accountId', async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const { accountId } = req.params;
+
+        const { data: connection, error: dbError } = await supabase
+            .from('meta_connections')
+            .select('*')
+            .eq('user_id', userId)
+            .eq('is_active', true)
+            .single();
+
+        if (dbError || !connection) {
+            return res.status(404).json({ error: 'Meta connection not found' });
+        }
+
+        const pages = connection.pages || [];
+        const account = pages.find(p => p.accountId === accountId && p.platform === 'instagram');
+
+        if (!account) {
+            return res.status(404).json({ error: 'Instagram account not found' });
+        }
+
+        const { decryptData } = await import('../../../utils/encryption.js');
+        const accessToken = account.accessToken || decryptData(connection.access_token);
+
+        const MetaServiceClass = (await import('../../services/social/metaService.js')).default;
+        const metaService = new MetaServiceClass(accessToken);
+
+        // Fetch recent media
+        const mediaResult = await metaService.getInstagramMedia(accountId, 10);
+        if (!mediaResult.success) {
+            return res.status(400).json({ error: mediaResult.error });
+        }
+
+        // Fetch comments for each media
+        const mediaWithComments = await Promise.all(
+            mediaResult.media.map(async (post) => {
+                const commentsResult = await metaService.getComments(post.id);
+                const comments = commentsResult.success ? commentsResult.comments : [];
+
+                // Upsert comments to DB (best-effort, no-throw)
+                if (comments.length > 0) {
+                    const rows = comments.map(c => ({
+                        user_id: userId,
+                        ig_comment_id: c.id,
+                        post_ig_media_id: post.id,
+                        text: c.text,
+                        username: c.username,
+                        timestamp: c.timestamp,
+                        replied: false,
+                        workspace_id: req.workspaceId || null
+                    }));
+
+                    await supabase.from('ig_comments').upsert(rows, {
+                        onConflict: 'ig_comment_id',
+                        ignoreDuplicates: true
+                    });
+                }
+
+                return { ...post, comments };
+            })
+        );
+
+        res.json({ success: true, media: mediaWithComments });
+    } catch (error) {
+        console.error('[Meta Comments] Error:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+/**
+ * POST /api/meta/comments/:commentId/reply
+ * Reply to an Instagram comment
+ */
+router.post('/comments/:commentId/reply', async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const { commentId } = req.params;
+        const { message, accountId } = req.body;
+
+        if (!message || !accountId) {
+            return res.status(400).json({ error: 'message and accountId are required' });
+        }
+
+        const { data: connection, error: dbError } = await supabase
+            .from('meta_connections')
+            .select('*')
+            .eq('user_id', userId)
+            .eq('is_active', true)
+            .single();
+
+        if (dbError || !connection) {
+            return res.status(404).json({ error: 'Meta connection not found' });
+        }
+
+        const pages = connection.pages || [];
+        const account = pages.find(p => p.accountId === accountId && p.platform === 'instagram');
+
+        if (!account) {
+            return res.status(404).json({ error: 'Instagram account not found' });
+        }
+
+        const { decryptData } = await import('../../../utils/encryption.js');
+        const accessToken = account.accessToken || decryptData(connection.access_token);
+
+        const MetaServiceClass = (await import('../../services/social/metaService.js')).default;
+        const metaService = new MetaServiceClass(accessToken);
+
+        const result = await metaService.replyToComment(commentId, message);
+        if (!result.success) {
+            return res.status(400).json({ error: result.error });
+        }
+
+        // Mark as replied in DB (best-effort)
+        await supabase
+            .from('ig_comments')
+            .update({ replied: true, reply_text: message })
+            .eq('ig_comment_id', commentId)
+            .eq('user_id', userId);
+
+        res.json({ success: true, replyId: result.replyId });
+    } catch (error) {
+        console.error('[Meta Comments Reply] Error:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+/**
+ * GET /api/meta/inbox/:accountId
+ * Fetch Facebook Page or Instagram Business conversations (DMs) for the inbox
+ */
+router.get('/inbox/:accountId', authMiddleware, async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const { accountId } = req.params;
+
+        const { data: connections, error: dbError } = await supabase
+            .from('meta_connections')
+            .select('*')
+            .eq('user_id', userId)
+            .eq('is_active', true);
+
+        if (dbError || !connections?.length) {
+            return res.status(404).json({ error: 'No Meta connections found' });
+        }
+
+        // Search across all connections for the matching account
+        let matchedAccount = null;
+        let matchedToken = null;
+        for (const conn of connections) {
+            const pages = conn.pages || [];
+            const page = pages.find(p => p.accountId === accountId || p.profileId === accountId);
+            if (page) {
+                matchedAccount = page;
+                matchedToken = page.accessToken || decryptData(conn.access_token);
+                break;
+            }
+        }
+
+        if (!matchedAccount) {
+            return res.status(404).json({ error: 'Account not found in your connected profiles' });
+        }
+
+        const metaService = new MetaService(matchedToken);
+        const result = await metaService.getPageConversations(accountId);
+
+        if (!result.success) {
+            const isPermissionError = result.error?.includes('capability') || result.error?.includes('permission');
+            return res.status(isPermissionError ? 403 : 400).json({
+                error: result.error,
+                permissionRequired: isPermissionError ? 'pages_messaging' : null
+            });
+        }
+
+        res.json({ success: true, conversations: result.conversations, platform: matchedAccount.platform });
+    } catch (error) {
+        console.error('[Meta Inbox] Error:', error);
         res.status(500).json({ error: error.message });
     }
 });

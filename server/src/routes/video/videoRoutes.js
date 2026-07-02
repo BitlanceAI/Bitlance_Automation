@@ -43,7 +43,7 @@ function generateKlingToken(ak, sk) {
 router.use(authenticateUser);
 
 const openai = new OpenAI({
-    apiKey: process.env.OPENAI_API_KEY
+    apiKey: process.env.OPENAI_API_KEY || 'dummy_placeholder_for_startup'
 });
 
 // POST /api/video/analyze-style

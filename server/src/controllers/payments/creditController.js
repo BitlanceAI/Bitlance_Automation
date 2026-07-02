@@ -1,16 +1,21 @@
 import CreditLedgerService from '../../services/credits/creditLedgerService.js';
-import { supabaseAdmin } from '../../config/supabaseClient.js';
-import { createClient } from '@supabase/supabase-js';
+import { oldSupabaseAdmin as supabaseAdmin } from '../../config/supabaseClient.js';
 
-// Legacy scoped Supabase helper
-const getScopedSupabase = (token) => {
-    return createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY, {
-        global: {
-            headers: {
-                Authorization: `Bearer ${token}`
-            }
-        }
-    });
+// Resolve billing user ID — precomputed by resolveOldBillingUser middleware into req.user.billingId.
+// Falls back to getOldUserIdByEmail for routes that skip the middleware.
+const getOldUserIdByEmail = async (email) => {
+    try {
+        const { data, error } = await supabaseAdmin.auth.admin.listUsers({ page: 1, perPage: 1000 });
+        if (error) return null;
+        const user = data?.users?.find(u => u.email?.toLowerCase() === email.toLowerCase());
+        return user ? user.id : null;
+    } catch (err) {
+        return null;
+    }
+};
+
+const getBillingUserId = async (req) => {
+    return req.user.billingId || await getOldUserIdByEmail(req.user.email);
 };
 
 /**
@@ -19,10 +24,12 @@ const getScopedSupabase = (token) => {
  */
 export const getCredits = async (req, res) => {
     try {
-        const userId = req.user.id;
-        const scopedSupabase = getScopedSupabase(req.token);
+        const userId = await getBillingUserId(req);
+        if (!userId) {
+            return res.json({ success: true, balance: 0 });
+        }
 
-        const { data, error } = await scopedSupabase
+        const { data, error } = await supabaseAdmin
             .from('user_credits')
             .select('balance')
             .eq('user_id', userId)
@@ -47,14 +54,16 @@ export const getCredits = async (req, res) => {
 export const deductCredits = async (req, res) => {
     try {
         const { amount, action } = req.body;
-        const userId = req.user.id;
-        const scopedSupabase = getScopedSupabase(req.token);
+        const userId = await getBillingUserId(req);
+        if (!userId) {
+            return res.status(404).json({ success: false, error: 'User not found in billing system' });
+        }
 
         if (!amount) {
             return res.status(400).json({ success: false, error: 'Amount required' });
         }
 
-        const { data: currentData, error: fetchError } = await scopedSupabase
+        const { data: currentData, error: fetchError } = await supabaseAdmin
             .from('user_credits')
             .select('balance')
             .eq('user_id', userId)
@@ -72,7 +81,7 @@ export const deductCredits = async (req, res) => {
             });
         }
 
-        const { data: updatedData, error: updateError } = await scopedSupabase
+        const { data: updatedData, error: updateError } = await supabaseAdmin
             .from('user_credits')
             .update({
                 balance: currentBalance - amount,
@@ -105,7 +114,10 @@ export const deductCredits = async (req, res) => {
  */
 export const getUserBalance = async (req, res) => {
     try {
-        const userId = req.user.id;
+        const userId = await getBillingUserId(req);
+        if (!userId) {
+            return res.json({ success: true, balance: 0, lastUpdated: null });
+        }
 
         const { data, error } = await supabaseAdmin
             .from('user_credits')
@@ -132,7 +144,10 @@ export const getUserBalance = async (req, res) => {
  */
 export const getUserUsageHistory = async (req, res) => {
     try {
-        const userId = req.user.id;
+        const userId = await getBillingUserId(req);
+        if (!userId) {
+            return res.json({ success: true, history: [], pagination: { limit: 50, offset: 0, hasMore: false } });
+        }
         const { limit = 50, offset = 0 } = req.query;
 
         const history = await CreditLedgerService.getUserUsageHistory(
@@ -162,7 +177,10 @@ export const getUserUsageHistory = async (req, res) => {
  */
 export const getUserAnalytics = async (req, res) => {
     try {
-        const userId = req.user.id;
+        const userId = await getBillingUserId(req);
+        if (!userId) {
+            return res.json({ success: true, analytics: { totalCreditsUsed: 0, totalActions: 0 } });
+        }
 
         const analytics = await CreditLedgerService.getUserAnalytics(userId);
 
@@ -182,7 +200,10 @@ export const getUserAnalytics = async (req, res) => {
  */
 export const checkCreditsForAgent = async (req, res) => {
     try {
-        const userId = req.user.id;
+        const userId = await getBillingUserId(req);
+        if (!userId) {
+            return res.json({ success: false, available: false, error: 'User billing profile not found' });
+        }
         const { agentType, estimatedQuantity } = req.body;
 
         if (!agentType || !estimatedQuantity) {
@@ -288,7 +309,19 @@ export const getAgentPricing = async (req, res) => {
  */
 export const getAgentStats = async (req, res) => {
     try {
-        const userId = req.user.id;
+        const userId = await getBillingUserId(req);
+        if (!userId) {
+            return res.json({
+                success: true,
+                stats: {
+                    agentType: req.params.agentType,
+                    totalCreditsUsed: 0,
+                    totalUsageCount: 0,
+                    lastUsed: null,
+                    currentBalance: 0
+                }
+            });
+        }
         const { agentType } = req.params;
 
         // Get total credits used for this agent

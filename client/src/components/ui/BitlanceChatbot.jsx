@@ -217,7 +217,7 @@ function CalendlyOverlay({ url, onClose, onBooked }) {
 function ContactForm({ onSubmit }) {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
-  const [phone, setPhone] = useState("");
+  const [phone, setPhone] = useState("+91 ");
   const [errors, setErrors] = useState({});
 
   function handleSubmit() {
